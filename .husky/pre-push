@@ -78,10 +78,10 @@ fi
 if [ "$branch" = "main" ] || [ "$branch" = "develop" ]; then
   echo "📝 Validating commit message format for protected branch..."
   last_commit_msg=$(git log -1 --pretty=%B)
-  if ! echo "$last_commit_msg" | grep -qE "^(feat|fix|docs|style|refactor|perf|test|chore|security)(\(.+\))?: .+"; then
+  if ! echo "$last_commit_msg" | grep -qE "^(feat|fix|docs|style|refactor|perf|test|chore|build|ci|security)(\(.+\))?: .+"; then
     echo "⚠️  WARNING: Commit message doesn't follow conventional format!"
     echo "For protected branches, use: type(scope): description"
-    echo "Types: feat, fix, docs, style, refactor, perf, test, chore, security"
+    echo "Types: feat, fix, docs, style, refactor, perf, test, chore, build, ci, security"
   fi
 fi
 
