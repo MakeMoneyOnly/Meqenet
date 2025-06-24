@@ -18,7 +18,7 @@ importers:
         version: 11.1.3(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       "@nestjs/core":
         specifier: ^11.1.3
-        version: 11.1.3(@nestjs/common@11.1.3)(@nestjs/platform-express@11.1.3)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+        version: 11.1.3(@nestjs/common@11.1.3)(@nestjs/microservices@11.1.3)(@nestjs/platform-express@11.1.3)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       "@nestjs/platform-express":
         specifier: ^11.1.3
         version: 11.1.3(@nestjs/common@11.1.3)(@nestjs/core@11.1.3)
@@ -40,10 +40,10 @@ importers:
     devDependencies:
       "@nestjs/schematics":
         specifier: ^11.0.5
-        version: 11.0.5(typescript@5.8.3)
+        version: 11.0.5(chokidar@4.0.3)(typescript@5.8.3)
       "@nestjs/testing":
         specifier: ^11.1.3
-        version: 11.1.3(@nestjs/common@11.1.3)(@nestjs/core@11.1.3)(@nestjs/platform-express@11.1.3)
+        version: 11.1.3(@nestjs/common@11.1.3)(@nestjs/core@11.1.3)(@nestjs/microservices@11.1.3)(@nestjs/platform-express@11.1.3)
       "@nx/eslint":
         specifier: ^21.2.1
         version: 21.2.1(@swc-node/register@1.10.10)(@swc/core@1.12.6)(eslint@9.29.0)(nx@21.2.1)
@@ -164,6 +164,49 @@ importers:
       webpack-cli:
         specifier: ^6.0.1
         version: 6.0.1(webpack@5.99.9)
+
+  backend/services/api-gateway:
+    dependencies:
+      "@nestjs/common":
+        specifier: ^11.1.3
+        version: 11.1.3(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      "@nestjs/core":
+        specifier: ^11.1.3
+        version: 11.1.3(@nestjs/common@11.1.3)(@nestjs/microservices@11.1.3)(@nestjs/platform-express@11.1.3)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      reflect-metadata:
+        specifier: ^0.2.2
+        version: 0.2.2
+      rxjs:
+        specifier: ^7.8.2
+        version: 7.8.2
+    devDependencies:
+      "@nestjs/cli":
+        specifier: ^11.0.7
+        version: 11.0.7(@swc/core@1.12.6)(@types/node@24.0.3)(webpack-cli@6.0.1)
+      "@types/jest":
+        specifier: ^30.0.0
+        version: 30.0.0
+      "@types/node":
+        specifier: ^24.0.3
+        version: 24.0.3
+      "@types/supertest":
+        specifier: ^6.0.3
+        version: 6.0.3
+      jest:
+        specifier: ^30.0.2
+        version: 30.0.2(@types/node@24.0.3)(ts-node@10.9.2)
+      superagent:
+        specifier: ^8.1.2
+        version: 8.1.2
+      supertest:
+        specifier: ^6.3.3
+        version: 6.3.4
+      ts-jest:
+        specifier: ^29.4.0
+        version: 29.4.0(@babel/core@7.27.4)(jest@30.0.2)(typescript@5.8.3)
+      typescript:
+        specifier: ~5.8.3
+        version: 5.8.3
 
   backend/services/auth-service:
     dependencies:
@@ -397,32 +440,6 @@ packages:
       "@jridgewell/trace-mapping": 0.3.25
     dev: true
 
-  /@angular-devkit/core@19.2.6:
-    resolution:
-      {
-        integrity: sha512-WFgiYhrDMq83UNaGRAneIM7CYYdBozD+yYA9BjoU8AgBLKtrvn6S8ZcjKAk5heoHtY/u8pEb0mwDTz9gxFmJZQ==,
-        tarball: https://registry.npmjs.org/@angular-devkit/core/-/core-19.2.6.tgz,
-      }
-    engines:
-      {
-        node: ^18.19.1 || ^20.11.1 || >=22.0.0,
-        npm: ^6.11.0 || ^7.5.6 || >=8.0.0,
-        yarn: ">= 1.13.0",
-      }
-    peerDependencies:
-      chokidar: ^4.0.0
-    peerDependenciesMeta:
-      chokidar:
-        optional: true
-    dependencies:
-      ajv: 8.17.1
-      ajv-formats: 3.0.1(ajv@8.17.1)
-      jsonc-parser: 3.3.1
-      picomatch: 4.0.2
-      rxjs: 7.8.1
-      source-map: 0.7.4
-    dev: true
-
   /@angular-devkit/core@19.2.6(chokidar@4.0.3):
     resolution:
       {
@@ -499,28 +516,6 @@ packages:
       yargs-parser: 21.1.1
     transitivePeerDependencies:
       - "@types/node"
-      - chokidar
-    dev: true
-
-  /@angular-devkit/schematics@19.2.6:
-    resolution:
-      {
-        integrity: sha512-YTAxNnT++5eflx19OUHmOWu597/TbTel+QARiZCv1xQw99+X8DCKKOUXtqBRd53CAHlREDI33Rn/JLY3NYgMLQ==,
-        tarball: https://registry.npmjs.org/@angular-devkit/schematics/-/schematics-19.2.6.tgz,
-      }
-    engines:
-      {
-        node: ^18.19.1 || ^20.11.1 || >=22.0.0,
-        npm: ^6.11.0 || ^7.5.6 || >=8.0.0,
-        yarn: ">= 1.13.0",
-      }
-    dependencies:
-      "@angular-devkit/core": 19.2.6
-      jsonc-parser: 3.3.1
-      magic-string: 0.30.17
-      ora: 5.4.1
-      rxjs: 7.8.1
-    transitivePeerDependencies:
       - chokidar
     dev: true
 
@@ -4300,40 +4295,6 @@ packages:
       tslib: 2.8.1
       uid: 2.0.2
 
-  /@nestjs/core@11.1.3(@nestjs/common@11.1.3)(@nestjs/platform-express@11.1.3)(reflect-metadata@0.2.2)(rxjs@7.8.2):
-    resolution:
-      {
-        integrity: sha512-5lTni0TCh8x7bXETRD57pQFnKnEg1T6M+VLE7wAmyQRIecKQU+2inRGZD+A4v2DC1I04eA0WffP0GKLxjOKlzw==,
-        tarball: https://registry.npmjs.org/@nestjs/core/-/core-11.1.3.tgz,
-      }
-    engines: { node: ">= 20" }
-    requiresBuild: true
-    peerDependencies:
-      "@nestjs/common": ^11.0.0
-      "@nestjs/microservices": ^11.0.0
-      "@nestjs/platform-express": ^11.0.0
-      "@nestjs/websockets": ^11.0.0
-      reflect-metadata: ^0.1.12 || ^0.2.0
-      rxjs: ^7.1.0
-    peerDependenciesMeta:
-      "@nestjs/microservices":
-        optional: true
-      "@nestjs/platform-express":
-        optional: true
-      "@nestjs/websockets":
-        optional: true
-    dependencies:
-      "@nestjs/common": 11.1.3(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2)
-      "@nestjs/platform-express": 11.1.3(@nestjs/common@11.1.3)(@nestjs/core@11.1.3)
-      "@nuxt/opencollective": 0.4.1
-      fast-safe-stringify: 2.1.1
-      iterare: 1.2.1
-      path-to-regexp: 8.2.0
-      reflect-metadata: 0.2.2
-      rxjs: 7.8.2
-      tslib: 2.8.1
-      uid: 2.0.2
-
   /@nestjs/event-emitter@3.0.1(@nestjs/common@11.1.3)(@nestjs/core@11.1.3):
     resolution:
       {
@@ -4460,7 +4421,7 @@ packages:
       "@nestjs/core": ^11.0.0
     dependencies:
       "@nestjs/common": 11.1.3(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2)
-      "@nestjs/core": 11.1.3(@nestjs/common@11.1.3)(@nestjs/platform-express@11.1.3)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      "@nestjs/core": 11.1.3(@nestjs/common@11.1.3)(@nestjs/microservices@11.1.3)(@nestjs/platform-express@11.1.3)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       cors: 2.8.5
       express: 5.1.0
       multer: 2.0.1
@@ -4480,25 +4441,6 @@ packages:
     dependencies:
       "@angular-devkit/core": 19.2.6(chokidar@4.0.3)
       "@angular-devkit/schematics": 19.2.6(chokidar@4.0.3)
-      comment-json: 4.2.5
-      jsonc-parser: 3.3.1
-      pluralize: 8.0.0
-      typescript: 5.8.3
-    transitivePeerDependencies:
-      - chokidar
-    dev: true
-
-  /@nestjs/schematics@11.0.5(typescript@5.8.3):
-    resolution:
-      {
-        integrity: sha512-T50SCNyqCZ/fDssaOD7meBKLZ87ebRLaJqZTJPvJKjlib1VYhMOCwXYsr7bjMPmuPgiQHOwvppz77xN/m6GM7A==,
-        tarball: https://registry.npmjs.org/@nestjs/schematics/-/schematics-11.0.5.tgz,
-      }
-    peerDependencies:
-      typescript: ">=4.8.2"
-    dependencies:
-      "@angular-devkit/core": 19.2.6
-      "@angular-devkit/schematics": 19.2.6
       comment-json: 4.2.5
       jsonc-parser: 3.3.1
       pluralize: 8.0.0
@@ -4630,29 +4572,6 @@ packages:
       tslib: 2.8.1
     dev: true
 
-  /@nestjs/testing@11.1.3(@nestjs/common@11.1.3)(@nestjs/core@11.1.3)(@nestjs/platform-express@11.1.3):
-    resolution:
-      {
-        integrity: sha512-CeXG6/eEqgFIkPkmU00y18Dd3DLOIDFhPItzJK1SWckKo6IhcnfoRJzGx75bmuvUMjb51j6An96S/+MJ2ty9jA==,
-        tarball: https://registry.npmjs.org/@nestjs/testing/-/testing-11.1.3.tgz,
-      }
-    peerDependencies:
-      "@nestjs/common": ^11.0.0
-      "@nestjs/core": ^11.0.0
-      "@nestjs/microservices": ^11.0.0
-      "@nestjs/platform-express": ^11.0.0
-    peerDependenciesMeta:
-      "@nestjs/microservices":
-        optional: true
-      "@nestjs/platform-express":
-        optional: true
-    dependencies:
-      "@nestjs/common": 11.1.3(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2)
-      "@nestjs/core": 11.1.3(@nestjs/common@11.1.3)(@nestjs/platform-express@11.1.3)(reflect-metadata@0.2.2)(rxjs@7.8.2)
-      "@nestjs/platform-express": 11.1.3(@nestjs/common@11.1.3)(@nestjs/core@11.1.3)
-      tslib: 2.8.1
-    dev: true
-
   /@nestjs/throttler@6.4.0(@nestjs/common@11.1.3)(@nestjs/core@11.1.3)(reflect-metadata@0.2.2):
     resolution:
       {
@@ -4668,6 +4587,15 @@ packages:
       "@nestjs/core": 11.1.3(@nestjs/common@11.1.3)(@nestjs/microservices@11.1.3)(@nestjs/platform-express@11.1.3)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       reflect-metadata: 0.2.2
     dev: false
+
+  /@noble/hashes@1.8.0:
+    resolution:
+      {
+        integrity: sha512-jCs9ldd7NwzpgXDIf6P3+NrHh9/sD6CQdxHyjQI+h/6rDNo88ypBxxz45UDuZHz9r3tNz7N/VInSVoVdtXEI4A==,
+        tarball: https://registry.npmjs.org/@noble/hashes/-/hashes-1.8.0.tgz,
+      }
+    engines: { node: ^14.21.3 || >=16 }
+    dev: true
 
   /@nodelib/fs.scandir@2.1.5:
     resolution:
@@ -4856,7 +4784,7 @@ packages:
         tarball: https://registry.npmjs.org/@nx/nest/-/nest-21.2.1.tgz,
       }
     dependencies:
-      "@nestjs/schematics": 11.0.5(typescript@5.8.3)
+      "@nestjs/schematics": 11.0.5(chokidar@4.0.3)(typescript@5.8.3)
       "@nx/devkit": 21.2.1(nx@21.2.1)
       "@nx/eslint": 21.2.1(@swc-node/register@1.10.10)(@swc/core@1.12.6)(eslint@9.29.0)(nx@21.2.1)
       "@nx/js": 21.2.1(@swc-node/register@1.10.10)(@swc/core@1.12.6)(nx@21.2.1)
@@ -5986,6 +5914,16 @@ packages:
     requiresBuild: true
     dev: true
     optional: true
+
+  /@paralleldrive/cuid2@2.2.2:
+    resolution:
+      {
+        integrity: sha512-ZOBkgDwEdoYVlSeRbYYXs0S9MejQofiVYoTbKzy/6GQa39/q5tQU2IX46+shYnUkpEl3wc+J6wRlar7r2EK2xA==,
+        tarball: https://registry.npmjs.org/@paralleldrive/cuid2/-/cuid2-2.2.2.tgz,
+      }
+    dependencies:
+      "@noble/hashes": 1.8.0
+    dev: true
 
   /@parcel/watcher-android-arm64@2.5.1:
     resolution:
@@ -9081,6 +9019,14 @@ packages:
       is-array-buffer: 3.0.5
     dev: true
 
+  /asap@2.0.6:
+    resolution:
+      {
+        integrity: sha512-BSHWgDSAiKs50o2Re8ppvp3seVHXSRM44cdSsT9FfNEUUZLOGWVCsiWaRPWM1Znn+mqZ1OfVZ3z3DWEzSp7hRA==,
+        tarball: https://registry.npmjs.org/asap/-/asap-2.0.6.tgz,
+      }
+    dev: true
+
   /async-function@1.0.0:
     resolution:
       {
@@ -10317,6 +10263,14 @@ packages:
       }
     dev: true
 
+  /component-emitter@1.3.1:
+    resolution:
+      {
+        integrity: sha512-T0+barUSQRTUQASh8bx02dl+DhF54GtIDY13Y3m9oWTklKbb3Wv974meRpeZ3lp1JpLVECWWNHC4vaG2XHXouQ==,
+        tarball: https://registry.npmjs.org/component-emitter/-/component-emitter-1.3.1.tgz,
+      }
+    dev: true
+
   /compressible@2.0.18:
     resolution:
       {
@@ -10452,6 +10406,14 @@ packages:
         tarball: https://registry.npmjs.org/cookie/-/cookie-0.7.2.tgz,
       }
     engines: { node: ">= 0.6" }
+
+  /cookiejar@2.1.4:
+    resolution:
+      {
+        integrity: sha512-LDx6oHrK+PhzLKJU9j5S7/Y3jM/mUHvD/DeI1WQmJn652iPC5Y4TBzC9l+5OMOXlyTTA+SmVUPm0HQUwpD5Jqw==,
+        tarball: https://registry.npmjs.org/cookiejar/-/cookiejar-2.1.4.tgz,
+      }
+    dev: true
 
   /copy-anything@2.0.6:
     resolution:
@@ -11072,6 +11034,17 @@ packages:
       debug: 4.4.1
     transitivePeerDependencies:
       - supports-color
+    dev: true
+
+  /dezalgo@1.0.4:
+    resolution:
+      {
+        integrity: sha512-rXSP0bf+5n0Qonsb+SVVfNfIsimO4HEtmnIpPHY8Q1UCzKlQrDMfdobr8nJOOsRgWCyMRqeSBQzmWUMq7zvVig==,
+        tarball: https://registry.npmjs.org/dezalgo/-/dezalgo-1.0.4.tgz,
+      }
+    dependencies:
+      asap: 2.0.6
+      wrappy: 1.0.2
     dev: true
 
   /diff-sequences@29.6.3:
@@ -12684,6 +12657,19 @@ packages:
       es-set-tostringtag: 2.1.0
       hasown: 2.0.2
       mime-types: 2.1.35
+
+  /formidable@2.1.5:
+    resolution:
+      {
+        integrity: sha512-Oz5Hwvwak/DCaXVVUtPn4oLMLLy1CdclLKO1LFgU7XzDpVMUU5UjlSLpGMocyQNNk8F6IJW9M/YdooSn2MRI+Q==,
+        tarball: https://registry.npmjs.org/formidable/-/formidable-2.1.5.tgz,
+      }
+    dependencies:
+      "@paralleldrive/cuid2": 2.2.2
+      dezalgo: 1.0.4
+      once: 1.4.0
+      qs: 6.14.0
+    dev: true
 
   /forwarded-parse@2.1.2:
     resolution:
@@ -16239,6 +16225,16 @@ packages:
         tarball: https://registry.npmjs.org/mime/-/mime-1.6.0.tgz,
       }
     engines: { node: ">=4" }
+    hasBin: true
+    dev: true
+
+  /mime@2.6.0:
+    resolution:
+      {
+        integrity: sha512-USPkMeET31rOMiarsBNIHZKLGgvKc/LrjofAnBlOttf5ajRvqiRA8QsenbcooctK6d6Ts6aqZXBA+XbkKthiQg==,
+        tarball: https://registry.npmjs.org/mime/-/mime-2.6.0.tgz,
+      }
+    engines: { node: ">=4.0.0" }
     hasBin: true
     dev: true
 
@@ -20113,6 +20109,43 @@ packages:
       glob: 10.4.5
       sax: 1.4.1
       source-map: 0.7.4
+    transitivePeerDependencies:
+      - supports-color
+    dev: true
+
+  /superagent@8.1.2:
+    resolution:
+      {
+        integrity: sha512-6WTxW1EB6yCxV5VFOIPQruWGHqc3yI7hEmZK6h+pyk69Lk/Ut7rLUY6W/ONF2MjBuGjvmMiIpsrVJ2vjrHlslA==,
+        tarball: https://registry.npmjs.org/superagent/-/superagent-8.1.2.tgz,
+      }
+    engines: { node: ">=6.4.0 <13 || >=14" }
+    deprecated: Please upgrade to v9.0.0+ as we have fixed a public vulnerability with formidable dependency. Note that v9.0.0+ requires Node.js v14.18.0+. See https://github.com/ladjs/superagent/pull/1800 for insight. This project is supported and maintained by the team at Forward Email @ https://forwardemail.net
+    dependencies:
+      component-emitter: 1.3.1
+      cookiejar: 2.1.4
+      debug: 4.4.1
+      fast-safe-stringify: 2.1.1
+      form-data: 4.0.3
+      formidable: 2.1.5
+      methods: 1.1.2
+      mime: 2.6.0
+      qs: 6.14.0
+      semver: 7.7.2
+    transitivePeerDependencies:
+      - supports-color
+    dev: true
+
+  /supertest@6.3.4:
+    resolution:
+      {
+        integrity: sha512-erY3HFDG0dPnhw4U+udPfrzXa4xhSG+n4rxfRuZWCUvjFWwKl+OxWf/7zk50s84/fAAs7vf5QAb9uRa0cCykxw==,
+        tarball: https://registry.npmjs.org/supertest/-/supertest-6.3.4.tgz,
+      }
+    engines: { node: ">=6.4.0" }
+    dependencies:
+      methods: 1.1.2
+      superagent: 8.1.2
     transitivePeerDependencies:
       - supports-color
     dev: true

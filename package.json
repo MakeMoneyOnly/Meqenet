@@ -8,7 +8,7 @@
     "prepare": "husky",
     "lint": "pnpm -r --if-present lint",
     "lint:fix": "eslint . --fix",
-    "test": "jest",
+    "test": "jest --projects backend/services/auth-service backend/services/api-gateway backend-e2e",
     "build": "pnpm -r --if-present build",
     "security:audit": "pnpm audit --audit-level moderate",
     "security:secrets": "trufflehog filesystem . --fail",

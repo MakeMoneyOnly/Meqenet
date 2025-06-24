@@ -1,5 +1,5 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
+#!/usr/bin/env bash
+# Husky v10 no longer requires sourcing the internal _/husky.sh shim. The following shebang is sufficient.
 
 # Meqenet.et Pre-Push Hook
 # Comprehensive FinTech Security & Quality Gate
