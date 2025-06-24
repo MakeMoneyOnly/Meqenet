@@ -1,0 +1,244 @@
+name: ✨ Feature Request
+description: Suggest a new feature or enhancement for the Meqenet platform
+title: "[FEATURE]: "
+labels: ["enhancement", "needs-triage"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for suggesting a new feature! Your ideas help us build a better platform for Ethiopian users and merchants.
+
+        **📋 Before You Start**: Please check our [Product Roadmap](https://github.com/meqenet/roadmap) to see if this feature is already planned.
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform(s)
+      description: Which platform(s) should this feature be implemented on?
+      options:
+        - Mobile App (iOS)
+        - Mobile App (Android)
+        - Web Application
+        - Merchant Portal
+        - Admin Portal
+        - API/Backend
+        - Browser Extension
+        - All Platforms
+      multiple: true
+    validations:
+      required: true
+
+  - type: dropdown
+    id: feature_category
+    attributes:
+      label: Feature Category
+      description: What category does this feature belong to?
+      options:
+        - Authentication & Security
+        - Payment Processing
+        - BNPL Services
+        - Marketplace & Shopping
+        - Rewards & Cashback
+        - Financial Wellness
+        - Merchant Tools
+        - Admin Tools
+        - Analytics & Reporting
+        - Notifications
+        - Localization
+        - Integration
+        - User Experience
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority Level
+      description: How important is this feature?
+      options:
+        - Critical (Essential for core functionality)
+        - High (Important for user experience)
+        - Medium (Nice to have, improves workflow)
+        - Low (Minor enhancement)
+    validations:
+      required: true
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Feature Summary
+      description: A brief, clear summary of the feature you're requesting
+      placeholder: Provide a one-sentence summary of the feature...
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: What problem does this feature solve? What pain point are you experiencing?
+      placeholder: |
+        Describe the current problem or limitation...
+
+        Example: "As a merchant in Ethiopia, I can't easily track which BNPL payment plans are most popular with my customers..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe your proposed solution in detail
+      placeholder: |
+        Describe your proposed solution...
+
+        Example: "Add a dashboard section that shows payment plan analytics with charts showing the distribution of Pay in 4, Pay in 30, and Financing options..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: user_stories
+    attributes:
+      label: User Stories
+      description: Describe how different users would interact with this feature
+      placeholder: |
+        Write user stories in the format: "As a [user type], I want [goal] so that [benefit]"
+
+        Example:
+        - As a merchant, I want to see payment plan analytics so that I can optimize my pricing strategy
+        - As a customer, I want to compare payment options so that I can choose the best plan for my budget
+    validations:
+      required: true
+
+  - type: dropdown
+    id: target_users
+    attributes:
+      label: Target Users
+      description: Who would primarily use this feature?
+      options:
+        - Ethiopian Consumers
+        - Ethiopian Merchants
+        - Admin/Support Staff
+        - Third-party Developers
+        - All Users
+        - Specific User Segment (describe in details)
+      multiple: true
+    validations:
+      required: true
+
+  - type: textarea
+    id: business_value
+    attributes:
+      label: Business Value
+      description: What business value or impact would this feature provide?
+      placeholder: |
+        Describe the business impact...
+
+        Examples:
+        - Increase merchant satisfaction and retention
+        - Improve conversion rates for Ethiopian consumers
+        - Reduce support tickets and operational costs
+        - Enhance regulatory compliance
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Acceptance Criteria
+      description: Define the criteria that must be met for this feature to be considered complete
+      placeholder: |
+        List the acceptance criteria...
+
+        Example:
+        - [ ] Dashboard displays payment plan distribution chart
+        - [ ] Data can be filtered by date range
+        - [ ] Charts work on both desktop and mobile
+        - [ ] Data loads within 2 seconds
+        - [ ] Available in both English and Amharic
+
+  - type: textarea
+    id: mockups
+    attributes:
+      label: Mockups/Wireframes
+      description: If you have mockups, wireframes, or visual examples, please share them here
+      placeholder: Drag and drop images here or paste links to design files...
+
+  - type: dropdown
+    id: localization
+    attributes:
+      label: Localization Requirements
+      description: Does this feature need specific Ethiopian localization?
+      options:
+        - Yes, requires Amharic translation
+        - Yes, requires Ethiopian calendar support
+        - Yes, requires Ethiopian currency formatting
+        - Yes, requires cultural adaptation
+        - No special localization needed
+        - Not applicable
+      multiple: true
+
+  - type: dropdown
+    id: regulatory_impact
+    attributes:
+      label: Regulatory Impact
+      description: Does this feature have any regulatory implications?
+      options:
+        - Yes, affects NBE compliance
+        - Yes, affects KYC/AML requirements
+        - Yes, affects data privacy regulations
+        - Yes, affects financial reporting
+        - No regulatory impact
+        - Unsure
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternative Solutions
+      description: Describe any alternative solutions or workarounds you've considered
+      placeholder: What other approaches could solve this problem?
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies
+      description: Are there any dependencies or prerequisites for this feature?
+      placeholder: |
+        List any dependencies...
+
+        Examples:
+        - Requires integration with new payment provider
+        - Depends on completion of user authentication redesign
+        - Needs approval from NBE for regulatory compliance
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      options:
+        - label: I have searched existing issues to ensure this is not a duplicate
+          required: true
+        - label: I have provided clear user stories and acceptance criteria
+          required: true
+        - label: I have considered the Ethiopian market context and requirements
+          required: true
+        - label: I have identified the business value this feature would provide
+          required: true
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional Context
+      description: Add any other context, research, or information about the feature request
+      placeholder: |
+        Any additional context...
+
+        Examples:
+        - Links to similar features in other apps
+        - User feedback or survey results
+        - Technical considerations
+        - Timeline preferences

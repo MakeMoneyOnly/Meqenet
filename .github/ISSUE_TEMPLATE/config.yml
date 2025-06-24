@@ -1,0 +1,17 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 🔒 Security Vulnerability Report
+    url: mailto:security@meqenet.et
+    about: Report security vulnerabilities privately via email (DO NOT create public issues)
+  - name: 📞 Technical Support
+    url: mailto:support@meqenet.et
+    about: Get technical support for development issues
+  - name: 📚 Documentation
+    url: https://github.com/meqenet-et/meqenet/tree/main/docs
+    about: Browse our comprehensive documentation and architecture guides
+  - name: 🏗️ Architecture Discussions
+    url: https://github.com/meqenet-et/meqenet/discussions
+    about: Discuss architecture decisions and technical design proposals
+  - name: 🇪🇹 Ethiopian Market Questions
+    url: mailto:market-research@meqenet.et
+    about: Questions about Ethiopian financial regulations, payment systems, or market requirements

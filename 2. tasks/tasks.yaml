@@ -1,0 +1,3523 @@
+stages:
+  - stage: "Stage 1: Foundation & Setup"
+    tasks:
+      - id: "MEQ-FND-01"
+        name: "Project Governance and Git Setup"
+        platform: "Both"
+        subtasks:
+          - id: "FND-GIT-01"
+            description: "Initialize Git repository on GitHub/GitLab."
+            status: "Completed"
+            context: ["docs/Stage 2 -Development/21-Code_Review.md"]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Financial Software Architect",
+                "Senior Backend Developer",
+              ]
+          - id: "FND-GIT-02"
+            description: "Define and enforce branch protection rules for 'main' and 'develop' (require PRs, passing checks)."
+            status: "Completed"
+            context: ["docs/Stage 2 -Development/21-Code_Review.md"]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Financial Software Architect",
+                "Financial QA Specialist",
+              ]
+          - id: "FND-GIT-03"
+            description: "Create repository issue templates for bugs, features, and chores."
+            status: "Completed"
+            context: ["docs/Stage 1 - Foundation/01-Architecture_Governance.md"]
+            personas:
+              [
+                "Product Manager",
+                "FinTech DevOps Engineer",
+                "Senior Backend Developer",
+              ]
+          - id: "FND-GIT-04"
+            description: "[DevEx/Security] Implement pre-commit/pre-push hooks using Husky to run local security and lint checks before code is pushed."
+            status: "Completed"
+            context:
+              [
+                "docs/Stage 3 - Deployment & Operations/30-Dependency_Management.md",
+              ]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Data Security Specialist",
+                "Senior Backend Developer",
+                "Senior Mobile Developer",
+              ]
+          - id: "FND-DEVEX-01"
+            description: "[DevEx] Create scripts and detailed documentation to automate and streamline local development environment setup."
+            status: "Completed"
+            completed_date: "2024-12-28"
+            deliverables:
+              [
+                "scripts/setup-database.sh",
+                "LOCAL_DEVELOPMENT.md",
+                "scripts/dev-setup.sh",
+              ]
+            context: ["docs/Stage 2 -Development/16-Developer_Onboarding.md"]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Senior Backend Developer",
+                "Senior Mobile Developer",
+              ]
+          - id: "FND-DEVEX-02"
+            description: "[DevEx] Create and maintain the standard `cookiecutter` service template for bootstrapping new microservices."
+            status: "Completed"
+            completed_date: "2024-12-28"
+            deliverables:
+              [
+                "templates/microservice/",
+                "scripts/create-service.ps1",
+                "scripts/create-service.sh",
+                "scripts/create-service.bat",
+              ]
+            context: ["docs/Stage 2 -Development/16-Developer_Onboarding.md"]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Financial Software Architect",
+                "Senior Backend Developer",
+              ]
+          - id: "FND-GOV-02"
+            description: "[Gov] Create template files for `REVIEWERS.md` and feature-specific `REVIEW_CHECKLIST.md` files as per code review guidelines."
+            status: "Completed"
+            completed_date: "2024-12-28"
+            context: ["docs/Stage 2 -Development/21-Code_Review.md"]
+            personas:
+              [
+                "Financial Software Architect",
+                "Senior Backend Developer",
+                "Financial QA Specialist",
+              ]
+            deliverables:
+              [
+                "templates/REVIEWERS.md",
+                "templates/REVIEW_CHECKLIST.md",
+                "backend/services/auth-service/REVIEWERS.md",
+                "backend/services/auth-service/REVIEW_CHECKLIST.md",
+                "docs/CODE_REVIEW_TEMPLATES_GUIDE.md",
+              ]
+
+      - id: "MEQ-FND-02"
+        name: "Backend: Microservices Monorepo Setup"
+        platform: "Both"
+        subtasks:
+          - id: "FND-BE-NX-01"
+            description: "Initialize backend monorepo with Nx. Create initial applications for the API Gateway and the first core microservice (e.g., 'auth-service')."
+            status: "Completed"
+            context:
+              [
+                "docs/Stage 1 - Foundation/08-Architecture.md",
+                "docs/Stage 1 - Foundation/09-Tech_Stack.md",
+              ]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Financial Software Architect",
+                "FinTech DevOps Engineer",
+              ]
+          - id: "FND-BE-DB-01"
+            description: "Integrate Prisma ORM, configure database connection URLs via environment variables."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/10-Database.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Financial Software Architect",
+                "Data Security Specialist",
+              ]
+          - id: "FND-BE-CFG-01"
+            description: "Implement a global configuration service (e.g., `@nestjs/config`) to manage all environment variables."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/08-Architecture.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Financial Software Architect",
+                "FinTech DevOps Engineer",
+              ]
+          - id: "FND-BE-LOG-01"
+            description: "Set up a structured logger (e.g., Pino) for application-wide logging."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 3 - Deployment & Operations/25-Monitoring_And_Logging.md",
+              ]
+            personas:
+              [
+                "Senior Backend Developer",
+                "FinTech DevOps Engineer",
+                "Financial QA Specialist",
+              ]
+          - id: "FND-BE-ERR-01"
+            description: "Implement a global exception filter for consistent, structured error responses."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/20-Error_Handling.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Financial Software Architect",
+                "UX Designer",
+              ]
+          - id: "FND-BE-ERR-02"
+            description: "[BE] Implement the custom exception hierarchy as defined in `20-Error_Handling.md` (e.g., `FinancialServiceException`)."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/20-Error_Handling.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Financial Software Architect",
+                "Product Manager",
+              ]
+          - id: "FND-BE-LNT-01"
+            description: "Configure ESLint and Prettier with strict rules, including eslint-plugin-security, and custom rules to enforce FSA principles in the backend monorepo."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 2 -Development/21-Code_Review.md",
+                "docs/Stage 3 - Deployment & Operations/23-Deployment.md",
+                "docs/Stage 3 - Deployment & Operations/30-Dependency_Management.md",
+              ]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Financial Software Architect",
+                "Data Security Specialist",
+              ]
+          - id: "FND-BE-API-01"
+            description: "[API Gov] Create the initial `openapi.yaml` file defining info, servers, and JWT security scheme."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/02-API_Specification_and_Governance.md",
+              ]
+            personas:
+              [
+                "Financial Software Architect",
+                "Senior Backend Developer",
+                "Product Manager",
+              ]
+          - id: "FND-BE-API-02"
+            description: "[API Gov] Configure NestJS for URI-based versioning (e.g., '/api/v1')."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/02-API_Specification_and_Governance.md",
+              ]
+            personas:
+              [
+                "Financial Software Architect",
+                "Senior Backend Developer",
+                "Product Manager",
+              ]
+          - id: "FND-BE-ERD-01"
+            description: "[Arch Gov] Create initial database ERD diagrams for each core microservice's domain (e.g., User, Payments) as Mermaid diagrams in `10-Database.md`."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/01-Architecture_Governance.md",
+                "docs/Stage 1 - Foundation/10-Database.md",
+              ]
+            personas:
+              [
+                "Financial Software Architect",
+                "Senior Backend Developer",
+                "Data Security Specialist",
+              ]
+          - id: "FND-BE-METRICS-01"
+            description: "[BE/Monitoring] Instrument backend services with a Prometheus client to expose custom business and application metrics."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 3 - Deployment & Operations/25-Monitoring_And_Logging.md",
+              ]
+            personas:
+              [
+                "Senior Backend Developer",
+                "FinTech DevOps Engineer",
+                "Financial QA Specialist",
+              ]
+          - id: "FND-BE-SEC-01"
+            description: "[BE/Security] Configure Helmet middleware for security headers (HSTS, CSP, X-Frame-Options, etc.) across all services."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/07-Security.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Data Security Specialist",
+                "Financial Software Architect",
+              ]
+          - id: "FND-BE-SEC-02"
+            description: "[BE/Security] Implement comprehensive input validation framework using Zod/Joi with sanitization for all API endpoints."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/07-Security.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Data Security Specialist",
+                "Financial Software Architect",
+              ]
+          - id: "FND-BE-SEC-03"
+            description: "[BE/Security] Configure CORS policies with strict origin controls and secure defaults for all services."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/07-Security.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Data Security Specialist",
+                "Senior Mobile Developer",
+              ]
+          - id: "FND-BE-SEC-04"
+            description: "[BE/Security] Implement comprehensive rate limiting and DDoS protection using ThrottlerGuard across all API endpoints."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/07-Security.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Data Security Specialist",
+                "FinTech DevOps Engineer",
+              ]
+          - id: "FND-BE-SEC-05"
+            description: "[BE/Security] Implement structured request/response logging with audit trails for all API calls (excluding sensitive data)."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/07-Security.md",
+                "docs/Stage 3 - Deployment & Operations/25-Monitoring_And_Logging.md",
+              ]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Data Security Specialist",
+                "Compliance & Risk Officer",
+              ]
+          - id: "FND-BE-CFG-02"
+            description: "[BE/Config] Implement environment variable validation using Zod schemas to ensure all required config is present and valid."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/08-Architecture.md",
+                "docs/Stage 1 - Foundation/07-Security.md",
+              ]
+            personas:
+              [
+                "Senior Backend Developer",
+                "FinTech DevOps Engineer",
+                "Financial Software Architect",
+              ]
+          - id: "FND-BE-HEALTH-01"
+            description: "[BE/Monitoring] Implement comprehensive health checks using @nestjs/terminus for database, external services, and system resources."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/05-Compliance_Framework.md",
+                "docs/Stage 3 - Deployment & Operations/25-Monitoring_And_Logging.md",
+              ]
+            personas:
+              [
+                "Senior Backend Developer",
+                "FinTech DevOps Engineer",
+                "Compliance & Risk Officer",
+              ]
+
+      - id: "MEQ-FND-03"
+        name: "Frontend: Monorepo for Web & Mobile Apps"
+        platform: "Both"
+        subtasks:
+          - id: "FND-FE-NX-01"
+            description: "Initialize frontend monorepo with Nx, a Next.js app ('website'), and a React Native app ('app')."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/08-Architecture.md",
+                "docs/Stage 1 - Foundation/09-Tech_Stack.md",
+              ]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "Financial Software Architect",
+                "FinTech DevOps Engineer",
+              ]
+          - id: "FND-FE-STY-01"
+            description: "Set up Tailwind CSS for the Next.js 'website' application."
+            status: "To Do"
+            context:
+              ["docs/Stage 1 - Foundation/12-User_Experience_Guidelines.md"]
+            personas:
+              ["Senior Mobile Developer", "UX Designer", "Product Manager"]
+          - id: "FND-FE-STY-02"
+            description: "Set up a compatible styling solution (e.g., `twrnc`) for the React Native 'app'."
+            status: "To Do"
+            context:
+              ["docs/Stage 1 - Foundation/12-User_Experience_Guidelines.md"]
+            personas:
+              ["Senior Mobile Developer", "UX Designer", "Product Manager"]
+          - id: "FND-FE-API-01"
+            description: "Create a shared API client library (e.g., using Axios) for both frontends to communicate with the backend."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/02-API_Specification_and_Governance.md",
+              ]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "Senior Backend Developer",
+                "Financial Software Architect",
+              ]
+          - id: "FND-FE-LNT-01"
+            description: "Configure ESLint and Prettier for both Next.js and React Native apps, including eslint-plugin-security and custom rules to enforce FSA principles."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 2 -Development/21-Code_Review.md",
+                "docs/Stage 1 - Foundation/08-Architecture.md",
+                "docs/Stage 3 - Deployment & Operations/30-Dependency_Management.md",
+              ]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "Financial Software Architect",
+                "Data Security Specialist",
+              ]
+          - id: "FND-FE-PWA-01"
+            description: "[Web] Configure the Next.js app to be a fully compliant Progressive Web App (PWA) with a service worker and manifest."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/08-Architecture.md"]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "UX Designer",
+                "FinTech DevOps Engineer",
+              ]
+          - id: "FND-FE-W-ERR-01"
+            description: "[Web] Implement a root React Error Boundary to catch rendering errors and show a graceful fallback UI."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/20-Error_Handling.md"]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "UX Designer",
+                "Financial QA Specialist",
+              ]
+          - id: "FND-FE-A-ERR-01"
+            description: "[App] Implement a root React Error Boundary for the React Native app to prevent crashes from rendering errors."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/20-Error_Handling.md"]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "UX Designer",
+                "Financial QA Specialist",
+              ]
+          - id: "FND-FE-A-CRASH-01"
+            description: "[App/Monitoring] Integrate Sentry or Firebase Crashlytics into the React Native app for real-time crash reporting."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 3 - Deployment & Operations/25-Monitoring_And_Logging.md",
+              ]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "FinTech DevOps Engineer",
+                "Financial QA Specialist",
+              ]
+
+      - id: "MEQ-FND-04"
+        name: "DevOps: CI/CD & Infrastructure Foundation"
+        platform: "Both"
+        subtasks:
+          - id: "FND-CI-BE-01"
+            description: "[CI] Create GitHub Actions workflow for the backend to run lint, type-check, and unit tests on PRs."
+            status: "To Do"
+            context: ["docs/Stage 3 - Deployment & Operations/23-Deployment.md"]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Senior Backend Developer",
+                "Financial QA Specialist",
+              ]
+          - id: "FND-CI-SCA-01"
+            description: "[CI/Security] Integrate and configure Software Composition Analysis (SCA) to scan for vulnerable dependencies and enforce governance policies (e.g., check for approved licenses and libraries)."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/07-Security.md",
+                "docs/Stage 3 - Deployment & Operations/30-Dependency_Management.md",
+              ]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Data Security Specialist",
+                "Financial Software Architect",
+              ]
+          - id: "FND-CI-SAST-01"
+            description: "[CI/Security] Integrate Static Application Security Testing (SAST) scanner into the backend CI workflow."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/07-Security.md"]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Data Security Specialist",
+                "Senior Backend Developer",
+              ]
+          - id: "FND-CI-SEC-CFG-01"
+            description: "[CI/Security/DevOps] Procure and configure secrets (e.g., SNYK_TOKEN, SEMGREP_APP_TOKEN) for all CI security scanning tools."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/07-Security.md",
+                "docs/Stage 3 - Deployment & Operations/23-Deployment.md",
+              ]
+            personas: ["FinTech DevOps Engineer", "Data Security Specialist"]
+          - id: "FND-CI-FE-01"
+            description: "[CI] Create GitHub Actions workflow for the frontend to run lint, type-check, and unit tests on PRs."
+            status: "To Do"
+            context: ["docs/Stage 3 - Deployment & Operations/23-Deployment.md"]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Senior Mobile Developer",
+                "Financial QA Specialist",
+              ]
+          - id: "FND-IAC-01"
+            description: "[IaC] Initialize Terraform project with a remote state backend (S3)."
+            status: "To Do"
+            context:
+              ["docs/Stage 3 - Deployment & Operations/24-Infrastructure.md"]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Financial Software Architect",
+                "Data Security Specialist",
+              ]
+          - id: "FND-IAC-02"
+            description: "[IaC] Write Terraform scripts to provision core AWS networking (VPC, Subnets, Security Groups)."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 3 - Deployment & Operations/24-Infrastructure.md",
+                "docs/Stage 1 - Foundation/07-Security.md",
+              ]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Financial Software Architect",
+                "Data Security Specialist",
+              ]
+          - id: "FND-IAC-03"
+            description: "[IaC] Write Terraform scripts to provision a managed PostgreSQL database (RDS)."
+            status: "To Do"
+            context:
+              ["docs/Stage 3 - Deployment & Operations/24-Infrastructure.md"]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Financial Software Architect",
+                "Senior Backend Developer",
+              ]
+          - id: "FND-CI-API-01"
+            description: "[CI/API Gov] Set up pipeline to auto-generate and publish API docs from `openapi.yaml`."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/02-API_Specification_and_Governance.md",
+                "docs/Stage 3 - Deployment & Operations/23-Deployment.md",
+              ]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Senior Backend Developer",
+                "Product Manager",
+              ]
+          - id: "FND-CI-ARCH-01"
+            description: "[CI/Arch Gov] Add a CI step to validate Mermaid syntax in all project Markdown files."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/01-Architecture_Governance.md",
+                "docs/Stage 3 - Deployment & Operations/23-Deployment.md",
+              ]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Financial Software Architect",
+                "Product Manager",
+              ]
+          - id: "FND-BE-EVT-01"
+            description: "[BE/DevOps] Implement an event bus (e.g., AWS SNS/SQS) and define core domain events for cross-service communication."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/08-Architecture.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Financial Software Architect",
+                "FinTech DevOps Engineer",
+              ]
+          - id: "FND-BE-GW-01"
+            description: "[IaC/DevOps] Configure AWS API Gateway to manage, secure, and route traffic to the backend services."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/08-Architecture.md"]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Senior Backend Developer",
+                "Financial Software Architect",
+              ]
+
+      - id: "MEQ-FND-05"
+        name: "Data Governance & Lifecycle Management"
+        platform: "Both"
+        subtasks:
+          - id: "FND-DG-CLS-01"
+            description: "[BE/DevOps] Implement a data classification system for all `schema.prisma` models (e.g., using comments)."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/06-Data_Governance_and_Privacy_Policy.md",
+              ]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Compliance & Risk Officer",
+                "Data Security Specialist",
+              ]
+          - id: "FND-DG-LC-01"
+            description: "[BE/DevOps] Develop and implement automated data retention and deletion scripts based on data classification."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/06-Data_Governance_and_Privacy_Policy.md",
+                "docs/Stage 1 - Foundation/05-Compliance_Framework.md",
+              ]
+            personas:
+              [
+                "Senior Backend Developer",
+                "FinTech DevOps Engineer",
+                "Compliance & Risk Officer",
+              ]
+          - id: "FND-DG-QUAL-01"
+            description: "[BE/DB] Establish and implement data quality checks and validation rules at the database/ORM layer."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/06-Data_Governance_and_Privacy_Policy.md",
+              ]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Financial QA Specialist",
+                "Compliance & Risk Officer",
+              ]
+          - id: "FND-DG-DOC-01"
+            description: "[Docs] Formally document data ownership and stewardship for core data domains in `06-Data_Governance_and_Privacy_Policy.md`."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/06-Data_Governance_and_Privacy_Policy.md",
+              ]
+            personas:
+              [
+                "Product Manager",
+                "Compliance & Risk Officer",
+                "Financial Software Architect",
+              ]
+
+      - id: "MEQ-FND-06"
+        name: "[FE] Core Design System & Component Library"
+        platform: "Both"
+        subtasks:
+          - id: "FND-FE-DS-01"
+            description: "[UX] Implement design tokens (colors, typography, spacing) from UX Guidelines into Tailwind/Styling solution."
+            status: "To Do"
+            context:
+              ["docs/Stage 1 - Foundation/12-User_Experience_Guidelines.md"]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "UX Designer",
+                "Financial QA Specialist",
+              ]
+          - id: "FND-FE-DS-02"
+            description: "[UX] Build and document core UI components (Button, Input, Card, Modal) in Storybook for both web and mobile."
+            status: "To Do"
+            context:
+              ["docs/Stage 1 - Foundation/12-User_Experience_Guidelines.md"]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "UX Designer",
+                "Financial QA Specialist",
+              ]
+          - id: "FND-FE-DS-03"
+            description: "[UX] Build and document specialized financial components (PaymentPlanCard, ProgressIndicator, etc.)."
+            status: "To Do"
+            context:
+              ["docs/Stage 1 - Foundation/12-User_Experience_Guidelines.md"]
+            personas:
+              ["Senior Mobile Developer", "UX Designer", "Product Manager"]
+          - id: "FND-FE-DS-04"
+            description: "[UX/A11y] Implement and test WCAG 2.1 AAA compliance across the component library."
+            status: "To Do"
+            context:
+              ["docs/Stage 1 - Foundation/12-User_Experience_Guidelines.md"]
+            personas:
+              [
+                "UX Designer",
+                "Senior Mobile Developer",
+                "Financial QA Specialist",
+              ]
+
+      - id: "MEQ-FND-07"
+        name: "Test Infrastructure & Developer Experience"
+        platform: "Both"
+        subtasks:
+          - id: "FND-TEST-SIM-01"
+            description: "[DevEx/Test] Develop a simulator/mock server for key Ethiopian payment providers (Telebirr, etc.) to enable robust integration testing."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/22-Testing_Guidelines.md"]
+            personas:
+              [
+                "Financial QA Specialist",
+                "Senior Backend Developer",
+                "FinTech DevOps Engineer",
+              ]
+          - id: "FND-TEST-DATA-01"
+            description: "[DevEx/Test] Create and maintain a seed script to populate databases with realistic, anonymized Ethiopian test data."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/22-Testing_Guidelines.md"]
+            personas:
+              [
+                "Financial QA Specialist",
+                "Senior Backend Developer",
+                "Data Scientist / ML Engineer",
+              ]
+
+      - id: "MEQ-FND-08"
+        name: "Localization & API Documentation"
+        platform: "Both"
+        subtasks:
+          - id: "FND-I18N-01"
+            description: "[BE/FE] Implement a robust internationalization (i18n) framework (e.g., `react-i18next`) across both frontends and for backend error messages."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 2 -Development/19-API_Documentation_Strategy.md",
+                "docs/Stage 2 -Development/20-Error_Handling.md",
+              ]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "Senior Backend Developer",
+                "UX Designer",
+              ]
+          - id: "FND-I18N-02"
+            description: "[FE] Create centralized i18n resource files for UI text and error messages, with initial translations for Amharic and English."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/20-Error_Handling.md"]
+            personas:
+              ["Senior Mobile Developer", "UX Designer", "Product Manager"]
+          - id: "FND-DOCS-01"
+            description: "[Docs/DevEx] Create and maintain Postman collections for all public-facing APIs, including environment setups for local and staging."
+            status: "To Do"
+            context:
+              ["docs/Stage 2 -Development/19-API_Documentation_Strategy.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Product Manager",
+                "FinTech DevOps Engineer",
+              ]
+          - id: "FND-DOCS-02"
+            description: "[Docs/DevEx] Generate and publish code examples for API usage in key languages (JavaScript, Python) alongside API documentation."
+            status: "To Do"
+            context:
+              ["docs/Stage 2 -Development/19-API_Documentation_Strategy.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Product Manager",
+                "FinTech DevOps Engineer",
+              ]
+
+  - stage: "Stage 2: Authentication & User Management"
+    tasks:
+      - id: "MEQ-AUTH-01"
+        name: "[BE] Implement Secure Authentication Service"
+        platform: "Both"
+        subtasks:
+          - id: "AUTH-BE-DB-01"
+            description: "Design and finalize User, Profile, Credential, and Role schemas in `schema.prisma`."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/10-Database.md",
+                "docs/Stage 1 - Foundation/01-Architecture_Governance.md",
+              ]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Financial Software Architect",
+                "Data Security Specialist",
+              ]
+          - id: "AUTH-BE-DB-02"
+            description: "Generate and apply the database migration for all authentication-related tables."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/10-Database.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "FinTech DevOps Engineer",
+                "Financial Software Architect",
+              ]
+          - id: "AUTH-BE-API-01"
+            description: "Implement `/auth/register` endpoint with robust DTO validation for incoming data."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/02-API_Specification_and_Governance.md",
+              ]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Financial Software Architect",
+                "Data Security Specialist",
+              ]
+          - id: "AUTH-BE-SEC-01"
+            description: "Use `bcrypt` with a configurable salt round count for all password hashing."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/07-Security.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Data Security Specialist",
+                "Financial Software Architect",
+              ]
+          - id: "AUTH-BE-API-02"
+            description: "Implement `/auth/login` endpoint and protect it with rate limiting."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/07-Security.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Data Security Specialist",
+                "FinTech DevOps Engineer",
+              ]
+          - id: "AUTH-BE-SEC-02"
+            description: "Generate secure, signed JWTs with appropriate claims (userID, role, exp) using secrets from a secure vault."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/07-Security.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Data Security Specialist",
+                "Financial Software Architect",
+              ]
+          - id: "AUTH-BE-API-03"
+            description: "Implement `/auth/refresh` endpoint for secure JWT rotation."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/07-Security.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Data Security Specialist",
+                "Financial Software Architect",
+              ]
+          - id: "AUTH-BE-API-04"
+            description: "Implement `/auth/password-reset-request` endpoint to generate a secure, single-use token."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/07-Security.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Data Security Specialist",
+                "Customer Success & Support Manager",
+              ]
+          - id: "AUTH-BE-API-05"
+            description: "Implement `/auth/password-reset-confirm` endpoint to validate token and update password."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/07-Security.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Data Security Specialist",
+                "Financial QA Specialist",
+              ]
+          - id: "AUTH-BE-API-06"
+            description: "Implement `/users/me` endpoint to fetch the current authenticated user's profile."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/02-API_Specification_and_Governance.md",
+              ]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Senior Mobile Developer",
+                "Product Manager",
+              ]
+          - id: "AUTH-BE-GUA-01"
+            description: "Implement a global NestJS Guard using Passport.js to validate JWTs on all protected routes."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/07-Security.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Data Security Specialist",
+                "Financial Software Architect",
+              ]
+          - id: "AUTH-BE-GUA-02"
+            description: "Implement a Role-Based Access Control (RBAC) Guard and decorator to restrict endpoints by user role."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/01-Architecture_Governance.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Financial Software Architect",
+                "Compliance & Risk Officer",
+              ]
+          - id: "AUTH-BE-LOG-01"
+            description: "Implement detailed audit logging for all auth events (login success/fail, registration, pw_reset, role_change)."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 3 - Deployment & Operations/25-Monitoring_And_Logging.md",
+                "docs/Stage 1 - Foundation/05-Compliance_Framework.md",
+              ]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Compliance & Risk Officer",
+                "Data Security Specialist",
+              ]
+          - id: "AUTH-BE-TEST-01"
+            description: "[Test] Write unit tests for auth service logic (hashing, JWT signing, user creation)."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/22-Testing_Guidelines.md"]
+            personas:
+              [
+                "Financial QA Specialist",
+                "Senior Backend Developer",
+                "Data Security Specialist",
+              ]
+          - id: "AUTH-BE-TEST-02"
+            description: "[Test] Write integration tests for all authentication endpoints, including error cases."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/22-Testing_Guidelines.md"]
+            personas:
+              [
+                "Financial QA Specialist",
+                "Senior Backend Developer",
+                "Product Manager",
+              ]
+          - id: "AUTH-BE-SEC-03"
+            description: "[Security] Implement risk-based adaptive authentication (e.g., step-up MFA for high-risk logins from new devices)."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/07-Security.md"]
+            personas:
+              [
+                "Data Security Specialist",
+                "Senior Backend Developer",
+                "Data Scientist / ML Engineer",
+              ]
+          - id: "AUTH-BE-SEC-04"
+            description: "[Security/DB] Implement field-level encryption for all 'Level 1' classified data fields in the database."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/10-Database.md",
+                "docs/Stage 1 - Foundation/07-Security.md",
+              ]
+            personas:
+              [
+                "Data Security Specialist",
+                "Senior Backend Developer",
+                "Compliance & Risk Officer",
+              ]
+          - id: "AUTH-BE-SEC-05"
+            description: "[BE/Security] Implement an OAuth 2.0 provider service (PKCE flow) for secure third-party and merchant integrations."
+            status: "To Do"
+            context:
+              ["docs/Stage 2 -Development/19-API_Documentation_Strategy.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Data Security Specialist",
+                "Financial Software Architect",
+              ]
+
+      - id: "MEQ-AUTH-02"
+        name: "[Web] Build Authentication UI & Logic"
+        platform: "Website"
+        subtasks:
+          - id: "AUTH-FE-W-CMP-01"
+            description: "Create shared, reusable auth components (Input, Button, Form, Spinner) with Storybook."
+            status: "To Do"
+            context:
+              ["docs/Stage 1 - Foundation/12-User_Experience_Guidelines.md"]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "UX Designer",
+                "Financial QA Specialist",
+              ]
+          - id: "AUTH-FE-W-PG-01"
+            description: "Build Login page with form validation (e.g., Zod) and API integration."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/17-Web_Platform_Features.md"]
+            personas:
+              ["Senior Mobile Developer", "UX Designer", "Product Manager"]
+          - id: "AUTH-FE-W-PG-02"
+            description: "Build Registration page with form validation and API integration."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/17-Web_Platform_Features.md"]
+            personas:
+              ["Senior Mobile Developer", "UX Designer", "Product Manager"]
+          - id: "AUTH-FE-W-PG-03"
+            description: "Build 'Request Password Reset' page."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/17-Web_Platform_Features.md"]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "UX Designer",
+                "Customer Success & Support Manager",
+              ]
+          - id: "AUTH-FE-W-PG-04"
+            description: "Build 'Confirm Password Reset' page."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/17-Web_Platform_Features.md"]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "UX Designer",
+                "Financial QA Specialist",
+              ]
+          - id: "AUTH-FE-W-STATE-01"
+            description: "Implement client-side session management (store/clear JWT in secure HttpOnly cookie)."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/07-Security.md"]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "Data Security Specialist",
+                "Financial Software Architect",
+              ]
+          - id: "AUTH-FE-W-STATE-02"
+            description: "Implement global state management for user authentication status (e.g., React Context/Zustand)."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/08-Architecture.md"]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "Financial Software Architect",
+                "UX Designer",
+              ]
+          - id: "AUTH-FE-W-TEST-01"
+            description: "[Test] Write E2E tests for the full login, registration, and password reset user flows."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/22-Testing_Guidelines.md"]
+            personas:
+              [
+                "Financial QA Specialist",
+                "Senior Mobile Developer",
+                "Product Manager",
+              ]
+
+      - id: "MEQ-AUTH-03"
+        name: "[App] Build Authentication UI & Logic"
+        platform: "App"
+        subtasks:
+          - id: "AUTH-FE-A-CMP-01"
+            description: "Create shared, reusable auth components in React Native."
+            status: "To Do"
+            context:
+              ["docs/Stage 1 - Foundation/12-User_Experience_Guidelines.md"]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "UX Designer",
+                "Financial QA Specialist",
+              ]
+          - id: "AUTH-FE-A-SCR-01"
+            description: "Build Login screen with form validation (e.g., Formik/Yup) and API integration."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/04-PRD.md"]
+            personas:
+              ["Senior Mobile Developer", "UX Designer", "Product Manager"]
+          - id: "AUTH-FE-A-SCR-02"
+            description: "Build Registration screen with form validation and API integration."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/04-PRD.md"]
+            personas:
+              ["Senior Mobile Developer", "UX Designer", "Product Manager"]
+          - id: "AUTH-FE-A-SCR-03"
+            description: "Build 'Request Password Reset' screen."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/04-PRD.md"]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "UX Designer",
+                "Customer Success & Support Manager",
+              ]
+          - id: "AUTH-FE-A-SCR-04"
+            description: "Build 'Confirm Password Reset' screen."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/04-PRD.md"]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "UX Designer",
+                "Financial QA Specialist",
+              ]
+          - id: "AUTH-FE-A-STATE-01"
+            description: "Implement client-side session management (store/clear JWT in secure device storage)."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/07-Security.md"]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "Data Security Specialist",
+                "Financial Software Architect",
+              ]
+          - id: "AUTH-FE-A-STATE-02"
+            description: "Implement global state management and navigation guards for authentication status."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/08-Architecture.md"]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "Financial Software Architect",
+                "UX Designer",
+              ]
+          - id: "AUTH-FE-A-TEST-01"
+            description: "[Test] Write E2E tests for the full mobile login and registration user flows."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/22-Testing_Guidelines.md"]
+            personas:
+              [
+                "Financial QA Specialist",
+                "Senior Mobile Developer",
+                "Product Manager",
+              ]
+
+  - stage: "Stage 3: Core BNPL & Payments"
+    tasks:
+      - id: "MEQ-BNPL-01"
+        name: "[BE] Core BNPL & Payments Database Schema"
+        platform: "Both"
+        subtasks:
+          - id: "BNPL-BE-DB-01"
+            description: "Design and finalize Loan, Installment, Transaction, and PaymentMethod schemas in `schema.prisma`."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/10-Database.md",
+                "docs/Stage 1 - Foundation/03-Business_Model.md",
+              ]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Financial Software Architect",
+                "Product Manager",
+              ]
+          - id: "BNPL-BE-DB-02"
+            description: "Define relations between loan/transaction tables and the User model."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/10-Database.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Financial Software Architect",
+                "Data Security Specialist",
+              ]
+          - id: "BNPL-BE-DB-03"
+            description: "Generate and apply the database migration for all core BNPL tables."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/10-Database.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "FinTech DevOps Engineer",
+                "Financial Software Architect",
+              ]
+
+      - id: "MEQ-BNPL-02"
+        name: "[BE] BNPL Business Logic & Services"
+        platform: "Both"
+        subtasks:
+          - id: "BNPL-BE-SVC-01"
+            description: "Develop a service to calculate loan terms, interest (if any), and installment schedules."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/03-Business_Model.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Financial Software Architect",
+                "Compliance & Risk Officer",
+              ]
+          - id: "BNPL-BE-SVC-02"
+            description: "Implement the core service for loan applications, checking user eligibility (e.g., KYC status, credit score)."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/04-PRD.md",
+                "docs/Stage 2 -Development/18-AI_Integration.md",
+              ]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Data Scientist / ML Engineer",
+                "Compliance & Risk Officer",
+              ]
+          - id: "BNPL-BE-SVC-03"
+            description: "Build the service to handle manual and automatic installment payments against a loan."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/03-Business_Model.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Financial Software Architect",
+                "Product Manager",
+              ]
+          - id: "BNPL-BE-JOB-01"
+            description: "Implement a scheduled job (cron) for sending payment reminders via email/SMS."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/03-Business_Model.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "FinTech DevOps Engineer",
+                "Customer Success & Support Manager",
+              ]
+          - id: "BNPL-BE-JOB-02"
+            description: "Implement a scheduled job for identifying overdue payments and applying late fees according to business rules."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/03-Business_Model.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Compliance & Risk Officer",
+                "Product Manager",
+              ]
+          - id: "BNPL-BE-SEC-01"
+            description: "[Security] Design a tamper-proof interest calculation engine with cryptographic verification of results."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/07-Security.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Data Security Specialist",
+                "Financial Software Architect",
+              ]
+          - id: "BNPL-BE-AUDIT-01"
+            description: "[Compliance] Implement immutable audit trails for all manual and automated changes to loan terms or interest rates."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/07-Security.md",
+                "docs/Stage 1 - Foundation/05-Compliance_Framework.md",
+              ]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Compliance & Risk Officer",
+                "Data Security Specialist",
+              ]
+          - id: "BNPL-BE-TEST-01"
+            description: "[Test] Write unit & integration tests for all BNPL services, covering calculations and state changes."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/22-Testing_Guidelines.md"]
+            personas:
+              [
+                "Financial QA Specialist",
+                "Senior Backend Developer",
+                "Product Manager",
+              ]
+          - id: "BNPL-BE-SVC-04"
+            description: "[BE] Implement a circuit breaker pattern (e.g., using `nestjs-circuitbreaker`) for critical external dependencies like payment gateways."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/20-Error_Handling.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "FinTech DevOps Engineer",
+                "Financial Software Architect",
+              ]
+
+      - id: "MEQ-BNPL-03"
+        name: "[BE] External Service Integrations (eKYC & Payments)"
+        platform: "Both"
+        subtasks:
+          - id: "BNPL-BE-INT-01"
+            description: "Develop a robust NestJS service for the Fayda eKYC API, based on the contract in `11-Integration_Requirements.md`."
+            status: "To Do"
+            context:
+              ["docs/Stage 1 - Foundation/11-Integration_Requirements.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Financial Software Architect",
+                "Compliance & Risk Officer",
+              ]
+          - id: "BNPL-BE-INT-02"
+            description: "Develop a robust NestJS service for Telebirr, based on the contract in `11-Integration_Requirements.md`."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/11-Integration_Requirements.md",
+                "docs/Stage 2 -Development/20-Error_Handling.md",
+              ]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Financial Software Architect",
+                "FinTech DevOps Engineer",
+              ]
+          - id: "BNPL-BE-INT-03"
+            description: "Implement webhook handlers for Telebirr to process payment confirmations asynchronously and securely."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/11-Integration_Requirements.md",
+                "docs/Stage 1 - Foundation/07-Security.md",
+              ]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Data Security Specialist",
+                "FinTech DevOps Engineer",
+              ]
+          - id: "BNPL-BE-INT-04"
+            description: "Integrate an SMS service (e.g., Twilio) for sending notifications (reminders, confirmations)."
+            status: "To Do"
+            context:
+              ["docs/Stage 1 - Foundation/11-Integration_Requirements.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Product Manager",
+                "FinTech DevOps Engineer",
+              ]
+          - id: "BNPL-BE-TEST-02"
+            description: "[Test] Write integration tests for integration services using mocks for external APIs."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/22-Testing_Guidelines.md"]
+            personas:
+              [
+                "Financial QA Specialist",
+                "Senior Backend Developer",
+                "FinTech DevOps Engineer",
+              ]
+          - id: "BNPL-BE-INT-06"
+            description: "Develop a robust NestJS service for HelloCash/CBE Birr integration."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/11-Integration_Requirements.md",
+                "docs/Stage 1 - Foundation/03-Business_Model.md",
+              ]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Financial Software Architect",
+                "FinTech DevOps Engineer",
+              ]
+          - id: "BNPL-BE-INT-07"
+            description: "Develop a robust NestJS service for ArifPay integration."
+            status: "To Do"
+            context:
+              ["docs/Stage 1 - Foundation/11-Integration_Requirements.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Financial Software Architect",
+                "FinTech DevOps Engineer",
+              ]
+          - id: "BNPL-BE-INT-08"
+            description: "Develop a robust NestJS service for SantimPay integration."
+            status: "To Do"
+            context:
+              ["docs/Stage 1 - Foundation/11-Integration_Requirements.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Financial Software Architect",
+                "FinTech DevOps Engineer",
+              ]
+          - id: "BNPL-BE-INT-09"
+            description: "Develop a robust NestJS service for Chapa payment gateway integration."
+            status: "To Do"
+            context:
+              ["docs/Stage 1 - Foundation/11-Integration_Requirements.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Financial Software Architect",
+                "FinTech DevOps Engineer",
+              ]
+
+      - id: "MEQ-BNPL-04"
+        name: "[Web] Consumer BNPL Portal"
+        platform: "Website"
+        subtasks:
+          - id: "BNPL-FE-W-CHK-01"
+            description: "Build UI for selecting Meqenet as a payment option within a partner's checkout flow."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/17-Web_Platform_Features.md"]
+            personas:
+              ["Senior Mobile Developer", "UX Designer", "Product Manager"]
+          - id: "BNPL-FE-W-KYC-01"
+            description: "Develop the multi-step UI for the eKYC identity verification process."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/17-Web_Platform_Features.md"]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "UX Designer",
+                "Compliance & Risk Officer",
+              ]
+          - id: "BNPL-FE-W-DSH-01"
+            description: "Build consumer dashboard page for viewing active and past loans."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/17-Web_Platform_Features.md"]
+            personas:
+              ["Senior Mobile Developer", "UX Designer", "Product Manager"]
+          - id: "BNPL-FE-W-DSH-02"
+            description: "Develop UI for displaying detailed installment schedules for each loan."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/17-Web_Platform_Features.md"]
+            personas:
+              ["Senior Mobile Developer", "UX Designer", "Product Manager"]
+          - id: "BNPL-FE-W-DSH-03"
+            description: "Implement UI and logic for making manual payments on installments."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/17-Web_Platform_Features.md"]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "UX Designer",
+                "Financial QA Specialist",
+              ]
+          - id: "BNPL-FE-W-EXPORT-01"
+            description: "[Web] Implement export functionality (PDF, CSV) for the transaction history page."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/17-Web_Platform_Features.md"]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "Product Manager",
+                "Compliance & Risk Officer",
+              ]
+          - id: "BNPL-FE-W-TEST-01"
+            description: "[Test] Write E2E tests for the web-based loan application and payment process."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/22-Testing_Guidelines.md"]
+            personas:
+              [
+                "Financial QA Specialist",
+                "Senior Backend Developer",
+                "Senior Mobile Developer",
+              ]
+          - id: "BNPL-FE-W-CMP-01"
+            description: "[Web/UX] Build a Payment Plan Comparison Tool to visualize costs for all four payment options."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/15-Development_Plan.md"]
+          - id: "BNPL-FE-W-CALC-01"
+            description: "[Web/UX] Build a Financial Impact Calculator to show total interest and payment schedules."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/15-Development_Plan.md"]
+
+      - id: "MEQ-BNPL-05"
+        name: "[App] Consumer BNPL Features"
+        platform: "App"
+        subtasks:
+          - id: "BNPL-FE-A-PAY-01"
+            description: "Build UI for in-store QR code scanning and payment initiation."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/04-PRD.md"]
+            personas:
+              [
+                "UX Designer",
+                "Senior Mobile Developer",
+                "Compliance & Risk Officer",
+              ]
+          - id: "BNPL-FE-A-KYC-01"
+            description: "Develop the multi-screen flow for the eKYC identity verification process on mobile."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/04-PRD.md"]
+            personas:
+              [
+                "UX Designer",
+                "Senior Mobile Developer",
+                "Compliance & Risk Officer",
+              ]
+          - id: "BNPL-FE-A-DSH-01"
+            description: "Build loan management screens (history, upcoming payments)."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/04-PRD.md"]
+            personas:
+              [
+                "UX Designer",
+                "Senior Mobile Developer",
+                "Compliance & Risk Officer",
+              ]
+          - id: "BNPL-FE-A-DSH-02"
+            description: "Implement UI and logic for making manual payments on the mobile app."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/04-PRD.md"]
+            personas:
+              [
+                "UX Designer",
+                "Senior Mobile Developer",
+                "Compliance & Risk Officer",
+              ]
+          - id: "BNPL-FE-A-NOT-01"
+            description: "Implement push notifications for payment reminders and confirmations."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/04-PRD.md"]
+            personas:
+              [
+                "UX Designer",
+                "Senior Mobile Developer",
+                "Compliance & Risk Officer",
+              ]
+          - id: "BNPL-FE-A-TEST-01"
+            description: "[Test] Write E2E tests (using Detox/Maestro) for the mobile QR code payment flow."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 2 -Development/22-Testing_Guidelines.md",
+                "docs/Stage 1 - Foundation/09-Tech_Stack.md",
+              ]
+            personas:
+              [
+                "UX Designer",
+                "Senior Mobile Developer",
+                "Compliance & Risk Officer",
+              ]
+          - id: "BNPL-FE-A-OFFLINE-01"
+            description: "[App] Implement offline-first capabilities (local storage, data synchronization) for viewing loans and transaction history."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/10-Database.md",
+                "docs/Stage 1 - Foundation/08-Architecture.md",
+              ]
+            personas:
+              [
+                "UX Designer",
+                "Senior Mobile Developer",
+                "Compliance & Risk Officer",
+              ]
+          - id: "BNPL-FE-A-CMP-01"
+            description: "[App/UX] Build a Payment Plan Comparison Tool to visualize costs for all four payment options."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/15-Development_Plan.md"]
+            personas:
+              [
+                "UX Designer",
+                "Senior Mobile Developer",
+                "Compliance & Risk Officer",
+              ]
+          - id: "BNPL-FE-A-CALC-01"
+            description: "[App/UX] Build a Financial Impact Calculator to show total interest and payment schedules."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/15-Development_Plan.md"]
+
+  - stage: "Stage 4: Merchant & Admin Platforms"
+    tasks:
+      - id: "MEQ-MGT-01"
+        name: "[BE] Merchant & Admin Database Schema"
+        platform: "Both"
+        subtasks:
+          - id: "MGT-BE-DB-01"
+            description: "Design and finalize Merchant, Store, MerchantUser, Settlement, and AuditLog schemas in `schema.prisma`."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/10-Database.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Financial Software Architect",
+                "Marketplace & Merchant Success Manager",
+              ]
+          - id: "MGT-BE-DB-02"
+            description: "Define relations for merchants to users, transactions, and settlements. Generate and apply migration."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/10-Database.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Financial Software Architect",
+                "FinTech DevOps Engineer",
+              ]
+
+      - id: "MEQ-MGT-02"
+        name: "[BE] Merchant Onboarding & Management Services"
+        platform: "Both"
+        subtasks:
+          - id: "MGT-BE-SVC-01"
+            description: "Implement merchant application/onboarding endpoint."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/02-API_Specification_and_Governance.md",
+              ]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Marketplace & Merchant Success Manager",
+                "Compliance & Risk Officer",
+              ]
+          - id: "MGT-BE-SVC-02"
+            description: "Build service for admin to review and approve/reject merchant applications."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/02-API_Specification_and_Governance.md",
+              ]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Product Manager",
+                "Compliance & Risk Officer",
+              ]
+          - id: "MGT-BE-SVC-03"
+            description: "Implement service for merchants to manage their own profile and store details."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/02-API_Specification_and_Governance.md",
+              ]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Marketplace & Merchant Success Manager",
+                "Product Manager",
+              ]
+          - id: "MGT-BE-SVC-04"
+            description: "Develop service for merchants to generate and manage their API keys."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/07-Security.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Data Security Specialist",
+                "Marketplace & Merchant Success Manager",
+              ]
+
+      - id: "MEQ-MGT-03"
+        name: "[BE] Settlement & Admin Services"
+        platform: "Both"
+        subtasks:
+          - id: "MGT-BE-SVC-05"
+            description: "Develop a service to calculate merchant settlement amounts based on transactions, fees, and rolling reserves."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/03-Business_Model.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Financial Software Architect",
+                "Product Manager",
+              ]
+          - id: "MGT-BE-JOB-01"
+            description: "Implement a scheduled job to automatically process and record merchant settlements daily/weekly."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/03-Business_Model.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "FinTech DevOps Engineer",
+                "Compliance & Risk Officer",
+              ]
+          - id: "MGT-BE-ADM-01"
+            description: "Build admin endpoints for managing consumer accounts (view details, block/unblock, view loans)."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/02-API_Specification_and_Governance.md",
+                "docs/Stage 1 - Foundation/05-Compliance_Framework.md",
+              ]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Compliance & Risk Officer",
+                "Customer Success & Support Manager",
+              ]
+          - id: "MGT-BE-ADM-02"
+            description: "Build admin endpoints for managing system-level settings (e.g., BNPL plan terms, late fees)."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/02-API_Specification_and_Governance.md",
+              ]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Product Manager",
+                "Compliance & Risk Officer",
+              ]
+          - id: "MGT-BE-TEST-01"
+            description: "[Test] Write unit & integration tests for merchant onboarding and settlement calculation logic."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/22-Testing_Guidelines.md"]
+            personas:
+              [
+                "Financial QA Specialist",
+                "Senior Backend Developer",
+                "Product Manager",
+              ]
+
+      - id: "MEQ-MGT-04"
+        name: "[Web] Merchant Portal"
+        platform: "Website"
+        subtasks:
+          - id: "MGT-FE-W-ONB-01"
+            description: "Build merchant onboarding application form."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/17-Web_Platform_Features.md"]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "UX Designer",
+                "Marketplace & Merchant Success Manager",
+              ]
+          - id: "MGT-FE-W-DSH-01"
+            description: "Develop the main merchant dashboard showing key analytics (sales volume, AOV, etc.)."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/17-Web_Platform_Features.md"]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "UX Designer",
+                "Analytics & Business Intelligence Specialist",
+              ]
+          - id: "MGT-FE-W-TRX-01"
+            description: "Build page for viewing and searching transaction history."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/17-Web_Platform_Features.md"]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "UX Designer",
+                "Marketplace & Merchant Success Manager",
+              ]
+          - id: "MGT-FE-W-STL-01"
+            description: "Build page for viewing settlement history and downloading reports."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/17-Web_Platform_Features.md"]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "UX Designer",
+                "Marketplace & Merchant Success Manager",
+              ]
+          - id: "MGT-FE-W-API-01"
+            description: "Create UI for managing API keys and viewing webhook integration details."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/17-Web_Platform_Features.md"]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "UX Designer",
+                "Senior Backend Developer",
+              ]
+          - id: "MGT-FE-W-TEST-01"
+            description: "[Test] Write E2E tests for merchant onboarding and viewing settlements."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/22-Testing_Guidelines.md"]
+            personas:
+              [
+                "Financial QA Specialist",
+                "Senior Mobile Developer",
+                "Marketplace & Merchant Success Manager",
+              ]
+
+      - id: "MEQ-MGT-05"
+        name: "[Web] Admin Portal"
+        platform: "Website"
+        subtasks:
+          - id: "MGT-FE-W-SEC-01"
+            description: "Build a secure, role-based admin portal with dedicated login."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/07-Security.md",
+                "docs/Stage 2 -Development/17-Web_Platform_Features.md",
+              ]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "UX Designer",
+                "Data Security Specialist",
+              ]
+          - id: "MGT-FE-W-USR-01"
+            description: "Develop UI for managing consumer accounts (search, view, block/unblock)."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/17-Web_Platform_Features.md"]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "UX Designer",
+                "Customer Success & Support Manager",
+              ]
+          - id: "MGT-FE-W-MER-01"
+            description: "Develop UI for managing merchants (review applications, view profiles, manage stores)."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/17-Web_Platform_Features.md"]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "UX Designer",
+                "Marketplace & Merchant Success Manager",
+              ]
+          - id: "MGT-FE-W-TRX-02"
+            description: "Build UI for viewing and searching all system-wide transactions and loans."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/17-Web_Platform_Features.md"]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "UX Designer",
+                "Compliance & Risk Officer",
+              ]
+          - id: "MGT-FE-W-STL-02"
+            description: "Build UI for monitoring settlement jobs and manually triggering settlements if needed."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/17-Web_Platform_Features.md"]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "UX Designer",
+                "FinTech DevOps Engineer",
+              ]
+          - id: "MGT-FE-W-TEST-02"
+            description: "[Test] Write E2E tests for core admin workflows like approving a merchant and blocking a user."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/22-Testing_Guidelines.md"]
+            personas:
+              [
+                "Financial QA Specialist",
+                "Senior Mobile Developer",
+                "Product Manager",
+              ]
+
+      - id: "MEQ-MGT-06"
+        name: "[BE] AML/CTF Compliance & Monitoring System"
+        platform: "Both"
+        subtasks:
+          - id: "MGT-BE-AML-01"
+            description: "[BE/Compliance] Integrate with a sanctions list provider for real-time customer and merchant screening."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/05-Compliance_Framework.md",
+                "docs/Stage 1 - Foundation/07-Security.md",
+              ]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Compliance & Risk Officer",
+                "Data Security Specialist",
+              ]
+          - id: "MGT-BE-AML-02"
+            description: "[BE/Compliance] Implement advanced fuzzy name matching for sanctions screening, tuned for Ethiopian names."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/07-Security.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Compliance & Risk Officer",
+                "Data Scientist / ML Engineer",
+              ]
+          - id: "MGT-BE-AML-03"
+            description: "[BE/Compliance] Implement a real-time transaction monitoring engine with configurable rules (e.g., threshold-based alerts)."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/05-Compliance_Framework.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Compliance & Risk Officer",
+                "Data Scientist / ML Engineer",
+              ]
+          - id: "MGT-BE-AML-04"
+            description: "[BE/Compliance] Develop logic for enhanced due diligence (EDD) on high-risk customers."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/05-Compliance_Framework.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Compliance & Risk Officer",
+                "Product Manager",
+              ]
+          - id: "MGT-BE-AML-05"
+            description: "[BE/Compliance] Build a service to generate Suspicious Transaction Reports (STRs) for regulatory submission."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/05-Compliance_Framework.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Compliance & Risk Officer",
+                "Financial Software Architect",
+              ]
+
+      - id: "MEQ-MGT-07"
+        name: "[Web] Compliance & AML Admin UI"
+        platform: "Website"
+        subtasks:
+          - id: "MGT-FE-W-AML-01"
+            description: "[Web/Admin] Build dashboard for viewing AML alerts, statistics, and Key Compliance Indicators (KCIs)."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/05-Compliance_Framework.md"]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "UX Designer",
+                "Compliance & Risk Officer",
+              ]
+          - id: "MGT-FE-W-AML-02"
+            description: "[Web/Admin] Develop UI for a case management system to investigate and resolve AML alerts."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/05-Compliance_Framework.md"]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "UX Designer",
+                "Compliance & Risk Officer",
+              ]
+          - id: "MGT-FE-W-AML-03"
+            description: "[Web/Admin] Create UI for sanctions list management, manual screening, and viewing screening history."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/05-Compliance_Framework.md"]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "UX Designer",
+                "Compliance & Risk Officer",
+              ]
+
+      - id: "MEQ-MGT-08"
+        name: "[BE/FE] Customer Complaint & DSR Management"
+        platform: "Both"
+        subtasks:
+          - id: "MGT-BE-CMP-01"
+            description: "[BE/Compliance] Design and implement schema for tracking complaint and Data Subject Right (DSR) tickets."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/05-Compliance_Framework.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Compliance & Risk Officer",
+                "Financial Software Architect",
+              ]
+          - id: "MGT-BE-CMP-02"
+            description: "[BE/API] Build API endpoints for users to submit complaints and DSR requests (access, erasure)."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/05-Compliance_Framework.md",
+                "docs/Stage 1 - Foundation/06-Data_Governance_and_Privacy_Policy.md",
+              ]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Compliance & Risk Officer",
+                "Product Manager",
+              ]
+          - id: "MGT-FE-W-CMP-01"
+            description: "[Web/Admin] Build UI for support/compliance officers to manage, process, and resolve tickets."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/05-Compliance_Framework.md"]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "UX Designer",
+                "Customer Success & Support Manager",
+              ]
+          - id: "MGT-FE-A-CMP-01"
+            description: "[App/Web] Create UI for users to submit and view the status of their complaints/DSR requests."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/05-Compliance_Framework.md"]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "UX Designer",
+                "Customer Success & Support Manager",
+              ]
+
+  - stage: "Stage 5: AI, Deployment & Launch"
+    tasks:
+      - id: "MEQ-AI-01"
+        name: "[BE] AI/ML Credit Scoring Model Integration"
+        platform: "Both"
+        subtasks:
+          - id: "AI-BE-PIPE-01"
+            description: "Develop data pipelines to extract and anonymize user/transaction data for model training."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 2 -Development/18-AI_Integration.md",
+                "docs/Stage 1 - Foundation/06-Data_Governance_and_Privacy_Policy.md",
+              ]
+            personas:
+              [
+                "Data Scientist / ML Engineer",
+                "Senior Backend Developer",
+                "Data Security Specialist",
+              ]
+          - id: "AI-BE-SVC-01"
+            description: "[BE/AI] Create a NestJS service to integrate with an external AI provider (e.g., OpenAI) for the initial credit scoring model."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 2 -Development/18-AI_Integration.md",
+                "docs/Stage 2 -Development/15-Development_Plan.md",
+              ]
+            personas:
+              [
+                "Data Scientist / ML Engineer",
+                "Senior Backend Developer",
+                "Financial Software Architect",
+              ]
+          - id: "AI-BE-INT-01"
+            description: "Integrate the credit score into the BNPL application service to influence loan approvals and terms."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 2 -Development/18-AI_Integration.md",
+                "docs/Stage 1 - Foundation/03-Business_Model.md",
+              ]
+            personas:
+              [
+                "Data Scientist / ML Engineer",
+                "Senior Backend Developer",
+                "Product Manager",
+              ]
+          - id: "AI-BE-FAIR-01"
+            description: "[AI/ML] Implement bias detection and fairness metrics monitoring for the credit scoring model."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/07-Security.md"]
+            personas:
+              [
+                "Data Scientist / ML Engineer",
+                "Compliance & Risk Officer",
+                "Financial QA Specialist",
+              ]
+          - id: "AI-BE-XAI-01"
+            description: "[AI/ML] Develop an 'Explainable AI' service to provide human-readable reasons for credit decisions."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/07-Security.md"]
+            personas:
+              [
+                "Data Scientist / ML Engineer",
+                "UX Designer",
+                "Compliance & Risk Officer",
+              ]
+          - id: "AI-BE-MON-01"
+            description: "Implement monitoring for the credit scoring service (latency, error rate, score distribution)."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 3 - Deployment & Operations/25-Monitoring_And_Logging.md",
+              ]
+            personas:
+              [
+                "Data Scientist / ML Engineer",
+                "FinTech DevOps Engineer",
+                "Senior Backend Developer",
+              ]
+
+      - id: "MEQ-DEP-01"
+        name: "Production Infrastructure & Deployment"
+        platform: "Both"
+        subtasks:
+          - id: "DEP-IAC-01"
+            description: "[IaC] Write Terraform scripts for production AWS resources (ECS Fargate, RDS with replicas, ElastiCache)."
+            status: "To Do"
+            context:
+              ["docs/Stage 3 - Deployment & Operations/24-Infrastructure.md"]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Financial Software Architect",
+                "Data Security Specialist",
+              ]
+          - id: "DEP-IAC-02"
+            description: "[IaC] Configure production-grade security groups and network ACLs."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/07-Security.md"]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Data Security Specialist",
+                "Financial Software Architect",
+              ]
+          - id: "DEP-SEC-01"
+            description: "[Security] Configure AWS Secrets Manager for all production secrets and integrate with the backend service."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/07-Security.md"]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Data Security Specialist",
+                "Senior Backend Developer",
+              ]
+          - id: "DEP-SEC-02"
+            description: "[Security/IaC] Provision and configure Hardware Security Modules (HSMs) or equivalent for primary key management."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/07-Security.md"]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Data Security Specialist",
+                "Compliance & Risk Officer",
+              ]
+          - id: "DEP-SEC-03"
+            description: "[DevOps/Security] Implement data masking and tokenization jobs for creating sanitized non-production environments."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/07-Security.md"]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Data Security Specialist",
+                "Financial QA Specialist",
+              ]
+          - id: "DEP-CI-01"
+            description: "[CI/CD] Create workflow to build and push versioned Docker images to ECR on merge to 'main'."
+            status: "To Do"
+            context: ["docs/Stage 3 - Deployment & Operations/23-Deployment.md"]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Senior Backend Developer",
+                "Financial QA Specialist",
+              ]
+          - id: "DEP-CI-02"
+            description: "[CI/CD] Implement a deployment pipeline (e.g., using GitHub Actions) to deploy the new image to production via a blue/green or canary strategy."
+            status: "To Do"
+            context: ["docs/Stage 3 - Deployment & Operations/23-Deployment.md"]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Senior Backend Developer",
+                "Financial QA Specialist",
+              ]
+          - id: "DEP-LOG-01"
+            description: "Set up centralized logging (CloudWatch) and monitoring dashboards/alerts (Datadog/Grafana) for the production environment."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 3 - Deployment & Operations/25-Monitoring_And_Logging.md",
+              ]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Senior Backend Developer",
+                "Financial QA Specialist",
+              ]
+          - id: "DEP-LOG-02"
+            description: "[DevOps/Monitoring] Configure dashboards and alerts for key error metrics (payment provider success rates, API endpoint error rates)."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/20-Error_Handling.md"]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Senior Backend Developer",
+                "Product Manager",
+              ]
+          - id: "DEP-SEC-04"
+            description: "[Security/DevOps] Configure the service mesh or API Gateway to enforce mTLS for all internal service-to-service communication."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 2 -Development/19-API_Documentation_Strategy.md",
+                "docs/Stage 1 - Foundation/07-Security.md",
+              ]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Data Security Specialist",
+                "Financial Software Architect",
+              ]
+          - id: "DEP-IAC-08"
+            description: "[IaC/DevOps] Provision and configure a managed Redis cluster (e.g., ElastiCache) for caching and session storage."
+            status: "To Do"
+            context:
+              ["docs/Stage 2 -Development/19-API_Documentation_Strategy.md"]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Senior Backend Developer",
+                "Financial Software Architect",
+              ]
+          - id: "DEP-IAC-05"
+            description: "[IaC/DBA] Configure PgBouncer for production PostgreSQL connection pooling."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/09-Tech_Stack.md",
+                "docs/Stage 3 - Deployment & Operations/24-Infrastructure.md",
+              ]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Senior Backend Developer",
+                "Financial Software Architect",
+              ]
+          - id: "DEP-IAC-06"
+            description: "[IaC/DevOps] Provision and configure an Elasticsearch cluster for product search and logging."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/10-Database.md",
+                "docs/Stage 3 - Deployment & Operations/24-Infrastructure.md",
+              ]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Senior Backend Developer",
+                "Financial Software Architect",
+              ]
+          - id: "DEP-IAC-07"
+            description: "[IaC/DevOps] Provision a Data Warehouse (e.g., Snowflake/BigQuery) and establish initial ETL pipelines."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/10-Database.md",
+                "docs/Stage 3 - Deployment & Operations/24-Infrastructure.md",
+              ]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Data Scientist / ML Engineer",
+                "Financial Software Architect",
+              ]
+          - id: "DEP-DB-BCK-01"
+            description: "[IaC/DBA] Define and implement automated backup policies, Point-in-Time Recovery, and regular restore testing for production databases."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/10-Database.md",
+                "docs/Stage 3 - Deployment & Operations/27-Disaster_Recovery_Plan.md",
+              ]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Senior Backend Developer",
+                "Data Security Specialist",
+              ]
+          - id: "DEP-CI-MOBILE-01"
+            description: "[CI/CD/Mobile] Configure a CI/CD pipeline using Fastlane to automate building, signing, and deploying the mobile app."
+            status: "To Do"
+            context: ["docs/Stage 3 - Deployment & Operations/23-Deployment.md"]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Senior Mobile Developer",
+                "Financial QA Specialist",
+              ]
+          - id: "DEP-APM-01"
+            description: "[BE/DevOps] Integrate Datadog APM or another OpenTelemetry-compatible agent for distributed tracing across services."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 3 - Deployment & Operations/25-Monitoring_And_Logging.md",
+              ]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Senior Backend Developer",
+                "Financial QA Specialist",
+              ]
+          - id: "DEP-ALERT-01"
+            description: "[DevOps] Integrate monitoring/alerting systems with PagerDuty for on-call scheduling and escalation."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 3 - Deployment & Operations/25-Monitoring_And_Logging.md",
+                "docs/Stage 3 - Deployment & Operations/26-Incident_Response_Plan.md",
+              ]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Product Manager",
+                "Customer Success & Support Manager",
+              ]
+          - id: "DEP-TEST-SYN-01"
+            description: "[Test/DevOps] Create synthetic monitoring checks to test critical financial flows from an end-user perspective."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 3 - Deployment & Operations/25-Monitoring_And_Logging.md",
+              ]
+            personas:
+              [
+                "Financial QA Specialist",
+                "FinTech DevOps Engineer",
+                "Product Manager",
+              ]
+          - id: "DEP-WAF-01"
+            description: "[Security/IaC] Configure AWS WAF with OWASP Top 10 rules and custom rate-based rules tuned for Ethiopian traffic."
+            status: "To Do"
+            context:
+              ["docs/Stage 3 - Deployment & Operations/24-Infrastructure.md"]
+            personas:
+              [
+                "Data Security Specialist",
+                "FinTech DevOps Engineer",
+                "Financial Software Architect",
+              ]
+          - id: "DEP-FGT-SEC-01"
+            description: "[IaC/Fargate] Refine and enforce strict Security Group ingress/egress rules between Fargate services."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 3 - Deployment & Operations/24-Infrastructure.md",
+                "docs/Stage 1 - Foundation/07-Security.md",
+              ]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Data Security Specialist",
+                "Financial Software Architect",
+              ]
+          - id: "DEP-SEC-05"
+            description: "[Security/IaC] Configure AWS SSM Session Manager for secure, auditable shell access, disabling direct SSH."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 3 - Deployment & Operations/24-Infrastructure.md",
+                "docs/Stage 1 - Foundation/07-Security.md",
+              ]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Data Security Specialist",
+                "Compliance & Risk Officer",
+              ]
+          - id: "DEP-CDN-01"
+            description: "[IaC/Web] Configure CloudFront distributions with geo-restriction to primarily serve traffic to Ethiopia."
+            status: "To Do"
+            context:
+              ["docs/Stage 3 - Deployment & Operations/24-Infrastructure.md"]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Financial Software Architect",
+                "Product Manager",
+              ]
+
+      - id: "MEQ-LNC-01"
+        name: "Pre-Launch Finalization & Go-Live"
+        platform: "Both"
+        subtasks:
+          - id: "LNC-CFG-01"
+            description: "[Ops/Compliance] Obtain and securely configure production credentials for all external services (Fayda, NBE, Payment Providers) in the production vault."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/11-Integration_Requirements.md",
+                "docs/Stage 3 - Deployment & Operations/23-Deployment.md",
+              ]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Compliance & Risk Officer",
+                "Product Manager",
+              ]
+          - id: "LNC-TEST-01"
+            description: "[Test] Perform and sign-off on end-to-end testing of all critical user flows (consumer, merchant, admin)."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/22-Testing_Guidelines.md"]
+            personas:
+              [
+                "Financial QA Specialist",
+                "Product Manager",
+                "Customer Success & Support Manager",
+              ]
+          - id: "LNC-TEST-02"
+            description: "[Test] Conduct performance testing (K6) on critical endpoints, simulating Ethiopian network conditions (latency, bandwidth)."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 3 - Deployment & Operations/28-Performance_Optimization.md",
+                "docs/Stage 1 - Foundation/09-Tech_Stack.md",
+                "docs/Stage 2 -Development/22-Testing_Guidelines.md",
+              ]
+            personas:
+              [
+                "Financial QA Specialist",
+                "FinTech DevOps Engineer",
+                "Senior Backend Developer",
+              ]
+          - id: "LNC-OPT-01"
+            description: "[BE/FE] Implement data compression (Gzip) and image optimization strategies to improve performance on low-bandwidth networks."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/08-Architecture.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Senior Mobile Developer",
+                "FinTech DevOps Engineer",
+              ]
+          - id: "LNC-SEC-01"
+            description: "Conduct and review a full, third-party security audit and penetration test. Remediate critical findings."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/07-Security.md"]
+            personas:
+              [
+                "Data Security Specialist",
+                "Compliance & Risk Officer",
+                "Financial Software Architect",
+              ]
+          - id: "LNC-SEC-02"
+            description: "[Test/Security] Schedule recurring DAST scans (e.g., quarterly) using tools like OWASP ZAP against the staging environment."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/07-Security.md",
+                "docs/Stage 2 -Development/22-Testing_Guidelines.md",
+              ]
+            personas:
+              [
+                "Data Security Specialist",
+                "Financial QA Specialist",
+                "FinTech DevOps Engineer",
+              ]
+          - id: "LNC-DR-01"
+            description: "Perform and document a successful disaster recovery drill (e.g., database restore, service failover)."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 3 - Deployment & Operations/27-Disaster_Recovery_Plan.md",
+              ]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Data Security Specialist",
+                "Compliance & Risk Officer",
+              ]
+          - id: "LNC-DOC-01"
+            description: "Prepare and publish final, versioned API documentation for merchants."
+            status: "To Do"
+            context:
+              ["docs/Stage 2 -Development/19-API_Documentation_Strategy.md"]
+            personas:
+              [
+                "Product Manager",
+                "Senior Backend Developer",
+                "Marketplace & Merchant Success Manager",
+              ]
+          - id: "LNC-DOC-02"
+            description: "[Docs] Write the full Incident Response Plan based on the placeholder, detailing roles, severity levels, and procedures."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 3 - Deployment & Operations/26-Incident_Response_Plan.md",
+              ]
+            personas:
+              [
+                "Product Manager",
+                "Compliance & Risk Officer",
+                "Customer Success & Support Manager",
+              ]
+          - id: "LNC-OPS-01"
+            description: "Finalize and train the support team on the incident response plan."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 3 - Deployment & Operations/26-Incident_Response_Plan.md",
+              ]
+            personas:
+              [
+                "Customer Success & Support Manager",
+                "Product Manager",
+                "Compliance & Risk Officer",
+              ]
+          - id: "LNC-GO-01"
+            description: "Execute the production deployment ('Go-Live')."
+            status: "To Do"
+            context: ["docs/Stage 3 - Deployment & Operations/23-Deployment.md"]
+            personas:
+              [
+                "Product Manager",
+                "FinTech DevOps Engineer",
+                "Financial Software Architect",
+              ]
+          - id: "LNC-GO-02"
+            description: "Perform post-launch monitoring and health checks."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 3 - Deployment & Operations/25-Monitoring_And_Logging.md",
+              ]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Financial QA Specialist",
+                "Customer Success & Support Manager",
+              ]
+          - id: "LNC-DOC-03"
+            description: "[Docs] Write the full Disaster Recovery Plan based on the placeholder, detailing RTO/RPO, failover strategy, and restoration procedures."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 3 - Deployment & Operations/27-Disaster_Recovery_Plan.md",
+              ]
+            personas:
+              [
+                "Financial Software Architect",
+                "FinTech DevOps Engineer",
+                "Compliance & Risk Officer",
+              ]
+
+      - id: "MEQ-DEP-02"
+        name: "Cloud Cost Management & FinOps"
+        platform: "Both"
+        subtasks:
+          - id: "DEP-FIN-01"
+            description: "[FinOps/IaC] Implement and enforce the mandatory resource tagging policy using AWS Config rules to enable cost allocation."
+            status: "To Do"
+            context:
+              ["docs/Stage 3 - Deployment & Operations/29-Cost_Management.md"]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Financial Software Architect",
+                "Product Manager",
+              ]
+          - id: "DEP-FIN-02"
+            description: "[FinOps/DevOps] Configure AWS Budgets with alerts for overall spend and for key services, notifying relevant teams."
+            status: "To Do"
+            context:
+              ["docs/Stage 3 - Deployment & Operations/29-Cost_Management.md"]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Product Manager",
+                "Financial Software Architect",
+              ]
+          - id: "DEP-FIN-03"
+            description: "[FinOps/DevOps] Create dedicated FinOps dashboards in Grafana/Datadog to visualize cost drivers."
+            status: "To Do"
+            context:
+              ["docs/Stage 3 - Deployment & Operations/29-Cost_Management.md"]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Analytics & Business Intelligence Specialist",
+                "Product Manager",
+              ]
+          - id: "DEP-FIN-04"
+            description: "[FinOps/IaC] Implement S3 Lifecycle Policies to automatically transition aged data to lower-cost storage tiers."
+            status: "To Do"
+            context:
+              ["docs/Stage 3 - Deployment & Operations/29-Cost_Management.md"]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Financial Software Architect",
+                "Data Security Specialist",
+              ]
+          - id: "DEP-FIN-05"
+            description: "[FinOps/IaC] Evaluate and use Graviton instances for production services to improve price-performance."
+            status: "To Do"
+            context:
+              ["docs/Stage 3 - Deployment & Operations/29-Cost_Management.md"]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Financial Software Architect",
+                "Senior Backend Developer",
+              ]
+          - id: "DEP-FIN-06"
+            description: "[FinOps/IaC] Implement a strategy to use Spot Instances for non-critical, fault-tolerant workloads (e.g., CI/CD runners)."
+            status: "To Do"
+            context:
+              ["docs/Stage 3 - Deployment & Operations/29-Cost_Management.md"]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Financial Software Architect",
+                "Senior Backend Developer",
+              ]
+          - id: "DEP-FIN-07"
+            description: "[FinOps/Gov] Establish and document the monthly cost review process and schedule the first meeting."
+            status: "To Do"
+            context:
+              ["docs/Stage 3 - Deployment & Operations/29-Cost_Management.md"]
+            personas:
+              [
+                "Product Manager",
+                "Financial Software Architect",
+                "FinTech DevOps Engineer",
+              ]
+          - id: "DEP-FIN-08"
+            description: "[AI/FinOps] Implement caching and detailed usage monitoring for AI service calls to manage token consumption costs."
+            status: "To Do"
+            context:
+              ["docs/Stage 3 - Deployment & Operations/29-Cost_Management.md"]
+            personas:
+              [
+                "Data Scientist / ML Engineer",
+                "FinTech DevOps Engineer",
+                "Senior Backend Developer",
+              ]
+
+      - id: "MEQ-LNC-03"
+        name: "Performance Optimization & Monitoring"
+        platform: "Both"
+        subtasks:
+          - id: "LNC-PERF-01"
+            description: "[FE/Perf] Analyze production bundle composition to identify and optimize large dependencies."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 3 - Deployment & Operations/28-Performance_Optimization.md",
+              ]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "FinTech DevOps Engineer",
+                "Financial QA Specialist",
+              ]
+          - id: "LNC-PERF-02"
+            description: "[FE/Perf] Implement a script or CI job to convert all project images to an optimized format like WebP."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 3 - Deployment & Operations/28-Performance_Optimization.md",
+              ]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "FinTech DevOps Engineer",
+                "UX Designer",
+              ]
+          - id: "LNC-PERF-03"
+            description: "[FE/Perf] Implement progressive/lazy loading for all non-critical images and media assets."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 3 - Deployment & Operations/28-Performance_Optimization.md",
+              ]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "UX Designer",
+                "Financial QA Specialist",
+              ]
+          - id: "LNC-PERF-04"
+            description: "[App/Perf] Audit native modules for performance bottlenecks and identify candidates for native implementation."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 3 - Deployment & Operations/28-Performance_Optimization.md",
+              ]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "Financial Software Architect",
+                "Financial QA Specialist",
+              ]
+          - id: "LNC-PERF-05"
+            description: "[App/Perf] Configure Metro bundler for optimal production performance, including enabling the Hermes engine."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 3 - Deployment & Operations/28-Performance_Optimization.md",
+              ]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "FinTech DevOps Engineer",
+                "Financial QA Specialist",
+              ]
+          - id: "LNC-PERF-06"
+            description: "[Test/Perf] Expand real-device testing matrix to include a wider range of low-end Android devices common in Ethiopia."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 3 - Deployment & Operations/28-Performance_Optimization.md",
+              ]
+            personas:
+              ["Financial QA Specialist", "UX Designer", "Product Manager"]
+          - id: "LNC-PERF-07"
+            description: "[App/Monitoring] Integrate a Real User Monitoring (RUM) tool (e.g., Firebase Performance) into the mobile app."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 3 - Deployment & Operations/28-Performance_Optimization.md",
+              ]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "FinTech DevOps Engineer",
+                "Analytics & Business Intelligence Specialist",
+              ]
+          - id: "LNC-PERF-08"
+            description: "[DevOps/Monitoring] Configure alerts for key performance regressions (LCP, API latency, etc.) in the production monitoring system."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 3 - Deployment & Operations/28-Performance_Optimization.md",
+              ]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Financial QA Specialist",
+                "Senior Backend Developer",
+              ]
+
+      - id: "MEQ-LNC-02"
+        name: "Compliance & Localization Testing"
+        platform: "Both"
+        subtasks:
+          - id: "LNC-TEST-CMPL-01"
+            description: "[Test/Compliance] Develop and run an automated test suite to validate NBE compliance requirements (disclosures, KYC data handling)."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/05-Compliance_Framework.md",
+                "docs/Stage 2 -Development/22-Testing_Guidelines.md",
+              ]
+            personas:
+              [
+                "Financial QA Specialist",
+                "Compliance & Risk Officer",
+                "Senior Backend Developer",
+              ]
+          - id: "LNC-TEST-LOC-01"
+            description: "[Test/FE] Create and execute a formal test plan for Amharic localization, covering UI layout, text, and data formats on web and mobile."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 2 -Development/22-Testing_Guidelines.md",
+                "docs/Stage 2 -Development/19-API_Documentation_Strategy.md",
+              ]
+            personas:
+              [
+                "Financial QA Specialist",
+                "UX Designer",
+                "Senior Mobile Developer",
+              ]
+
+  - stage: "Stage 6: Marketplace, Rewards & Financial Wellness"
+    tasks:
+      - id: "MEQ-MKT-01"
+        name: "[BE] Marketplace & Discovery Services"
+        platform: "Both"
+        subtasks:
+          - id: "MKT-BE-DB-01"
+            description: "Design and implement Product, Category, and MerchantProduct schemas in `schema.prisma`."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/10-Database.md",
+                "docs/Stage 1 - Foundation/04-PRD.md",
+              ]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Financial Software Architect",
+                "Marketplace & Merchant Success Manager",
+              ]
+          - id: "MKT-BE-API-01"
+            description: "Implement APIs for product search, filtering, and categorization."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/02-API_Specification_and_Governance.md",
+              ]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Financial Software Architect",
+                "Data Scientist / ML Engineer",
+              ]
+          - id: "MKT-BE-API-02"
+            description: "Build APIs for merchants to manage their product listings."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/02-API_Specification_and_Governance.md",
+              ]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Marketplace & Merchant Success Manager",
+                "Product Manager",
+              ]
+
+      - id: "MEQ-MKT-02"
+        name: "[Web/App] Marketplace UI/UX"
+        platform: "Both"
+        subtasks:
+          - id: "MKT-FE-UI-01"
+            description: "Build product listing and product detail pages/screens for both web and app."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/04-PRD.md",
+                "docs/Stage 1 - Foundation/12-User_Experience_Guidelines.md",
+              ]
+            personas:
+              ["Senior Mobile Developer", "UX Designer", "Product Manager"]
+          - id: "MKT-FE-UI-02"
+            description: "Implement search and filtering UI on both platforms."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/04-PRD.md"]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "UX Designer",
+                "Data Scientist / ML Engineer",
+              ]
+          - id: "MKT-FE-UI-03"
+            description: "Build Wishlist feature UI and logic."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/04-PRD.md"]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "UX Designer",
+                "Senior Backend Developer",
+              ]
+
+      - id: "MEQ-REW-01"
+        name: "[BE] Rewards & Cashback Engine"
+        platform: "Both"
+        subtasks:
+          - id: "REW-BE-DB-01"
+            description: "Design and implement CashbackLedger and RewardsProgram schemas in `schema.prisma`."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/10-Database.md",
+                "docs/Stage 1 - Foundation/03-Business_Model.md",
+              ]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Financial Software Architect",
+                "Product Manager",
+              ]
+          - id: "REW-BE-SVC-01"
+            description: "Develop a rules engine to calculate cashback based on merchant, category, and promotions."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/03-Business_Model.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Financial Software Architect",
+                "Product Manager",
+              ]
+
+      - id: "MEQ-REW-02"
+        name: "[Web/App] Rewards UI/UX"
+        platform: "Both"
+        subtasks:
+          - id: "REW-FE-UI-01"
+            description: "Build UI for users to view their cashback balance and transaction history."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/04-PRD.md"]
+            personas:
+              ["Senior Mobile Developer", "UX Designer", "Product Manager"]
+          - id: "REW-FE-UI-02"
+            description: "Integrate 'apply cashback' option into the checkout flow."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/04-PRD.md"]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "UX Designer",
+                "Senior Backend Developer",
+              ]
+
+      - id: "MEQ-FIN-01"
+        name: "[BE] Financial Wellness Services"
+        platform: "Both"
+        subtasks:
+          - id: "FIN-BE-SVC-01"
+            description: "Implement a service to automatically categorize user spending."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/04-PRD.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Data Scientist / ML Engineer",
+                "Product Manager",
+              ]
+
+      - id: "MEQ-FIN-02"
+        name: "[Web/App] Financial Wellness Tools UI"
+        platform: "Both"
+        subtasks:
+          - id: "FIN-FE-UI-01"
+            description: "Build UI for spending analytics and budget tracking."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/04-PRD.md"]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "UX Designer",
+                "Analytics & Business Intelligence Specialist",
+              ]
+          - id: "FIN-FE-UI-02"
+            description: "Develop UI for creating and managing savings goals."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/04-PRD.md"]
+            personas:
+              ["Senior Mobile Developer", "UX Designer", "Product Manager"]
+          - id: "FIN-FE-UI-03"
+            description: "Create Financial Education module with interactive content."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/04-PRD.md"]
+            personas:
+              ["UX Designer", "Product Manager", "Compliance & Risk Officer"]
+
+  - stage: "Stage 7: Advanced Platforms & Premium Features"
+    tasks:
+      - id: "MEQ-PREM-01"
+        name: "[BE/FE] Meqenet Plus Subscription"
+        platform: "Both"
+        subtasks:
+          - id: "PREM-BE-DB-01"
+            description: "Add `Subscription` model to `schema.prisma` and link to User."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/10-Database.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Financial Software Architect",
+                "Product Manager",
+              ]
+          - id: "PREM-BE-SVC-01"
+            description: "Implement service to manage subscription lifecycle (subscribe, renew, cancel) via Telebirr."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/03-Business_Model.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Product Manager",
+                "Compliance & Risk Officer",
+              ]
+          - id: "PREM-FE-UI-01"
+            description: "Build UI for users to subscribe to Meqenet Plus and manage their subscription."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/03-Business_Model.md"]
+            personas:
+              ["Senior Mobile Developer", "UX Designer", "Product Manager"]
+
+      - id: "MEQ-VCC-01"
+        name: "[BE] Virtual Card Service Integration"
+        platform: "Both"
+        subtasks:
+          - id: "VCC-BE-INT-01"
+            description: "Integrate with a virtual card issuing provider's API."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/11-Integration_Requirements.md",
+                "docs/Stage 1 - Foundation/03-Business_Model.md",
+              ]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Financial Software Architect",
+                "Data Security Specialist",
+              ]
+          - id: "VCC-BE-API-01"
+            description: "Build APIs to create, fund, and manage the lifecycle of virtual cards."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/02-API_Specification_and_Governance.md",
+              ]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Financial Software Architect",
+                "Product Manager",
+              ]
+
+      - id: "MEQ-VCC-02"
+        name: "[Web/App] Virtual Card UI"
+        platform: "Both"
+        subtasks:
+          - id: "VCC-FE-UI-01"
+            description: "Build UI to securely display virtual card details."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/04-PRD.md",
+                "docs/Stage 1 - Foundation/07-Security.md",
+              ]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "UX Designer",
+                "Data Security Specialist",
+              ]
+          - id: "VCC-FE-UI-02"
+            description: "Develop UI to freeze/unfreeze card, view transactions, and manage limits."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/04-PRD.md"]
+            personas:
+              ["Senior Mobile Developer", "UX Designer", "Product Manager"]
+
+      - id: "MEQ-USD-01"
+        name: "[BE] USSD Gateway Service"
+        platform: "Both"
+        subtasks:
+          - id: "USSD-BE-SVC-01"
+            description: "Develop a service to handle USSD menu navigation and state management."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/03-Business_Model.md",
+                "docs/Stage 1 - Foundation/11-Integration_Requirements.md",
+              ]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Financial Software Architect",
+                "Product Manager",
+              ]
+          - id: "USSD-BE-INT-01"
+            description: "Integrate with a mobile network operator's USSD gateway."
+            status: "To Do"
+            context:
+              ["docs/Stage 1 - Foundation/11-Integration_Requirements.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "FinTech DevOps Engineer",
+                "Product Manager",
+              ]
+
+      - id: "MEQ-EXT-01"
+        name: "[Browser Extension] Core Functionality"
+        platform: "Website"
+        subtasks:
+          - id: "EXT-FE-SETUP-01"
+            description: "Set up scaffolding for a cross-browser (Chrome/Firefox) extension."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/04-PRD.md"]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "Financial Software Architect",
+                "Product Manager",
+              ]
+          - id: "EXT-FE-LOGIC-01"
+            description: "Implement logic to detect partner merchant checkout pages."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/04-PRD.md"]
+            personas:
+              [
+                "Senior Mobile Developer",
+                "Senior Backend Developer",
+                "Marketplace & Merchant Success Manager",
+              ]
+          - id: "EXT-FE-UI-01"
+            description: "Build UI to display Meqenet payment options within the extension popup."
+            status: "To Do"
+            context: ["docs/Stage 1 - Foundation/04-PRD.md"]
+            personas:
+              ["Senior Mobile Developer", "UX Designer", "Product Manager"]
+
+  - stage: "Stage 8: Advanced AI & Personalization"
+    tasks:
+      - id: "MEQ-AI-02"
+        name: "[BE] AI-Powered Recommendation Engines"
+        platform: "Both"
+        subtasks:
+          - id: "AI-BE-REC-01"
+            description: "[BE/AI] Develop an AI-powered service for recommending the optimal payment plan based on user profile and purchase context."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 2 -Development/18-AI_Integration.md",
+                "docs/Stage 2 -Development/15-Development_Plan.md",
+              ]
+            personas:
+              [
+                "Data Scientist / ML Engineer",
+                "Senior Backend Developer",
+                "Product Manager",
+              ]
+          - id: "AI-BE-REC-02"
+            description: "[BE/AI] Integrate the payment plan recommendations into the checkout flow on both web and mobile."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/18-AI_Integration.md"]
+            personas:
+              [
+                "Data Scientist / ML Engineer",
+                "Senior Mobile Developer",
+                "UX Designer",
+              ]
+          - id: "AI-BE-REC-03"
+            description: "[BE/AI] Build a product recommendation engine for the marketplace based on user behavior and financial profile."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/18-AI_Integration.md"]
+            personas:
+              [
+                "Data Scientist / ML Engineer",
+                "Senior Backend Developer",
+                "Marketplace & Merchant Success Manager",
+              ]
+
+      - id: "MEQ-AI-03"
+        name: "[BE] Dynamic Interest Rate & Financial Optimization"
+        platform: "Both"
+        subtasks:
+          - id: "AI-BE-RIO-01"
+            description: "[BE/AI] Develop and train an ML model for dynamic interest rate optimization on 'Pay Over Time' loans."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 2 -Development/18-AI_Integration.md",
+                "docs/Stage 2 -Development/15-Development_Plan.md",
+              ]
+            personas:
+              [
+                "Data Scientist / ML Engineer",
+                "Financial Software Architect",
+                "Compliance & Risk Officer",
+              ]
+          - id: "AI-BE-CBO-01"
+            description: "[BE/AI] Build a service to provide AI-powered cashback and rewards optimization suggestions to users."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/18-AI_Integration.md"]
+            personas:
+              ["Data Scientist / ML Engineer", "UX Designer", "Product Manager"]
+
+      - id: "MEQ-AI-04"
+        name: "[BE] Merchant & Marketplace AI Services"
+        platform: "Both"
+        subtasks:
+          - id: "AI-BE-MRS-01"
+            description: "[BE/AI] Develop an ML model for Merchant Risk Scoring to automate and enhance merchant onboarding."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/18-AI_Integration.md"]
+            personas:
+              [
+                "Data Scientist / ML Engineer",
+                "Marketplace & Merchant Success Manager",
+                "Compliance & Risk Officer",
+              ]
+          - id: "AI-BE-MRS-02"
+            description: "[BE/AI] Implement AI-driven inventory and pricing optimization suggestions for merchants."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/18-AI_Integration.md"]
+            personas:
+              [
+                "Data Scientist / ML Engineer",
+                "Marketplace & Merchant Success Manager",
+                "Senior Backend Developer",
+              ]
+
+      - id: "MEQ-WEB-01"
+        name: "[Web] Public Education & Resource Hub"
+        platform: "Website"
+        subtasks:
+          - id: "WEB-FE-EDU-01"
+            description: "[Web] Design and build the public-facing Financial Literacy Center with articles, tools, and videos."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/17-Web_Platform_Features.md"]
+            personas:
+              ["UX Designer", "Product Manager", "Compliance & Risk Officer"]
+          - id: "WEB-FE-EDU-02"
+            description: "[Web] Populate the hub with initial content in both Amharic and English."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/17-Web_Platform_Features.md"]
+            personas:
+              [
+                "Product Manager",
+                "UX Designer",
+                "Customer Success & Support Manager",
+              ]
+
+  - stage: "Stage 9: Ecosystem & Plugin Development"
+    tasks:
+      - id: "MEQ-ECO-01"
+        name: "[BE/FE] E-commerce Integration Toolkit"
+        platform: "Website"
+        subtasks:
+          - id: "ECO-BE-PLUGIN-01"
+            description: "[BE/Plugin] Develop a generic backend service and SDK to support integrations with third-party e-commerce platforms."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/17-Web_Platform_Features.md"]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Financial Software Architect",
+                "Marketplace & Merchant Success Manager",
+              ]
+          - id: "ECO-FE-WEB-01"
+            description: "[Web] Build a public-facing developer portal and documentation center for e-commerce integrations."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/17-Web_Platform_Features.md"]
+            personas:
+              ["Senior Mobile Developer", "UX Designer", "Product Manager"]
+
+      - id: "MEQ-ECO-02"
+        name: "[BE] Strategic Payment Integrations"
+        platform: "Both"
+        subtasks:
+          - id: "ECO-BE-INT-01"
+            description: "[BE/Integration] Develop a robust NestJS service for M-Pesa integration as a strategic ecosystem partner."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 1 - Foundation/11-Integration_Requirements.md",
+                "docs/Stage 1 - Foundation/03-Business_Model.md",
+              ]
+            personas:
+              [
+                "Senior Backend Developer",
+                "Financial Software Architect",
+                "Product Manager",
+              ]
+
+  - stage: "Stage 10: Scalability & Performance Engineering"
+    tasks:
+      - id: "MEQ-SCL-01"
+        name: "[BE/DevOps] Near-Term Scalability Enhancements"
+        platform: "Both"
+        subtasks:
+          - id: "SCL-CACHE-01"
+            description: "Implement advanced, feature-specific caching strategies (e.g., Redis) for high-read domains like Marketplace."
+            status: "To Do"
+            context:
+              ["docs/Stage 4 - Growth & Maintenance/31-Scalability_Planning.md"]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Senior Backend Developer",
+                "Financial Software Architect",
+              ]
+          - id: "SCL-COMMS-01"
+            description: "Review and optimize cross-feature communication protocols to reduce latency and overhead."
+            status: "To Do"
+            context:
+              ["docs/Stage 4 - Growth & Maintenance/31-Scalability_Planning.md"]
+            personas:
+              [
+                "Financial Software Architect",
+                "Senior Backend Developer",
+                "Senior Mobile Developer",
+              ]
+          - id: "SCL-AUTOSCALE-01"
+            description: "Define and implement feature-specific Horizontal Pod Autoscaler (HPA) policies based on domain metrics."
+            status: "To Do"
+            context:
+              ["docs/Stage 4 - Growth & Maintenance/31-Scalability_Planning.md"]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Financial Software Architect",
+                "Senior Backend Developer",
+              ]
+          - id: "SCL-DB-PARTITION-01"
+            description: "Implement database partitioning (e.g., by date/hash) for high-volume tables like 'transactions' and 'analytics_events'."
+            status: "To Do"
+            context:
+              ["docs/Stage 4 - Growth & Maintenance/31-Scalability_Planning.md"]
+            personas:
+              [
+                "Financial Software Architect",
+                "Senior Backend Developer",
+                "Data Security Specialist",
+              ]
+          - id: "SCL-MONITOR-01"
+            description: "Implement comprehensive, per-domain monitoring dashboards to track feature-specific scalability KPIs."
+            status: "To Do"
+            context:
+              ["docs/Stage 4 - Growth & Maintenance/31-Scalability_Planning.md"]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Analytics & Business Intelligence Specialist",
+                "Product Manager",
+              ]
+      - id: "MEQ-SCL-02"
+        name: "[Arch] Mid-Term Scalability Initiatives"
+        platform: "Both"
+        subtasks:
+          - id: "SCL-MICROSERVICE-01"
+            description: "Evaluate decomposition of largest feature domains (e.g., Marketplace) into finer-grained microservices."
+            status: "To Do"
+            context:
+              ["docs/Stage 4 - Growth & Maintenance/31-Scalability_Planning.md"]
+            personas:
+              [
+                "Financial Software Architect",
+                "Senior Backend Developer",
+                "Product Manager",
+              ]
+          - id: "SCL-EVENTSOURCE-01"
+            description: "Investigate and potentially implement event sourcing for complex, cross-feature state management."
+            status: "To Do"
+            context:
+              ["docs/Stage 4 - Growth & Maintenance/31-Scalability_Planning.md"]
+            personas:
+              [
+                "Financial Software Architect",
+                "Senior Backend Developer",
+                "FinTech DevOps Engineer",
+              ]
+          - id: "SCL-CDN-01"
+            description: "Implement feature-specific CDN optimization rules for assets based on usage patterns."
+            status: "To Do"
+            context:
+              ["docs/Stage 4 - Growth & Maintenance/31-Scalability_Planning.md"]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Senior Mobile Developer",
+                "Financial QA Specialist",
+              ]
+          - id: "SCL-DB-SHARD-01"
+            description: "Evaluate and plan for database sharding for hyper-growth features like Marketplace and Analytics."
+            status: "To Do"
+            context:
+              ["docs/Stage 4 - Growth & Maintenance/31-Scalability_Planning.md"]
+            personas:
+              [
+                "Financial Software Architect",
+                "Senior Backend Developer",
+                "Data Security Specialist",
+              ]
+          - id: "SCL-PREDICT-01"
+            description: "Develop a predictive scaling model based on historical data and Ethiopian market patterns (e.g., holidays)."
+            status: "To Do"
+            context:
+              ["docs/Stage 4 - Growth & Maintenance/31-Scalability_Planning.md"]
+            personas:
+              [
+                "Data Scientist / ML Engineer",
+                "FinTech DevOps Engineer",
+                "Product Manager",
+              ]
+      - id: "MEQ-SCL-03"
+        name: "[Arch] Long-Term Scalability Research"
+        platform: "Both"
+        subtasks:
+          - id: "SCL-REGION-01"
+            description: "Investigate and create a plan for potential multi-region, active-active deployment."
+            status: "To Do"
+            context:
+              ["docs/Stage 4 - Growth & Maintenance/31-Scalability_Planning.md"]
+            personas:
+              [
+                "Financial Software Architect",
+                "FinTech DevOps Engineer",
+                "Data Security Specialist",
+              ]
+          - id: "SCL-AI-CAPACITY-01"
+            description: "Research and design an AI-driven capacity planning and autonomous scaling system."
+            status: "To Do"
+            context:
+              ["docs/Stage 4 - Growth & Maintenance/31-Scalability_Planning.md"]
+            personas:
+              [
+                "Financial Software Architect",
+                "Data Scientist / ML Engineer",
+                "FinTech DevOps Engineer",
+              ]
+
+  - stage: "Stage 11: Continuous Improvement & Governance"
+    tasks:
+      - id: "MEQ-GOV-01"
+        name: "[Gov] Feature Expansion Framework Setup"
+        platform: "Both"
+        subtasks:
+          - id: "GOV-TPL-01"
+            description: "Create the official 'Feature Proposal' issue template in the GitHub repository based on 32-Feature_Expansion.md."
+            status: "To Do"
+            context:
+              ["docs/Stage 4 - Growth & Maintenance/32-Feature_Expansion.md"]
+            personas:
+              [
+                "Product Manager",
+                "Financial Software Architect",
+                "FinTech DevOps Engineer",
+              ]
+          - id: "GOV-PROCESS-01"
+            description: "Establish and document the process for using the Feature Prioritization Framework for all new feature requests."
+            status: "To Do"
+            context:
+              ["docs/Stage 4 - Growth & Maintenance/32-Feature_Expansion.md"]
+            personas:
+              [
+                "Product Manager",
+                "Financial Software Architect",
+                "Analytics & Business Intelligence Specialist",
+              ]
+          - id: "GOV-DOCS-01"
+            description: "Create a process and assign ownership for updating user, API, and internal documentation when features are added or changed."
+            status: "To Do"
+            context:
+              ["docs/Stage 4 - Growth & Maintenance/32-Feature_Expansion.md"]
+            personas:
+              [
+                "Product Manager",
+                "Senior Backend Developer",
+                "Senior Mobile Developer",
+              ]
+      - id: "MEQ-GOV-02"
+        name: "[Gov] Cross-Functional Process Implementation"
+        platform: "Both"
+        subtasks:
+          - id: "GOV-FIN-01"
+            description: "Establish a formal review process for all new features that have financial logic to ensure consistency and NBE compliance."
+            status: "To Do"
+            context:
+              ["docs/Stage 4 - Growth & Maintenance/32-Feature_Expansion.md"]
+            personas:
+              [
+                "Compliance & Risk Officer",
+                "Financial Software Architect",
+                "Product Manager",
+              ]
+          - id: "GOV-SEC-01"
+            description: "Mandate and formalize a threat modeling session as a required step for any new feature proposal."
+            status: "To Do"
+            context:
+              ["docs/Stage 4 - Growth & Maintenance/32-Feature_Expansion.md"]
+            personas:
+              [
+                "Data Security Specialist",
+                "Financial Software Architect",
+                "Product Manager",
+              ]
+          - id: "GOV-UX-01"
+            description: "Establish a formal user research process for major new features, specifically targeting Ethiopian user segments."
+            status: "To Do"
+            context:
+              ["docs/Stage 4 - Growth & Maintenance/32-Feature_Expansion.md"]
+            personas:
+              [
+                "UX Designer",
+                "Product Manager",
+                "Analytics & Business Intelligence Specialist",
+              ]
+
+  - stage: "Stage 12: Accessibility & Inclusion"
+    tasks:
+      - id: "MEQ-A11Y-01"
+        name: "[A11y] Foundational Accessibility Audit & Setup"
+        platform: "Both"
+        subtasks:
+          - id: "A11Y-AUDIT-01"
+            description: "Perform an initial automated accessibility audit (Axe/Lighthouse) on web and app to establish a baseline."
+            status: "To Do"
+            context: ["docs/Stage 4 - Growth & Maintenance/33-Accessibility.md"]
+            personas:
+              [
+                "Financial QA Specialist",
+                "Senior Mobile Developer",
+                "UX Designer",
+              ]
+          - id: "A11Y-CI-01"
+            description: "Integrate automated accessibility checks (e.g., jest-axe) into the CI pipelines for both frontend projects."
+            status: "To Do"
+            context: ["docs/Stage 4 - Growth & Maintenance/33-Accessibility.md"]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Senior Mobile Developer",
+                "Financial QA Specialist",
+              ]
+          - id: "A11Y-DOCS-01"
+            description: "Create and publish a public-facing Accessibility Statement on the website."
+            status: "To Do"
+            context: ["docs/Stage 4 - Growth & Maintenance/33-Accessibility.md"]
+            personas:
+              ["Product Manager", "Compliance & Risk Officer", "UX Designer"]
+          - id: "A11Y-DS-01"
+            description: "Incorporate accessibility requirements and documentation directly into the shared Design System (Storybook)."
+            status: "To Do"
+            context: ["docs/Stage 4 - Growth & Maintenance/33-Accessibility.md"]
+            personas:
+              [
+                "UX Designer",
+                "Senior Mobile Developer",
+                "Financial QA Specialist",
+              ]
+      - id: "MEQ-A11Y-02"
+        name: "[A11y] Implementation & Remediation"
+        platform: "Both"
+        subtasks:
+          - id: "A11Y-KB-01"
+            description: "Perform a full keyboard-only navigation test of all critical user flows on both web and app."
+            status: "To Do"
+            context: ["docs/Stage 4 - Growth & Maintenance/33-Accessibility.md"]
+            personas:
+              [
+                "Financial QA Specialist",
+                "UX Designer",
+                "Senior Mobile Developer",
+              ]
+          - id: "A11Y-SR-01"
+            description: "Conduct manual screen reader testing (VoiceOver, TalkBack) for primary user journeys."
+            status: "To Do"
+            context: ["docs/Stage 4 - Growth & Maintenance/33-Accessibility.md"]
+            personas:
+              ["Financial QA Specialist", "UX Designer", "Product Manager"]
+          - id: "A11Y-COLOR-01"
+            description: "Audit and remediate all color contrast issues to ensure WCAG 2.1 AA compliance."
+            status: "To Do"
+            context: ["docs/Stage 4 - Growth & Maintenance/33-Accessibility.md"]
+            personas:
+              [
+                "UX Designer",
+                "Senior Mobile Developer",
+                "Financial QA Specialist",
+              ]
+          - id: "A11Y-FORMS-01"
+            description: "Ensure all form fields across all platforms have proper labels, instructions, and accessible error handling."
+            status: "To Do"
+            context: ["docs/Stage 4 - Growth & Maintenance/33-Accessibility.md"]
+            personas:
+              [
+                "UX Designer",
+                "Senior Mobile Developer",
+                "Compliance & Risk Officer",
+              ]
+      - id: "MEQ-A11Y-03"
+        name: "[A11y] Advanced & Ongoing Processes"
+        platform: "Both"
+        subtasks:
+          - id: "A11Y-USER-TEST-01"
+            description: "Plan and conduct the first round of usability testing that includes users with disabilities."
+            status: "To Do"
+            context: ["docs/Stage 4 - Growth & Maintenance/33-Accessibility.md"]
+            personas:
+              ["UX Designer", "Product Manager", "Financial QA Specialist"]
+          - id: "A11Y-TRAINING-01"
+            description: "Develop and deliver accessibility training for all designers and developers."
+            status: "To Do"
+            context: ["docs/Stage 4 - Growth & Maintenance/33-Accessibility.md"]
+            personas:
+              ["Product Manager", "Financial Software Architect", "UX Designer"]
+          - id: "A11Y-I18N-01"
+            description: "Verify Amharic language support with screen readers and ensure proper right-to-left UI handling where needed."
+            status: "To Do"
+            context: ["docs/Stage 4 - Growth & Maintenance/33-Accessibility.md"]
+            personas:
+              [
+                "Financial QA Specialist",
+                "UX Designer",
+                "Senior Mobile Developer",
+              ]

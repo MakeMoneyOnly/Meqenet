@@ -1,0 +1,429 @@
+---
+# Blue/Green Deployment Template for Meqenet {{cookiecutter.service_name}}
+# This template provides zero-downtime deployments for Ethiopian FinTech compliance
+#
+# Usage:
+# 1. Deploy to blue environment first
+# 2. Run health checks and smoke tests
+# 3. Switch traffic from green to blue
+# 4. Monitor for issues, rollback if needed
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{cookiecutter.service_slug}}-config
+  namespace: meqenet-{{cookiecutter.environment}}
+  labels:
+    app: {{cookiecutter.service_slug}}
+    version: "{{cookiecutter.version}}"
+    environment: "{{cookiecutter.environment}}"
+data:
+  # Ethiopian timezone configuration
+  TZ: "Africa/Addis_Ababa"
+  LOCALE: "en_ET"
+  CURRENCY: "ETB"
+  
+  # NBE compliance settings
+  NBE_REPORTING_ENABLED: "true"
+  DATA_RESIDENCY_ENFORCEMENT: "true"
+  AUDIT_LOGGING_ENABLED: "true"
+
+---
+# Blue Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{cookiecutter.service_slug}}-blue
+  namespace: meqenet-{{cookiecutter.environment}}
+  labels:
+    app: {{cookiecutter.service_slug}}
+    slot: blue
+    version: "{{cookiecutter.version}}"
+spec:
+  replicas: {{cookiecutter.replicas}}
+  selector:
+    matchLabels:
+      app: {{cookiecutter.service_slug}}
+      slot: blue
+  template:
+    metadata:
+      labels:
+        app: {{cookiecutter.service_slug}}
+        slot: blue
+        version: "{{cookiecutter.version}}"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3000"
+        prometheus.io/path: "/metrics"
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 2000
+      containers:
+      - name: {{cookiecutter.service_slug}}
+        image: ghcr.io/meqenet/{{cookiecutter.service_slug}}:{{cookiecutter.version}}
+        ports:
+        - containerPort: {{cookiecutter.service_port}}
+          name: http
+        - containerPort: 9090
+          name: metrics
+        env:
+        - name: NODE_ENV
+          value: "{{cookiecutter.environment}}"
+        - name: PORT
+          value: "{{cookiecutter.service_port}}"
+        - name: SLOT
+          value: "blue"
+        - name: TZ
+          valueFrom:
+            configMapKeyRef:
+              name: {{cookiecutter.service_slug}}-config
+              key: TZ
+        envFrom:
+        - configMapRef:
+            name: {{cookiecutter.service_slug}}-config
+        - secretRef:
+            name: {{cookiecutter.service_slug}}-secrets
+        resources:
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: http
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          successThreshold: 1
+          failureThreshold: 3
+        startupProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 30
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: cache
+          mountPath: /app/.cache
+      volumes:
+      - name: tmp
+        emptyDir: {}
+      - name: cache
+        emptyDir: {}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - {{cookiecutter.service_slug}}
+              topologyKey: kubernetes.io/hostname
+
+---
+# Green Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{cookiecutter.service_slug}}-green
+  namespace: meqenet-{{cookiecutter.environment}}
+  labels:
+    app: {{cookiecutter.service_slug}}
+    slot: green
+    version: "{{cookiecutter.version}}"
+spec:
+  replicas: 0  # Initially 0, scaled up during deployment
+  selector:
+    matchLabels:
+      app: {{cookiecutter.service_slug}}
+      slot: green
+  template:
+    metadata:
+      labels:
+        app: {{cookiecutter.service_slug}}
+        slot: green
+        version: "{{cookiecutter.version}}"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3000"
+        prometheus.io/path: "/metrics"
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 2000
+      containers:
+      - name: {{cookiecutter.service_slug}}
+        image: ghcr.io/meqenet/{{cookiecutter.service_slug}}:{{cookiecutter.version}}
+        ports:
+        - containerPort: {{cookiecutter.service_port}}
+          name: http
+        - containerPort: 9090
+          name: metrics
+        env:
+        - name: NODE_ENV
+          value: "{{cookiecutter.environment}}"
+        - name: PORT
+          value: "{{cookiecutter.service_port}}"
+        - name: SLOT
+          value: "green"
+        - name: TZ
+          valueFrom:
+            configMapKeyRef:
+              name: {{cookiecutter.service_slug}}-config
+              key: TZ
+        envFrom:
+        - configMapRef:
+            name: {{cookiecutter.service_slug}}-config
+        - secretRef:
+            name: {{cookiecutter.service_slug}}-secrets
+        resources:
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: http
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          successThreshold: 1
+          failureThreshold: 3
+        startupProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 30
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: cache
+          mountPath: /app/.cache
+      volumes:
+      - name: tmp
+        emptyDir: {}
+      - name: cache
+        emptyDir: {}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - {{cookiecutter.service_slug}}
+              topologyKey: kubernetes.io/hostname
+
+---
+# Service (routes to active slot)
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{cookiecutter.service_slug}}-service
+  namespace: meqenet-{{cookiecutter.environment}}
+  labels:
+    app: {{cookiecutter.service_slug}}
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: nlb
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+spec:
+  type: ClusterIP
+  selector:
+    app: {{cookiecutter.service_slug}}
+    slot: blue  # Initially routes to blue
+  ports:
+  - name: http
+    port: 80
+    targetPort: {{cookiecutter.service_port}}
+    protocol: TCP
+  - name: metrics
+    port: 9090
+    targetPort: 9090
+    protocol: TCP
+
+---
+# Blue Service (for direct access during testing)
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{cookiecutter.service_slug}}-blue-service
+  namespace: meqenet-{{cookiecutter.environment}}
+  labels:
+    app: {{cookiecutter.service_slug}}
+    slot: blue
+spec:
+  type: ClusterIP
+  selector:
+    app: {{cookiecutter.service_slug}}
+    slot: blue
+  ports:
+  - name: http
+    port: 80
+    targetPort: {{cookiecutter.service_port}}
+    protocol: TCP
+
+---
+# Green Service (for direct access during testing)
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{cookiecutter.service_slug}}-green-service
+  namespace: meqenet-{{cookiecutter.environment}}
+  labels:
+    app: {{cookiecutter.service_slug}}
+    slot: green
+spec:
+  type: ClusterIP
+  selector:
+    app: {{cookiecutter.service_slug}}
+    slot: green
+  ports:
+  - name: http
+    port: 80
+    targetPort: {{cookiecutter.service_port}}
+    protocol: TCP
+
+---
+# HorizontalPodAutoscaler for Blue
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{cookiecutter.service_slug}}-blue-hpa
+  namespace: meqenet-{{cookiecutter.environment}}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{cookiecutter.service_slug}}-blue
+  minReplicas: {{cookiecutter.min_replicas}}
+  maxReplicas: {{cookiecutter.max_replicas}}
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+
+---
+# HorizontalPodAutoscaler for Green
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{cookiecutter.service_slug}}-green-hpa
+  namespace: meqenet-{{cookiecutter.environment}}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{cookiecutter.service_slug}}-green
+  minReplicas: {{cookiecutter.min_replicas}}
+  maxReplicas: {{cookiecutter.max_replicas}}
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+
+---
+# NetworkPolicy for security isolation
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{cookiecutter.service_slug}}-network-policy
+  namespace: meqenet-{{cookiecutter.environment}}
+spec:
+  podSelector:
+    matchLabels:
+      app: {{cookiecutter.service_slug}}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: meqenet-{{cookiecutter.environment}}
+    ports:
+    - protocol: TCP
+      port: {{cookiecutter.service_port}}
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: monitoring
+    ports:
+    - protocol: TCP
+      port: 9090
+  egress:
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 443  # HTTPS
+    - protocol: TCP
+      port: 53   # DNS
+    - protocol: UDP
+      port: 53   # DNS 

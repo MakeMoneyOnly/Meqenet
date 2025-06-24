@@ -1,0 +1,257 @@
+name: 🔒 Security Issue (Internal Only)
+description: Internal security issue template - DO NOT USE FOR VULNERABILITIES
+title: "[SECURITY] "
+labels: ["security", "internal"]
+assignees: [""]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ⚠️ **CRITICAL WARNING**: This template is for internal security discussions only!
+
+        **🚨 FOR VULNERABILITIES**: If you have found a security vulnerability, DO NOT create a public issue!
+        Email security@meqenet.et immediately with details.
+
+        **Use this template for:**
+        - Security improvements and hardening
+        - Security documentation updates  
+        - Security audit findings (non-critical)
+        - Compliance requirement discussions
+        - Security process improvements
+
+  - type: checkboxes
+    id: not-vulnerability
+    attributes:
+      label: Confirmation
+      description: Please confirm this is NOT a vulnerability report
+      options:
+        - label: This is NOT a security vulnerability report
+          required: true
+        - label: This does not expose sensitive financial data
+          required: true
+        - label: This is for security improvement/process discussion only
+          required: true
+
+  - type: dropdown
+    id: security-type
+    attributes:
+      label: Security Issue Type
+      description: What type of security issue is this?
+      options:
+        - Security Hardening
+        - Compliance Requirement
+        - Security Process Improvement
+        - Security Documentation
+        - Security Audit Finding (Non-Critical)
+        - Security Training/Awareness
+        - Access Control Review
+        - Encryption Enhancement
+        - Monitoring/Alerting Security
+        - NBE Compliance Update
+        - Other Security Improvement
+    validations:
+      required: true
+
+  - type: dropdown
+    id: affected-area
+    attributes:
+      label: Affected Security Domain
+      description: Which security area does this affect?
+      options:
+        - Authentication & Authorization
+        - Data Protection & Encryption
+        - Payment Security
+        - API Security
+        - Network Security
+        - Application Security
+        - Infrastructure Security
+        - Compliance (NBE/AML/KYC)
+        - Ethiopian Payment Gateway Security
+        - Fayda ID Integration Security
+        - Admin/Merchant Portal Security
+        - Mobile App Security
+        - Multiple Domains
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Security Issue Description
+      description: Describe the security improvement or issue
+      placeholder: |
+        **Current state:**
+        - What is the current security posture?
+        - What gaps or improvements have been identified?
+
+        **Proposed improvement:**
+        - What security enhancement is needed?
+        - How does this improve our security posture?
+
+        **Ethiopian/NBE specific considerations:**
+        - Any local regulatory requirements?
+        - Ethiopian market security considerations?
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: compliance-areas
+    attributes:
+      label: Compliance Areas Affected
+      description: Check all relevant compliance areas
+      options:
+        - label: NBE (National Bank of Ethiopia) regulations
+        - label: AML (Anti-Money Laundering) requirements
+        - label: KYC (Know Your Customer) processes
+        - label: Data privacy and protection
+        - label: PCI DSS (Payment Card Industry)
+        - label: Ethiopian banking regulations
+        - label: Financial services compliance
+        - label: Audit trail requirements
+        - label: Consumer protection regulations
+
+  - type: textarea
+    id: impact-assessment
+    attributes:
+      label: Security Impact Assessment
+      description: Assess the security impact and risk level
+      placeholder: |
+        **Risk level:** [Low/Medium/High]
+
+        **Impact areas:**
+        - Customer data protection: 
+        - Financial transaction security:
+        - System availability:
+        - Regulatory compliance:
+
+        **Risk if not addressed:**
+        - Business impact:
+        - Compliance impact:
+        - Customer trust impact:
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed Security Enhancement
+      description: Detailed proposal for the security improvement
+      placeholder: |
+        **Implementation approach:**
+        1. Step one
+        2. Step two
+        3. Step three
+
+        **Security controls to implement:**
+        - Control 1
+        - Control 2
+
+        **Tools/technologies needed:**
+        - Tool 1
+        - Tool 2
+
+        **Testing approach:**
+        - Security testing plan
+        - Validation methods
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Security Acceptance Criteria
+      description: How will we validate the security improvement?
+      placeholder: |
+        **Security requirements met:**
+        - [ ] Requirement 1
+        - [ ] Requirement 2
+        - [ ] Requirement 3
+
+        **Security testing completed:**
+        - [ ] Penetration testing (if applicable)
+        - [ ] Security code review
+        - [ ] Compliance validation
+        - [ ] Ethiopian payment gateway security testing
+
+        **Documentation updated:**
+        - [ ] Security documentation
+        - [ ] Compliance documentation
+        - [ ] Incident response procedures
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Security Priority
+      description: How urgent is this security improvement?
+      options:
+        - Critical (Immediate security risk)
+        - High (Important security gap)
+        - Medium (Security improvement)
+        - Low (Future security enhancement)
+    validations:
+      required: true
+
+  - type: textarea
+    id: resources-needed
+    attributes:
+      label: Resources & Dependencies
+      description: What resources or dependencies are needed?
+      placeholder: |
+        **Team involvement needed:**
+        - Security team: [scope]
+        - Development team: [scope]
+        - DevOps team: [scope]
+        - Compliance team: [scope]
+
+        **External dependencies:**
+        - Third-party security tools
+        - Ethiopian regulatory guidance
+        - Payment provider security requirements
+
+        **Timeline considerations:**
+        - Compliance deadlines
+        - Ethiopian regulatory deadlines
+        - Business impact timelines
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Security Context
+      description: Any other relevant security information
+      placeholder: |
+        **Related security issues:**
+        - Issue #1
+        - Issue #2
+
+        **Regulatory references:**
+        - NBE directive reference
+        - Ethiopian law reference
+
+        **Industry best practices:**
+        - Security framework reference
+        - Compliance standard reference
+
+        **Ethiopian market considerations:**
+        - Local security requirements
+        - Cultural/operational factors
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: validation
+    attributes:
+      label: Final Validation
+      description: Please confirm the following
+      options:
+        - label: This is NOT a vulnerability report (vulnerabilities go to security@meqenet.et)
+          required: true
+        - label: I have considered Ethiopian regulatory requirements
+          required: true
+        - label: I have assessed the business and compliance impact
+          required: true
+        - label: I understand this will be reviewed by the security team
+          required: true

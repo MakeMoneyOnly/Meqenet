@@ -1,0 +1,200 @@
+openapi: 3.0.3
+info:
+  title: Meqenet 2.0 BNPL Platform API
+  description: |-
+    The official API for the Meqenet 2.0 financial super-app. 
+    This API provides access to all platform features including payments, the merchant marketplace, rewards, and financial management tools.
+    All communication must be secured via HTTPS/TLS 1.3.
+  version: 1.0.0
+servers:
+  - url: https://api.meqenet.et/v1
+    description: Production Server
+  - url: https://api.staging.meqenet.et/v1
+    description: Staging Server
+tags:
+  - name: Authentication
+    description: Endpoints for user authentication, registration, and session management.
+paths:
+  /auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: Register a new user
+      description: Registers a new consumer using their phone number and verifies their identity via their Fayda National ID.
+      operationId: registerUser
+      requestBody:
+        description: User registration object
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterUserRequest"
+      responses:
+        "201":
+          description: User successfully registered. Returns user profile and JWT tokens.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthSuccessResponse"
+        "400":
+          description: Bad Request. Input validation failed (e.g., invalid phone, weak password, Fayda ID format incorrect).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Conflict. A user with the given phone number or Fayda ID already exists.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Authenticate a user
+      description: Authenticates a user with their credentials and returns JWT tokens upon success.
+      operationId: loginUser
+      requestBody:
+        description: User login credentials
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Authentication successful.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthSuccessResponse"
+        "401":
+          description: Unauthorized. Invalid credentials provided.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /auth/token/refresh:
+    post:
+      tags:
+        - Authentication
+      summary: Refresh access token
+      description: Obtains a new JWT access token using a valid refresh token.
+      operationId: refreshToken
+      requestBody:
+        description: Refresh token object
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refreshToken:
+                  type: string
+                  example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+      responses:
+        "200":
+          description: Token refreshed successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+        "401":
+          description: Unauthorized. Refresh token is invalid or expired.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  schemas:
+    RegisterUserRequest:
+      type: object
+      required:
+        - phone
+        - password
+        - faydaId
+      properties:
+        phone:
+          type: string
+          description: Ethiopian phone number (e.g., +251911223344)
+          pattern: '^\\+251[79]\\d{8}$'
+        password:
+          type: string
+          format: password
+          description: User's password (must meet complexity requirements)
+          minLength: 12
+        faydaId:
+          type: string
+          description: The user's 12-digit Fayda National ID number.
+          pattern: '^\\d{12}$'
+
+    LoginRequest:
+      type: object
+      required:
+        - phone
+        - password
+      properties:
+        phone:
+          type: string
+          description: Ethiopian phone number
+        password:
+          type: string
+          format: password
+
+    AuthSuccessResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          description: JWT access token for subsequent API calls.
+        refreshToken:
+          type: string
+          description: JWT refresh token to obtain a new access token.
+        user:
+          $ref: "#/components/schemas/UserProfile"
+
+    UserProfile:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        phone:
+          type: string
+        roles:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    ErrorResponse:
+      type: object
+      required:
+        - statusCode
+        - message
+        - timestamp
+      properties:
+        statusCode:
+          type: integer
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT Bearer token for authentication
+
+security:
+  - bearerAuth: []

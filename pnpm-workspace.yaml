@@ -1,0 +1,7 @@
+packages:
+  # The root backend application, which may contain shared logic.
+  - "backend"
+  # All individual microservices located under the backend/services/ directory.
+  - "backend/services/*"
+  # The end-to-end testing package.
+  - "backend-e2e"

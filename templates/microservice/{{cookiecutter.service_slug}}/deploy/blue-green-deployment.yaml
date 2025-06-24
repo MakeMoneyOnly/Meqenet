@@ -1,0 +1,96 @@
+# Blue/Green Deployment Template for {{cookiecutter.service_name}}
+# Ethiopian FinTech compliance with zero-downtime deployments
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{cookiecutter.service_slug}}-config
+  labels:
+    app: {{cookiecutter.service_slug}}
+data:
+  TZ: "Africa/Addis_Ababa"
+  LOCALE: "en_ET"
+  CURRENCY: "ETB"
+  NBE_REPORTING_ENABLED: "true"
+
+---
+# Blue Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{cookiecutter.service_slug}}-blue
+  labels:
+    app: {{cookiecutter.service_slug}}
+    slot: blue
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: {{cookiecutter.service_slug}}
+      slot: blue
+  template:
+    metadata:
+      labels:
+        app: {{cookiecutter.service_slug}}
+        slot: blue
+    spec:
+      containers:
+      - name: {{cookiecutter.service_slug}}
+        image: meqenet/{{cookiecutter.service_slug}}:latest
+        ports:
+        - containerPort: {{cookiecutter.service_port}}
+        envFrom:
+        - configMapRef:
+            name: {{cookiecutter.service_slug}}-config
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: {{cookiecutter.service_port}}
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: {{cookiecutter.service_port}}
+
+---
+# Green Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{cookiecutter.service_slug}}-green
+  labels:
+    app: {{cookiecutter.service_slug}}
+    slot: green
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: {{cookiecutter.service_slug}}
+      slot: green
+  template:
+    metadata:
+      labels:
+        app: {{cookiecutter.service_slug}}
+        slot: green
+    spec:
+      containers:
+      - name: {{cookiecutter.service_slug}}
+        image: meqenet/{{cookiecutter.service_slug}}:latest
+        ports:
+        - containerPort: {{cookiecutter.service_port}}
+        envFrom:
+        - configMapRef:
+            name: {{cookiecutter.service_slug}}-config
+
+---
+# Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{cookiecutter.service_slug}}-service
+spec:
+  selector:
+    app: {{cookiecutter.service_slug}}
+    slot: blue  # Routes to blue initially
+  ports:
+  - port: 80
+    targetPort: {{cookiecutter.service_port}} 

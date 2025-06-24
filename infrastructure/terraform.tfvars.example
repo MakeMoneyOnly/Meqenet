@@ -1,0 +1,29 @@
+# Terraform Variables for Meqenet.et GitHub Repository Management
+# Copy this file to terraform.tfvars and fill in your actual values
+# NEVER commit terraform.tfvars to git - it contains sensitive data
+
+# GitHub Organization Configuration
+github_organization = "meqenet-et"  # Your GitHub organization name
+repository_name    = "meqenet"      # Main repository name
+
+# GitHub Authentication
+# Create token at: https://github.com/settings/tokens
+# Required permissions: admin:repo, admin:org, admin:org_hook
+github_token = "ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"  # Replace with your token
+
+# Webhook Configuration for Compliance Monitoring
+# This webhook will send repository events to your compliance monitoring system
+webhook_secret = "your-webhook-secret-here"  # Generate a strong secret
+
+# Example values for different environments:
+# Development:
+# github_organization = "meqenet-dev"
+# repository_name    = "meqenet-dev"
+
+# Staging:
+# github_organization = "meqenet-staging" 
+# repository_name    = "meqenet-staging"
+
+# Production:
+# github_organization = "meqenet-et"
+# repository_name    = "meqenet" 

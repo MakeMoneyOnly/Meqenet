@@ -1,0 +1,86 @@
+version: "3.8"
+
+# Meqenet.et - Local Development Environment
+# This Docker Compose file orchestrates the local development environment for the Meqenet platform.
+# It ensures that all developers have a consistent, containerized setup for core services.
+# To start the environment, run: ./scripts/dev-setup.sh (which calls 'docker-compose up -d')
+
+services:
+  # --------------------------------------------------------------------------
+  # PostgreSQL Database for Auth Service
+  # --------------------------------------------------------------------------
+  postgres_auth:
+    image: postgres:15-alpine
+    container_name: meqenet-postgres-auth
+    environment:
+      POSTGRES_USER: meqenet
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: auth_service_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_auth_data:/var/lib/postgresql/data
+    networks:
+      - meqenet-dev-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U meqenet -d auth_service_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # --------------------------------------------------------------------------
+  # Redis Cache
+  # --------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: meqenet-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - meqenet-dev-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # --------------------------------------------------------------------------
+  # Auth Service
+  # Note: This service is built and run via the dev-setup.sh script,
+  # which may use this definition as a base or run the service directly.
+  # This definition ensures it connects to the other containerized services.
+  # --------------------------------------------------------------------------
+  auth-service:
+    build:
+      context: ./backend/services/auth-service
+      dockerfile: Dockerfile
+    container_name: meqenet-auth-service
+    depends_on:
+      postgres_auth:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=postgresql://meqenet:password@postgres_auth:5432/auth_service_db
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=a-very-secret-key-for-local-dev
+      - NODE_ENV=development
+    ports:
+      - "3001:3000"
+    networks:
+      - meqenet-dev-network
+    restart: unless-stopped
+
+# --------------------------------------------------------------------------
+# Volumes and Networks
+# --------------------------------------------------------------------------
+volumes:
+  postgres_auth_data:
+    driver: local
+
+networks:
+  meqenet-dev-network:
+    driver: bridge
+    name: meqenet-dev-network

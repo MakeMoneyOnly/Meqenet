@@ -1,0 +1,91 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Meqenet.et Pre-Push Hook
+# Comprehensive FinTech Security & Quality Gate
+
+echo "🚀 Meqenet.et Pre-Push Comprehensive Checks"
+echo "============================================="
+
+# Get the current branch name
+branch=$(git rev-parse --abbrev-ref HEAD)
+echo "🌿 Current branch: $branch"
+
+# 1. Run all tests
+echo "🧪 Running all tests..."
+if ! pnpm run test; then
+  echo "❌ Tests failed! Cannot push to remote."
+  exit 1
+fi
+
+# 2. Run Secret Scan
+echo "🛡️  Running security scan for secrets..."
+if ! pnpm run security:secrets; then
+    echo "❌ Secret scan failed! Hardcoded secrets may be present."
+    exit 1
+fi
+
+# 3. Check for critical vulnerabilities in dependencies
+echo "🔍 Checking for dependency vulnerabilities..."
+if ! pnpm run security:audit; then
+  echo "❌ Dependency vulnerabilities found! Must be fixed before push."
+  echo "Run 'pnpm audit' for details."
+  exit 1
+fi
+
+# 4. Build check
+echo "🏗️  Running build check..."
+if ! pnpm run build; then
+  echo "❌ Build failed! Cannot push to remote."
+  exit 1
+fi
+
+# 5. Ethiopian FinTech specific checks
+echo "🇪🇹 Running Ethiopian FinTech compliance checks..."
+
+# Check for NBE compliance documentation
+if [ "$branch" = "main" ] || [ "$branch" = "develop" ]; then
+  echo "📋 Validating NBE compliance for protected branch..."
+  
+  # Ensure financial logic has tests
+  if git diff --name-only origin/$branch..HEAD | grep -E "(payment|credit|bnpl|financial)" | grep -E "\.(ts|js)$" | head -1 > /dev/null; then
+    echo "💰 Financial code changes detected - validating test coverage..."
+    if ! git diff --name-only origin/$branch..HEAD | grep -E "(payment|credit|bnpl|financial).*\.(test|spec)\.(ts|js)$" > /dev/null; then
+      echo "⚠️  WARNING: Financial code changes without corresponding tests!"
+      echo "FinTech regulations require comprehensive testing of financial logic."
+      echo "Please add tests for your financial code changes."
+    fi
+  fi
+  
+  # Check for Fayda ID integration changes
+  if git diff --name-only origin/$branch..HEAD | xargs grep -l "fayda\|national.*id" 2>/dev/null; then
+    echo "🆔 Fayda ID integration changes detected - validating security..."
+    if ! git diff --name-only origin/$branch..HEAD | xargs grep -l "encrypt\|hash\|secure" 2>/dev/null; then
+      echo "⚠️  WARNING: Fayda ID changes should include security measures!"
+      echo "Ensure proper encryption and data protection for identity data."
+    fi
+  fi
+fi
+
+# 6. Check for proper commit message format (if pushing to protected branches)
+if [ "$branch" = "main" ] || [ "$branch" = "develop" ]; then
+  echo "📝 Validating commit message format for protected branch..."
+  last_commit_msg=$(git log -1 --pretty=%B)
+  if ! echo "$last_commit_msg" | grep -qE "^(feat|fix|docs|style|refactor|perf|test|chore|security)(\(.+\))?: .+"; then
+    echo "⚠️  WARNING: Commit message doesn't follow conventional format!"
+    echo "For protected branches, use: type(scope): description"
+    echo "Types: feat, fix, docs, style, refactor, perf, test, chore, security"
+  fi
+fi
+
+# 7. Final dependency check
+echo "📦 Final dependency validation..."
+if ! pnpm install --frozen-lockfile --silent; then
+  echo "❌ Dependency installation failed with frozen lockfile!"
+  echo "This indicates pnpm-lock.yaml is out of sync."
+  exit 1
+fi
+
+echo "✅ All pre-push checks passed!"
+echo "🎉 Ready to push to Meqenet.et remote repository!"
+echo "🇪🇹 Contributing to Ethiopia's financial future!"

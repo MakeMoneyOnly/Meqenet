@@ -1,0 +1,96 @@
+# Blue/Green Deployment Template for Authentication Service
+# Ethiopian FinTech compliance with zero-downtime deployments
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: auth-service-config
+  labels:
+    app: auth-service
+data:
+  TZ: "Africa/Addis_Ababa"
+  LOCALE: "en_ET"
+  CURRENCY: "ETB"
+  NBE_REPORTING_ENABLED: "true"
+
+---
+# Blue Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-service-blue
+  labels:
+    app: auth-service
+    slot: blue
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: auth-service
+      slot: blue
+  template:
+    metadata:
+      labels:
+        app: auth-service
+        slot: blue
+    spec:
+      containers:
+        - name: auth-service
+          image: meqenet/auth-service:latest
+          ports:
+            - containerPort: 3001
+          envFrom:
+            - configMapRef:
+                name: auth-service-config
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3001
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 3001
+
+---
+# Green Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-service-green
+  labels:
+    app: auth-service
+    slot: green
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: auth-service
+      slot: green
+  template:
+    metadata:
+      labels:
+        app: auth-service
+        slot: green
+    spec:
+      containers:
+        - name: auth-service
+          image: meqenet/auth-service:latest
+          ports:
+            - containerPort: 3001
+          envFrom:
+            - configMapRef:
+                name: auth-service-config
+
+---
+# Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service-service
+spec:
+  selector:
+    app: auth-service
+    slot: blue # Routes to blue initially
+  ports:
+    - port: 80
+      targetPort: 3001

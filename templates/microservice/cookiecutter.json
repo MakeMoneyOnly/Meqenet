@@ -1,0 +1,21 @@
+{
+  "service_name": "example-service",
+  "service_slug": "{{ cookiecutter.service_name.lower().replace(' ', '-').replace('_', '-') }}",
+  "service_class": "{{ cookiecutter.service_name.title().replace('-', '').replace('_', '').replace(' ', '') }}Service",
+  "service_description": "A microservice for Meqenet platform",
+  "service_port": "3000",
+  "needs_database": ["y", "n"],
+  "is_grpc_service": ["y", "n"],
+  "is_event_driven": ["y", "n"],
+  "author_name": "Meqenet Developer",
+  "author_email": "dev@meqenet.et",
+  "year": "{% now 'utc', '%Y' %}",
+  "version": "1.0.0",
+  "node_version": "18.19.0",
+  "nestjs_version": "^10.0.0",
+  "prisma_version": "^5.0.0",
+  "environment": "development",
+  "replicas": "2",
+  "min_replicas": "1",
+  "max_replicas": "10"
+}

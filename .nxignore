@@ -1,0 +1,21 @@
+# Ignore cookiecutter templates with variable interpolation
+templates/
+
+# Ignore common non-project directories  
+node_modules/
+dist/
+coverage/
+.git/
+.husky/
+.security/
+infrastructure/terraform-state/
+
+# Ignore documentation that doesn't need processing
+docs/
+*.md
+
+# Ignore temporary files
+*.tmp
+*.log
+.DS_Store
+Thumbs.db 

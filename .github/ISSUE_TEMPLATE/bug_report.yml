@@ -1,0 +1,170 @@
+name: 🐛 Bug Report
+description: Report a bug or technical issue in the Meqenet platform
+title: "[BUG]: "
+labels: ["bug", "needs-triage"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting a bug! Please provide as much detail as possible to help us fix the issue quickly.
+
+        **⚠️ Security Notice**: If this bug involves security, payment processing, or user data, please email security@meqenet.et instead of filing a public issue.
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      description: Which platform(s) are affected?
+      options:
+        - Mobile App (iOS)
+        - Mobile App (Android)
+        - Web Application
+        - Merchant Portal
+        - Admin Portal
+        - API/Backend
+        - Browser Extension
+        - Multiple Platforms
+      multiple: true
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: How severe is this bug?
+      options:
+        - Critical (System down, payment failures, security breach)
+        - High (Major feature broken, data loss)
+        - Medium (Feature partially working, workaround available)
+        - Low (Minor UI issue, cosmetic problem)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: feature_area
+    attributes:
+      label: Feature Area
+      description: Which feature area is affected?
+      options:
+        - Authentication/Login
+        - User Registration/KYC
+        - Payment Processing
+        - BNPL (Pay in 4)
+        - BNPL (Pay in 30)
+        - BNPL (Financing)
+        - Marketplace/Products
+        - Cashback/Rewards
+        - Merchant Dashboard
+        - Admin Portal
+        - Notifications
+        - Financial Wellness
+        - API Integration
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is
+      placeholder: Describe what happened...
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Steps to reproduce the behavior
+      placeholder: |
+        1. Go to '...'
+        2. Click on '...'
+        3. Scroll down to '...'
+        4. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: A clear and concise description of what you expected to happen
+      placeholder: What should have happened?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: A clear and concise description of what actually happened
+      placeholder: What actually happened?
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment Details
+      description: Please provide environment information
+      placeholder: |
+        - Device: [e.g. iPhone 12, Samsung Galaxy S21, Desktop]
+        - OS: [e.g. iOS 15.1, Android 12, Windows 10]
+        - Browser: [e.g. Safari, Chrome, Firefox]
+        - App Version: [e.g. 1.2.3]
+        - Network: [e.g. WiFi, 4G, 3G]
+        - Location: [e.g. Addis Ababa, Ethiopia]
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots/Videos
+      description: If applicable, add screenshots or screen recordings to help explain your problem
+      placeholder: Drag and drop files here or paste image URLs
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error Logs/Console Output
+      description: If applicable, paste any error messages or console output
+      placeholder: Paste error messages here...
+
+  - type: dropdown
+    id: frequency
+    attributes:
+      label: Frequency
+      description: How often does this bug occur?
+      options:
+        - Always (100%)
+        - Frequently (>50%)
+        - Sometimes (10-50%)
+        - Rarely (<10%)
+        - Once
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      options:
+        - label: I have searched existing issues to ensure this is not a duplicate
+          required: true
+        - label: I have provided clear steps to reproduce the issue
+          required: true
+        - label: I have included relevant environment details
+          required: true
+        - label: This is not a security-related issue (those should be reported privately)
+          required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Add any other context about the problem here
+      placeholder: Any additional information that might be helpful...

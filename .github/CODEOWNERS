@@ -1,0 +1,258 @@
+# CODEOWNERS for Meqenet.et BNPL Platform
+# This file defines code ownership for the Ethiopian FinTech platform
+# Each line represents a file pattern followed by one or more owners
+# Owners are notified when pull requests are opened that modify these files
+
+# Global Rules - All team members are responsible for general code quality
+* @meqenet-dev-team
+
+# ==========================================
+# CRITICAL FINANCIAL SERVICES (High Security)
+# ==========================================
+
+# Authentication & Security Service (Zero Trust Architecture)
+/services/auth-service/ @data-security-specialist @financial-software-architect
+/packages/auth/ @data-security-specialist @financial-software-architect
+
+# Core BNPL Service (All 4 Payment Options)
+/services/bnpl-service/ @financial-software-architect @senior-backend-developer
+/packages/bnpl/ @financial-software-architect @senior-backend-developer
+
+# Credit Assessment & Scoring (AI/ML + Compliance)
+/services/credit-service/ @data-scientist-ml @compliance-risk-officer
+/packages/credit/ @data-scientist-ml @compliance-risk-officer
+
+# KYC Verification (Fayda National ID + NBE Compliance)
+/services/kyc-service/ @compliance-risk-officer @data-security-specialist
+/packages/kyc/ @compliance-risk-officer @data-security-specialist
+
+# Settlement Processing (Merchant Payments)
+/services/settlements-service/ @financial-software-architect @senior-backend-developer
+/packages/settlements/ @financial-software-architect @senior-backend-developer
+
+# Payment Gateway Integrations (Ethiopian Providers)
+/services/payments-service/ @senior-backend-developer @fintech-devops-engineer
+/packages/payments/ @senior-backend-developer @fintech-devops-engineer
+
+# ==========================================
+# MARKETPLACE & COMMERCE SERVICES
+# ==========================================
+
+# Merchant Marketplace Platform
+/services/marketplace-service/ @marketplace-merchant-manager @senior-backend-developer
+/packages/marketplace/ @marketplace-merchant-manager @senior-backend-developer
+
+# Product Catalog & Search
+/services/products-service/ @marketplace-merchant-manager @senior-backend-developer
+/packages/products/ @marketplace-merchant-manager @senior-backend-developer
+
+# Order Management & Fulfillment
+/services/orders-service/ @marketplace-merchant-manager @senior-backend-developer
+/packages/orders/ @marketplace-merchant-manager @senior-backend-developer
+
+# ==========================================
+# CUSTOMER EXPERIENCE SERVICES
+# ==========================================
+
+# Rewards & Cashback Engine
+/services/rewards-service/ @product-manager @senior-backend-developer
+/packages/rewards/ @product-manager @senior-backend-developer
+
+# Premium Subscription (Meqenet Plus)
+/services/premium-service/ @product-manager @senior-backend-developer
+/packages/premium/ @product-manager @senior-backend-developer
+
+# Analytics & Business Intelligence
+/services/analytics-service/ @analytics-bi-specialist @data-scientist-ml
+/packages/analytics/ @analytics-bi-specialist @data-scientist-ml
+
+# Virtual Cards (High Security)
+/services/virtual-cards-service/ @data-security-specialist @senior-backend-developer
+/packages/virtual-cards/ @data-security-specialist @senior-backend-developer
+
+# QR Payments (Mobile-First)
+/services/qr-payments-service/ @senior-mobile-developer @senior-backend-developer
+/packages/qr-payments/ @senior-mobile-developer @senior-backend-developer
+
+# ==========================================
+# FRONTEND APPLICATIONS
+# ==========================================
+
+# Website (Next.js PWA)
+/apps/website/ @senior-mobile-developer @ux-designer
+/packages/web-ui/ @senior-mobile-developer @ux-designer
+
+# Mobile App (React Native)
+/apps/mobile/ @senior-mobile-developer @ux-designer
+/packages/mobile-ui/ @senior-mobile-developer @ux-designer
+
+# Shared UI Components & Design System
+/packages/shared-ui/ @senior-mobile-developer @ux-designer
+/packages/design-system/ @senior-mobile-developer @ux-designer
+
+# Browser Extension
+/apps/browser-extension/ @senior-mobile-developer @senior-backend-developer
+
+# ==========================================
+# INFRASTRUCTURE & DEVOPS
+# ==========================================
+
+# Infrastructure as Code (Terraform)
+/infrastructure/ @fintech-devops-engineer @financial-software-architect
+/terraform/ @fintech-devops-engineer @financial-software-architect
+
+# Container Configurations
+/docker/ @fintech-devops-engineer
+/dockerfiles/ @fintech-devops-engineer
+/k8s/ @fintech-devops-engineer @financial-software-architect
+
+# CI/CD Pipelines
+/.github/ @fintech-devops-engineer @financial-software-architect
+/.gitlab-ci.yml @fintech-devops-engineer @financial-software-architect
+
+# Monitoring & Observability
+/monitoring/ @fintech-devops-engineer @senior-backend-developer
+/grafana/ @fintech-devops-engineer @analytics-bi-specialist
+
+# ==========================================
+# DOCUMENTATION & COMPLIANCE
+# ==========================================
+
+# Core Documentation
+/docs/ @product-manager @compliance-risk-officer
+
+# Security Documentation (High Sensitivity)
+/docs/Stage\ 1\ -\ Foundation/07-Security.md @data-security-specialist @compliance-risk-officer
+
+# Compliance Framework (NBE Regulations)
+/docs/Stage\ 1\ -\ Foundation/05-Compliance_Framework.md @compliance-risk-officer
+
+# API Documentation & Governance
+/docs/Stage\ 1\ -\ Foundation/02-API_Specification_and_Governance.md @financial-software-architect @senior-backend-developer
+
+# Architecture Documentation
+/docs/Stage\ 1\ -\ Foundation/08-Architecture.md @financial-software-architect
+
+# Business Model & Financial Logic
+/docs/Stage\ 1\ -\ Foundation/03-Business_Model.md @product-manager @financial-software-architect
+
+# ==========================================
+# ETHIOPIAN-SPECIFIC INTEGRATIONS
+# ==========================================
+
+# Fayda National ID Integration (KYC)
+**/fayda-integration/ @compliance-risk-officer @senior-backend-developer
+**/fayda/ @compliance-risk-officer @senior-backend-developer
+
+# Telebirr Payment Integration
+**/telebirr-integration/ @senior-backend-developer @fintech-devops-engineer
+**/telebirr/ @senior-backend-developer @fintech-devops-engineer
+
+# Ethiopian Payment Gateways
+**/chapa/ @senior-backend-developer @fintech-devops-engineer
+**/santimpay/ @senior-backend-developer @fintech-devops-engineer
+**/arifpay/ @senior-backend-developer @fintech-devops-engineer
+**/hellocash/ @senior-backend-developer @fintech-devops-engineer
+
+# Amharic Localization
+**/amharic-localization/ @ux-designer @senior-mobile-developer
+**/i18n/am/ @ux-designer @senior-mobile-developer
+**/locales/am/ @ux-designer @senior-mobile-developer
+
+# ==========================================
+# FINANCIAL LOGIC (HIGHEST SECURITY)
+# ==========================================
+
+# Payment Processing Logic
+**/*payment*.ts @financial-software-architect @data-security-specialist
+**/*payment*.js @financial-software-architect @data-security-specialist
+**/*Payment*.tsx @financial-software-architect @senior-mobile-developer
+
+# Interest Rate Calculations
+**/*interest*.ts @financial-software-architect @compliance-risk-officer
+**/*interest*.js @financial-software-architect @compliance-risk-officer
+**/*Interest*.tsx @financial-software-architect @ux-designer
+
+# Loan Management Logic
+**/*loan*.ts @financial-software-architect @senior-backend-developer
+**/*loan*.js @financial-software-architect @senior-backend-developer
+**/*Loan*.tsx @financial-software-architect @senior-mobile-developer
+
+# Credit Scoring & Assessment
+**/*credit*.ts @data-scientist-ml @compliance-risk-officer
+**/*credit*.js @data-scientist-ml @compliance-risk-officer
+**/*Credit*.tsx @data-scientist-ml @ux-designer
+
+# Financial Calculations & Utilities
+**/*calculation*.ts @financial-software-architect @data-security-specialist
+**/*financial*.ts @financial-software-architect @compliance-risk-officer
+**/*currency*.ts @financial-software-architect @senior-backend-developer
+
+# ==========================================
+# SECURITY-SENSITIVE FILES
+# ==========================================
+
+# Cryptography & Encryption
+**/*crypto*.ts @data-security-specialist @financial-software-architect
+**/*encryption*.ts @data-security-specialist @financial-software-architect
+**/*security*.ts @data-security-specialist @financial-software-architect
+
+# Authentication & Authorization
+**/*auth*.ts @data-security-specialist @financial-software-architect
+**/*jwt*.ts @data-security-specialist @senior-backend-developer
+**/*session*.ts @data-security-specialist @senior-backend-developer
+
+# Database Schemas (Financial Data)
+**/schema.prisma @financial-software-architect @data-security-specialist
+**/migrations/ @financial-software-architect @senior-backend-developer
+
+# Environment & Configuration Files
+**/.env* @fintech-devops-engineer @data-security-specialist
+**/config/ @fintech-devops-engineer @financial-software-architect
+
+# ==========================================
+# SPECIAL FILES & CONFIGURATIONS
+# ==========================================
+
+# Repository Configuration
+.gitignore @fintech-devops-engineer
+.cursorrules @financial-software-architect @data-security-specialist
+CONTRIBUTING.md @product-manager @financial-software-architect
+README.md @product-manager @financial-software-architect
+LICENSE @compliance-risk-officer @product-manager
+
+# Package Management
+package.json @fintech-devops-engineer @senior-backend-developer
+package-lock.json @fintech-devops-engineer @senior-backend-developer
+yarn.lock @fintech-devops-engineer @senior-backend-developer
+
+# TypeScript Configuration
+tsconfig.json @financial-software-architect @senior-backend-developer
+tsconfig.*.json @financial-software-architect @senior-backend-developer
+
+# Linting & Code Quality
+.eslintrc* @financial-software-architect @senior-backend-developer
+.prettierrc* @financial-software-architect @senior-mobile-developer
+jest.config* @senior-backend-developer @financial-qa-specialist
+
+# ==========================================
+# TASK MANAGEMENT & PROJECT COORDINATION
+# ==========================================
+
+# Task Management System
+/tasks/ @product-manager @financial-software-architect
+tasks.yaml @product-manager @financial-software-architect
+update_progress.py @product-manager @fintech-devops-engineer
+
+# ==========================================
+# COMPLIANCE & AUDIT REQUIREMENTS
+# ==========================================
+
+# Any changes to financial logic, security implementations, or Ethiopian regulatory compliance
+# require additional review from compliance officers and security specialists.
+# 
+# For NBE audit purposes, all changes to payment processing, interest calculations,
+# and customer data handling must maintain a complete audit trail with proper approvals.
+#
+# Emergency security patches may bypass some approval requirements but require
+# post-deployment review within 24 hours. 
