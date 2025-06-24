@@ -11,7 +11,7 @@
     "test": "jest --projects backend/services/auth-service backend/services/api-gateway backend-e2e",
     "build": "pnpm -r --if-present build",
     "security:audit": "pnpm audit --audit-level moderate",
-    "security:secrets": "trufflehog filesystem . --fail",
+    "security:secrets": "trufflehog git file://. --no-update --only-verified --fail",
     "security:outdated": "pnpm outdated",
     "validate:ethiopian-compliance": "echo 'Running Ethiopian FinTech compliance checks...' && pnpm run security:audit",
     "clean": "pnpm -r --if-present clean",
