@@ -1,62 +1,49 @@
 # Multi-stage Dockerfile for Authentication Service
 # Optimized for production with security best practices
 
-# Build stage
+# 1. Builder Stage
 FROM node:18.19.0-alpine AS builder
-
-# Set working directory
 WORKDIR /app
 
-# Install dependencies needed for building
-RUN apk add --no-cache \
-    python3 \
-    make \
-    g++ \
-    && rm -rf /var/cache/apk/*
+# Install pnpm
+RUN npm install -g pnpm
 
-# Copy package files
-COPY package*.json yarn.lock ./
-COPY prisma/ ./prisma/
-# Install dependencies
-RUN yarn install --frozen-lockfile --production=false
+# Copy dependency definition files
+COPY ../../../pnpm-lock.yaml ./
+COPY ../../../pnpm-workspace.yaml ./
+COPY package.json ./
 
-# Copy source code
+# Install dependencies using pnpm. This will create node_modules in the container.
+# It only fetches dependencies listed for this specific service.
+RUN pnpm install --prod=false --frozen-lockfile
+
+# Copy the rest of the application source code
 COPY . .
 
-# Generate Prisma client
-RUN yarn prisma generate
 # Build the application
-RUN yarn build
+RUN pnpm build
 
-# Production stage
+
+# 2. Production Stage
 FROM node:18.19.0-alpine AS production
-
-# Create non-root user
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nestjs -u 1001
-
-# Set working directory
 WORKDIR /app
 
-# Install production dependencies only
-COPY package*.json yarn.lock ./
-RUN yarn install --frozen-lockfile --production=true && \
-    yarn cache clean && \
-    rm -rf /tmp/* /var/tmp/* /root/.cache /root/.npm
+# Create a non-root user for security
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S appuser -u 1001
 
-# Copy built application from builder stage
-COPY --from=builder --chown=nestjs:nodejs /app/dist ./dist
-COPY --from=builder --chown=nestjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
-# Copy package.json for metadata
-COPY --chown=nestjs:nodejs package.json ./
+# Copy the dependency definitions and install *only* production dependencies
+COPY ../../../pnpm-lock.yaml ./
+COPY ../../../pnpm-workspace.yaml ./
+COPY package.json ./
+RUN npm install -g pnpm && pnpm install --prod --frozen-lockfile
 
-# Security: Remove package manager
-RUN rm -rf /usr/local/bin/yarn /usr/local/bin/npm
+# Copy the built application artifacts from the builder stage
+COPY --from=builder /app/dist ./dist
 
-# Switch to non-root user
-USER nestjs
+# Switch to the non-root user
+USER appuser
 
-# Expose port
 EXPOSE 3001
 
 # Health check
@@ -64,4 +51,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD node dist/health-check.js || exit 1
 
 # Start the application
-CMD ["node", "dist/main.js"] 
+CMD ["node", "dist/main"] 
