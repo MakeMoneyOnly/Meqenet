@@ -59,16 +59,16 @@ if [ "$branch" = "main" ] || [ "$branch" = "develop" ]; then
     if git diff --name-only origin/$branch..HEAD | grep -E "(payment|credit|bnpl|financial)" | grep -E "\.(ts|js)$" | head -1 > /dev/null; then
       echo "💰 Financial code changes detected - validating test coverage..."
       if ! git diff --name-only origin/$branch..HEAD | grep -E "(payment|credit|bnpl|financial).*\.(test|spec)\.(ts|js)$" > /dev/null; then
-        echo "⚠️  WARNING: Financial code changes without corresponding tests!"
-        echo "FinTech regulations require comprehensive testing of financial logic."
+        echo "❌ Financial code changes missing corresponding tests! Push rejected."
+        exit 1
       fi
     fi
     # Check for Fayda ID integration changes
     if git diff --name-only origin/$branch..HEAD | xargs grep -l "fayda\|national.*id" 2>/dev/null; then
       echo "🆔 Fayda ID integration changes detected - validating security..."
       if ! git diff --name-only origin/$branch..HEAD | xargs grep -l "encrypt\|hash\|secure" 2>/dev/null; then
-        echo "⚠️  WARNING: Fayda ID changes should include security measures!"
-        echo "Ensure proper encryption and data protection for identity data."
+        echo "❌ Fayda ID changes missing encryption/security measures! Push rejected."
+        exit 1
       fi
     fi
   fi
