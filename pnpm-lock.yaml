@@ -80,6 +80,9 @@ importers:
       "@swc/helpers":
         specifier: ~0.5.17
         version: 0.5.17
+      "@types/compression":
+        specifier: ^1.8.1
+        version: 1.8.1
       "@types/jest":
         specifier: ^30.0.0
         version: 30.0.0
@@ -195,9 +198,6 @@ importers:
       jest:
         specifier: ^30.0.2
         version: 30.0.2(@types/node@24.0.3)(ts-node@10.9.2)
-      superagent:
-        specifier: ^8.1.2
-        version: 8.1.2
       supertest:
         specifier: ^6.3.3
         version: 6.3.4
@@ -7400,6 +7400,17 @@ packages:
         tarball: https://registry.npmjs.org/@types/bonjour/-/bonjour-3.5.13.tgz,
       }
     dependencies:
+      "@types/node": 24.0.3
+    dev: true
+
+  /@types/compression@1.8.1:
+    resolution:
+      {
+        integrity: sha512-kCFuWS0ebDbmxs0AXYn6e2r2nrGAb5KwQhknjSPSPgJcGd8+HVSILlUyFhGqML2gk39HcG7D1ydW9/qpYkN00Q==,
+        tarball: https://registry.npmjs.org/@types/compression/-/compression-1.8.1.tgz,
+      }
+    dependencies:
+      "@types/express": 5.0.3
       "@types/node": 24.0.3
     dev: true
 
