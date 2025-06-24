@@ -39,8 +39,9 @@ export default tseslint.config(
         ...globals.es2022,
       },
       parserOptions: {
-        projectService: true,
+        project: ['./tsconfig.eslint.json'],
         tsconfigRootDir: import.meta.dirname,
+        allowDefaultProject: true,
       },
     },
     plugins: {
