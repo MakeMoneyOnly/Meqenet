@@ -56,7 +56,7 @@ if [ "$branch" = "main" ] || [ "$branch" = "develop" ]; then
   echo "📋 Validating NBE compliance for protected branch..."
   if [ "$REMOTE_BRANCH_EXISTS" = true ]; then
     # Ensure financial logic has tests
-    if git diff --name-only origin/$branch..HEAD | grep -E "^.+src/.+(payment|credit|bnpl|financial).*\.(ts|js)$" | head -1 > /dev/null; then
+    if git diff --name-only origin/$branch..HEAD | grep -q -E "^.+src/.+(payment|credit|bnpl|financial).*\.(ts|js)$" > /dev/null; then
       echo "💰 Financial code changes detected - validating test coverage..."
       if ! git diff --name-only origin/$branch..HEAD | grep -E "(payment|credit|bnpl|financial).*\.(test|spec)\.(ts|js)$" > /dev/null; then
         echo "❌ Financial code changes missing corresponding tests! Push rejected."
