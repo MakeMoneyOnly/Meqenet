@@ -1,0 +1,19 @@
+# Ignore node_modules to prevent local host-specific modules from being sent to the Docker daemon.
+# This is critical for avoiding file permission issues, especially on Windows.
+node_modules
+
+# Ignore build artifacts
+dist
+
+# Ignore local environment files
+.env
+
+# Ignore IDE and OS-specific files
+.vscode
+.DS_Store
+
+# Ignore test and config files that are not needed in the image
+jest.config.ts
+tsconfig.spec.json
+*.spec.ts
+README.md 
