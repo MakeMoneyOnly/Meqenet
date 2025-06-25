@@ -37,6 +37,36 @@
               "{workspaceRoot}/eslint.config.js"
             ]
           },
+          "test": {
+            "executor": "nx:run-script",
+            "options": {
+              "script": "test"
+            },
+            "metadata": {
+              "technologies": [
+                "jest"
+              ],
+              "description": "Run Jest Tests",
+              "help": {
+                "command": "pnpm exec jest --help",
+                "example": {
+                  "options": {
+                    "coverage": true
+                  }
+                }
+              },
+              "scriptContent": "jest",
+              "runCommand": "pnpm run test"
+            },
+            "configurations": {},
+            "parallelism": true,
+            "cache": true,
+            "inputs": [
+              "default",
+              "^default",
+              "{workspaceRoot}/jest.preset.js"
+            ]
+          },
           "build": {
             "executor": "nx:run-script",
             "options": {
@@ -125,24 +155,6 @@
             },
             "configurations": {},
             "parallelism": true
-          },
-          "test": {
-            "executor": "nx:run-script",
-            "options": {
-              "script": "test"
-            },
-            "metadata": {
-              "scriptContent": "jest",
-              "runCommand": "pnpm run test"
-            },
-            "configurations": {},
-            "parallelism": true,
-            "cache": true,
-            "inputs": [
-              "default",
-              "^default",
-              "{workspaceRoot}/jest.preset.js"
-            ]
           },
           "test:watch": {
             "executor": "nx:run-script",
@@ -288,6 +300,18 @@
             "configurations": {},
             "parallelism": true
           },
+          "security:licenses": {
+            "executor": "nx:run-script",
+            "options": {
+              "script": "security:licenses"
+            },
+            "metadata": {
+              "scriptContent": "pnpm licenses list --json | node -e 'const fs = require(\"fs\"); const licenses = JSON.parse(fs.readFileSync(0)); const forbidden = [\"GPL\", \"LGPL\", \"AGPL\", \"MS-PL\"]; const forbiddenUsed = Object.keys(licenses).filter(l => forbidden.includes(l)); if (forbiddenUsed.length > 0) { console.error(\"Forbidden licenses found:\", forbiddenUsed); process.exit(1); } const deprecated = [\"boolean\", \"read-package-json\"]; const allDeps = Object.values(licenses).flat(); const deprecatedUsed = allDeps.filter(d => deprecated.includes(d.name)); if (deprecatedUsed.length > 0) { console.error(\"Deprecated packages found:\", deprecatedUsed.map(d=>d.name)); process.exit(1); }'",
+              "runCommand": "pnpm run security:licenses"
+            },
+            "configurations": {},
+            "parallelism": true
+          },
           "docker:build": {
             "executor": "nx:run-script",
             "options": {
@@ -318,7 +342,7 @@
               "script": "security:audit"
             },
             "metadata": {
-              "scriptContent": "yarn audit --level moderate",
+              "scriptContent": "pnpm audit --level moderate",
               "runCommand": "pnpm run security:audit"
             },
             "configurations": {},
@@ -365,6 +389,7 @@
               "db:seed",
               "db:reset",
               "proto:generate",
+              "security:licenses",
               "docker:build",
               "docker:run",
               "security:audit",
@@ -374,6 +399,166 @@
           "description": "Authentication and authorization microservice",
           "js": {
             "packageName": "@meqenet/auth-service",
+            "isInPackageManagerWorkspaces": true
+          }
+        },
+        "implicitDependencies": []
+      }
+    },
+    "@meqenet/api-gateway": {
+      "name": "@meqenet/api-gateway",
+      "type": "lib",
+      "data": {
+        "root": "backend/services/api-gateway",
+        "targets": {
+          "lint": {
+            "cache": true,
+            "options": {
+              "cwd": "backend/services/api-gateway",
+              "command": "eslint ."
+            },
+            "inputs": [
+              "default",
+              "{workspaceRoot}/.eslintrc.json",
+              "{workspaceRoot}/.eslintignore",
+              "{workspaceRoot}/eslint.config.js"
+            ],
+            "outputs": [
+              "{options.outputFile}"
+            ],
+            "metadata": {
+              "technologies": [
+                "eslint"
+              ],
+              "description": "Runs ESLint on project",
+              "help": {
+                "command": "pnpm exec eslint --help",
+                "example": {
+                  "options": {
+                    "max-warnings": 0
+                  }
+                }
+              }
+            },
+            "executor": "nx:run-commands",
+            "configurations": {},
+            "parallelism": true
+          },
+          "test": {
+            "executor": "nx:run-script",
+            "options": {
+              "script": "test"
+            },
+            "metadata": {
+              "technologies": [
+                "jest"
+              ],
+              "description": "Run Jest Tests",
+              "help": {
+                "command": "pnpm exec jest --help",
+                "example": {
+                  "options": {
+                    "coverage": true
+                  }
+                }
+              },
+              "scriptContent": "jest",
+              "runCommand": "pnpm run test"
+            },
+            "configurations": {},
+            "parallelism": true,
+            "cache": true,
+            "inputs": [
+              "default",
+              "^default",
+              "{workspaceRoot}/jest.preset.js"
+            ]
+          },
+          "start": {
+            "executor": "nx:run-script",
+            "options": {
+              "script": "start"
+            },
+            "metadata": {
+              "scriptContent": "nest start",
+              "runCommand": "pnpm run start"
+            },
+            "configurations": {},
+            "parallelism": true
+          },
+          "start:dev": {
+            "executor": "nx:run-script",
+            "options": {
+              "script": "start:dev"
+            },
+            "metadata": {
+              "scriptContent": "nest start --watch",
+              "runCommand": "pnpm run start:dev"
+            },
+            "configurations": {},
+            "parallelism": true
+          },
+          "build": {
+            "executor": "nx:run-script",
+            "options": {
+              "script": "build"
+            },
+            "metadata": {
+              "scriptContent": "nest build",
+              "runCommand": "pnpm run build"
+            },
+            "configurations": {},
+            "parallelism": true,
+            "cache": true,
+            "inputs": [
+              "production",
+              "^production"
+            ]
+          },
+          "docker:build": {
+            "executor": "nx:run-script",
+            "options": {
+              "script": "docker:build"
+            },
+            "metadata": {
+              "scriptContent": "docker build -t api-gateway .",
+              "runCommand": "pnpm run docker:build"
+            },
+            "configurations": {},
+            "parallelism": true
+          },
+          "docker:run": {
+            "executor": "nx:run-script",
+            "options": {
+              "script": "docker:run"
+            },
+            "metadata": {
+              "scriptContent": "docker run -p 3000:3000 api-gateway",
+              "runCommand": "pnpm run docker:run"
+            },
+            "configurations": {},
+            "parallelism": true
+          }
+        },
+        "name": "@meqenet/api-gateway",
+        "tags": [
+          "npm:private"
+        ],
+        "metadata": {
+          "targetGroups": {
+            "NPM Scripts": [
+              "start",
+              "start:dev",
+              "build",
+              "docker:build",
+              "docker:run",
+              "test"
+            ]
+          },
+          "description": "API Gateway microservice",
+          "js": {
+            "packageName": "@meqenet/api-gateway",
+            "packageMain": "dist/main.js",
             "isInPackageManagerWorkspaces": true
           }
         },
@@ -425,7 +610,7 @@
               "{workspaceRoot}/coverage/{e2eProjectRoot}"
             ],
             "options": {
-              "jestConfig": "backend-e2e/jest.config.ts",
+              "jestConfig": "backend-e2e/jest.config.cjs",
               "passWithNoTests": true
             },
             "dependsOn": [
@@ -481,42 +666,6 @@
               }
             },
             "executor": "nx:run-commands",
-            "configurations": {},
-            "parallelism": true
-          },
-          "test": {
-            "metadata": {
-              "technologies": [
-                "jest"
-              ],
-              "description": "Run Jest Tests",
-              "help": {
-                "command": "pnpm exec jest --help",
-                "example": {
-                  "options": {
-                    "coverage": true
-                  }
-                }
-              }
-            },
-            "cache": true,
-            "inputs": [
-              "default",
-              "^default",
-              "{workspaceRoot}/jest.preset.js"
-            ],
-            "outputs": [
-              "{workspaceRoot}\\coverage\\backend"
-            ],
-            "executor": "nx:run-commands",
-            "options": {
-              "cwd": "backend",
-              "env": {
-                "TS_NODE_COMPILER_OPTIONS": "{\"moduleResolution\":\"node10\",\"module\":\"commonjs\",\"customConditions\":null}"
-              },
-              "command": "jest",
-              "passWithNoTests": true
-            },
             "configurations": {},
             "parallelism": true
           },
@@ -1919,9 +2068,9 @@
       "type": "npm",
       "name": "npm:@discoveryjs/json-ext",
       "data": {
-        "version": "0.5.7",
+        "version": "0.6.3",
         "packageName": "@discoveryjs/json-ext",
-        "hash": "sha512-dBVuXR082gk3jsFp7Rd/JI4kytwGHecnCoTtXFb7DB6CNHp4rg5k1bhg0nWdLGLnOV71lmDzGQaLMy8iPLY0pw=="
+        "hash": "sha512-4B4OijXeVNOPZlYA2oEwWOTkzyltLao+xbotHQeqN++Rv27Y6s818+n2Qkp8q+Fxhn0t/5lA5X1Mxktud8eayQ=="
       }
     },
     "npm:@emnapi/core": {
@@ -2851,6 +3000,15 @@
         "hash": "sha512-osL67i0PUuwU5nqSuJjtUJZMkxAnYB4VldgYUMGzvYRJDCqGRFMWbsbzm/CkUtPLRL30I8T74Xgt/OQxnYokiA=="
       }
     },
+    "npm:@noble/hashes": {
+      "type": "npm",
+      "name": "npm:@noble/hashes",
+      "data": {
+        "version": "1.8.0",
+        "packageName": "@noble/hashes",
+        "hash": "sha512-jCs9ldd7NwzpgXDIf6P3+NrHh9/sD6CQdxHyjQI+h/6rDNo88ypBxxz45UDuZHz9r3tNz7N/VInSVoVdtXEI4A=="
+      }
+    },
     "npm:@nodelib/fs.scandir": {
       "type": "npm",
       "name": "npm:@nodelib/fs.scandir",
@@ -2876,15 +3034,6 @@
         "version": "1.2.8",
         "packageName": "@nodelib/fs.walk",
         "hash": "sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg=="
-      }
-    },
-    "npm:@npmcli/fs": {
-      "type": "npm",
-      "name": "npm:@npmcli/fs",
-      "data": {
-        "version": "3.1.1",
-        "packageName": "@npmcli/fs",
-        "hash": "sha512-q9CRWjpHCMIh5sVyefoD1cA7PkvILqCZsnSOEUUivORLjxCO/Irmue2DprETiNgEqktDBZaM1Bi+jrarx1XdCg=="
       }
     },
     "npm:@nuxt/opencollective": {
@@ -3074,15 +3223,6 @@
         "version": "0.202.0",
         "packageName": "@opentelemetry/api-logs",
         "hash": "sha512-fTBjMqKCfotFWfLzaKyhjLvyEyq5vDKTTFfBmx21btv3gvy8Lq6N5Dh2OzqeuN4DjtpSvNT1uNVfg08eD2Rfxw=="
-      }
-    },
-    "npm:@opentelemetry/api@1.7.0": {
-      "type": "npm",
-      "name": "npm:@opentelemetry/api@1.7.0",
-      "data": {
-        "version": "1.7.0",
-        "packageName": "@opentelemetry/api",
-        "hash": "sha512-AdY5wvN0P2vXBi3b29hxZgSFvdhdxPB9+f0B6s//P9Q8nibRWeA3cHm8UmLpio9ABigkVHJ5NMPk+Mz8VCCyrw=="
       }
     },
     "npm:@opentelemetry/api": {
@@ -3364,6 +3504,15 @@
         "hash": "sha512-ruKLkS+Dm/YIJaUhzEB7zPI+jh3EXxu0QnNV8I7t9jf0lpD2VnltuyRbhrbJEkksklZj//xCMyFFsILGjiU2Mg=="
       }
     },
+    "npm:@oxc-resolver/binding-darwin-arm64@5.3.0": {
+      "type": "npm",
+      "name": "npm:@oxc-resolver/binding-darwin-arm64@5.3.0",
+      "data": {
+        "version": "5.3.0",
+        "packageName": "@oxc-resolver/binding-darwin-arm64",
+        "hash": "sha512-hXem5ZAguS7IlSiHg/LK0tEfLj4eUo+9U6DaFwwBEGd0L0VIF9LmuiHydRyOrdnnmi9iAAFMAn/wl2cUoiuruA=="
+      }
+    },
     "npm:@oxc-resolver/binding-darwin-x64": {
       "type": "npm",
       "name": "npm:@oxc-resolver/binding-darwin-x64",
@@ -3371,6 +3520,15 @@
         "version": "11.2.0",
         "packageName": "@oxc-resolver/binding-darwin-x64",
         "hash": "sha512-0zhgNUm5bYezdSFOg3FYhtVP83bAq7FTV/3suGQDl/43MixfQG7+bl+hlrP4mz6WlD2SUb2u9BomnJWl1uey9w=="
+      }
+    },
+    "npm:@oxc-resolver/binding-darwin-x64@5.3.0": {
+      "type": "npm",
+      "name": "npm:@oxc-resolver/binding-darwin-x64@5.3.0",
+      "data": {
+        "version": "5.3.0",
+        "packageName": "@oxc-resolver/binding-darwin-x64",
+        "hash": "sha512-wgSwfsZkRbuYCIBLxeg1bYrtKnirAy+IJF0lwfz4z08clgdNBDbfGECJe/cd0csIZPpRcvPFe8317yf31sWhtA=="
       }
     },
     "npm:@oxc-resolver/binding-freebsd-x64": {
@@ -3382,6 +3540,15 @@
         "hash": "sha512-SHOxfCcZV1axeIGfyeD1BkdLvfQgjmPy18tO0OUXGElcdScxD6MqU5rj/AVtiuBT+51GtFfOKlwl1+BdVwhD1A=="
       }
     },
+    "npm:@oxc-resolver/binding-freebsd-x64@5.3.0": {
+      "type": "npm",
+      "name": "npm:@oxc-resolver/binding-freebsd-x64@5.3.0",
+      "data": {
+        "version": "5.3.0",
+        "packageName": "@oxc-resolver/binding-freebsd-x64",
+        "hash": "sha512-kzeE2WHgcRMmWjB071RdwEV5Pwke4o0WWslCKoh8if1puvxIxfzu3o7g6P2+v77BP5qop4cri+uvLABSO0WZjg=="
+      }
+    },
     "npm:@oxc-resolver/binding-linux-arm-gnueabihf": {
       "type": "npm",
       "name": "npm:@oxc-resolver/binding-linux-arm-gnueabihf",
@@ -3389,6 +3556,15 @@
         "version": "11.2.0",
         "packageName": "@oxc-resolver/binding-linux-arm-gnueabihf",
         "hash": "sha512-mgEkYrJ+N90sgEDqEZ07zH+4I1D28WjqAhdzfW3aS2x2vynVpoY9jWfHuH8S62vZt3uATJrTKTRa8CjPWEsrdw=="
+      }
+    },
+    "npm:@oxc-resolver/binding-linux-arm-gnueabihf@5.3.0": {
+      "type": "npm",
+      "name": "npm:@oxc-resolver/binding-linux-arm-gnueabihf@5.3.0",
+      "data": {
+        "version": "5.3.0",
+        "packageName": "@oxc-resolver/binding-linux-arm-gnueabihf",
+        "hash": "sha512-I8np34yZP/XfIkZNDbw3rweqVgfjmHYpNX3xnJZWg+f4mgO9/UNWBwetSaqXeDZqvIch/aHak+q4HVrQhQKCqg=="
       }
     },
     "npm:@oxc-resolver/binding-linux-arm64-gnu": {
@@ -3400,6 +3576,15 @@
         "hash": "sha512-BhEzNLjn4HjP8+Q18D3/jeIDBxW7OgoJYIjw2CaaysnYneoTlij8hPTKxHfyqq4IGM3fFs9TLR/k338M3zkQ7g=="
       }
     },
+    "npm:@oxc-resolver/binding-linux-arm64-gnu@5.3.0": {
+      "type": "npm",
+      "name": "npm:@oxc-resolver/binding-linux-arm64-gnu@5.3.0",
+      "data": {
+        "version": "5.3.0",
+        "packageName": "@oxc-resolver/binding-linux-arm64-gnu",
+        "hash": "sha512-u2ndfeEUrW898eXM+qPxIN8TvTPjI90NDQBRgaxxkOfNw3xaotloeiZGz5+Yzlfxgvxr9DY9FdYkqhUhSnGhOw=="
+      }
+    },
     "npm:@oxc-resolver/binding-linux-arm64-musl": {
       "type": "npm",
       "name": "npm:@oxc-resolver/binding-linux-arm64-musl",
@@ -3407,6 +3592,15 @@
         "version": "11.2.0",
         "packageName": "@oxc-resolver/binding-linux-arm64-musl",
         "hash": "sha512-yxbMYUgRmN2V8x8XoxmD/Qq6aG7YIW3ToMDILfmcfeeRRVieEJ3DOWBT0JSE+YgrOy79OyFDH/1lO8VnqLmDQQ=="
+      }
+    },
+    "npm:@oxc-resolver/binding-linux-arm64-musl@5.3.0": {
+      "type": "npm",
+      "name": "npm:@oxc-resolver/binding-linux-arm64-musl@5.3.0",
+      "data": {
+        "version": "5.3.0",
+        "packageName": "@oxc-resolver/binding-linux-arm64-musl",
+        "hash": "sha512-TzbjmFkcnESGuVItQ2diKacX8vu5G0bH3BHmIlmY4OSRLyoAlrJFwGKAHmh6C9+Amfcjo2rx8vdm7swzmsGC6Q=="
       }
     },
     "npm:@oxc-resolver/binding-linux-riscv64-gnu": {
@@ -3418,6 +3612,15 @@
         "hash": "sha512-QG1UfgC2N2qhW1tOnDCgB/26vn1RCshR5sYPhMeaxO1gMQ3kEKbZ3QyBXxrG1IX5qsXYj5hPDJLDYNYUjRcOpg=="
       }
     },
+    "npm:@oxc-resolver/binding-linux-riscv64-gnu@5.3.0": {
+      "type": "npm",
+      "name": "npm:@oxc-resolver/binding-linux-riscv64-gnu@5.3.0",
+      "data": {
+        "version": "5.3.0",
+        "packageName": "@oxc-resolver/binding-linux-riscv64-gnu",
+        "hash": "sha512-NH3pjAqh8nuN29iRuRfTY42Vn03ctoR9VE8llfoUKUfhHUjFHYOXK5VSkhjj1usG8AeuesvqrQnLptCRQVTi/Q=="
+      }
+    },
     "npm:@oxc-resolver/binding-linux-s390x-gnu": {
       "type": "npm",
       "name": "npm:@oxc-resolver/binding-linux-s390x-gnu",
@@ -3425,6 +3628,15 @@
         "version": "11.2.0",
         "packageName": "@oxc-resolver/binding-linux-s390x-gnu",
         "hash": "sha512-uqTDsQdi6mrkSV1gvwbuT8jf/WFl6qVDVjNlx7IPSaAByrNiJfPrhTmH8b+Do58Dylz7QIRZgxQ8CHIZSyBUdg=="
+      }
+    },
+    "npm:@oxc-resolver/binding-linux-s390x-gnu@5.3.0": {
+      "type": "npm",
+      "name": "npm:@oxc-resolver/binding-linux-s390x-gnu@5.3.0",
+      "data": {
+        "version": "5.3.0",
+        "packageName": "@oxc-resolver/binding-linux-s390x-gnu",
+        "hash": "sha512-tuZtkK9sJYh2MC2uhol1M/8IMTB6ZQ5jmqP2+k5XNXnOb/im94Y5uV/u2lXwVyIuKHZZHtr+0d1HrOiNahoKpw=="
       }
     },
     "npm:@oxc-resolver/binding-linux-x64-gnu": {
@@ -3436,6 +3648,15 @@
         "hash": "sha512-GZdHXhJ7p6GaQg9MjRqLebwBf8BLvGIagccI6z5yMj4fV3LU4QuDfwSEERG+R6oQ/Su9672MBqWwncvKcKT68w=="
       }
     },
+    "npm:@oxc-resolver/binding-linux-x64-gnu@5.3.0": {
+      "type": "npm",
+      "name": "npm:@oxc-resolver/binding-linux-x64-gnu@5.3.0",
+      "data": {
+        "version": "5.3.0",
+        "packageName": "@oxc-resolver/binding-linux-x64-gnu",
+        "hash": "sha512-VzhPYmZCtoES/ThcPdGSmMop7JlwgqtSvlgtKCW15ByV2JKyl8kHAHnPSBfpIooXb0ehFnRdxFtL9qtAEWy01g=="
+      }
+    },
     "npm:@oxc-resolver/binding-linux-x64-musl": {
       "type": "npm",
       "name": "npm:@oxc-resolver/binding-linux-x64-musl",
@@ -3443,6 +3664,15 @@
         "version": "11.2.0",
         "packageName": "@oxc-resolver/binding-linux-x64-musl",
         "hash": "sha512-YBAC3GOicYznReG2twE7oFPSeK9Z1f507z1EYWKg6HpGYRYRlJyszViu7PrhMT85r/MumDTs429zm+CNqpFWOA=="
+      }
+    },
+    "npm:@oxc-resolver/binding-linux-x64-musl@5.3.0": {
+      "type": "npm",
+      "name": "npm:@oxc-resolver/binding-linux-x64-musl@5.3.0",
+      "data": {
+        "version": "5.3.0",
+        "packageName": "@oxc-resolver/binding-linux-x64-musl",
+        "hash": "sha512-Hi39cWzul24rGljN4Vf1lxjXzQdCrdxO5oCT7KJP4ndSlqIUODJnfnMAP1YhcnIRvNvk+5E6sZtnEmFUd/4d8Q=="
       }
     },
     "npm:@oxc-resolver/binding-wasm32-wasi": {
@@ -3454,6 +3684,15 @@
         "hash": "sha512-+qlIg45CPVPy+Jn3vqU1zkxA/AAv6e/2Ax/ImX8usZa8Tr2JmQn/93bmSOOOnr9fXRV9d0n4JyqYzSWxWPYDEw=="
       }
     },
+    "npm:@oxc-resolver/binding-wasm32-wasi@5.3.0": {
+      "type": "npm",
+      "name": "npm:@oxc-resolver/binding-wasm32-wasi@5.3.0",
+      "data": {
+        "version": "5.3.0",
+        "packageName": "@oxc-resolver/binding-wasm32-wasi",
+        "hash": "sha512-ddujvHhP3chmHnSXRlkPVUeYj4/B7eLZwL4yUid+df3WCbVh6DgoT9RmllZn21AhxgKtMdekDdyVJYKFd8tl4A=="
+      }
+    },
     "npm:@oxc-resolver/binding-win32-arm64-msvc": {
       "type": "npm",
       "name": "npm:@oxc-resolver/binding-win32-arm64-msvc",
@@ -3463,6 +3702,15 @@
         "hash": "sha512-AI4KIpS8Zf6vwfOPk0uQPSC0pQ1m5HU4hCbtrgL21JgJSlnJaeEu3/aoOBB45AXKiExBU9R+CDR7aSnW7uhc5A=="
       }
     },
+    "npm:@oxc-resolver/binding-win32-arm64-msvc@5.3.0": {
+      "type": "npm",
+      "name": "npm:@oxc-resolver/binding-win32-arm64-msvc@5.3.0",
+      "data": {
+        "version": "5.3.0",
+        "packageName": "@oxc-resolver/binding-win32-arm64-msvc",
+        "hash": "sha512-j1YYPLvUkMVNKmIFQZZJ7q6Do4cI3htUnyxNLwDSBVhSohvPIK2VG+IdtOAlWZGa7v+phEZsHfNbXVwB0oPYFQ=="
+      }
+    },
     "npm:@oxc-resolver/binding-win32-x64-msvc": {
       "type": "npm",
       "name": "npm:@oxc-resolver/binding-win32-x64-msvc",
@@ -3470,6 +3718,24 @@
         "version": "11.2.0",
         "packageName": "@oxc-resolver/binding-win32-x64-msvc",
         "hash": "sha512-r19cQc7HaEJ76HFsMsbiKMTIV2YqFGSof8H5hB7e5Jkb/23Y8Isv1YrSzkDaGhcw02I/COsrPo+eEmjy35eFuA=="
+      }
+    },
+    "npm:@oxc-resolver/binding-win32-x64-msvc@5.3.0": {
+      "type": "npm",
+      "name": "npm:@oxc-resolver/binding-win32-x64-msvc@5.3.0",
+      "data": {
+        "version": "5.3.0",
+        "packageName": "@oxc-resolver/binding-win32-x64-msvc",
+        "hash": "sha512-LT9eOPPUqfZscQRd5mc08RBeDWOQf+dnOrKnanMallTGPe6g7+rcAlFTA8SWoJbcD45PV8yArFtCmSQSpzHZmg=="
+      }
+    },
+    "npm:@paralleldrive/cuid2": {
+      "type": "npm",
+      "name": "npm:@paralleldrive/cuid2",
+      "data": {
+        "version": "2.2.2",
+        "packageName": "@paralleldrive/cuid2",
+        "hash": "sha512-ZOBkgDwEdoYVlSeRbYYXs0S9MejQofiVYoTbKzy/6GQa39/q5tQU2IX46+shYnUkpEl3wc+J6wRlar7r2EK2xA=="
       }
     },
     "npm:@parcel/watcher-android-arm64": {
@@ -4286,9 +4552,9 @@
       "type": "npm",
       "name": "npm:@swc-node/register",
       "data": {
-        "version": "1.9.2",
+        "version": "1.10.10",
         "packageName": "@swc-node/register",
-        "hash": "sha512-BBjg0QNuEEmJSoU/++JOXhrjWdu3PTyYeJWsvchsI0Aqtj8ICkz/DqlwtXbmZVZ5vuDPpTfFlwDBZe81zgShMA=="
+        "hash": "sha512-jYWaI2WNEKz8KZL3sExd2KVL1JMma1/J7z+9iTpv0+fRN7LGMF8VTGGuHI2bug/ztpdZU1G44FG/Kk6ElXL9CQ=="
       }
     },
     "npm:@swc-node/sourcemap-support": {
@@ -4304,99 +4570,99 @@
       "type": "npm",
       "name": "npm:@swc/core-darwin-arm64",
       "data": {
-        "version": "1.5.29",
+        "version": "1.12.6",
         "packageName": "@swc/core-darwin-arm64",
-        "hash": "sha512-6F/sSxpHaq3nzg2ADv9FHLi4Fu2A8w8vP8Ich8gIl16D2htStlwnaPmCLjRswO+cFkzgVqy/l01gzNGWd4DFqA=="
+        "hash": "sha512-yLiw+XzG+MilfFh0ON7qt67bfIr7UxB9JprhYReVOmLTBDmDVQSC3T4/vIuc+GwlX08ydnHy0ud4lIjTNW4uWg=="
       }
     },
     "npm:@swc/core-darwin-x64": {
       "type": "npm",
       "name": "npm:@swc/core-darwin-x64",
       "data": {
-        "version": "1.5.29",
+        "version": "1.12.6",
         "packageName": "@swc/core-darwin-x64",
-        "hash": "sha512-rF/rXkvUOTdTIfoYbmszbSUGsCyvqACqy1VeP3nXONS+LxFl4bRmRcUTRrblL7IE5RTMCKUuPbqbQSE2hK7bqg=="
+        "hash": "sha512-qwg8ux5x5Gd1LmSUtL4s9mbyfzAjr5M6OtjO281dKHwc/GYiSc4j1urb2jNSo9FcMkfT78oAOW2L6HQiWv+j1A=="
       }
     },
     "npm:@swc/core-linux-arm-gnueabihf": {
       "type": "npm",
       "name": "npm:@swc/core-linux-arm-gnueabihf",
       "data": {
-        "version": "1.5.29",
+        "version": "1.12.6",
         "packageName": "@swc/core-linux-arm-gnueabihf",
-        "hash": "sha512-2OAPL8iWBsmmwkjGXqvuUhbmmoLxS1xNXiMq87EsnCNMAKohGc7wJkdAOUL6J/YFpean/vwMWg64rJD4pycBeg=="
+        "hash": "sha512-pnkqH59JXBZu+MedaykMAC2or7tlUKeya7GKjzub+hkwxBP0ywWoFd+QYEdzp7QSziOt1VIHc4Wb9iZ2EfnzmA=="
       }
     },
     "npm:@swc/core-linux-arm64-gnu": {
       "type": "npm",
       "name": "npm:@swc/core-linux-arm64-gnu",
       "data": {
-        "version": "1.5.29",
+        "version": "1.12.6",
         "packageName": "@swc/core-linux-arm64-gnu",
-        "hash": "sha512-eH/Q9+8O5qhSxMestZnhuS1xqQMr6M7SolZYxiXJqxArXYILLCF+nq2R9SxuMl0CfjHSpb6+hHPk/HXy54eIRA=="
+        "hash": "sha512-h8+Ltx0NSEzIFHetkOYoQ+UQ59unYLuJ4wF6kCpxzS4HskRLjcngr1HgN0F/PRpptnrmJUPVQmfms/vjN8ndAQ=="
       }
     },
     "npm:@swc/core-linux-arm64-musl": {
       "type": "npm",
       "name": "npm:@swc/core-linux-arm64-musl",
       "data": {
-        "version": "1.5.29",
+        "version": "1.12.6",
         "packageName": "@swc/core-linux-arm64-musl",
-        "hash": "sha512-TERh2OICAJz+SdDIK9+0GyTUwF6r4xDlFmpoiHKHrrD/Hh3u+6Zue0d7jQ/he/i80GDn4tJQkHlZys+RZL5UZg=="
+        "hash": "sha512-GZu3MnB/5qtBxKEH46hgVDaplEe4mp3ZmQ1O2UpFCv/u/Ji3Gar5w5g2wHCZoT5AOouAhP1bh7IAEqjG/fbVfg=="
       }
     },
     "npm:@swc/core-linux-x64-gnu": {
       "type": "npm",
       "name": "npm:@swc/core-linux-x64-gnu",
       "data": {
-        "version": "1.5.29",
+        "version": "1.12.6",
         "packageName": "@swc/core-linux-x64-gnu",
-        "hash": "sha512-WMDPqU7Ji9dJpA+Llek2p9t7pcy7Bob8ggPUvgsIlv3R/eesF9DIzSbrgl6j3EAEPB9LFdSafsgf6kT/qnvqFg=="
+        "hash": "sha512-WwJLQFzMW9ufVjM6k3le4HUgBFNunyt2oghjcgn2YjnKj0Ka2LrrBHCxfS7lgFSCQh/shib2wIlKXUnlTEWQJw=="
       }
     },
     "npm:@swc/core-linux-x64-musl": {
       "type": "npm",
       "name": "npm:@swc/core-linux-x64-musl",
       "data": {
-        "version": "1.5.29",
+        "version": "1.12.6",
         "packageName": "@swc/core-linux-x64-musl",
-        "hash": "sha512-DO14glwpdKY4POSN0201OnGg1+ziaSVr6/RFzuSLggshwXeeyVORiHv3baj7NENhJhWhUy3NZlDsXLnRFkmhHQ=="
+        "hash": "sha512-rVGPNpI/sm8VVAhnB09Z/23OJP3ymouv6F4z4aYDbq/2JIwxqgpnl8gtMYP+Jw3XqabaFNjQmPiL15TvKCQaxQ=="
       }
     },
     "npm:@swc/core-win32-arm64-msvc": {
       "type": "npm",
       "name": "npm:@swc/core-win32-arm64-msvc",
       "data": {
-        "version": "1.5.29",
+        "version": "1.12.6",
         "packageName": "@swc/core-win32-arm64-msvc",
-        "hash": "sha512-V3Y1+a1zG1zpYXUMqPIHEMEOd+rHoVnIpO/KTyFwAmKVu8v+/xPEVx/AGoYE67x4vDAAvPQrKI3Aokilqa5yVg=="
+        "hash": "sha512-EKDJ1+8vaIlJGMl2yvd2HklV4GNbpKKwNQcUQid6j91tFYz4/aByw+9vh/sDVG7ZNqdmdywSnLRo317UTt0zFg=="
       }
     },
     "npm:@swc/core-win32-ia32-msvc": {
       "type": "npm",
       "name": "npm:@swc/core-win32-ia32-msvc",
       "data": {
-        "version": "1.5.29",
+        "version": "1.12.6",
         "packageName": "@swc/core-win32-ia32-msvc",
-        "hash": "sha512-OrM6yfXw4wXhnVFosOJzarw0Fdz5Y0okgHfn9oFbTPJhoqxV5Rdmd6kXxWu2RiVKs6kGSJFZXHDeUq2w5rTIMg=="
+        "hash": "sha512-jnULikZkR2fpZgFUQs7NsNIztavM1JdX+8Y+8FsfChBvMvziKxXtvUPGjeVJ8nzU1wgMnaeilJX9vrwuDGkA0Q=="
       }
     },
     "npm:@swc/core-win32-x64-msvc": {
       "type": "npm",
       "name": "npm:@swc/core-win32-x64-msvc",
       "data": {
-        "version": "1.5.29",
+        "version": "1.12.6",
         "packageName": "@swc/core-win32-x64-msvc",
-        "hash": "sha512-eD/gnxqKyZQQR0hR7TMkIlJ+nCF9dzYmVVNbYZWuA1Xy94aBPUsEk3Uw3oG7q6R3ErrEUPP0FNf2ztEnv+I+dw=="
+        "hash": "sha512-jL2Dcdcc/QZiQnwByP1uIE4k/mTlapzUng7owtLD2tSBBi1d+jPIdXIefdv+nccYJKRA+lKG3rRB6Tk9GrC7Kg=="
       }
     },
     "npm:@swc/core": {
       "type": "npm",
       "name": "npm:@swc/core",
       "data": {
-        "version": "1.5.29",
+        "version": "1.12.6",
         "packageName": "@swc/core",
-        "hash": "sha512-nvTtHJI43DUSOAf3h9XsqYg8YXKc0/N4il9y4j0xAkO0ekgDNo+3+jbw6MInawjKJF9uulyr+f5bAutTsOKVlw=="
+        "hash": "sha512-TEpta6Gi02X1b2yDIzBOIr7dFprvq9jD8RbEVI2OcMrwklbCUx0Dz9TrAnklSOwRvYvH5JjCx8ht9E94oWiG7A=="
       }
     },
     "npm:@swc/counter": {
@@ -4568,6 +4834,15 @@
         "version": "3.5.13",
         "packageName": "@types/bonjour",
         "hash": "sha512-z9fJ5Im06zvUL548KvYNecEVlA7cVDkGUi6kZusb04mpyEFKCIZJvloCcmpmLaIahDpOQGHaHmG6imtPMmPXGQ=="
+      }
+    },
+    "npm:@types/compression": {
+      "type": "npm",
+      "name": "npm:@types/compression",
+      "data": {
+        "version": "1.8.1",
+        "packageName": "@types/compression",
+        "hash": "sha512-kCFuWS0ebDbmxs0AXYn6e2r2nrGAb5KwQhknjSPSPgJcGd8+HVSILlUyFhGqML2gk39HcG7D1ydW9/qpYkN00Q=="
       }
     },
     "npm:@types/connect-history-api-fallback": {
@@ -4793,15 +5068,6 @@
         "version": "1.3.11",
         "packageName": "@types/node-forge",
         "hash": "sha512-FQx220y22OKNTqaByeBGqHWYz4cl94tpcxeFdvBo3wjG6XPBuZ0BNgNZRV5J5TFmmcsJ4IzsLkmGRiQbnYsBEQ=="
-      }
-    },
-    "npm:@types/node@18.16.20": {
-      "type": "npm",
-      "name": "npm:@types/node@18.16.20",
-      "data": {
-        "version": "18.16.20",
-        "packageName": "@types/node",
-        "hash": "sha512-nL54VfDjThdP2UXJXZao5wp76CDiDw4zSRO8d4Tk7UgDqNKGKVEQB0/t3ti63NS+YNNkIQDvwEAF04BO+WYu7Q=="
       }
     },
     "npm:@types/node": {
@@ -5411,27 +5677,27 @@
       "type": "npm",
       "name": "npm:@webpack-cli/configtest",
       "data": {
-        "version": "2.1.1",
+        "version": "3.0.1",
         "packageName": "@webpack-cli/configtest",
-        "hash": "sha512-wy0mglZpDSiSS0XHrVR+BAdId2+yxPSoJW8fsna3ZpYSlufjvxnP4YbKTCBZnNIcGN4r6ZPXV55X4mYExOfLmw=="
+        "hash": "sha512-u8d0pJ5YFgneF/GuvEiDA61Tf1VDomHHYMjv/wc9XzYj7nopltpG96nXN5dJRstxZhcNpV1g+nT6CydO7pHbjA=="
       }
     },
     "npm:@webpack-cli/info": {
       "type": "npm",
       "name": "npm:@webpack-cli/info",
       "data": {
-        "version": "2.0.2",
+        "version": "3.0.1",
         "packageName": "@webpack-cli/info",
-        "hash": "sha512-zLHQdI/Qs1UyT5UBdWNqsARasIA+AaF8t+4u2aS2nEpBQh2mWIVb8qAklq0eUENnC5mOItrIB4LiS9xMtph18A=="
+        "hash": "sha512-coEmDzc2u/ffMvuW9aCjoRzNSPDl/XLuhPdlFRpT9tZHmJ/039az33CE7uH+8s0uL1j5ZNtfdv0HkfaKRBGJsQ=="
       }
     },
     "npm:@webpack-cli/serve": {
       "type": "npm",
       "name": "npm:@webpack-cli/serve",
       "data": {
-        "version": "2.0.5",
+        "version": "3.0.1",
         "packageName": "@webpack-cli/serve",
-        "hash": "sha512-lqaoKnRYBdo1UgDX8uF24AfGMifWK19TxPmM5FHc2vAGxrJ/qtyUyFBWoY1tISZdelsQ5fBcOusifo5o5wSJxQ=="
+        "hash": "sha512-sbgw03xQaCLiT6gcY/6u3qBDn01CWw/nbaXl3gTdTFuJJ75Gffv3E3DBpgvY2fkkrdS1fpjaXNOmJlnbtKauKg=="
       }
     },
     "npm:@xtuc/ieee754": {
@@ -5477,15 +5743,6 @@
         "version": "0.0.7",
         "packageName": "@zkochan/js-yaml",
         "hash": "sha512-nrUSn7hzt7J6JWgWGz78ZYI8wj+gdIJdk0Ynjpp8l+trkn58Uqsf6RYrYkEK+3X18EX+TNdtJI0WxAtc+L84SQ=="
-      }
-    },
-    "npm:abbrev": {
-      "type": "npm",
-      "name": "npm:abbrev",
-      "data": {
-        "version": "2.0.0",
-        "packageName": "abbrev",
-        "hash": "sha512-6/mh1E2u2YgEsCHdY0Yx5oW+61gZU+1vXaoiHHrpKeuRNNgFvS+/jrwHiQhB5apAf5oB7UB7E19ol2R2LKH8hQ=="
       }
     },
     "npm:accept-language-parser": {
@@ -5785,15 +6042,6 @@
         "hash": "sha512-LHE+8BuR7RYGDKvnrmcuSq3tDcKv9OFEXQt/HpbZhY7V6h0zlUXutnAD82GiFx9rdieCMjkvtcsPqBwgUl1Iiw=="
       }
     },
-    "npm:array-find-index": {
-      "type": "npm",
-      "name": "npm:array-find-index",
-      "data": {
-        "version": "1.0.2",
-        "packageName": "array-find-index",
-        "hash": "sha512-M1HQyIXcBGtVywBt8WVdim+lrNaK7VHp99Qt5pSNziXznKHViIBbXWtfRTpEFpF/c4FdfxNAsCCwPp5phBYJtw=="
-      }
-    },
     "npm:array-flatten": {
       "type": "npm",
       "name": "npm:array-flatten",
@@ -5882,6 +6130,15 @@
         "version": "1.0.4",
         "packageName": "arraybuffer.prototype.slice",
         "hash": "sha512-BNoCY6SXXPQ7gF2opIP4GBE+Xw7U+pHMYKuzjgCN3GwiaIR09UUeKfheyIry77QtrCBlC0KK0q5/TER/tYh3PQ=="
+      }
+    },
+    "npm:asap": {
+      "type": "npm",
+      "name": "npm:asap",
+      "data": {
+        "version": "2.0.6",
+        "packageName": "asap",
+        "hash": "sha512-BSHWgDSAiKs50o2Re8ppvp3seVHXSRM44cdSsT9FfNEUUZLOGWVCsiWaRPWM1Znn+mqZ1OfVZ3z3DWEzSp7hRA=="
       }
     },
     "npm:async-function": {
@@ -6802,13 +7059,13 @@
         "hash": "sha512-FQN4MRfuJeHf7cBbBMJFXhKSDq+2kAArBlmRBvcvFE5BB1HZKXtSFASDhdlz9zOYwxh8lDdnvmMOe/+5cdoEdg=="
       }
     },
-    "npm:commander@10.0.1": {
+    "npm:commander@12.1.0": {
       "type": "npm",
-      "name": "npm:commander@10.0.1",
+      "name": "npm:commander@12.1.0",
       "data": {
-        "version": "10.0.1",
+        "version": "12.1.0",
         "packageName": "commander",
-        "hash": "sha512-y4Mg2tXshplEbSGzx7amzPwKKOCGuoSRP/CjEdwwk0FOGlUbq6lKuoyDZTNZkmxHdJtp54hdfY/JUrdL7Xfdug=="
+        "hash": "sha512-Vw8qHK3bZM9y/P10u3Vib8o/DdkvA2OtPtZvD871QKjy74Wj1WSKFILMPRPSdUSx5RFK1arlJzEtA4PkFgnbuA=="
       }
     },
     "npm:commander@14.0.0": {
@@ -6863,6 +7120,15 @@
         "version": "3.0.0",
         "packageName": "common-path-prefix",
         "hash": "sha512-QE33hToZseCH3jS0qN96O/bSh3kaw/h+Tq7ngyY9eWDUnTlTNUyqfqvCXioLe5Na5jFsL78ra/wuBU4iuEgd4w=="
+      }
+    },
+    "npm:component-emitter": {
+      "type": "npm",
+      "name": "npm:component-emitter",
+      "data": {
+        "version": "1.3.1",
+        "packageName": "component-emitter",
+        "hash": "sha512-T0+barUSQRTUQASh8bx02dl+DhF54GtIDY13Y3m9oWTklKbb3Wv974meRpeZ3lp1JpLVECWWNHC4vaG2XHXouQ=="
       }
     },
     "npm:compressible": {
@@ -6989,6 +7255,15 @@
         "version": "0.7.2",
         "packageName": "cookie",
         "hash": "sha512-yki5XnKuf750l50uGTllt6kKILY4nQ1eNIQatoXEByZ5dWgnKqbnqmTrBE5B4N7lrMJKQ2ytWMiTO2o0v6Ew/w=="
+      }
+    },
+    "npm:cookiejar": {
+      "type": "npm",
+      "name": "npm:cookiejar",
+      "data": {
+        "version": "2.1.4",
+        "packageName": "cookiejar",
+        "hash": "sha512-LDx6oHrK+PhzLKJU9j5S7/Y3jM/mUHvD/DeI1WQmJn652iPC5Y4TBzC9l+5OMOXlyTTA+SmVUPm0HQUwpD5Jqw=="
       }
     },
     "npm:copy-anything": {
@@ -7414,6 +7689,15 @@
         "hash": "sha512-CmnVc+Hek2egPx1PeTFVta2W78xy2K/9Rkf6cC4T59S50tVnzKj+tnx5mmx5lwvCkujZ4uRrpRSuV+IVs3f90Q=="
       }
     },
+    "npm:dezalgo": {
+      "type": "npm",
+      "name": "npm:dezalgo",
+      "data": {
+        "version": "1.0.4",
+        "packageName": "dezalgo",
+        "hash": "sha512-rXSP0bf+5n0Qonsb+SVVfNfIsimO4HEtmnIpPHY8Q1UCzKlQrDMfdobr8nJOOsRgWCyMRqeSBQzmWUMq7zvVig=="
+      }
+    },
     "npm:diff-sequences": {
       "type": "npm",
       "name": "npm:diff-sequences",
@@ -7673,15 +7957,6 @@
         "version": "1.4.5",
         "packageName": "end-of-stream",
         "hash": "sha512-ooEGc6HP26xXq/N+GCGOT0JKCLDGrq2bQUZrQ7gyrJiZANJ/8YDTxTpQBXGMn+WbIQXNVpyWymm7KYVICQnyOg=="
-      }
-    },
-    "npm:enhanced-resolve@5.18.1": {
-      "type": "npm",
-      "name": "npm:enhanced-resolve@5.18.1",
-      "data": {
-        "version": "5.18.1",
-        "packageName": "enhanced-resolve",
-        "hash": "sha512-ZSW3ma5GkcQBIpwZTSRAI8N71Uuwgs93IezB7mf7R60tC8ZbJideoDNKjHn2O9KIlx6rkGTTEk1xUCK2E1Y2Yg=="
       }
     },
     "npm:enhanced-resolve": {
@@ -8107,18 +8382,18 @@
         "hash": "sha512-JEPTiaOt9f04oa6NOkc4aH+nVp5I3wEjpHbIPqfgCdD5v5bUzy7xQqwcVO2aDQgOWhI28da57HksMrzK9HlRxg=="
       }
     },
-    "npm:eventemitter3@4.0.7": {
+    "npm:eventemitter3": {
       "type": "npm",
-      "name": "npm:eventemitter3@4.0.7",
+      "name": "npm:eventemitter3",
       "data": {
         "version": "4.0.7",
         "packageName": "eventemitter3",
         "hash": "sha512-8guHBZCwKnFhYdHr2ysuRWErTwhoN2X8XELRlrRwpmfeY2jjuUN4taQMsULKUVo1K4DvZl+0pgfyoysHxvmvEw=="
       }
     },
-    "npm:eventemitter3": {
+    "npm:eventemitter3@5.0.1": {
       "type": "npm",
-      "name": "npm:eventemitter3",
+      "name": "npm:eventemitter3@5.0.1",
       "data": {
         "version": "5.0.1",
         "packageName": "eventemitter3",
@@ -8528,6 +8803,15 @@
         "version": "4.0.3",
         "packageName": "form-data",
         "hash": "sha512-qsITQPfmvMOSAdeyZ+12I1c+CKSstAFAwu+97zrnWAbIr5u8wfsExUzCesVLC8NgHuRUqNN4Zy6UPWUTRGslcA=="
+      }
+    },
+    "npm:formidable": {
+      "type": "npm",
+      "name": "npm:formidable",
+      "data": {
+        "version": "2.1.5",
+        "packageName": "formidable",
+        "hash": "sha512-Oz5Hwvwak/DCaXVVUtPn4oLMLLy1CdclLKO1LFgU7XzDpVMUU5UjlSLpGMocyQNNk8F6IJW9M/YdooSn2MRI+Q=="
       }
     },
     "npm:forwarded-parse": {
@@ -8980,15 +9264,6 @@
         "hash": "sha512-dyrPC8KzBzUJ19QTIo1gXNqIISRXQ0NwteW6OeQHRN4ZuZeHkdODfj0zHBdOlHbRY8GqbqK57C9oWSvQZizFsg=="
       }
     },
-    "npm:hosted-git-info@6.1.3": {
-      "type": "npm",
-      "name": "npm:hosted-git-info@6.1.3",
-      "data": {
-        "version": "6.1.3",
-        "packageName": "hosted-git-info",
-        "hash": "sha512-HVJyzUrLIL1c0QmviVh5E8VGyUS7xCFPS6yydaVd1UegW+ibV/CohqTH9MkOLDp5o+rb82DMo77PTuc9F/8GKw=="
-      }
-    },
     "npm:hosted-git-info": {
       "type": "npm",
       "name": "npm:hosted-git-info",
@@ -9061,13 +9336,22 @@
         "hash": "sha512-Pysuw9XpUq5dVc/2SMHpuTY01RFl8fttgcyunjL7eEMhGM3cI4eOmiCycJDVCo/7O7ClfQD3SaI6ftDzqOXYMA=="
       }
     },
-    "npm:http-proxy-middleware": {
+    "npm:http-proxy-middleware@2.0.9": {
       "type": "npm",
-      "name": "npm:http-proxy-middleware",
+      "name": "npm:http-proxy-middleware@2.0.9",
       "data": {
         "version": "2.0.9",
         "packageName": "http-proxy-middleware",
         "hash": "sha512-c1IyJYLYppU574+YI7R4QyX2ystMtVXZwIdzazUIPIJsHuWNd+mho2j+bKoHftndicGj9yh+xjd+l0yj7VeT1Q=="
+      }
+    },
+    "npm:http-proxy-middleware": {
+      "type": "npm",
+      "name": "npm:http-proxy-middleware",
+      "data": {
+        "version": "3.0.5",
+        "packageName": "http-proxy-middleware",
+        "hash": "sha512-GLZZm1X38BPY4lkXA01jhwxvDoOkkXqjgVyUzVxiEK4iuRu03PZoYHhHRwxnfhQMDuaxi3vVri0YgSro/1oWqg=="
       }
     },
     "npm:http-proxy": {
@@ -9574,13 +9858,22 @@
         "hash": "sha512-gwsOE28k+23GP1B6vFl1oVh/WOzmawBrKwo5Ev6wMKzPkaXaCDIQKzLnvsA42DRlbVTWorkgTKIviAKCWkfUwA=="
       }
     },
-    "npm:is-plain-object": {
+    "npm:is-plain-object@2.0.4": {
       "type": "npm",
-      "name": "npm:is-plain-object",
+      "name": "npm:is-plain-object@2.0.4",
       "data": {
         "version": "2.0.4",
         "packageName": "is-plain-object",
         "hash": "sha512-h5PpgXkWitc38BBMYawTYMWJHFZJVnBquFE57xFpjB8pJFiF6gZ+bU+WyI/yqXiFR5mdLsgYNaPe8uao6Uv9Og=="
+      }
+    },
+    "npm:is-plain-object": {
+      "type": "npm",
+      "name": "npm:is-plain-object",
+      "data": {
+        "version": "5.0.0",
+        "packageName": "is-plain-object",
+        "hash": "sha512-VRSzKkbMm5jMDoKLbltAkFQ5Qr7VDiTFGXxYFXXowVj387GeGNOCsOH6Msy00SGZ3Fp84b1Naa1psqgcCIEP5Q=="
       }
     },
     "npm:is-promise": {
@@ -10411,15 +10704,6 @@
         "hash": "sha512-xyFwyhro/JEof6Ghe2iz2NcXoj2sloNsWr/XsERDK/oiPCfaNhl5ONfp+jQdAZRQQ0IJWNzH9zIZF7li91kh2w=="
       }
     },
-    "npm:json-parse-even-better-errors@3.0.2": {
-      "type": "npm",
-      "name": "npm:json-parse-even-better-errors@3.0.2",
-      "data": {
-        "version": "3.0.2",
-        "packageName": "json-parse-even-better-errors",
-        "hash": "sha512-fi0NG4bPjCHunUJffmLd0gxssIgkNmArMvis4iNah6Owg1MCJjWhEcDLmsK6iGkJq3tHwbDkTlce70/tmXN4cQ=="
-      }
-    },
     "npm:json-schema-traverse": {
       "type": "npm",
       "name": "npm:json-schema-traverse",
@@ -10654,15 +10938,6 @@
         "hash": "sha512-VWwAdNeJgN7jFOD+wN4qx83DTPMVPPAUyx9/TUkBXKLiNkuWWk6anV0439tgdtwaJDrEdqkvdN22iA6J4bUCZg=="
       }
     },
-    "npm:license-checker-rseidelsohn": {
-      "type": "npm",
-      "name": "npm:license-checker-rseidelsohn",
-      "data": {
-        "version": "4.4.2",
-        "packageName": "license-checker-rseidelsohn",
-        "hash": "sha512-Sf8WaJhd2vELvCne+frS9AXqnY/vv591s2/nZcJDwTnoNgltG4mAmoenffVb8L2YPRYbxARLyrHJBC38AVfpuA=="
-      }
-    },
     "npm:license-webpack-plugin": {
       "type": "npm",
       "name": "npm:license-webpack-plugin",
@@ -10796,15 +11071,6 @@
         "version": "4.3.0",
         "packageName": "lodash.camelcase",
         "hash": "sha512-TwuEnCnxbc3rAvhf/LbG7tJUDzhqXyFnv3dtzLOPgCG/hODL7WFnsbwktkD7yUV0RrreP/l1PALq/YSg6VvjlA=="
-      }
-    },
-    "npm:lodash.clonedeep": {
-      "type": "npm",
-      "name": "npm:lodash.clonedeep",
-      "data": {
-        "version": "4.5.0",
-        "packageName": "lodash.clonedeep",
-        "hash": "sha512-H5ZhCF25riFd9uB5UCkVKo61m3S/xZk1x4wA6yp/L3RFP6Z/eHH1ymQcGLo7J3GMPfm0V/7m1tryHuGVxpqEBQ=="
       }
     },
     "npm:lodash.debounce": {
@@ -10994,15 +11260,6 @@
         "version": "5.1.1",
         "packageName": "lru-cache",
         "hash": "sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w=="
-      }
-    },
-    "npm:lru-cache@7.18.3": {
-      "type": "npm",
-      "name": "npm:lru-cache@7.18.3",
-      "data": {
-        "version": "7.18.3",
-        "packageName": "lru-cache",
-        "hash": "sha512-jumlc0BIUrS3qJGgIkWZsyfAM7NCWiBcCDhnd+3NNM5KbBmLTgHVfWBcg6W+rLUsIpzpERPsvwUP7CckAQSOoA=="
       }
     },
     "npm:magic-string": {
@@ -11228,6 +11485,15 @@
         "version": "1.6.0",
         "packageName": "mime",
         "hash": "sha512-x0Vn8spI+wuJ1O6S7gnbaQg8Pxh4NNHb7KSINmEWKiPE4RKOplvijn+NkmYmmRgP68mc70j2EbeTFRsrswaQeg=="
+      }
+    },
+    "npm:mime@2.6.0": {
+      "type": "npm",
+      "name": "npm:mime@2.6.0",
+      "data": {
+        "version": "2.6.0",
+        "packageName": "mime",
+        "hash": "sha512-USPkMeET31rOMiarsBNIHZKLGgvKc/LrjofAnBlOttf5ajRvqiRA8QsenbcooctK6d6Ts6aqZXBA+XbkKthiQg=="
       }
     },
     "npm:mimic-fn": {
@@ -11590,24 +11856,6 @@
         "hash": "sha512-xxOWJsBKtzAq7DY0J+DTzuz58K8e7sJbdgwkbMWQe8UYB6ekmsQ45q0M/tJDsGaZmbC+l7n57UV8Hl5tHxO9uw=="
       }
     },
-    "npm:nopt": {
-      "type": "npm",
-      "name": "npm:nopt",
-      "data": {
-        "version": "7.2.1",
-        "packageName": "nopt",
-        "hash": "sha512-taM24ViiimT/XntxbPyJQzCG+p4EKOpgD3mxFwW38mGjVUrfERQOeY4EDHjdnptttfHuHQXFx+lTP08Q+mLa/w=="
-      }
-    },
-    "npm:normalize-package-data": {
-      "type": "npm",
-      "name": "npm:normalize-package-data",
-      "data": {
-        "version": "5.0.0",
-        "packageName": "normalize-package-data",
-        "hash": "sha512-h9iPVIfrVZ9wVYQnxFgtw1ugSvGEMOlyPWWtm8BMJhnwyEL/FLbYbTY3V3PpjI/BUK67n9PEWDu6eHzu1fB15Q=="
-      }
-    },
     "npm:normalize-path": {
       "type": "npm",
       "name": "npm:normalize-path",
@@ -11633,15 +11881,6 @@
         "version": "18.0.1",
         "packageName": "npm-check-updates",
         "hash": "sha512-MO7mLp/8nm6kZNLLyPgz4gHmr9tLoU+pWPLdXuGAx+oZydBHkHWN0ibTonsrfwC2WEQNIQxuZagYwB67JQpAuw=="
-      }
-    },
-    "npm:npm-normalize-package-bin": {
-      "type": "npm",
-      "name": "npm:npm-normalize-package-bin",
-      "data": {
-        "version": "3.0.1",
-        "packageName": "npm-normalize-package-bin",
-        "hash": "sha512-dMxCf+zZ+3zeQZXKxmyuCKlIDPGuv8EF940xbkC4kQVDTtqoh6rJFO+JTKSA6/Rwi0getWmtuy4Itup0AMcaDQ=="
       }
     },
     "npm:npm-package-arg": {
@@ -11896,13 +12135,22 @@
         "hash": "sha512-qFOyK5PjiWZd+QQIh+1jhdb9LpxTF0qs7Pm8o5QHYZ0M3vKqSqzsZaEB6oWlxZ+q2sJBMI/Ktgd2N5ZwQoRHfg=="
       }
     },
-    "npm:oxc-resolver": {
+    "npm:oxc-resolver@11.2.0": {
       "type": "npm",
-      "name": "npm:oxc-resolver",
+      "name": "npm:oxc-resolver@11.2.0",
       "data": {
         "version": "11.2.0",
         "packageName": "oxc-resolver",
         "hash": "sha512-3iJYyIdDZMDoj0ZSVBrI1gUvPBMkDC4gxonBG+7uqUyK5EslG0mCwnf6qhxK8oEU7jLHjbRBNyzflPSd3uvH7Q=="
+      }
+    },
+    "npm:oxc-resolver": {
+      "type": "npm",
+      "name": "npm:oxc-resolver",
+      "data": {
+        "version": "5.3.0",
+        "packageName": "oxc-resolver",
+        "hash": "sha512-FHqtZx0idP5QRPSNcI5g2ItmADg7fhR3XIeWg5eRMGfp44xqRpfkdvo+EX4ZceqV9bxvl0Z8vaqMqY0gYaNYNA=="
       }
     },
     "npm:p-limit@2.3.0": {
@@ -12868,24 +13116,6 @@
         "hash": "sha512-Owdv/Ft7IjOgm/i0xvNDZ1LrRANRfew4b2prF3OWMQLxLfu3bS8FVhCsrSCMK4lR56Y9ya+AThoTpDCTxCmpRA=="
       }
     },
-    "npm:read-installed-packages": {
-      "type": "npm",
-      "name": "npm:read-installed-packages",
-      "data": {
-        "version": "2.0.1",
-        "packageName": "read-installed-packages",
-        "hash": "sha512-t+fJOFOYaZIjBpTVxiV8Mkt7yQyy4E6MSrrnt5FmPd4enYvpU/9DYGirDmN1XQwkfeuWIhM/iu0t2rm6iSr0CA=="
-      }
-    },
-    "npm:read-package-json": {
-      "type": "npm",
-      "name": "npm:read-package-json",
-      "data": {
-        "version": "6.0.4",
-        "packageName": "read-package-json",
-        "hash": "sha512-AEtWXYfopBj2z5N5PbkAOeNHRPUg5q+Nen7QLxV8M2zJq1ym6/lCz3fYNTCXe19puu2d06jfHhrP7v/S2PtMMw=="
-      }
-    },
     "npm:readable-stream@2.3.8": {
       "type": "npm",
       "name": "npm:readable-stream@2.3.8",
@@ -13804,15 +14034,6 @@
         "hash": "sha512-bSiSngZ/jWeX93BqeIAbImyTbEihizcwNjFoRUIY/T1wWQsfsm2Vw1agPKylXvQTU7iASGdHhyqRlqQzfz+Htg=="
       }
     },
-    "npm:slide": {
-      "type": "npm",
-      "name": "npm:slide",
-      "data": {
-        "version": "1.1.6",
-        "packageName": "slide",
-        "hash": "sha512-NwrtjCg+lZoqhFU8fOwl4ay2ei8PaqCBOUV3/ektPY9trO1yQ1oXEfmHAhKArUVUr/hOHvy5f6AdP17dCM0zMw=="
-      }
-    },
     "npm:snyk": {
       "type": "npm",
       "name": "npm:snyk",
@@ -13892,69 +14113,6 @@
         "version": "0.7.4",
         "packageName": "source-map",
         "hash": "sha512-l3BikUxvPOcn5E74dZiq5BGsTb5yEwhaTSzccU6t4sDOH8NWJCstKO5QT2CvtFoK6F0saL7p9xHAqHOlCPJygA=="
-      }
-    },
-    "npm:spdx-compare": {
-      "type": "npm",
-      "name": "npm:spdx-compare",
-      "data": {
-        "version": "1.0.0",
-        "packageName": "spdx-compare",
-        "hash": "sha512-C1mDZOX0hnu0ep9dfmuoi03+eOdDoz2yvK79RxbcrVEG1NO1Ph35yW102DHWKN4pk80nwCgeMmSY5L25VE4D9A=="
-      }
-    },
-    "npm:spdx-correct": {
-      "type": "npm",
-      "name": "npm:spdx-correct",
-      "data": {
-        "version": "3.2.0",
-        "packageName": "spdx-correct",
-        "hash": "sha512-kN9dJbvnySHULIluDHy32WHRUu3Og7B9sbY7tsFLctQkIqnMh3hErYgdMjTYuqmcXX+lK5T1lnUt3G7zNswmZA=="
-      }
-    },
-    "npm:spdx-exceptions": {
-      "type": "npm",
-      "name": "npm:spdx-exceptions",
-      "data": {
-        "version": "2.5.0",
-        "packageName": "spdx-exceptions",
-        "hash": "sha512-PiU42r+xO4UbUS1buo3LPJkjlO7430Xn5SVAhdpzzsPHsjbYVflnnFdATgabnLude+Cqu25p6N+g2lw/PFsa4w=="
-      }
-    },
-    "npm:spdx-expression-parse": {
-      "type": "npm",
-      "name": "npm:spdx-expression-parse",
-      "data": {
-        "version": "3.0.1",
-        "packageName": "spdx-expression-parse",
-        "hash": "sha512-cbqHunsQWnJNE6KhVSMsMeH5H/L9EpymbzqTQ3uLwNCLZ1Q481oWaofqH7nO6V07xlXwY6PhQdQ2IedWx/ZK4Q=="
-      }
-    },
-    "npm:spdx-license-ids": {
-      "type": "npm",
-      "name": "npm:spdx-license-ids",
-      "data": {
-        "version": "3.0.21",
-        "packageName": "spdx-license-ids",
-        "hash": "sha512-Bvg/8F5XephndSK3JffaRqdT+gyhfqIPwDHpX80tJrF8QQRYMo8sNMeaZ2Dp5+jhwKnUmIOyFFQfHRkjJm5nXg=="
-      }
-    },
-    "npm:spdx-ranges": {
-      "type": "npm",
-      "name": "npm:spdx-ranges",
-      "data": {
-        "version": "2.1.1",
-        "packageName": "spdx-ranges",
-        "hash": "sha512-mcdpQFV7UDAgLpXEE/jOMqvK4LBoO0uTQg0uvXUewmEFhpiZx5yJSZITHB8w1ZahKdhfZqP5GPEOKLyEq5p8XA=="
-      }
-    },
-    "npm:spdx-satisfies": {
-      "type": "npm",
-      "name": "npm:spdx-satisfies",
-      "data": {
-        "version": "5.0.1",
-        "packageName": "spdx-satisfies",
-        "hash": "sha512-Nwor6W6gzFp8XX4neaKQ7ChV4wmpSh2sSDemMFSzHxpTw460jxFYeOn+jq4ybnSSw/5sc3pjka9MQPouksQNpw=="
       }
     },
     "npm:spdy-transport": {
@@ -14335,6 +14493,24 @@
         "hash": "sha512-ZIdT8eUv8tegmqy1tTIdJv9We2DumkNZFdCF5mz/Kpq3OcTaxSuCAYZge6HKK2CmNC02G1eJig2RV7XTw5hQrA=="
       }
     },
+    "npm:superagent": {
+      "type": "npm",
+      "name": "npm:superagent",
+      "data": {
+        "version": "8.1.2",
+        "packageName": "superagent",
+        "hash": "sha512-6WTxW1EB6yCxV5VFOIPQruWGHqc3yI7hEmZK6h+pyk69Lk/Ut7rLUY6W/ONF2MjBuGjvmMiIpsrVJ2vjrHlslA=="
+      }
+    },
+    "npm:supertest": {
+      "type": "npm",
+      "name": "npm:supertest",
+      "data": {
+        "version": "6.3.4",
+        "packageName": "supertest",
+        "hash": "sha512-erY3HFDG0dPnhw4U+udPfrzXa4xhSG+n4rxfRuZWCUvjFWwKl+OxWf/7zk50s84/fAAs7vf5QAb9uRa0cCykxw=="
+      }
+    },
     "npm:supports-color": {
       "type": "npm",
       "name": "npm:supports-color",
@@ -14632,15 +14808,6 @@
         "hash": "sha512-L0Orpi8qGpRG//Nd+H90vFB+3iHnue1zSSGmNOOCh1GLJ7rUKVwV2HvijphGQS2UmhUZewS9VgvxYIdgr+fG1A=="
       }
     },
-    "npm:treeify": {
-      "type": "npm",
-      "name": "npm:treeify",
-      "data": {
-        "version": "1.1.0",
-        "packageName": "treeify",
-        "hash": "sha512-1m4RA7xVAJrSGrrXGs0L3YTwyvBs2S8PbRHaLZAkFw7JR8oIFwYtysxlBZhYIa7xSyiYJKZ3iGrrk55cGA3i9A=="
-      }
-    },
     "npm:triple-beam": {
       "type": "npm",
       "name": "npm:triple-beam",
@@ -14675,15 +14842,6 @@
         "version": "9.5.2",
         "packageName": "ts-loader",
         "hash": "sha512-Qo4piXvOTWcMGIgRiuFa6nHNm+54HbYaZCKqc9eeZCLRy3XqafQgwX2F7mofrbJG3g7EEb+lkiR+z2Lic2s3Zw=="
-      }
-    },
-    "npm:ts-node@10.9.1": {
-      "type": "npm",
-      "name": "npm:ts-node@10.9.1",
-      "data": {
-        "version": "10.9.1",
-        "packageName": "ts-node",
-        "hash": "sha512-NtVysVPkxxrwFGUUxGYhfux8k78pQB3JqYBXlLRZgdGUqTO5wU/UyHop5p70iEbGhB7q5KmiZiU0Y3KlJrScEw=="
       }
     },
     "npm:ts-node": {
@@ -14893,13 +15051,22 @@
         "hash": "sha512-/aCDEGatGvZ2BIk+HmLf4ifCJFwvKFNb9/JeZPMulfgFracn9QFcAf5GO8B/mweUjSoblS5In0cWhqpfs/5PQA=="
       }
     },
-    "npm:typescript": {
+    "npm:typescript@5.8.3": {
       "type": "npm",
-      "name": "npm:typescript",
+      "name": "npm:typescript@5.8.3",
       "data": {
         "version": "5.8.3",
         "packageName": "typescript",
         "hash": "sha512-p1diW6TqL9L07nNxvRMM7hMMw4c5XOo/1ibL4aAIGmSAt9slTE1Xgw5KWuof2uTOvCg9BY7ZRi+GaF+7sfgPeQ=="
+      }
+    },
+    "npm:typescript": {
+      "type": "npm",
+      "name": "npm:typescript",
+      "data": {
+        "version": "5.9.0-dev.20250624",
+        "packageName": "typescript",
+        "hash": "sha512-+HBs5I88TpLC3f93I7YG5uLzotT0WyQYz94Z0PRuX6OV16gopRhzvlDqBuLRZcI+8PaloKZuBhRPms4xx219Vw=="
       }
     },
     "npm:uid": {
@@ -15109,15 +15276,6 @@
         "hash": "sha512-kiGUalWN+rgBJ/1OHZsBtU4rXZOfj/7rKQxULKlIzwzQSvMJUUNgPwJEEh7gU6xEVxC0ahoOBvN2YI8GH6FNgA=="
       }
     },
-    "npm:validate-npm-package-license": {
-      "type": "npm",
-      "name": "npm:validate-npm-package-license",
-      "data": {
-        "version": "3.0.4",
-        "packageName": "validate-npm-package-license",
-        "hash": "sha512-DpKm2Ui/xN7/HQKCtpZxoRWBhZ9Z0kqtygG8XCgNQ8ZlDnxuQmWhj566j8fN4Cu3/JmbhsDo7fcAJq4s9h27Ew=="
-      }
-    },
     "npm:validate-npm-package-name": {
       "type": "npm",
       "name": "npm:validate-npm-package-name",
@@ -15194,9 +15352,9 @@
       "type": "npm",
       "name": "npm:webpack-cli",
       "data": {
-        "version": "5.1.4",
+        "version": "6.0.1",
         "packageName": "webpack-cli",
-        "hash": "sha512-pIDJHIEI9LR0yxHXQ+Qh95k2EvXpWzZ5l+d+jIo+RdSm9MiHfzazIxwwni/p7+x4eJZuvG1AJwgC4TNQ7NRgsg=="
+        "hash": "sha512-MfwFQ6SfwinsUVi0rNJm7rHZ31GyTcpVE5pgVA3hwFRb7COD4TzjUUwhGWKfO50+xdc2MQPuEBBJoqIMGt3JDw=="
       }
     },
     "npm:webpack-dev-middleware": {
@@ -15221,9 +15379,9 @@
       "type": "npm",
       "name": "npm:webpack-merge",
       "data": {
-        "version": "5.10.0",
+        "version": "6.0.1",
         "packageName": "webpack-merge",
-        "hash": "sha512-+4zXKdx7UnO+1jaN4l2lHVD+mFvnlZQP/6ljaJVb4SZiwIKeUnrT5l0gkT8z+n4hKpC+jpOv6O9R+gLtag7pSA=="
+        "hash": "sha512-hXXvrjtx2PLYx4qruKl+kyRSLc52V+cCvMxRjmKwoA+CBbbF5GfIBtR6kCvl0fYGqTUPKB+1ktVmTHqMOzgCBg=="
       }
     },
     "npm:webpack-node-externals": {
@@ -15740,11 +15898,6 @@
       },
       {
         "source": "@meqenet/auth-service",
-        "target": "npm:typescript",
-        "type": "static"
-      },
-      {
-        "source": "@meqenet/auth-service",
         "target": "npm:@aws-sdk/client-secrets-manager",
         "type": "static"
       },
@@ -15941,6 +16094,78 @@
       {
         "source": "@meqenet/auth-service",
         "target": "npm:zod",
+        "type": "static"
+      }
+    ],
+    "@meqenet/api-gateway": [
+      {
+        "source": "@meqenet/api-gateway",
+        "target": "npm:@nestjs/cli",
+        "type": "static"
+      },
+      {
+        "source": "@meqenet/api-gateway",
+        "target": "npm:@types/jest",
+        "type": "static"
+      },
+      {
+        "source": "@meqenet/api-gateway",
+        "target": "npm:@types/node",
+        "type": "static"
+      },
+      {
+        "source": "@meqenet/api-gateway",
+        "target": "npm:@types/supertest",
+        "type": "static"
+      },
+      {
+        "source": "@meqenet/api-gateway",
+        "target": "npm:jest",
+        "type": "static"
+      },
+      {
+        "source": "@meqenet/api-gateway",
+        "target": "npm:supertest",
+        "type": "static"
+      },
+      {
+        "source": "@meqenet/api-gateway",
+        "target": "npm:ts-jest",
+        "type": "static"
+      },
+      {
+        "source": "@meqenet/api-gateway",
+        "target": "npm:typescript@5.8.3",
+        "type": "static"
+      },
+      {
+        "source": "@meqenet/api-gateway",
+        "target": "npm:@nestjs/common",
+        "type": "static"
+      },
+      {
+        "source": "@meqenet/api-gateway",
+        "target": "npm:@nestjs/config",
+        "type": "static"
+      },
+      {
+        "source": "@meqenet/api-gateway",
+        "target": "npm:@nestjs/core",
+        "type": "static"
+      },
+      {
+        "source": "@meqenet/api-gateway",
+        "target": "npm:http-proxy-middleware",
+        "type": "static"
+      },
+      {
+        "source": "@meqenet/api-gateway",
+        "target": "npm:reflect-metadata",
+        "type": "static"
+      },
+      {
+        "source": "@meqenet/api-gateway",
+        "target": "npm:rxjs",
         "type": "static"
       }
     ],
@@ -20199,7 +20424,7 @@
       },
       {
         "source": "npm:@jest/console@29.7.0",
-        "target": "npm:@types/node@18.16.20",
+        "target": "npm:@types/node",
         "type": "static"
       },
       {
@@ -20288,7 +20513,7 @@
       },
       {
         "source": "npm:@jest/core",
-        "target": "npm:@types/node@18.16.20",
+        "target": "npm:@types/node",
         "type": "static"
       },
       {
@@ -20395,11 +20620,6 @@
         "source": "npm:@jest/core",
         "target": "npm:slash",
         "type": "static"
-      },
-      {
-        "source": "npm:@jest/core",
-        "target": "npm:@types/node",
-        "type": "static"
       }
     ],
     "npm:@jest/environment@29.7.0": [
@@ -20415,7 +20635,7 @@
       },
       {
         "source": "npm:@jest/environment@29.7.0",
-        "target": "npm:@types/node@18.16.20",
+        "target": "npm:@types/node",
         "type": "static"
       },
       {
@@ -20437,7 +20657,7 @@
       },
       {
         "source": "npm:@jest/environment",
-        "target": "npm:@types/node@18.16.20",
+        "target": "npm:@types/node",
         "type": "static"
       },
       {
@@ -20497,7 +20717,7 @@
       },
       {
         "source": "npm:@jest/fake-timers@29.7.0",
-        "target": "npm:@types/node@18.16.20",
+        "target": "npm:@types/node",
         "type": "static"
       },
       {
@@ -20529,7 +20749,7 @@
       },
       {
         "source": "npm:@jest/fake-timers",
-        "target": "npm:@types/node@18.16.20",
+        "target": "npm:@types/node",
         "type": "static"
       },
       {
@@ -20637,7 +20857,7 @@
       },
       {
         "source": "npm:@jest/reporters",
-        "target": "npm:@types/node@18.16.20",
+        "target": "npm:@types/node",
         "type": "static"
       },
       {
@@ -21173,7 +21393,7 @@
       },
       {
         "source": "npm:@jest/types@29.6.3",
-        "target": "npm:@types/node@18.16.20",
+        "target": "npm:@types/node",
         "type": "static"
       },
       {
@@ -21457,7 +21677,7 @@
       },
       {
         "source": "npm:@nestjs/cli",
-        "target": "npm:typescript",
+        "target": "npm:typescript@5.8.3",
         "type": "static"
       },
       {
@@ -21777,6 +21997,11 @@
       },
       {
         "source": "npm:@nestjs/schematics",
+        "target": "npm:typescript@5.8.3",
+        "type": "static"
+      },
+      {
+        "source": "npm:@nestjs/schematics",
         "target": "npm:typescript",
         "type": "static"
       }
@@ -21963,13 +22188,6 @@
         "type": "static"
       }
     ],
-    "npm:@npmcli/fs": [
-      {
-        "source": "npm:@npmcli/fs",
-        "target": "npm:semver",
-        "type": "static"
-      }
-    ],
     "npm:@nuxt/opencollective": [
       {
         "source": "npm:@nuxt/opencollective",
@@ -22052,7 +22270,7 @@
       },
       {
         "source": "npm:@nx/eslint",
-        "target": "npm:typescript",
+        "target": "npm:typescript@5.8.3",
         "type": "static"
       }
     ],
@@ -23455,6 +23673,20 @@
         "type": "static"
       }
     ],
+    "npm:@oxc-resolver/binding-wasm32-wasi@5.3.0": [
+      {
+        "source": "npm:@oxc-resolver/binding-wasm32-wasi@5.3.0",
+        "target": "npm:@napi-rs/wasm-runtime@0.2.11",
+        "type": "static"
+      }
+    ],
+    "npm:@paralleldrive/cuid2": [
+      {
+        "source": "npm:@paralleldrive/cuid2",
+        "target": "npm:@noble/hashes",
+        "type": "static"
+      }
+    ],
     "npm:@parcel/watcher": [
       {
         "source": "npm:@parcel/watcher",
@@ -23562,7 +23794,7 @@
       },
       {
         "source": "npm:@prisma/client",
-        "target": "npm:typescript",
+        "target": "npm:typescript@5.8.3",
         "type": "static"
       }
     ],
@@ -24576,6 +24808,11 @@
       },
       {
         "source": "npm:@swc-node/register",
+        "target": "npm:oxc-resolver",
+        "type": "static"
+      },
+      {
+        "source": "npm:@swc-node/register",
         "target": "npm:pirates",
         "type": "static"
       },
@@ -24789,7 +25026,19 @@
     "npm:@types/bonjour": [
       {
         "source": "npm:@types/bonjour",
-        "target": "npm:@types/node@18.16.20",
+        "target": "npm:@types/node",
+        "type": "static"
+      }
+    ],
+    "npm:@types/compression": [
+      {
+        "source": "npm:@types/compression",
+        "target": "npm:@types/express",
+        "type": "static"
+      },
+      {
+        "source": "npm:@types/compression",
+        "target": "npm:@types/node",
         "type": "static"
       }
     ],
@@ -24801,7 +25050,7 @@
       },
       {
         "source": "npm:@types/connect-history-api-fallback",
-        "target": "npm:@types/node@18.16.20",
+        "target": "npm:@types/node",
         "type": "static"
       }
     ],
@@ -24839,7 +25088,7 @@
     "npm:@types/express-serve-static-core@4.19.6": [
       {
         "source": "npm:@types/express-serve-static-core@4.19.6",
-        "target": "npm:@types/node@18.16.20",
+        "target": "npm:@types/node",
         "type": "static"
       },
       {
@@ -24922,14 +25171,14 @@
     "npm:@types/graceful-fs": [
       {
         "source": "npm:@types/graceful-fs",
-        "target": "npm:@types/node@18.16.20",
+        "target": "npm:@types/node",
         "type": "static"
       }
     ],
     "npm:@types/http-proxy": [
       {
         "source": "npm:@types/http-proxy",
-        "target": "npm:@types/node@18.16.20",
+        "target": "npm:@types/node",
         "type": "static"
       }
     ],
@@ -24981,7 +25230,7 @@
     "npm:@types/node-forge": [
       {
         "source": "npm:@types/node-forge",
-        "target": "npm:@types/node@18.16.20",
+        "target": "npm:@types/node",
         "type": "static"
       }
     ],
@@ -25031,7 +25280,7 @@
       },
       {
         "source": "npm:@types/send",
-        "target": "npm:@types/node@18.16.20",
+        "target": "npm:@types/node",
         "type": "static"
       }
     ],
@@ -25050,7 +25299,7 @@
       },
       {
         "source": "npm:@types/serve-static",
-        "target": "npm:@types/node@18.16.20",
+        "target": "npm:@types/node",
         "type": "static"
       },
       {
@@ -25062,7 +25311,7 @@
     "npm:@types/sockjs": [
       {
         "source": "npm:@types/sockjs",
-        "target": "npm:@types/node@18.16.20",
+        "target": "npm:@types/node",
         "type": "static"
       }
     ],
@@ -25103,7 +25352,7 @@
     "npm:@types/ws": [
       {
         "source": "npm:@types/ws",
-        "target": "npm:@types/node@18.16.20",
+        "target": "npm:@types/node",
         "type": "static"
       }
     ],
@@ -25172,6 +25421,11 @@
       },
       {
         "source": "npm:@typescript-eslint/eslint-plugin",
+        "target": "npm:typescript@5.8.3",
+        "type": "static"
+      },
+      {
+        "source": "npm:@typescript-eslint/eslint-plugin",
         "target": "npm:typescript",
         "type": "static"
       }
@@ -25209,6 +25463,11 @@
       },
       {
         "source": "npm:@typescript-eslint/parser",
+        "target": "npm:typescript@5.8.3",
+        "type": "static"
+      },
+      {
+        "source": "npm:@typescript-eslint/parser",
         "target": "npm:typescript",
         "type": "static"
       }
@@ -25231,6 +25490,11 @@
       },
       {
         "source": "npm:@typescript-eslint/project-service",
+        "target": "npm:typescript@5.8.3",
+        "type": "static"
+      },
+      {
+        "source": "npm:@typescript-eslint/project-service",
         "target": "npm:typescript",
         "type": "static"
       }
@@ -25248,6 +25512,11 @@
       }
     ],
     "npm:@typescript-eslint/tsconfig-utils": [
+      {
+        "source": "npm:@typescript-eslint/tsconfig-utils",
+        "target": "npm:typescript@5.8.3",
+        "type": "static"
+      },
       {
         "source": "npm:@typescript-eslint/tsconfig-utils",
         "target": "npm:typescript",
@@ -25278,6 +25547,11 @@
       {
         "source": "npm:@typescript-eslint/type-utils",
         "target": "npm:ts-api-utils",
+        "type": "static"
+      },
+      {
+        "source": "npm:@typescript-eslint/type-utils",
+        "target": "npm:typescript@5.8.3",
         "type": "static"
       },
       {
@@ -25339,6 +25613,11 @@
       },
       {
         "source": "npm:@typescript-eslint/typescript-estree",
+        "target": "npm:typescript@5.8.3",
+        "type": "static"
+      },
+      {
+        "source": "npm:@typescript-eslint/typescript-estree",
         "target": "npm:typescript",
         "type": "static"
       }
@@ -25367,6 +25646,11 @@
       {
         "source": "npm:@typescript-eslint/utils",
         "target": "npm:eslint",
+        "type": "static"
+      },
+      {
+        "source": "npm:@typescript-eslint/utils",
+        "target": "npm:typescript@5.8.3",
         "type": "static"
       },
       {
@@ -27099,7 +27383,7 @@
     "npm:clone-deep": [
       {
         "source": "npm:clone-deep",
-        "target": "npm:is-plain-object",
+        "target": "npm:is-plain-object@2.0.4",
         "type": "static"
       },
       {
@@ -27402,7 +27686,7 @@
       },
       {
         "source": "npm:cosmiconfig@8.3.6",
-        "target": "npm:typescript",
+        "target": "npm:typescript@5.8.3",
         "type": "static"
       }
     ],
@@ -27897,6 +28181,18 @@
         "type": "static"
       }
     ],
+    "npm:dezalgo": [
+      {
+        "source": "npm:dezalgo",
+        "target": "npm:asap",
+        "type": "static"
+      },
+      {
+        "source": "npm:dezalgo",
+        "target": "npm:wrappy",
+        "type": "static"
+      }
+    ],
     "npm:dir-glob": [
       {
         "source": "npm:dir-glob",
@@ -28015,18 +28311,6 @@
       {
         "source": "npm:end-of-stream",
         "target": "npm:once",
-        "type": "static"
-      }
-    ],
-    "npm:enhanced-resolve@5.18.1": [
-      {
-        "source": "npm:enhanced-resolve@5.18.1",
-        "target": "npm:graceful-fs",
-        "type": "static"
-      },
-      {
-        "source": "npm:enhanced-resolve@5.18.1",
-        "target": "npm:tapable",
         "type": "static"
       }
     ],
@@ -28519,7 +28803,7 @@
       },
       {
         "source": "npm:eslint-import-resolver-oxc",
-        "target": "npm:oxc-resolver",
+        "target": "npm:oxc-resolver@11.2.0",
         "type": "static"
       },
       {
@@ -29732,6 +30016,13 @@
         "type": "static"
       }
     ],
+    "npm:follow-redirects": [
+      {
+        "source": "npm:follow-redirects",
+        "target": "npm:debug",
+        "type": "static"
+      }
+    ],
     "npm:for-each": [
       {
         "source": "npm:for-each",
@@ -29886,7 +30177,7 @@
       },
       {
         "source": "npm:fork-ts-checker-webpack-plugin",
-        "target": "npm:typescript",
+        "target": "npm:typescript@5.8.3",
         "type": "static"
       },
       {
@@ -29919,6 +30210,28 @@
       {
         "source": "npm:form-data",
         "target": "npm:mime-types@2.1.35",
+        "type": "static"
+      }
+    ],
+    "npm:formidable": [
+      {
+        "source": "npm:formidable",
+        "target": "npm:@paralleldrive/cuid2",
+        "type": "static"
+      },
+      {
+        "source": "npm:formidable",
+        "target": "npm:dezalgo",
+        "type": "static"
+      },
+      {
+        "source": "npm:formidable",
+        "target": "npm:once",
+        "type": "static"
+      },
+      {
+        "source": "npm:formidable",
+        "target": "npm:qs",
         "type": "static"
       }
     ],
@@ -30263,13 +30576,6 @@
         "type": "static"
       }
     ],
-    "npm:hosted-git-info@6.1.3": [
-      {
-        "source": "npm:hosted-git-info@6.1.3",
-        "target": "npm:lru-cache@7.18.3",
-        "type": "static"
-      }
-    ],
     "npm:hosted-git-info": [
       {
         "source": "npm:hosted-git-info",
@@ -30355,15 +30661,47 @@
         "type": "static"
       }
     ],
-    "npm:http-proxy-middleware": [
+    "npm:http-proxy-middleware@2.0.9": [
       {
-        "source": "npm:http-proxy-middleware",
+        "source": "npm:http-proxy-middleware@2.0.9",
         "target": "npm:@types/express@4.17.23",
         "type": "static"
       },
       {
+        "source": "npm:http-proxy-middleware@2.0.9",
+        "target": "npm:@types/http-proxy",
+        "type": "static"
+      },
+      {
+        "source": "npm:http-proxy-middleware@2.0.9",
+        "target": "npm:http-proxy",
+        "type": "static"
+      },
+      {
+        "source": "npm:http-proxy-middleware@2.0.9",
+        "target": "npm:is-glob",
+        "type": "static"
+      },
+      {
+        "source": "npm:http-proxy-middleware@2.0.9",
+        "target": "npm:is-plain-obj",
+        "type": "static"
+      },
+      {
+        "source": "npm:http-proxy-middleware@2.0.9",
+        "target": "npm:micromatch",
+        "type": "static"
+      }
+    ],
+    "npm:http-proxy-middleware": [
+      {
         "source": "npm:http-proxy-middleware",
         "target": "npm:@types/http-proxy",
+        "type": "static"
+      },
+      {
+        "source": "npm:http-proxy-middleware",
+        "target": "npm:debug",
         "type": "static"
       },
       {
@@ -30378,7 +30716,7 @@
       },
       {
         "source": "npm:http-proxy-middleware",
-        "target": "npm:is-plain-obj",
+        "target": "npm:is-plain-object",
         "type": "static"
       },
       {
@@ -30390,7 +30728,7 @@
     "npm:http-proxy": [
       {
         "source": "npm:http-proxy",
-        "target": "npm:eventemitter3@4.0.7",
+        "target": "npm:eventemitter3",
         "type": "static"
       },
       {
@@ -30479,7 +30817,7 @@
       },
       {
         "source": "npm:i18next",
-        "target": "npm:typescript",
+        "target": "npm:typescript@5.8.3",
         "type": "static"
       }
     ],
@@ -30742,9 +31080,9 @@
         "type": "static"
       }
     ],
-    "npm:is-plain-object": [
+    "npm:is-plain-object@2.0.4": [
       {
-        "source": "npm:is-plain-object",
+        "source": "npm:is-plain-object@2.0.4",
         "target": "npm:isobject",
         "type": "static"
       }
@@ -31121,7 +31459,7 @@
       },
       {
         "source": "npm:jest-circus",
-        "target": "npm:@types/node@18.16.20",
+        "target": "npm:@types/node",
         "type": "static"
       },
       {
@@ -31372,7 +31710,7 @@
       },
       {
         "source": "npm:jest-config",
-        "target": "npm:@types/node@18.16.20",
+        "target": "npm:@types/node",
         "type": "static"
       },
       {
@@ -31472,7 +31810,7 @@
       },
       {
         "source": "npm:jest-config",
-        "target": "npm:ts-node@10.9.1",
+        "target": "npm:ts-node",
         "type": "static"
       }
     ],
@@ -31504,7 +31842,7 @@
       },
       {
         "source": "npm:jest-config@30.0.2",
-        "target": "npm:@types/node@18.16.20",
+        "target": "npm:@types/node",
         "type": "static"
       },
       {
@@ -31600,16 +31938,6 @@
       {
         "source": "npm:jest-config@30.0.2",
         "target": "npm:strip-json-comments",
-        "type": "static"
-      },
-      {
-        "source": "npm:jest-config@30.0.2",
-        "target": "npm:ts-node@10.9.1",
-        "type": "static"
-      },
-      {
-        "source": "npm:jest-config@30.0.2",
-        "target": "npm:@types/node",
         "type": "static"
       },
       {
@@ -31748,7 +32076,7 @@
       },
       {
         "source": "npm:jest-environment-node@29.7.0",
-        "target": "npm:@types/node@18.16.20",
+        "target": "npm:@types/node",
         "type": "static"
       },
       {
@@ -31780,7 +32108,7 @@
       },
       {
         "source": "npm:jest-environment-node",
-        "target": "npm:@types/node@18.16.20",
+        "target": "npm:@types/node",
         "type": "static"
       },
       {
@@ -31812,7 +32140,7 @@
       },
       {
         "source": "npm:jest-haste-map@29.7.0",
-        "target": "npm:@types/node@18.16.20",
+        "target": "npm:@types/node",
         "type": "static"
       },
       {
@@ -32122,7 +32450,7 @@
       },
       {
         "source": "npm:jest-mock@29.7.0",
-        "target": "npm:@types/node@18.16.20",
+        "target": "npm:@types/node",
         "type": "static"
       },
       {
@@ -32139,7 +32467,7 @@
       },
       {
         "source": "npm:jest-mock",
-        "target": "npm:@types/node@18.16.20",
+        "target": "npm:@types/node",
         "type": "static"
       },
       {
@@ -32289,7 +32617,7 @@
       },
       {
         "source": "npm:jest-runner@29.7.0",
-        "target": "npm:@types/node@18.16.20",
+        "target": "npm:@types/node",
         "type": "static"
       },
       {
@@ -32518,7 +32846,7 @@
       },
       {
         "source": "npm:jest-runtime@29.7.0",
-        "target": "npm:@types/node@18.16.20",
+        "target": "npm:@types/node",
         "type": "static"
       },
       {
@@ -32921,7 +33249,7 @@
       },
       {
         "source": "npm:jest-util",
-        "target": "npm:@types/node@18.16.20",
+        "target": "npm:@types/node",
         "type": "static"
       },
       {
@@ -32953,7 +33281,7 @@
       },
       {
         "source": "npm:jest-util@30.0.2",
-        "target": "npm:@types/node@18.16.20",
+        "target": "npm:@types/node",
         "type": "static"
       },
       {
@@ -33054,7 +33382,7 @@
       },
       {
         "source": "npm:jest-watcher@29.7.0",
-        "target": "npm:@types/node@18.16.20",
+        "target": "npm:@types/node",
         "type": "static"
       },
       {
@@ -33128,7 +33456,7 @@
     "npm:jest-worker@27.5.1": [
       {
         "source": "npm:jest-worker@27.5.1",
-        "target": "npm:@types/node@18.16.20",
+        "target": "npm:@types/node",
         "type": "static"
       },
       {
@@ -33145,7 +33473,7 @@
     "npm:jest-worker": [
       {
         "source": "npm:jest-worker",
-        "target": "npm:@types/node@18.16.20",
+        "target": "npm:@types/node",
         "type": "static"
       },
       {
@@ -33478,63 +33806,6 @@
         "type": "static"
       }
     ],
-    "npm:license-checker-rseidelsohn": [
-      {
-        "source": "npm:license-checker-rseidelsohn",
-        "target": "npm:chalk",
-        "type": "static"
-      },
-      {
-        "source": "npm:license-checker-rseidelsohn",
-        "target": "npm:debug",
-        "type": "static"
-      },
-      {
-        "source": "npm:license-checker-rseidelsohn",
-        "target": "npm:lodash.clonedeep",
-        "type": "static"
-      },
-      {
-        "source": "npm:license-checker-rseidelsohn",
-        "target": "npm:mkdirp",
-        "type": "static"
-      },
-      {
-        "source": "npm:license-checker-rseidelsohn",
-        "target": "npm:nopt",
-        "type": "static"
-      },
-      {
-        "source": "npm:license-checker-rseidelsohn",
-        "target": "npm:read-installed-packages",
-        "type": "static"
-      },
-      {
-        "source": "npm:license-checker-rseidelsohn",
-        "target": "npm:semver",
-        "type": "static"
-      },
-      {
-        "source": "npm:license-checker-rseidelsohn",
-        "target": "npm:spdx-correct",
-        "type": "static"
-      },
-      {
-        "source": "npm:license-checker-rseidelsohn",
-        "target": "npm:spdx-expression-parse",
-        "type": "static"
-      },
-      {
-        "source": "npm:license-checker-rseidelsohn",
-        "target": "npm:spdx-satisfies",
-        "type": "static"
-      },
-      {
-        "source": "npm:license-checker-rseidelsohn",
-        "target": "npm:treeify",
-        "type": "static"
-      }
-    ],
     "npm:license-webpack-plugin": [
       {
         "source": "npm:license-webpack-plugin",
@@ -33619,7 +33890,7 @@
       },
       {
         "source": "npm:listr2",
-        "target": "npm:eventemitter3",
+        "target": "npm:eventemitter3@5.0.1",
         "type": "static"
       },
       {
@@ -34051,35 +34322,6 @@
       {
         "source": "npm:node-emoji",
         "target": "npm:lodash",
-        "type": "static"
-      }
-    ],
-    "npm:nopt": [
-      {
-        "source": "npm:nopt",
-        "target": "npm:abbrev",
-        "type": "static"
-      }
-    ],
-    "npm:normalize-package-data": [
-      {
-        "source": "npm:normalize-package-data",
-        "target": "npm:hosted-git-info@6.1.3",
-        "type": "static"
-      },
-      {
-        "source": "npm:normalize-package-data",
-        "target": "npm:is-core-module",
-        "type": "static"
-      },
-      {
-        "source": "npm:normalize-package-data",
-        "target": "npm:semver",
-        "type": "static"
-      },
-      {
-        "source": "npm:normalize-package-data",
-        "target": "npm:validate-npm-package-license",
         "type": "static"
       }
     ],
@@ -34683,70 +34925,137 @@
         "type": "static"
       }
     ],
-    "npm:oxc-resolver": [
+    "npm:oxc-resolver@11.2.0": [
       {
-        "source": "npm:oxc-resolver",
+        "source": "npm:oxc-resolver@11.2.0",
         "target": "npm:@oxc-resolver/binding-darwin-arm64",
         "type": "static"
       },
       {
-        "source": "npm:oxc-resolver",
+        "source": "npm:oxc-resolver@11.2.0",
         "target": "npm:@oxc-resolver/binding-darwin-x64",
         "type": "static"
       },
       {
-        "source": "npm:oxc-resolver",
+        "source": "npm:oxc-resolver@11.2.0",
         "target": "npm:@oxc-resolver/binding-freebsd-x64",
         "type": "static"
       },
       {
-        "source": "npm:oxc-resolver",
+        "source": "npm:oxc-resolver@11.2.0",
         "target": "npm:@oxc-resolver/binding-linux-arm-gnueabihf",
         "type": "static"
       },
       {
-        "source": "npm:oxc-resolver",
+        "source": "npm:oxc-resolver@11.2.0",
         "target": "npm:@oxc-resolver/binding-linux-arm64-gnu",
         "type": "static"
       },
       {
-        "source": "npm:oxc-resolver",
+        "source": "npm:oxc-resolver@11.2.0",
         "target": "npm:@oxc-resolver/binding-linux-arm64-musl",
         "type": "static"
       },
       {
-        "source": "npm:oxc-resolver",
+        "source": "npm:oxc-resolver@11.2.0",
         "target": "npm:@oxc-resolver/binding-linux-riscv64-gnu",
         "type": "static"
       },
       {
-        "source": "npm:oxc-resolver",
+        "source": "npm:oxc-resolver@11.2.0",
         "target": "npm:@oxc-resolver/binding-linux-s390x-gnu",
         "type": "static"
       },
       {
-        "source": "npm:oxc-resolver",
+        "source": "npm:oxc-resolver@11.2.0",
         "target": "npm:@oxc-resolver/binding-linux-x64-gnu",
         "type": "static"
       },
       {
-        "source": "npm:oxc-resolver",
+        "source": "npm:oxc-resolver@11.2.0",
         "target": "npm:@oxc-resolver/binding-linux-x64-musl",
         "type": "static"
       },
       {
-        "source": "npm:oxc-resolver",
+        "source": "npm:oxc-resolver@11.2.0",
         "target": "npm:@oxc-resolver/binding-wasm32-wasi",
         "type": "static"
       },
       {
-        "source": "npm:oxc-resolver",
+        "source": "npm:oxc-resolver@11.2.0",
         "target": "npm:@oxc-resolver/binding-win32-arm64-msvc",
         "type": "static"
       },
       {
-        "source": "npm:oxc-resolver",
+        "source": "npm:oxc-resolver@11.2.0",
         "target": "npm:@oxc-resolver/binding-win32-x64-msvc",
+        "type": "static"
+      }
+    ],
+    "npm:oxc-resolver": [
+      {
+        "source": "npm:oxc-resolver",
+        "target": "npm:@oxc-resolver/binding-darwin-arm64@5.3.0",
+        "type": "static"
+      },
+      {
+        "source": "npm:oxc-resolver",
+        "target": "npm:@oxc-resolver/binding-darwin-x64@5.3.0",
+        "type": "static"
+      },
+      {
+        "source": "npm:oxc-resolver",
+        "target": "npm:@oxc-resolver/binding-freebsd-x64@5.3.0",
+        "type": "static"
+      },
+      {
+        "source": "npm:oxc-resolver",
+        "target": "npm:@oxc-resolver/binding-linux-arm-gnueabihf@5.3.0",
+        "type": "static"
+      },
+      {
+        "source": "npm:oxc-resolver",
+        "target": "npm:@oxc-resolver/binding-linux-arm64-gnu@5.3.0",
+        "type": "static"
+      },
+      {
+        "source": "npm:oxc-resolver",
+        "target": "npm:@oxc-resolver/binding-linux-arm64-musl@5.3.0",
+        "type": "static"
+      },
+      {
+        "source": "npm:oxc-resolver",
+        "target": "npm:@oxc-resolver/binding-linux-riscv64-gnu@5.3.0",
+        "type": "static"
+      },
+      {
+        "source": "npm:oxc-resolver",
+        "target": "npm:@oxc-resolver/binding-linux-s390x-gnu@5.3.0",
+        "type": "static"
+      },
+      {
+        "source": "npm:oxc-resolver",
+        "target": "npm:@oxc-resolver/binding-linux-x64-gnu@5.3.0",
+        "type": "static"
+      },
+      {
+        "source": "npm:oxc-resolver",
+        "target": "npm:@oxc-resolver/binding-linux-x64-musl@5.3.0",
+        "type": "static"
+      },
+      {
+        "source": "npm:oxc-resolver",
+        "target": "npm:@oxc-resolver/binding-wasm32-wasi@5.3.0",
+        "type": "static"
+      },
+      {
+        "source": "npm:oxc-resolver",
+        "target": "npm:@oxc-resolver/binding-win32-arm64-msvc@5.3.0",
+        "type": "static"
+      },
+      {
+        "source": "npm:oxc-resolver",
+        "target": "npm:@oxc-resolver/binding-win32-x64-msvc@5.3.0",
         "type": "static"
       }
     ],
@@ -35512,7 +35821,7 @@
       },
       {
         "source": "npm:prisma",
-        "target": "npm:typescript",
+        "target": "npm:typescript@5.8.3",
         "type": "static"
       }
     ],
@@ -35688,60 +35997,6 @@
       {
         "source": "npm:read-cache",
         "target": "npm:pify@2.3.0",
-        "type": "static"
-      }
-    ],
-    "npm:read-installed-packages": [
-      {
-        "source": "npm:read-installed-packages",
-        "target": "npm:@npmcli/fs",
-        "type": "static"
-      },
-      {
-        "source": "npm:read-installed-packages",
-        "target": "npm:debug",
-        "type": "static"
-      },
-      {
-        "source": "npm:read-installed-packages",
-        "target": "npm:read-package-json",
-        "type": "static"
-      },
-      {
-        "source": "npm:read-installed-packages",
-        "target": "npm:semver",
-        "type": "static"
-      },
-      {
-        "source": "npm:read-installed-packages",
-        "target": "npm:slide",
-        "type": "static"
-      },
-      {
-        "source": "npm:read-installed-packages",
-        "target": "npm:graceful-fs",
-        "type": "static"
-      }
-    ],
-    "npm:read-package-json": [
-      {
-        "source": "npm:read-package-json",
-        "target": "npm:glob@10.4.5",
-        "type": "static"
-      },
-      {
-        "source": "npm:read-package-json",
-        "target": "npm:json-parse-even-better-errors@3.0.2",
-        "type": "static"
-      },
-      {
-        "source": "npm:read-package-json",
-        "target": "npm:normalize-package-data",
-        "type": "static"
-      },
-      {
-        "source": "npm:read-package-json",
-        "target": "npm:npm-normalize-package-bin",
         "type": "static"
       }
     ],
@@ -36880,64 +37135,6 @@
         "type": "static"
       }
     ],
-    "npm:spdx-compare": [
-      {
-        "source": "npm:spdx-compare",
-        "target": "npm:array-find-index",
-        "type": "static"
-      },
-      {
-        "source": "npm:spdx-compare",
-        "target": "npm:spdx-expression-parse",
-        "type": "static"
-      },
-      {
-        "source": "npm:spdx-compare",
-        "target": "npm:spdx-ranges",
-        "type": "static"
-      }
-    ],
-    "npm:spdx-correct": [
-      {
-        "source": "npm:spdx-correct",
-        "target": "npm:spdx-expression-parse",
-        "type": "static"
-      },
-      {
-        "source": "npm:spdx-correct",
-        "target": "npm:spdx-license-ids",
-        "type": "static"
-      }
-    ],
-    "npm:spdx-expression-parse": [
-      {
-        "source": "npm:spdx-expression-parse",
-        "target": "npm:spdx-exceptions",
-        "type": "static"
-      },
-      {
-        "source": "npm:spdx-expression-parse",
-        "target": "npm:spdx-license-ids",
-        "type": "static"
-      }
-    ],
-    "npm:spdx-satisfies": [
-      {
-        "source": "npm:spdx-satisfies",
-        "target": "npm:spdx-compare",
-        "type": "static"
-      },
-      {
-        "source": "npm:spdx-satisfies",
-        "target": "npm:spdx-expression-parse",
-        "type": "static"
-      },
-      {
-        "source": "npm:spdx-satisfies",
-        "target": "npm:spdx-ranges",
-        "type": "static"
-      }
-    ],
     "npm:spdy-transport": [
       {
         "source": "npm:spdy-transport",
@@ -37385,6 +37582,70 @@
         "type": "static"
       }
     ],
+    "npm:superagent": [
+      {
+        "source": "npm:superagent",
+        "target": "npm:component-emitter",
+        "type": "static"
+      },
+      {
+        "source": "npm:superagent",
+        "target": "npm:cookiejar",
+        "type": "static"
+      },
+      {
+        "source": "npm:superagent",
+        "target": "npm:debug",
+        "type": "static"
+      },
+      {
+        "source": "npm:superagent",
+        "target": "npm:fast-safe-stringify",
+        "type": "static"
+      },
+      {
+        "source": "npm:superagent",
+        "target": "npm:form-data",
+        "type": "static"
+      },
+      {
+        "source": "npm:superagent",
+        "target": "npm:formidable",
+        "type": "static"
+      },
+      {
+        "source": "npm:superagent",
+        "target": "npm:methods",
+        "type": "static"
+      },
+      {
+        "source": "npm:superagent",
+        "target": "npm:mime@2.6.0",
+        "type": "static"
+      },
+      {
+        "source": "npm:superagent",
+        "target": "npm:qs",
+        "type": "static"
+      },
+      {
+        "source": "npm:superagent",
+        "target": "npm:semver",
+        "type": "static"
+      }
+    ],
+    "npm:supertest": [
+      {
+        "source": "npm:supertest",
+        "target": "npm:methods",
+        "type": "static"
+      },
+      {
+        "source": "npm:supertest",
+        "target": "npm:superagent",
+        "type": "static"
+      }
+    ],
     "npm:supports-color": [
       {
         "source": "npm:supports-color",
@@ -37682,6 +37943,11 @@
     "npm:ts-api-utils": [
       {
         "source": "npm:ts-api-utils",
+        "target": "npm:typescript@5.8.3",
+        "type": "static"
+      },
+      {
+        "source": "npm:ts-api-utils",
         "target": "npm:typescript",
         "type": "static"
       }
@@ -37739,12 +38005,17 @@
       },
       {
         "source": "npm:ts-jest",
-        "target": "npm:typescript",
+        "target": "npm:typescript@5.8.3",
         "type": "static"
       },
       {
         "source": "npm:ts-jest",
         "target": "npm:yargs-parser",
+        "type": "static"
+      },
+      {
+        "source": "npm:ts-jest",
+        "target": "npm:typescript",
         "type": "static"
       }
     ],
@@ -37776,94 +38047,17 @@
       },
       {
         "source": "npm:ts-loader",
-        "target": "npm:typescript",
+        "target": "npm:typescript@5.8.3",
         "type": "static"
       },
       {
         "source": "npm:ts-loader",
         "target": "npm:webpack@5.99.9",
         "type": "static"
-      }
-    ],
-    "npm:ts-node@10.9.1": [
-      {
-        "source": "npm:ts-node@10.9.1",
-        "target": "npm:@cspotcode/source-map-support",
-        "type": "static"
       },
       {
-        "source": "npm:ts-node@10.9.1",
-        "target": "npm:@swc/core",
-        "type": "static"
-      },
-      {
-        "source": "npm:ts-node@10.9.1",
-        "target": "npm:@tsconfig/node10",
-        "type": "static"
-      },
-      {
-        "source": "npm:ts-node@10.9.1",
-        "target": "npm:@tsconfig/node12",
-        "type": "static"
-      },
-      {
-        "source": "npm:ts-node@10.9.1",
-        "target": "npm:@tsconfig/node14",
-        "type": "static"
-      },
-      {
-        "source": "npm:ts-node@10.9.1",
-        "target": "npm:@tsconfig/node16",
-        "type": "static"
-      },
-      {
-        "source": "npm:ts-node@10.9.1",
-        "target": "npm:@types/node@18.16.20",
-        "type": "static"
-      },
-      {
-        "source": "npm:ts-node@10.9.1",
-        "target": "npm:acorn",
-        "type": "static"
-      },
-      {
-        "source": "npm:ts-node@10.9.1",
-        "target": "npm:acorn-walk",
-        "type": "static"
-      },
-      {
-        "source": "npm:ts-node@10.9.1",
-        "target": "npm:arg",
-        "type": "static"
-      },
-      {
-        "source": "npm:ts-node@10.9.1",
-        "target": "npm:create-require",
-        "type": "static"
-      },
-      {
-        "source": "npm:ts-node@10.9.1",
-        "target": "npm:diff",
-        "type": "static"
-      },
-      {
-        "source": "npm:ts-node@10.9.1",
-        "target": "npm:make-error",
-        "type": "static"
-      },
-      {
-        "source": "npm:ts-node@10.9.1",
+        "source": "npm:ts-loader",
         "target": "npm:typescript",
-        "type": "static"
-      },
-      {
-        "source": "npm:ts-node@10.9.1",
-        "target": "npm:v8-compile-cache-lib",
-        "type": "static"
-      },
-      {
-        "source": "npm:ts-node@10.9.1",
-        "target": "npm:yn",
         "type": "static"
       }
     ],
@@ -37935,7 +38129,7 @@
       },
       {
         "source": "npm:ts-node",
-        "target": "npm:typescript",
+        "target": "npm:typescript@5.8.3",
         "type": "static"
       },
       {
@@ -37946,6 +38140,11 @@
       {
         "source": "npm:ts-node",
         "target": "npm:yn",
+        "type": "static"
+      },
+      {
+        "source": "npm:ts-node",
+        "target": "npm:typescript",
         "type": "static"
       }
     ],
@@ -37993,7 +38192,7 @@
       },
       {
         "source": "npm:tsconfig-paths-webpack-plugin@4.0.0",
-        "target": "npm:enhanced-resolve@5.18.1",
+        "target": "npm:enhanced-resolve",
         "type": "static"
       },
       {
@@ -38415,18 +38614,6 @@
         "type": "static"
       }
     ],
-    "npm:validate-npm-package-license": [
-      {
-        "source": "npm:validate-npm-package-license",
-        "target": "npm:spdx-correct",
-        "type": "static"
-      },
-      {
-        "source": "npm:validate-npm-package-license",
-        "target": "npm:spdx-expression-parse",
-        "type": "static"
-      }
-    ],
     "npm:walker": [
       {
         "source": "npm:walker",
@@ -38488,7 +38675,7 @@
       },
       {
         "source": "npm:webpack-cli",
-        "target": "npm:commander@10.0.1",
+        "target": "npm:commander@12.1.0",
         "type": "static"
       },
       {
@@ -38652,7 +38839,7 @@
       },
       {
         "source": "npm:webpack-dev-server",
-        "target": "npm:http-proxy-middleware",
+        "target": "npm:http-proxy-middleware@2.0.9",
         "type": "static"
       },
       {
@@ -38920,7 +39107,7 @@
       },
       {
         "source": "npm:webpack@5.99.9",
-        "target": "npm:enhanced-resolve@5.18.1",
+        "target": "npm:enhanced-resolve",
         "type": "static"
       },
       {
@@ -39414,14 +39601,14 @@
   "version": "6.0",
   "errors": [
     {
-      "stack": " - backend/webpack.config.js: Error [ERR_REQUIRE_ESM]: require() of ES Module C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\backend\\webpack.config.js from C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\.pnpm\\@nx+webpack@21.2.1_@swc-node+register@1.10.10_@swc+core@1.12.6_nx@21.2.1_typescript@5.8.3_webpack-cli@6.0.1\\node_modules\\@nx\\webpack\\src\\utils\\webpack\\resolve-user-defined-webpack-config.js not supported.\nwebpack.config.js is treated as an ES module file as it is a .js file whose nearest parent package.json contains \"type\": \"module\" which declares all .js files in that package scope as ES modules.\nInstead either rename webpack.config.js to end in .cjs, change the requiring code to use dynamic import() which is available in all CommonJS modules, or change \"type\": \"module\" to \"type\": \"commonjs\" in C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\package.json to treat all .js files as CommonJS (using .mjs for all ES modules instead).\n\n    at resolveUserDefinedWebpackConfig (C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\.pnpm\\@nx+webpack@21.2.1_@swc-node+register@1.10.10_@swc+core@1.12.6_nx@21.2.1_typescript@5.8.3_webpack-cli@6.0.1\\node_modules\\@nx\\webpack\\src\\utils\\webpack\\resolve-user-defined-webpack-config.js:19:16)\n    at createWebpackTargets (C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\.pnpm\\@nx+webpack@21.2.1_@swc-node+register@1.10.10_@swc+core@1.12.6_nx@21.2.1_typescript@5.8.3_webpack-cli@6.0.1\\node_modules\\@nx\\webpack\\src\\plugins\\plugin.js:78:101)\n    at createNodesInternal (C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\.pnpm\\@nx+webpack@21.2.1_@swc-node+register@1.10.10_@swc+core@1.12.6_nx@21.2.1_typescript@5.8.3_webpack-cli@6.0.1\\node_modules\\@nx\\webpack\\src\\plugins\\plugin.js:64:34)\n    at async C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\.pnpm\\nx@21.2.1_@swc-node+register@1.10.10_@swc+core@1.12.6\\node_modules\\nx\\src\\project-graph\\plugins\\utils.js:10:27\n    at async Promise.all (index 0)\n    at async createNodesFromFiles (C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\.pnpm\\nx@21.2.1_@swc-node+register@1.10.10_@swc+core@1.12.6\\node_modules\\nx\\src\\project-graph\\plugins\\utils.js:8:5)\n    at async exports.createNodesV2 (C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\.pnpm\\@nx+webpack@21.2.1_@swc-node+register@1.10.10_@swc+core@1.12.6_nx@21.2.1_typescript@5.8.3_webpack-cli@6.0.1\\node_modules\\@nx\\webpack\\src\\plugins\\plugin.js:40:20)\n    at async LoadedNxPlugin.createNodes (C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\.pnpm\\nx@21.2.1_@swc-node+register@1.10.10_@swc+core@1.12.6\\node_modules\\nx\\src\\project-graph\\plugins\\loaded-nx-plugin.js:22:36)\n    at async LoadedNxPlugin.createNodes.<computed> (C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\.pnpm\\nx@21.2.1_@swc-node+register@1.10.10_@swc+core@1.12.6\\node_modules\\nx\\src\\project-graph\\plugins\\loaded-nx-plugin.js:32:28)\n    at async createNodes (C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\.pnpm\\nx@21.2.1_@swc-node+register@1.10.10_@swc+core@1.12.6\\node_modules\\nx\\src\\project-graph\\plugins\\isolation\\plugin-worker.js:76:36)\n    at async consumeMessage (C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\.pnpm\\nx@21.2.1_@swc-node+register@1.10.10_@swc+core@1.12.6\\node_modules\\nx\\src\\project-graph\\plugins\\isolation\\messaging.js:42:26)",
-      "message": "An error occurred while processing files for the @nx/webpack/plugin plugin\n.\n  - backend/webpack.config.js: require() of ES Module C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\backend\\webpack.config.js from C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\.pnpm\\@nx+webpack@21.2.1_@swc-node+register@1.10.10_@swc+core@1.12.6_nx@21.2.1_typescript@5.8.3_webpack-cli@6.0.1\\node_modules\\@nx\\webpack\\src\\utils\\webpack\\resolve-user-defined-webpack-config.js not supported.\nwebpack.config.js is treated as an ES module file as it is a .js file whose nearest parent package.json contains \"type\": \"module\" which declares all .js files in that package scope as ES modules.\nInstead either rename webpack.config.js to end in .cjs, change the requiring code to use dynamic import() which is available in all CommonJS modules, or change \"type\": \"module\" to \"type\": \"commonjs\" in C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\package.json to treat all .js files as CommonJS (using .mjs for all ES modules instead).\n",
+      "stack": " - backend/webpack.config.js: Error [ERR_REQUIRE_ESM]: require() of ES Module C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\backend\\webpack.config.js from C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\.pnpm\\@nx+webpack@21.2.1_@swc-node+register@1.10.10_@swc+core@1.12.6_nx@21.2.1_typescript@5.9.0-dev.20250624_webpack-cli@6.0.1\\node_modules\\@nx\\webpack\\src\\utils\\webpack\\resolve-user-defined-webpack-config.js not supported.\nwebpack.config.js is treated as an ES module file as it is a .js file whose nearest parent package.json contains \"type\": \"module\" which declares all .js files in that package scope as ES modules.\nInstead either rename webpack.config.js to end in .cjs, change the requiring code to use dynamic import() which is available in all CommonJS modules, or change \"type\": \"module\" to \"type\": \"commonjs\" in C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\package.json to treat all .js files as CommonJS (using .mjs for all ES modules instead).\n\n    at resolveUserDefinedWebpackConfig (C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\.pnpm\\@nx+webpack@21.2.1_@swc-node+register@1.10.10_@swc+core@1.12.6_nx@21.2.1_typescript@5.9.0-dev.20250624_webpack-cli@6.0.1\\node_modules\\@nx\\webpack\\src\\utils\\webpack\\resolve-user-defined-webpack-config.js:19:16)\n    at createWebpackTargets (C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\.pnpm\\@nx+webpack@21.2.1_@swc-node+register@1.10.10_@swc+core@1.12.6_nx@21.2.1_typescript@5.9.0-dev.20250624_webpack-cli@6.0.1\\node_modules\\@nx\\webpack\\src\\plugins\\plugin.js:78:101)\n    at createNodesInternal (C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\.pnpm\\@nx+webpack@21.2.1_@swc-node+register@1.10.10_@swc+core@1.12.6_nx@21.2.1_typescript@5.9.0-dev.20250624_webpack-cli@6.0.1\\node_modules\\@nx\\webpack\\src\\plugins\\plugin.js:64:34)\n    at async C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\.pnpm\\nx@21.2.1_@swc-node+register@1.10.10_@swc+core@1.12.6\\node_modules\\nx\\src\\project-graph\\plugins\\utils.js:10:27\n    at async Promise.all (index 0)\n    at async createNodesFromFiles (C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\.pnpm\\nx@21.2.1_@swc-node+register@1.10.10_@swc+core@1.12.6\\node_modules\\nx\\src\\project-graph\\plugins\\utils.js:8:5)\n    at async exports.createNodesV2 (C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\.pnpm\\@nx+webpack@21.2.1_@swc-node+register@1.10.10_@swc+core@1.12.6_nx@21.2.1_typescript@5.9.0-dev.20250624_webpack-cli@6.0.1\\node_modules\\@nx\\webpack\\src\\plugins\\plugin.js:40:20)\n    at async LoadedNxPlugin.createNodes (C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\.pnpm\\nx@21.2.1_@swc-node+register@1.10.10_@swc+core@1.12.6\\node_modules\\nx\\src\\project-graph\\plugins\\loaded-nx-plugin.js:22:36)\n    at async LoadedNxPlugin.createNodes.<computed> (C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\.pnpm\\nx@21.2.1_@swc-node+register@1.10.10_@swc+core@1.12.6\\node_modules\\nx\\src\\project-graph\\plugins\\loaded-nx-plugin.js:32:28)\n    at async createNodes (C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\.pnpm\\nx@21.2.1_@swc-node+register@1.10.10_@swc+core@1.12.6\\node_modules\\nx\\src\\project-graph\\plugins\\isolation\\plugin-worker.js:76:36)\n    at async consumeMessage (C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\.pnpm\\nx@21.2.1_@swc-node+register@1.10.10_@swc+core@1.12.6\\node_modules\\nx\\src\\project-graph\\plugins\\isolation\\messaging.js:42:26)",
+      "message": "An error occurred while processing files for the @nx/webpack/plugin plugin\n.\n  - backend/webpack.config.js: require() of ES Module C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\backend\\webpack.config.js from C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\.pnpm\\@nx+webpack@21.2.1_@swc-node+register@1.10.10_@swc+core@1.12.6_nx@21.2.1_typescript@5.9.0-dev.20250624_webpack-cli@6.0.1\\node_modules\\@nx\\webpack\\src\\utils\\webpack\\resolve-user-defined-webpack-config.js not supported.\nwebpack.config.js is treated as an ES module file as it is a .js file whose nearest parent package.json contains \"type\": \"module\" which declares all .js files in that package scope as ES modules.\nInstead either rename webpack.config.js to end in .cjs, change the requiring code to use dynamic import() which is available in all CommonJS modules, or change \"type\": \"module\" to \"type\": \"commonjs\" in C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\package.json to treat all .js files as CommonJS (using .mjs for all ES modules instead).\n",
       "errors": [
         [
           "backend/webpack.config.js",
           {
-            "stack": "Error [ERR_REQUIRE_ESM]: require() of ES Module C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\backend\\webpack.config.js from C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\.pnpm\\@nx+webpack@21.2.1_@swc-node+register@1.10.10_@swc+core@1.12.6_nx@21.2.1_typescript@5.8.3_webpack-cli@6.0.1\\node_modules\\@nx\\webpack\\src\\utils\\webpack\\resolve-user-defined-webpack-config.js not supported.\nwebpack.config.js is treated as an ES module file as it is a .js file whose nearest parent package.json contains \"type\": \"module\" which declares all .js files in that package scope as ES modules.\nInstead either rename webpack.config.js to end in .cjs, change the requiring code to use dynamic import() which is available in all CommonJS modules, or change \"type\": \"module\" to \"type\": \"commonjs\" in C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\package.json to treat all .js files as CommonJS (using .mjs for all ES modules instead).\n\n    at resolveUserDefinedWebpackConfig (C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\.pnpm\\@nx+webpack@21.2.1_@swc-node+register@1.10.10_@swc+core@1.12.6_nx@21.2.1_typescript@5.8.3_webpack-cli@6.0.1\\node_modules\\@nx\\webpack\\src\\utils\\webpack\\resolve-user-defined-webpack-config.js:19:16)\n    at createWebpackTargets (C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\.pnpm\\@nx+webpack@21.2.1_@swc-node+register@1.10.10_@swc+core@1.12.6_nx@21.2.1_typescript@5.8.3_webpack-cli@6.0.1\\node_modules\\@nx\\webpack\\src\\plugins\\plugin.js:78:101)\n    at createNodesInternal (C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\.pnpm\\@nx+webpack@21.2.1_@swc-node+register@1.10.10_@swc+core@1.12.6_nx@21.2.1_typescript@5.8.3_webpack-cli@6.0.1\\node_modules\\@nx\\webpack\\src\\plugins\\plugin.js:64:34)\n    at async C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\.pnpm\\nx@21.2.1_@swc-node+register@1.10.10_@swc+core@1.12.6\\node_modules\\nx\\src\\project-graph\\plugins\\utils.js:10:27\n    at async Promise.all (index 0)\n    at async createNodesFromFiles (C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\.pnpm\\nx@21.2.1_@swc-node+register@1.10.10_@swc+core@1.12.6\\node_modules\\nx\\src\\project-graph\\plugins\\utils.js:8:5)\n    at async exports.createNodesV2 (C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\.pnpm\\@nx+webpack@21.2.1_@swc-node+register@1.10.10_@swc+core@1.12.6_nx@21.2.1_typescript@5.8.3_webpack-cli@6.0.1\\node_modules\\@nx\\webpack\\src\\plugins\\plugin.js:40:20)\n    at async LoadedNxPlugin.createNodes (C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\.pnpm\\nx@21.2.1_@swc-node+register@1.10.10_@swc+core@1.12.6\\node_modules\\nx\\src\\project-graph\\plugins\\loaded-nx-plugin.js:22:36)\n    at async LoadedNxPlugin.createNodes.<computed> (C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\.pnpm\\nx@21.2.1_@swc-node+register@1.10.10_@swc+core@1.12.6\\node_modules\\nx\\src\\project-graph\\plugins\\loaded-nx-plugin.js:32:28)\n    at async createNodes (C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\.pnpm\\nx@21.2.1_@swc-node+register@1.10.10_@swc+core@1.12.6\\node_modules\\nx\\src\\project-graph\\plugins\\isolation\\plugin-worker.js:76:36)\n    at async consumeMessage (C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\.pnpm\\nx@21.2.1_@swc-node+register@1.10.10_@swc+core@1.12.6\\node_modules\\nx\\src\\project-graph\\plugins\\isolation\\messaging.js:42:26)",
-            "message": "require() of ES Module C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\backend\\webpack.config.js from C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\.pnpm\\@nx+webpack@21.2.1_@swc-node+register@1.10.10_@swc+core@1.12.6_nx@21.2.1_typescript@5.8.3_webpack-cli@6.0.1\\node_modules\\@nx\\webpack\\src\\utils\\webpack\\resolve-user-defined-webpack-config.js not supported.\nwebpack.config.js is treated as an ES module file as it is a .js file whose nearest parent package.json contains \"type\": \"module\" which declares all .js files in that package scope as ES modules.\nInstead either rename webpack.config.js to end in .cjs, change the requiring code to use dynamic import() which is available in all CommonJS modules, or change \"type\": \"module\" to \"type\": \"commonjs\" in C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\package.json to treat all .js files as CommonJS (using .mjs for all ES modules instead).\n",
+            "stack": "Error [ERR_REQUIRE_ESM]: require() of ES Module C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\backend\\webpack.config.js from C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\.pnpm\\@nx+webpack@21.2.1_@swc-node+register@1.10.10_@swc+core@1.12.6_nx@21.2.1_typescript@5.9.0-dev.20250624_webpack-cli@6.0.1\\node_modules\\@nx\\webpack\\src\\utils\\webpack\\resolve-user-defined-webpack-config.js not supported.\nwebpack.config.js is treated as an ES module file as it is a .js file whose nearest parent package.json contains \"type\": \"module\" which declares all .js files in that package scope as ES modules.\nInstead either rename webpack.config.js to end in .cjs, change the requiring code to use dynamic import() which is available in all CommonJS modules, or change \"type\": \"module\" to \"type\": \"commonjs\" in C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\package.json to treat all .js files as CommonJS (using .mjs for all ES modules instead).\n\n    at resolveUserDefinedWebpackConfig (C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\.pnpm\\@nx+webpack@21.2.1_@swc-node+register@1.10.10_@swc+core@1.12.6_nx@21.2.1_typescript@5.9.0-dev.20250624_webpack-cli@6.0.1\\node_modules\\@nx\\webpack\\src\\utils\\webpack\\resolve-user-defined-webpack-config.js:19:16)\n    at createWebpackTargets (C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\.pnpm\\@nx+webpack@21.2.1_@swc-node+register@1.10.10_@swc+core@1.12.6_nx@21.2.1_typescript@5.9.0-dev.20250624_webpack-cli@6.0.1\\node_modules\\@nx\\webpack\\src\\plugins\\plugin.js:78:101)\n    at createNodesInternal (C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\.pnpm\\@nx+webpack@21.2.1_@swc-node+register@1.10.10_@swc+core@1.12.6_nx@21.2.1_typescript@5.9.0-dev.20250624_webpack-cli@6.0.1\\node_modules\\@nx\\webpack\\src\\plugins\\plugin.js:64:34)\n    at async C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\.pnpm\\nx@21.2.1_@swc-node+register@1.10.10_@swc+core@1.12.6\\node_modules\\nx\\src\\project-graph\\plugins\\utils.js:10:27\n    at async Promise.all (index 0)\n    at async createNodesFromFiles (C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\.pnpm\\nx@21.2.1_@swc-node+register@1.10.10_@swc+core@1.12.6\\node_modules\\nx\\src\\project-graph\\plugins\\utils.js:8:5)\n    at async exports.createNodesV2 (C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\.pnpm\\@nx+webpack@21.2.1_@swc-node+register@1.10.10_@swc+core@1.12.6_nx@21.2.1_typescript@5.9.0-dev.20250624_webpack-cli@6.0.1\\node_modules\\@nx\\webpack\\src\\plugins\\plugin.js:40:20)\n    at async LoadedNxPlugin.createNodes (C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\.pnpm\\nx@21.2.1_@swc-node+register@1.10.10_@swc+core@1.12.6\\node_modules\\nx\\src\\project-graph\\plugins\\loaded-nx-plugin.js:22:36)\n    at async LoadedNxPlugin.createNodes.<computed> (C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\.pnpm\\nx@21.2.1_@swc-node+register@1.10.10_@swc+core@1.12.6\\node_modules\\nx\\src\\project-graph\\plugins\\loaded-nx-plugin.js:32:28)\n    at async createNodes (C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\.pnpm\\nx@21.2.1_@swc-node+register@1.10.10_@swc+core@1.12.6\\node_modules\\nx\\src\\project-graph\\plugins\\isolation\\plugin-worker.js:76:36)\n    at async consumeMessage (C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\.pnpm\\nx@21.2.1_@swc-node+register@1.10.10_@swc+core@1.12.6\\node_modules\\nx\\src\\project-graph\\plugins\\isolation\\messaging.js:42:26)",
+            "message": "require() of ES Module C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\backend\\webpack.config.js from C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\.pnpm\\@nx+webpack@21.2.1_@swc-node+register@1.10.10_@swc+core@1.12.6_nx@21.2.1_typescript@5.9.0-dev.20250624_webpack-cli@6.0.1\\node_modules\\@nx\\webpack\\src\\utils\\webpack\\resolve-user-defined-webpack-config.js not supported.\nwebpack.config.js is treated as an ES module file as it is a .js file whose nearest parent package.json contains \"type\": \"module\" which declares all .js files in that package scope as ES modules.\nInstead either rename webpack.config.js to end in .cjs, change the requiring code to use dynamic import() which is available in all CommonJS modules, or change \"type\": \"module\" to \"type\": \"commonjs\" in C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\package.json to treat all .js files as CommonJS (using .mjs for all ES modules instead).\n",
             "code": "ERR_REQUIRE_ESM"
           }
         ]
@@ -39431,5 +39618,5 @@
       "pluginIndex": 0
     }
   ],
-  "computedAt": 1750769676169
+  "computedAt": 1750798181785
 }
