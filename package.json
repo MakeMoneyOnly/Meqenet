@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "Meqenet.et - Ethiopia's Leading BNPL Financial Super-App",
   "private": true,
-  "type": "module",
   "scripts": {
     "prepare": "husky",
     "lint": "pnpm -r --if-present lint",
@@ -11,25 +10,72 @@
     "test": "jest --projects backend/services/auth-service backend/services/api-gateway backend-e2e",
     "build": "pnpm -r --if-present build",
     "security:audit": "pnpm audit --audit-level moderate",
-    "security:secrets": "trufflehog git file://. --no-update --only-verified --fail",
+    "security:audit-ci": "audit-ci --config .audit-ci.json",
+    "security:sbom": "cdxgen -o sbom.json .",
+    "security:secrets": "echo 'Note: Install trufflehog separately for secrets scanning'",
     "security:outdated": "pnpm outdated",
     "validate:ethiopian-compliance": "echo 'Running Ethiopian FinTech compliance checks...' && pnpm run security:audit",
     "clean": "pnpm -r --if-present clean",
-    "reset": "pnpm run clean && rm -rf node_modules pnpm-lock.yaml && pnpm install"
+    "reset": "pnpm run clean && rm -rf node_modules pnpm-lock.yaml && pnpm install",
+    "start:dev": "cross-env COMPOSE_BAKE=true docker-compose up --build",
+    "start:dev:win": "docker-compose up --build",
+    "start:prod": "cross-env COMPOSE_BAKE=true docker-compose -f docker-compose.yml -f docker-compose.prod.yml up --build",
+    "docker:build": "cross-env COMPOSE_BAKE=true docker-compose build",
+    "docker:build:win": "docker-compose build",
+    "docker:build:nocache": "cross-env COMPOSE_BAKE=true docker-compose build --no-cache",
+    "docker:build:nocache:win": "docker-compose build --no-cache",
+    "docker:up": "cross-env COMPOSE_BAKE=true docker-compose up",
+    "docker:up:win": "docker-compose up",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f"
   },
   "dependencies": {
-    "@nestjs/common": "^11.1.3",
-    "@nestjs/core": "^11.1.3",
-    "@nestjs/platform-express": "^11.1.3",
+    "@aws-sdk/client-secrets-manager": "^3.633.0",
+    "@grpc/grpc-js": "^1.11.1",
+    "@grpc/proto-loader": "^0.7.15",
+    "@nestjs/axios": "^3.0.2",
+    "@nestjs/common": "^10.3.10",
+    "@nestjs/config": "^3.2.3",
+    "@nestjs/core": "^10.3.10",
+    "@nestjs/event-emitter": "^2.0.4",
+    "@nestjs/jwt": "^10.2.0",
+    "@nestjs/microservices": "^10.3.10",
+    "@nestjs/passport": "^10.0.3",
+    "@nestjs/platform-express": "^10.3.10",
+    "@nestjs/swagger": "^7.4.0",
+    "@nestjs/terminus": "^10.2.3",
+    "@nestjs/throttler": "^6.0.0",
+    "@opentelemetry/api": "1.9.0",
+    "@opentelemetry/exporter-jaeger": "^1.25.1",
+    "@opentelemetry/instrumentation-express": "^0.40.1",
+    "@opentelemetry/instrumentation-http": "^0.52.1",
+    "@opentelemetry/sdk-node": "^0.52.1",
+    "@opentelemetry/semantic-conventions": "^1.25.1",
+    "@prisma/client": "^5.18.0",
+    "amqplib": "^0.10.8",
+    "argon2": "^0.41.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
+    "compression": "^1.7.4",
+    "helmet": "^7.1.0",
+    "http-proxy-middleware": "^3.0.0",
+    "i18next": "^23.13.0",
+    "nest-winston": "^1.9.7",
+    "nestjs-i18n": "^10.4.5",
+    "passport": "^0.7.0",
+    "passport-jwt": "^4.0.1",
+    "passport-local": "^1.0.0",
+    "prom-client": "^15.1.3",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
-    "uuid": "^11.1.0"
+    "uuid": "^10.0.0",
+    "winston": "^3.13.1",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@nestjs/schematics": "^11.0.5",
-    "@nestjs/testing": "^11.1.3",
+    "@nestjs/cli": "^10.4.2",
+    "@nestjs/schematics": "^10.1.3",
+    "@nestjs/testing": "^10.3.10",
     "@nx/eslint": "^21.2.1",
     "@nx/jest": "21.2.1",
     "@nx/js": "21.2.1",
@@ -42,10 +88,16 @@
     "@swc-node/register": "~1.10.10",
     "@swc/core": "~1.12.6",
     "@swc/helpers": "~0.5.17",
-    "@types/compression": "^1.8.1",
+    "@types/amqplib": "^0.10.5",
+    "@types/bcrypt": "^5.0.2",
+    "@types/compression": "^1.7.5",
+    "@types/express": "^4.17.21",
     "@types/jest": "^30.0.0",
     "@types/node": "~24.0.3",
-    "@types/uuid": "^10.0.0",
+    "@types/passport-jwt": "^4.0.1",
+    "@types/passport-local": "^1.0.38",
+    "@types/supertest": "^6.0.2",
+    "@types/uuid": "^9.0.8",
     "@typescript-eslint/eslint-plugin": "^8.35.0",
     "@typescript-eslint/parser": "^8.35.0",
     "audit-ci": "^7.1.0",
@@ -58,7 +110,7 @@
     "eslint-plugin-security": "^3.0.1",
     "globals": "^16.2.0",
     "husky": "^9.1.7",
-    "jest": "^30.0.2",
+    "jest": "^30.0.3",
     "jest-environment-node": "^30.0.2",
     "jest-html-reporters": "^3.1.7",
     "jest-junit": "^16.0.0",
@@ -66,11 +118,21 @@
     "npm-check-updates": "^18.0.1",
     "nx": "^21.2.1",
     "prettier": "^3.6.0",
+    "prisma": "^5.18.0",
+    "@cyclonedx/cdxgen": "^11.4.1",
+    "source-map-support": "^0.5.21",
+    "supertest": "^7.0.0",
+    "swagger-ui-express": "^5.0.1",
     "ts-jest": "^29.4.0",
+    "ts-loader": "^9.5.1",
     "ts-node": "10.9.2",
+    "ts-proto": "^1.178.0",
+    "tsconfig-paths": "^4.2.0",
     "tslib": "^2.8.1",
-    "typescript": "^5.8.3",
-    "webpack-cli": "^6.0.1"
+    "typescript": "~5.4.5",
+    "webpack-cli": "^5.1.4",
+    "cross-env": "^7.0.3",
+    "chokidar": "^3.5.3"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,json,md,yml,yaml}": [
@@ -98,23 +160,24 @@
   "license": "PROPRIETARY",
   "engines": {
     "node": ">=18.0.0",
-    "pnpm": ">=8.0.0"
+    "pnpm": ">=10.0.0"
   },
   "volta": {
     "node": "18.19.0",
-    "pnpm": "8.15.1"
+    "pnpm": "10.12.3"
   },
-  "packageManager": "pnpm@8.15.1",
+  "packageManager": "pnpm@10.12.3",
   "pnpm": {
+    "onlyBuiltDependencies": [
+      "argon2",
+      "grpc-tools"
+    ],
     "peerDependencyRules": {
       "allowedVersions": {
         "glob": ">=10.0.0",
-        "inflight": ">=2.0.0"
+        "inflight": ">=2.0.0",
+        "chokidar": "3.x"
       }
-    },
-    "overrides": {
-      "glob@<10.0.0": "^10.4.5",
-      "inflight@<2.0.0": "npm:@npmcli/fs@^3.1.0"
     },
     "packageExtensions": {
       "test-exclude@6.0.0": {

@@ -40,6 +40,22 @@ web_modules/
 # TypeScript cache
 *.tsbuildinfo
 
+# Compiled JavaScript files (should not be committed in TypeScript projects)
+*.js
+*.js.map
+!*.config.js
+!jest.config.js
+!webpack.config.js
+!eslint.config.js
+!scripts/*.js
+
+# Build outputs
+dist/
+build/
+
+# Temporary diff files
+diff.txt
+
 # Optional npm cache directory
 .npm
 

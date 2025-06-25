@@ -1,54 +1,84 @@
 # Multi-stage Dockerfile for Authentication Service
 # Optimized for production with security best practices
 
-# 1. Builder Stage
-FROM node:18.19.0-alpine AS builder
+# -----------------------------------------------------------------------------
+# Builder Stage
+# -----------------------------------------------------------------------------
+# NOTE: We switch from **alpine** to **slim (debian)** here to avoid the sporadic
+# I/O errors seen when installing heavy build-time dependencies (g++, python3)
+# on musl based Alpine images under Docker-for-Windows. Debian based images have
+# pre-built binaries for most native Node modules (e.g. argon2) which removes
+# the need to compile them from source and therefore removes the g++ dependency
+# entirely. This keeps the image small while making the build far more reliable
+# on Windows/WSL hosts.
+
+FROM node:18-slim AS builder
+
+# Set working directory
 WORKDIR /app
 
-# Install pnpm
-RUN npm install -g pnpm
+# Install minimal dependencies required for node-gyp (only if a module really
+# needs compilation). We deliberately omit **g++** here because Debian based
+# images ship with many pre-compiled binaries for common native modules. If a
+# compilation is still required, adding build-essential back can be evaluated
+# later.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends python3 make \
+    && ln -sf python3 /usr/bin/python \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-# Copy dependency definition files
-COPY ../../../pnpm-lock.yaml ./
-COPY ../../../pnpm-workspace.yaml ./
-COPY package.json ./
+# Copy pnpm and project configuration files
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY tsconfig.base.json ./
+COPY nest-cli.json ./
 
-# Install dependencies using pnpm. This will create node_modules in the container.
-# It only fetches dependencies listed for this specific service.
-RUN pnpm install --prod=false --frozen-lockfile
+# Install all dependencies using pnpm
+RUN corepack enable && corepack prepare pnpm@10.12.3 --activate
+RUN pnpm install --frozen-lockfile
 
-# Copy the rest of the application source code
+# Copy the entire monorepo source code
 COPY . .
 
-# Build the application
-RUN pnpm build
+# Build the specific service
+RUN pnpm exec nest build auth-service
 
 
 # 2. Production Stage
-FROM node:18.19.0-alpine AS production
+FROM node:18-slim
+
 WORKDIR /app
 
-# Create a non-root user for security
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S appuser -u 1001
+# Copy build artifacts from the builder stage
+COPY --from=builder /app/dist/backend/services/auth-service/src ./dist
 
-# Copy the dependency definitions and install *only* production dependencies
-COPY ../../../pnpm-lock.yaml ./
-COPY ../../../pnpm-workspace.yaml ./
-COPY package.json ./
-RUN npm install -g pnpm && pnpm install --prod --frozen-lockfile
+# Copy proto files for gRPC (both root and service-specific)
+COPY --from=builder /app/proto ./proto
+COPY --from=builder /app/backend/services/auth-service/proto ./proto
 
-# Copy the built application artifacts from the builder stage
-COPY --from=builder /app/dist ./dist
+# Copy node_modules and package.json
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
+
+# Install wget for health checks and create a non-root user for security
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends wget ca-certificates \
+    && rm -rf /var/lib/apt/lists/* \
+    # Create non-root group and user (matching IDs for consistency across stages)
+    && groupadd -g 1001 nodejs \
+    && useradd -m -u 1001 -g nodejs appuser
+
+# Ensure correct permissions for the app user
+RUN chown -R appuser:nodejs /app
 
 # Switch to the non-root user
 USER appuser
 
 EXPOSE 3001
 
-# Health check
+# Health check (using a simple HTTP request to the health endpoint)
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD node dist/health-check.js || exit 1
+    CMD wget --no-verbose --tries=1 --spider http://localhost:3001/healthz || exit 1
 
 # Start the application
-CMD ["node", "dist/main"] 
+CMD ["node", "dist/main.js"] 

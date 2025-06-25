@@ -1,46 +1,39 @@
-# 1. Builder Stage
-FROM node:18.19.0-alpine AS builder
+# Stage 1: Builder
+FROM node:18-slim AS builder
+
+# Set working directory
 WORKDIR /app
 
-# Install pnpm
-RUN npm install -g pnpm
+# Copy pnpm and project configuration files
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY tsconfig.base.json ./
+COPY nest-cli.json ./
 
-# Copy dependency definition files from the root
-COPY ../../../pnpm-lock.yaml ./
-COPY ../../../pnpm-workspace.yaml ./
-COPY package.json ./
+# Install all dependencies using pnpm
+RUN corepack enable && corepack prepare pnpm@10.12.3 --activate
+RUN pnpm install --frozen-lockfile
 
-# Install dependencies for this specific service
-RUN pnpm install --prod=false --frozen-lockfile
-
-# Copy the rest of the application source code
+# Copy the entire monorepo source code
 COPY . .
 
-# Build the application
-RUN pnpm build
+# Build the specific service
+RUN pnpm exec nest build api-gateway
 
 
-# 2. Production Stage
-FROM node:18.19.0-alpine AS production
+# Stage 2: Runner
+FROM node:18-slim
+
 WORKDIR /app
 
-# Create a non-root user for security
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S appuser -u 1001
+# Copy build artifacts from the builder stage (API Gateway builds to its local dist directory)
+COPY --from=builder /app/backend/services/api-gateway/dist ./dist
 
-# Copy dependency definitions and install *only* production dependencies
-COPY ../../../pnpm-lock.yaml ./
-COPY ../../../pnpm-workspace.yaml ./
-COPY package.json ./
-RUN npm install -g pnpm && pnpm install --prod --frozen-lockfile
+# Copy node_modules and package.json
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
 
-# Copy the built application artifacts from the builder stage
-COPY --from=builder /app/dist ./dist
-
-# Switch to the non-root user
-USER appuser
-
+# Expose the port the app runs on
 EXPOSE 3000
 
-# Start the application
-CMD ["node", "dist/main"]
+# Command to run the application
+CMD ["node", "dist/main.js"]

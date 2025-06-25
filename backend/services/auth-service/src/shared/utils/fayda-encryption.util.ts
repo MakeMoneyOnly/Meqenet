@@ -1,19 +1,22 @@
 import * as crypto from 'crypto';
 import { promisify } from 'util';
 
+
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import * as argon2 from 'argon2';
 
 const pbkdf2Async = promisify(crypto.pbkdf2);
 
-const CRYPTO_CONSTANTS = Object.freeze({
+const CRYPTO_CONSTANTS = {
   ALGORITHM: 'aes-256-gcm',
   KEY_DERIVATION_ITERATIONS: 100_000,
   SALT_LENGTH: 32,
   IV_LENGTH: 16,
   TAG_LENGTH: 16,
   PBKDF2_KEY_LENGTH: 32,
-});
+  MIN_PASSWORD_LENGTH: 8,
+} as const;
 
 /**
  * Encrypted Fayda ID result interface
@@ -344,5 +347,62 @@ export class FaydaEncryptionUtil {
       // Note: IP address and user agent would be injected by middleware
       // in a real implementation to avoid dependency on request context
     };
+  }
+
+  /**
+   * Hashes a password using Argon2id (industry standard for FinTech)
+   * Argon2id is the winner of the Password Hashing Competition and provides
+   * the best security against both GPU and ASIC attacks.
+   * @param password - Plain text password to hash
+   * @returns Hashed password string
+   */
+  async hashPassword(password: string): Promise<string> {
+    if (!password || typeof password !== 'string') {
+      throw new Error('Password must be a non-empty string');
+    }
+
+    if (password.length < CRYPTO_CONSTANTS.MIN_PASSWORD_LENGTH) {
+      throw new Error(`Password must be at least ${CRYPTO_CONSTANTS.MIN_PASSWORD_LENGTH} characters long`);
+    }
+
+    try {
+      // Use Argon2id with secure parameters for FinTech applications
+      // timeCost: 3 (iterations), memoryCost: 65536 KB (64 MB), parallelism: 4
+      return await argon2.hash(password, {
+        type: argon2.argon2id,
+        memoryCost: 65536, // 64 MB - recommended for server applications
+        timeCost: 3, // 3 iterations - good balance of security and performance
+        parallelism: 4, // 4 threads - suitable for most server environments
+        hashLength: 32, // 256-bit hash output
+      });
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown hashing error';
+      throw new Error(`Password hashing failed: ${errorMessage}`);
+    }
+  }
+
+  /**
+   * Verifies a password against its Argon2 hash
+   * @param password - Plain text password to verify
+   * @param hash - Argon2 hash to verify against
+   * @returns True if password matches, false otherwise
+   */
+  async verifyPassword(password: string, hash: string): Promise<boolean> {
+    if (!password || typeof password !== 'string') {
+      throw new Error('Password must be a non-empty string');
+    }
+
+    if (!hash || typeof hash !== 'string') {
+      throw new Error('Hash must be a non-empty string');
+    }
+
+    try {
+      return await argon2.verify(hash, password);
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown verification error';
+      throw new Error(`Password verification failed: ${errorMessage}`);
+    }
   }
 }

@@ -1,12 +1,12 @@
-import globals from 'globals';
-import tseslint from 'typescript-eslint';
-import js from '@eslint/js';
-import security from 'eslint-plugin-security';
-import importPlugin from 'eslint-plugin-import';
-import react from 'eslint-plugin-react';
-import reactHooks from 'eslint-plugin-react-hooks';
+const globals = require('globals');
+const tseslint = require('typescript-eslint');
+const js = require('@eslint/js');
+const security = require('eslint-plugin-security');
+const importPlugin = require('eslint-plugin-import');
+const react = require('eslint-plugin-react');
+const reactHooks = require('eslint-plugin-react-hooks');
 
-export default tseslint.config(
+module.exports = tseslint.config(
   {
     // Global ignores
     ignores: [
@@ -40,7 +40,7 @@ export default tseslint.config(
       },
       parserOptions: {
         project: ['./tsconfig.eslint.json'],
-        tsconfigRootDir: import.meta.dirname,
+        tsconfigRootDir: __dirname,
         allowDefaultProject: true,
       },
     },

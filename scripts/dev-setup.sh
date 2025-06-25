@@ -376,6 +376,48 @@ setup_docker() {
     else
         log_success "Docker is already installed"
     fi
+    
+    # Configure Docker BuildKit and Compose Bake for FinTech performance standards
+    log_info "Configuring Docker BuildKit and Compose Bake..."
+    
+    # Enable BuildKit by default
+    if [[ ! -f ~/.docker/config.json ]]; then
+        mkdir -p ~/.docker
+        echo '{"features": {"buildkit": true}}' > ~/.docker/config.json
+        log_success "Created Docker config with BuildKit enabled"
+    else
+        # Update existing config to enable BuildKit
+        if ! grep -q '"buildkit"' ~/.docker/config.json; then
+            # Simple approach: backup and recreate with BuildKit enabled
+            cp ~/.docker/config.json ~/.docker/config.json.backup
+            echo '{"features": {"buildkit": true}}' > ~/.docker/config.json
+            log_success "Updated Docker config to enable BuildKit"
+        fi
+    fi
+    
+    # Add COMPOSE_BAKE to shell profile for persistent environment variable
+    local shell_profile=""
+    if [[ -n "$BASH_VERSION" ]]; then
+        shell_profile="$HOME/.bashrc"
+    elif [[ -n "$ZSH_VERSION" ]]; then
+        shell_profile="$HOME/.zshrc"
+    fi
+    
+    if [[ -n "$shell_profile" ]]; then
+        if ! grep -q "COMPOSE_BAKE" "$shell_profile"; then
+            echo "" >> "$shell_profile"
+            echo "# Meqenet Docker BuildKit Bake Configuration" >> "$shell_profile"
+            echo "export COMPOSE_BAKE=true" >> "$shell_profile"
+            echo "export DOCKER_BUILDKIT=1" >> "$shell_profile"
+            log_success "Added COMPOSE_BAKE=true to $shell_profile"
+        fi
+    fi
+    
+    # Set for current session
+    export COMPOSE_BAKE=true
+    export DOCKER_BUILDKIT=1
+    
+    log_success "Docker BuildKit and Compose Bake configured for optimal FinTech build performance"
 }
 
 setup_postgresql_client() {

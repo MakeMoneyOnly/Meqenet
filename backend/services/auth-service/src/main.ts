@@ -70,20 +70,18 @@ async function bootstrap(): Promise<void> {
     }
 
     const grpcUrl = configService.get<string>('GRPC_URL') ?? DEFAULT_GRPC_URL;
-    const grpcApp = await NestFactory.createMicroservice<MicroserviceOptions>(
-      AppModule,
-      {
-        transport: Transport.GRPC,
-        options: {
-          package: 'auth',
-          protoPath: './proto/auth.proto',
-          url: grpcUrl,
-        },
-      }
-    );
 
-    await grpcApp.listen();
+    // Connect the gRPC microservice
+    app.connectMicroservice<MicroserviceOptions>({
+      transport: Transport.GRPC,
+      options: {
+        package: 'auth',
+        protoPath: './proto/auth.proto',
+        url: grpcUrl,
+      },
+    });
 
+    await app.startAllMicroservices();
     const port = configService.get<number>('PORT') ?? DEFAULT_PORT;
     await app.listen(port);
 

@@ -1,10 +1,10 @@
 import * as path from 'path';
 
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD, APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { EventEmitterModule } from '@nestjs/event-emitter';
-import { ClientsModule, Transport, GrpcOptions } from '@nestjs/microservices';
+// import { ClientsModule, Transport, GrpcOptions } from '@nestjs/microservices';
 import { TerminusModule } from '@nestjs/terminus';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { WinstonModule } from 'nest-winston';
@@ -45,7 +45,7 @@ import { AppService } from './app.service';
     I18nModule.forRoot({
       fallbackLanguage: 'en',
       loaderOptions: {
-        path: path.join(__dirname, '../../i18n/'),
+        path: path.join(__dirname, '../i18n/'),
         watch: true,
       },
       resolvers: [
@@ -64,22 +64,7 @@ import { AppService } from './app.service';
       verboseMemoryLeak: false,
       ignoreErrors: false,
     }),
-    // gRPC client configuration
-    ClientsModule.registerAsync([
-      {
-        name: 'GRPC_SERVICE',
-        imports: [ConfigModule],
-        useFactory: (configService: ConfigService): GrpcOptions => ({
-          transport: Transport.GRPC,
-          options: {
-            package: 'auth-service',
-            protoPath: path.join(__dirname, '../../proto/service.proto'),
-            url: configService.get<string>('GRPC_URL') ?? 'localhost:5000',
-          },
-        }),
-        inject: [ConfigService],
-      },
-    ]),
+
     // Application modules
     SharedModule,
     AuthModule,
