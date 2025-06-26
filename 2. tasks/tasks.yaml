@@ -699,6 +699,64 @@ stages:
                 "Senior Backend Developer",
                 "Data Scientist / ML Engineer",
               ]
+          - id: "FND-TEST-E2E-01"
+            description: "[DevEx/Test] Create Docker Compose configuration for E2E test environment with PostgreSQL 15, Redis 7, and all microservices."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/22-Testing_Guidelines.md"]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Financial QA Specialist",
+                "Senior Backend Developer",
+              ]
+          - id: "FND-TEST-E2E-02"
+            description: "[DevEx/Test] Implement E2E test orchestration scripts with service health checks and startup coordination."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/22-Testing_Guidelines.md"]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Financial QA Specialist",
+                "Senior Backend Developer",
+              ]
+          - id: "FND-TEST-E2E-03"
+            description: "[DevEx/Test] Create E2E test data management system with automatic seeding, isolation, and cleanup between test runs."
+            status: "To Do"
+            context: ["docs/Stage 2 -Development/22-Testing_Guidelines.md"]
+            personas:
+              [
+                "Financial QA Specialist",
+                "Senior Backend Developer",
+                "Data Security Specialist",
+              ]
+          - id: "FND-TEST-E2E-04"
+            description: "[DevEx/Test] Configure E2E test database with proper encryption for Fayda National ID data and NBE compliance validation."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 2 -Development/22-Testing_Guidelines.md",
+                "docs/Stage 1 - Foundation/07-Security.md",
+              ]
+            personas:
+              [
+                "Financial QA Specialist",
+                "Data Security Specialist",
+                "Compliance & Risk Officer",
+              ]
+          - id: "FND-TEST-E2E-05"
+            description: "[CI/Test] Integrate E2E test suite into CI/CD pipeline with proper service orchestration and parallel test execution."
+            status: "To Do"
+            context:
+              [
+                "docs/Stage 2 -Development/22-Testing_Guidelines.md",
+                "docs/Stage 3 - Deployment & Operations/23-Deployment.md",
+              ]
+            personas:
+              [
+                "FinTech DevOps Engineer",
+                "Financial QA Specialist",
+                "Senior Backend Developer",
+              ]
 
       - id: "MEQ-FND-08"
         name: "Localization & API Documentation"
