@@ -19,15 +19,5 @@
     "**/*.test.ts",
     "**/*.e2e-spec.ts"
   ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "build",
-    "coverage",
-    "**/*.min.js",
-    "public",
-    ".next",
-    ".cache",
-    "templates"
-  ]
-} 
+  "exclude": ["node_modules", "dist", "build", "coverage", "**/*.min.js", "public", ".next", ".cache", "templates"]
+}

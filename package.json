@@ -11,7 +11,7 @@
     "build": "pnpm -r --if-present build",
     "security:audit": "pnpm audit --audit-level moderate",
     "security:audit-ci": "audit-ci --config .audit-ci.json",
-    "security:sbom": "cdxgen -o sbom.json .",
+    "security:sbom": "cdxgen -o bom.json --include-formulation --include-crypto . && echo '✅ SBOM generated successfully at bom.json'",
     "security:secrets": "echo 'Note: Install trufflehog separately for secrets scanning'",
     "security:outdated": "pnpm outdated",
     "validate:ethiopian-compliance": "echo 'Running Ethiopian FinTech compliance checks...' && pnpm run security:audit",
@@ -27,7 +27,10 @@
     "docker:up": "cross-env COMPOSE_BAKE=true docker-compose up",
     "docker:up:win": "docker-compose up",
     "docker:down": "docker-compose down",
-    "docker:logs": "docker-compose logs -f"
+    "docker:logs": "docker-compose logs -f",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "format:write": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "security:sbom:validate": "cdxgen -o bom.json --include-formulation --include-crypto --validate . && echo '✅ SBOM validated successfully'"
   },
   "dependencies": {
     "@aws-sdk/client-secrets-manager": "^3.633.0",

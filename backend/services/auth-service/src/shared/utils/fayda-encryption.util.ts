@@ -1,7 +1,6 @@
 import * as crypto from 'crypto';
 import { promisify } from 'util';
 
-
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as argon2 from 'argon2';
@@ -362,7 +361,9 @@ export class FaydaEncryptionUtil {
     }
 
     if (password.length < CRYPTO_CONSTANTS.MIN_PASSWORD_LENGTH) {
-      throw new Error(`Password must be at least ${CRYPTO_CONSTANTS.MIN_PASSWORD_LENGTH} characters long`);
+      throw new Error(
+        `Password must be at least ${CRYPTO_CONSTANTS.MIN_PASSWORD_LENGTH} characters long`
+      );
     }
 
     try {

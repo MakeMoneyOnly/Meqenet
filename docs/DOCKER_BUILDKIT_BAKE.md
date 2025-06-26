@@ -2,7 +2,8 @@
 
 ## Overview
 
-Meqenet.et now uses Docker Compose's BuildKit "bake" feature for faster, more efficient builds. This modern approach provides significant performance improvements and better resource utilization.
+Meqenet.et now uses Docker Compose's BuildKit "bake" feature for faster, more efficient builds. This
+modern approach provides significant performance improvements and better resource utilization.
 
 ## What is Docker Compose Bake?
 
@@ -65,18 +66,21 @@ docker-compose up --build
 ## Performance Benefits
 
 ### Before (Traditional Docker Compose)
+
 - Sequential builds (one service at a time)
 - Basic layer caching
 - Limited build parallelization
 - Slower feedback loops
 
 ### After (BuildKit Bake)
+
 - Parallel builds (all services simultaneously)
 - Advanced multi-stage caching
 - Build graph optimization
 - Faster development cycles
 
 ### Measured Improvements
+
 - **Build time**: 40-60% faster on multi-service builds
 - **Cache efficiency**: 30-50% better cache hit rates
 - **Resource usage**: More efficient CPU/memory utilization
@@ -105,16 +109,18 @@ docker-compose up --build
 ### Common Issues
 
 1. **BuildKit not available**:
+
    ```bash
    # Enable BuildKit
    export DOCKER_BUILDKIT=1
    ```
 
 2. **Bake not working**:
+
    ```bash
    # Check Docker Compose version (needs 2.24+)
    docker-compose --version
-   
+
    # Update if needed
    docker-compose --version
    ```
@@ -125,14 +131,15 @@ docker-compose up --build
    - Verify Docker version supports bake
 
 4. **Windows Path Issues with COMPOSE_BAKE**:
+
    ```bash
    # Error: failed to evaluate path "C:\Users\...\Meqenet/C:\Users\...\Dockerfile"
    # Solution: Use Windows-specific scripts without COMPOSE_BAKE
-   
+
    # Use Windows-specific npm scripts
    pnpm start:dev:win      # Start development without bake
    pnpm docker:build:win   # Build without bake
-   
+
    # Or use the Windows batch script
    scripts\docker-win.bat build
    scripts\docker-win.bat dev
@@ -152,6 +159,7 @@ COMPOSE_BAKE=true docker-compose build --dry-run
 Due to path handling differences on Windows, we provide alternative approaches:
 
 #### Option 1: Windows-Specific npm Scripts
+
 ```bash
 # Development environment
 pnpm start:dev:win           # Start without COMPOSE_BAKE
@@ -163,6 +171,7 @@ pnpm docker:up:win           # Start containers without COMPOSE_BAKE
 ```
 
 #### Option 2: Windows Batch Script
+
 ```cmd
 # Navigate to project root and use the batch script
 scripts\docker-win.bat build     # Build all services
@@ -175,6 +184,7 @@ scripts\docker-win.bat test      # Test Docker setup
 ```
 
 #### Option 3: Manual Docker Commands
+
 ```cmd
 # Build services manually
 docker-compose build
@@ -188,13 +198,14 @@ docker-compose up -d
 
 ### Platform-Specific Performance
 
-| Platform | COMPOSE_BAKE | Performance Gain | Recommended Approach |
-|----------|--------------|------------------|----------------------|
-| Linux    | ✅ Enabled   | 40-60% faster    | Use bake scripts |
-| macOS    | ✅ Enabled   | 40-60% faster    | Use bake scripts |
-| Windows  | ⚠️ Conditional | 20-30% faster    | Use Windows scripts |
+| Platform | COMPOSE_BAKE   | Performance Gain | Recommended Approach |
+| -------- | -------------- | ---------------- | -------------------- |
+| Linux    | ✅ Enabled     | 40-60% faster    | Use bake scripts     |
+| macOS    | ✅ Enabled     | 40-60% faster    | Use bake scripts     |
+| Windows  | ⚠️ Conditional | 20-30% faster    | Use Windows scripts  |
 
-**Windows Note**: COMPOSE_BAKE may cause path resolution issues on Windows. The Windows-specific scripts provide optimal performance while avoiding compatibility problems.
+**Windows Note**: COMPOSE_BAKE may cause path resolution issues on Windows. The Windows-specific
+scripts provide optimal performance while avoiding compatibility problems.
 
 ## Integration with CI/CD
 
@@ -240,4 +251,4 @@ docker stats during builds
 
 - [Docker Compose Bake Documentation](https://docs.docker.com/compose/bake/)
 - [BuildKit Documentation](https://docs.docker.com/build/buildkit/)
-- [FinTech DevOps Best Practices](../Stage%203%20-%20Deployment%20&%20Operations/23-Deployment.md) 
+- [FinTech DevOps Best Practices](../Stage%203%20-%20Deployment%20&%20Operations/23-Deployment.md)
