@@ -98,32 +98,31 @@ def save_tasks(data):
         yaml.dump(data, f)
 
 def find_task(data, task_id):
-    """Finds a task by its ID in the YAML data."""
     for stage in data.get("stages", []):
-        for task in stage.get("tasks", []):
+        for i, task in enumerate(stage.get("tasks", [])):
             if task.get("id") == task_id:
-                return task
-            for subtask in task.get("subtasks", []):
+                return stage["tasks"], i
+            for j, subtask in enumerate(task.get("subtasks", [])):
                 if subtask.get("id") == task_id:
-                    return subtask
-    return None
+                    return task["subtasks"], j
+    return None, None
 
 def start_task(task_id, base_branch):
     """
     Starts a new development task by creating a feature branch and updating the tasks file.
     """
     tasks_data = load_tasks()
-    task = find_task(tasks_data, task_id)
+    task_list, idx = find_task(tasks_data, task_id)
 
-    if not task:
+    if task_list is None:
         print(f"Error: Task with ID '{task_id}' not found in {TASKS_FILE_PATH}.", file=sys.stderr)
         sys.exit(1)
 
-    if task.get("status") != "To Do":
-        print(f"Warning: Task '{task_id}' has a status of '{task.get('status')}' and may already be in progress or completed.")
+    if task_list[idx]["status"] != "To Do":
+        print(f"Warning: Task '{task_id}' has a status of '{task_list[idx]['status']}' and may already be in progress or completed.")
         # We can decide to exit here or just warn. For now, let's warn.
 
-    task_name = task.get("name") or task.get("description", "new-task")
+    task_name = task_list[idx].get("name") or task_list[idx].get("description", "new-task")
     # Sanitize the task name to be used in a branch
     sanitized_name = ''.join(c if c.isalnum() else '-' for c in task_name.lower().replace(" ", "-"))
     # Remove any consecutive dashes
@@ -156,7 +155,7 @@ def start_task(task_id, base_branch):
 
     # 3. Update task status in YAML
     print(f"\nUpdating task '{task_id}' status to 'In Progress'...")
-    task["status"] = "In Progress"
+    task_list[idx]["status"] = "In Progress"
     save_tasks(tasks_data)
 
     print("\nTask started successfully.")
@@ -199,13 +198,13 @@ def complete_task(reviewers=None, assignees=None, labels=None):
 
     tasks_data = load_tasks()
     task_id = get_task_id_from_branch(tasks_data)
-    task = find_task(tasks_data, task_id)
+    task_list, idx = find_task(tasks_data, task_id)
 
-    if not task:
+    if task_list is None:
         print(f"Error: Task with ID '{task_id}' not found in {TASKS_FILE_PATH}.", file=sys.stderr)
         sys.exit(1)
 
-    task_name = task.get("name") or task.get("description", "new-task")
+    task_name = task_list[idx].get("name") or task_list[idx].get("description", "new-task")
     commit_message = f"feat({task_id}): {task_name}"
     pr_title = f"Feat: {task_name}"
     pr_body = f"This PR implements the task: **{task_name}**.\n\nCloses {task_id}"
@@ -285,7 +284,7 @@ def complete_task(reviewers=None, assignees=None, labels=None):
 
     # 5. Update task status in a separate commit
     print(f"\nUpdating task '{task_id}' status to 'In Review'...")
-    task["status"] = "In Review"
+    task_list[idx]["status"] = "In Review"
     save_tasks(tasks_data)
 
     print("Committing and pushing task status update...")
@@ -368,11 +367,11 @@ def merge_task(pr_identifier):
             break
     
     if task_id:
-        task = find_task(tasks_data, task_id)
-        if task:
+        task_list, idx = find_task(tasks_data, task_id)
+        if task_list is not None:
             print(f"\nUpdating task '{task_id}' status to 'Completed'...")
-            task["status"] = "Completed"
-            task["completed_date"] = datetime.now().strftime("%Y-%m-%d")
+            task_list[idx]["status"] = "Completed"
+            task_list[idx]["completed_date"] = datetime.now().strftime("%Y-%m-%d")
             save_tasks(tasks_data)
     else:
         print(f"\nWarning: Could not determine task ID from branch '{feature_branch}'. Skipping status update.")
