@@ -420,4 +420,5 @@ prisma/migrations/
 generated/
 
 # Nx
+.nx/
 .nx/cache 
