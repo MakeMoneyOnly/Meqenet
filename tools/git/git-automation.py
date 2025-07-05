@@ -39,9 +39,9 @@ def checkout_branch(branch_name):
         print("Error: Your working directory is not clean. Please commit or stash your changes before switching branches.", file=sys.stderr)
         sys.exit(1)
 
-    # Check if branch exists locally
-    local_branches = run_command(["git", "branch"])
-    if f" {branch_name}" in local_branches or f"* {branch_name}" in local_branches:
+    # Robust check if branch exists locally
+    branch_exists = subprocess.call(["git", "rev-parse", "--verify", branch_name], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) == 0
+    if branch_exists:
         print(f"Branch '{branch_name}' already exists locally. Checking it out.")
         checkout_result = run_command(["git", "checkout", branch_name])
         if isinstance(checkout_result, subprocess.CalledProcessError):
