@@ -420,4 +420,7 @@ prisma/migrations/
 generated/
 
 # Nx
-.nx/cache 
+.nx/cache
+
+# Cursor directory
+.cursor/ 
