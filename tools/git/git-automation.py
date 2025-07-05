@@ -35,10 +35,8 @@ def checkout_branch(branch_name):
     print(f"\nSwitching to branch '{branch_name}'...")
 
     # Check for a clean working directory before switching/creating branches
-    status = run_command(["git", "status", "--porcelain"])
-    if status:
+    if not working_directory_is_clean():
         print("Error: Your working directory is not clean. Please commit or stash your changes before switching branches.", file=sys.stderr)
-        print("\nUncommitted changes:\n" + status, file=sys.stderr)
         sys.exit(1)
 
     # Check if branch exists locally
@@ -479,6 +477,17 @@ def auto_commit_changes():
 def is_ignored(filepath):
     result = run_command(["git", "check-ignore", filepath])
     return bool(result)
+
+def working_directory_is_clean():
+    status = run_command(["git", "status", "--porcelain"])
+    for line in status.splitlines():
+        code, path = line[:2], line[3:]
+        # If it's an untracked file (??) and ignored, skip it
+        if code == "??" and is_ignored(path):
+            continue
+        # Otherwise, any other change means not clean
+        return False
+    return True
 
 def main():
     # First, auto-commit changes to tasks.yaml and new/untracked files
