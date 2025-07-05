@@ -1,0 +1,1710 @@
+{
+  "backend": {
+    "root": [
+      "backend/project.json",
+      "nx/core/project-json"
+    ],
+    "projectType": [
+      "backend/project.json",
+      "nx/core/project-json"
+    ],
+    "targets": [
+      "backend/webpack.config.js",
+      "@nx/webpack/plugin"
+    ],
+    "targets.build": [
+      "backend/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.options": [
+      "backend/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.build.dependsOn": [
+      "backend/webpack.config.js",
+      "@nx/webpack/plugin"
+    ],
+    "targets.build.inputs": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.build.outputs": [
+      "backend/webpack.config.js",
+      "@nx/webpack/plugin"
+    ],
+    "targets.build.metadata": [
+      "backend/webpack.config.js",
+      "@nx/webpack/plugin"
+    ],
+    "targets.build.executor": [
+      "backend/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.options.cwd": [
+      "backend/webpack.config.js",
+      "@nx/webpack/plugin"
+    ],
+    "targets.build.options.args": [
+      "backend/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.options.command": [
+      "backend/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.metadata.technologies": [
+      "backend/webpack.config.js",
+      "@nx/webpack/plugin"
+    ],
+    "targets.build.metadata.technologies.0": [
+      "backend/webpack.config.js",
+      "@nx/webpack/plugin"
+    ],
+    "targets.build.metadata.description": [
+      "backend/webpack.config.js",
+      "@nx/webpack/plugin"
+    ],
+    "targets.build.metadata.help": [
+      "backend/webpack.config.js",
+      "@nx/webpack/plugin"
+    ],
+    "targets.build.metadata.help.command": [
+      "backend/webpack.config.js",
+      "@nx/webpack/plugin"
+    ],
+    "targets.build.metadata.help.example": [
+      "backend/webpack.config.js",
+      "@nx/webpack/plugin"
+    ],
+    "targets.preview": [
+      "backend/webpack.config.js",
+      "@nx/webpack/plugin"
+    ],
+    "targets.preview.continuous": [
+      "backend/webpack.config.js",
+      "@nx/webpack/plugin"
+    ],
+    "targets.preview.options": [
+      "backend/webpack.config.js",
+      "@nx/webpack/plugin"
+    ],
+    "targets.preview.metadata": [
+      "backend/webpack.config.js",
+      "@nx/webpack/plugin"
+    ],
+    "targets.preview.executor": [
+      "backend/webpack.config.js",
+      "@nx/webpack/plugin"
+    ],
+    "targets.preview.options.cwd": [
+      "backend/webpack.config.js",
+      "@nx/webpack/plugin"
+    ],
+    "targets.preview.options.args": [
+      "backend/webpack.config.js",
+      "@nx/webpack/plugin"
+    ],
+    "targets.preview.options.command": [
+      "backend/webpack.config.js",
+      "@nx/webpack/plugin"
+    ],
+    "targets.preview.metadata.technologies": [
+      "backend/webpack.config.js",
+      "@nx/webpack/plugin"
+    ],
+    "targets.preview.metadata.technologies.0": [
+      "backend/webpack.config.js",
+      "@nx/webpack/plugin"
+    ],
+    "targets.preview.metadata.description": [
+      "backend/webpack.config.js",
+      "@nx/webpack/plugin"
+    ],
+    "targets.preview.metadata.help": [
+      "backend/webpack.config.js",
+      "@nx/webpack/plugin"
+    ],
+    "targets.preview.metadata.help.command": [
+      "backend/webpack.config.js",
+      "@nx/webpack/plugin"
+    ],
+    "targets.preview.metadata.help.example": [
+      "backend/webpack.config.js",
+      "@nx/webpack/plugin"
+    ],
+    "targets.build-deps": [
+      "backend/webpack.config.js",
+      "@nx/webpack/plugin"
+    ],
+    "targets.build-deps.dependsOn": [
+      "backend/webpack.config.js",
+      "@nx/webpack/plugin"
+    ],
+    "targets.watch-deps": [
+      "backend/webpack.config.js",
+      "@nx/webpack/plugin"
+    ],
+    "targets.watch-deps.continuous": [
+      "backend/webpack.config.js",
+      "@nx/webpack/plugin"
+    ],
+    "targets.watch-deps.dependsOn": [
+      "backend/webpack.config.js",
+      "@nx/webpack/plugin"
+    ],
+    "targets.watch-deps.executor": [
+      "backend/webpack.config.js",
+      "@nx/webpack/plugin"
+    ],
+    "targets.watch-deps.options": [
+      "backend/webpack.config.js",
+      "@nx/webpack/plugin"
+    ],
+    "targets.watch-deps.options.command": [
+      "backend/webpack.config.js",
+      "@nx/webpack/plugin"
+    ],
+    "targets.lint": [
+      "backend/eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.options": [
+      "backend/eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.inputs": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.outputs": [
+      "backend/eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.metadata": [
+      "backend/eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.executor": [
+      "backend/eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.options.cwd": [
+      "backend/eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.options.command": [
+      "backend/eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.metadata.technologies": [
+      "backend/eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.metadata.technologies.0": [
+      "backend/eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.metadata.description": [
+      "backend/eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.metadata.help": [
+      "backend/eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.metadata.help.command": [
+      "backend/eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.metadata.help.example": [
+      "backend/eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "name": [
+      "backend/project.json",
+      "nx/core/project-json"
+    ],
+    "$schema": [
+      "backend/project.json",
+      "nx/core/project-json"
+    ],
+    "sourceRoot": [
+      "backend/project.json",
+      "nx/core/project-json"
+    ],
+    "tags": [
+      "backend/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.configurations": [
+      "backend/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.configurations.development": [
+      "backend/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.configurations.development.args": [
+      "backend/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.serve": [
+      "backend/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.serve.continuous": [
+      "backend/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.serve.executor": [
+      "backend/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.serve.defaultConfiguration": [
+      "backend/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.serve.dependsOn": [
+      "backend/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.serve.options": [
+      "backend/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.serve.configurations": [
+      "backend/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.serve.options.buildTarget": [
+      "backend/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.serve.options.runBuildTargetDependencies": [
+      "backend/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.serve.configurations.development": [
+      "backend/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.serve.configurations.development.buildTarget": [
+      "backend/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.serve.configurations.production": [
+      "backend/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.serve.configurations.production.buildTarget": [
+      "backend/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test": [
+      "backend/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options": [
+      "backend/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.passWithNoTests": [
+      "backend/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.inputs": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ]
+  },
+  "backend/services/api-gateway": {
+    "root": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "targets": [
+      "backend/eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint": [
+      "backend/eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.options": [
+      "backend/eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.inputs": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.outputs": [
+      "backend/eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.metadata": [
+      "backend/eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.executor": [
+      "backend/eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.options.cwd": [
+      "backend/eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.options.command": [
+      "backend/eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.metadata.technologies": [
+      "backend/eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.metadata.technologies.0": [
+      "backend/eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.metadata.description": [
+      "backend/eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.metadata.help": [
+      "backend/eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.metadata.help.command": [
+      "backend/eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.metadata.help.example": [
+      "backend/eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "name": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "tags": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "tags.npm:private": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.0": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.1": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.2": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.3": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.4": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.5": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.description": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.js": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.js.packageName": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.js.packageMain": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.js.isInPackageManagerWorkspaces": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start.executor": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start.options": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start.metadata": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start.options.script": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start.metadata.scriptContent": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start.metadata.runCommand": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:dev": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:dev.executor": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:dev.options": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:dev.metadata": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:dev.options.script": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:dev.metadata.scriptContent": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:dev.metadata.runCommand": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build.executor": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build.options": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build.metadata": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build.options.script": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build.metadata.scriptContent": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build.metadata.runCommand": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:build": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:build.executor": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:build.options": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:build.metadata": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:build.options.script": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:build.metadata.scriptContent": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:build.metadata.runCommand": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:run": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:run.executor": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:run.options": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:run.metadata": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:run.options.script": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:run.metadata.scriptContent": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:run.metadata.runCommand": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test.executor": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test.options": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test.metadata": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test.options.script": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test.metadata.scriptContent": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test.metadata.runCommand": [
+      "backend/services/api-gateway/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.lint.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.inputs": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.build.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.build.inputs": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.build.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ]
+  },
+  "backend/services/auth-service": {
+    "root": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets": [
+      "backend/eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "name": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "tags": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "tags.npm:private": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.0": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.1": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.2": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.3": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.4": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.5": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.6": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.7": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.8": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.9": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.10": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.11": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.12": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.13": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.14": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.15": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.16": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.17": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.18": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.19": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.20": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.21": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.22": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.23": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.24": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.25": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.description": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.js": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.js.packageName": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.js.isInPackageManagerWorkspaces": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build.executor": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build.options": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build.metadata": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build.options.script": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build.metadata.scriptContent": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.build.metadata.runCommand": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.format": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.format.executor": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.format.options": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.format.metadata": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.format.options.script": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.format.metadata.scriptContent": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.format.metadata.runCommand": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start.executor": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start.options": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start.metadata": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start.options.script": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start.metadata.scriptContent": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start.metadata.runCommand": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:dev": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:dev.executor": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:dev.options": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:dev.metadata": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:dev.options.script": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:dev.metadata.scriptContent": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:dev.metadata.runCommand": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:debug": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:debug.executor": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:debug.options": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:debug.metadata": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:debug.options.script": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:debug.metadata.scriptContent": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:debug.metadata.runCommand": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:prod": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:prod.executor": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:prod.options": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:prod.metadata": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:prod.options.script": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:prod.metadata.scriptContent": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:prod.metadata.runCommand": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.lint": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.lint.executor": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.lint.options": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.lint.metadata": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.lint.options.script": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.lint.metadata.scriptContent": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.lint.metadata.runCommand": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.lint:check": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.lint:check.executor": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.lint:check.options": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.lint:check.metadata": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.lint:check.options.script": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.lint:check.metadata.scriptContent": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.lint:check.metadata.runCommand": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test.executor": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test.options": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test.metadata": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test.options.script": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test.metadata.scriptContent": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test.metadata.runCommand": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:watch": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:watch.executor": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:watch.options": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:watch.metadata": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:watch.options.script": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:watch.metadata.scriptContent": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:watch.metadata.runCommand": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:cov": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:cov.executor": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:cov.options": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:cov.metadata": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:cov.options.script": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:cov.metadata.scriptContent": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:cov.metadata.runCommand": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:debug": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:debug.executor": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:debug.options": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:debug.metadata": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:debug.options.script": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:debug.metadata.scriptContent": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:debug.metadata.runCommand": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:e2e": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:e2e.executor": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:e2e.options": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:e2e.metadata": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:e2e.options.script": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:e2e.metadata.scriptContent": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:e2e.metadata.runCommand": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:integration": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:integration.executor": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:integration.options": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:integration.metadata": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:integration.options.script": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:integration.metadata.scriptContent": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:integration.metadata.runCommand": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.db:generate": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.db:generate.executor": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.db:generate.options": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.db:generate.metadata": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.db:generate.options.script": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.db:generate.metadata.scriptContent": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.db:generate.metadata.runCommand": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.db:push": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.db:push.executor": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.db:push.options": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.db:push.metadata": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.db:push.options.script": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.db:push.metadata.scriptContent": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.db:push.metadata.runCommand": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.db:migrate": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.db:migrate.executor": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.db:migrate.options": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.db:migrate.metadata": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.db:migrate.options.script": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.db:migrate.metadata.scriptContent": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.db:migrate.metadata.runCommand": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.db:studio": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.db:studio.executor": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.db:studio.options": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.db:studio.metadata": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.db:studio.options.script": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.db:studio.metadata.scriptContent": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.db:studio.metadata.runCommand": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.db:seed": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.db:seed.executor": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.db:seed.options": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.db:seed.metadata": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.db:seed.options.script": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.db:seed.metadata.scriptContent": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.db:seed.metadata.runCommand": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.db:reset": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.db:reset.executor": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.db:reset.options": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.db:reset.metadata": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.db:reset.options.script": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.db:reset.metadata.scriptContent": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.db:reset.metadata.runCommand": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.proto:generate": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.proto:generate.executor": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.proto:generate.options": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.proto:generate.metadata": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.proto:generate.options.script": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.proto:generate.metadata.scriptContent": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.proto:generate.metadata.runCommand": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.security:licenses": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.security:licenses.executor": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.security:licenses.options": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.security:licenses.metadata": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.security:licenses.options.script": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.security:licenses.metadata.scriptContent": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.security:licenses.metadata.runCommand": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:build": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:build.executor": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:build.options": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:build.metadata": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:build.options.script": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:build.metadata.scriptContent": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:build.metadata.runCommand": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:run": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:run.executor": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:run.options": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:run.metadata": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:run.options.script": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:run.metadata.scriptContent": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:run.metadata.runCommand": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.security:audit": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.security:audit.executor": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.security:audit.options": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.security:audit.metadata": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.security:audit.options.script": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.security:audit.metadata.scriptContent": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.security:audit.metadata.runCommand": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.security:check": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.security:check.executor": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.security:check.options": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.security:check.metadata": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.security:check.options.script": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.security:check.metadata.scriptContent": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.security:check.metadata.runCommand": [
+      "backend/services/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.lint.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.inputs": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.inputs": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.build.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.build.inputs": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.build.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ]
+  },
+  "backend-e2e": {
+    "root": [
+      "backend-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "targets": [
+      "backend-e2e/eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint": [
+      "backend-e2e/eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.cache": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.options": [
+      "backend-e2e/eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.inputs": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.outputs": [
+      "backend-e2e/eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.metadata": [
+      "backend-e2e/eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.executor": [
+      "backend-e2e/eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.options.cwd": [
+      "backend-e2e/eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.options.command": [
+      "backend-e2e/eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.metadata.technologies": [
+      "backend-e2e/eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.metadata.technologies.0": [
+      "backend-e2e/eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.metadata.description": [
+      "backend-e2e/eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.metadata.help": [
+      "backend-e2e/eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.metadata.help.command": [
+      "backend-e2e/eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "targets.lint.metadata.help.example": [
+      "backend-e2e/eslint.config.mjs",
+      "@nx/eslint/plugin"
+    ],
+    "name": [
+      "backend-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "$schema": [
+      "backend-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "projectType": [
+      "backend-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "implicitDependencies": [
+      "backend-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "implicitDependencies.api-gateway": [
+      "backend-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.e2e": [
+      "backend-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.e2e.executor": [
+      "backend-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.e2e.outputs": [
+      "backend-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.e2e.options": [
+      "backend-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.e2e.dependsOn": [
+      "backend-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.e2e.options.jestConfig": [
+      "backend-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.e2e.options.passWithNoTests": [
+      "backend-e2e/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ]
+  }
+}
