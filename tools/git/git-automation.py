@@ -452,17 +452,36 @@ def create_release(version, target_branch="main", source_branch="develop"):
         
     print(f"\nRelease {version} created successfully!")
 
+def auto_commit_changes():
+    # Stage tasks.yaml if changed
+    run_command(["git", "add", "tasks/tasks.yaml"])
+    # Stage any new/untracked files except those ignored by .gitignore
+    status = run_command(["git", "status", "--porcelain"])
+    files_to_commit = []
+    for line in status.splitlines():
+        code, path = line[:2], line[3:]
+        if code.strip() in {"M", "A", "??"} and not is_ignored(path):
+            files_to_commit.append(path)
+    if files_to_commit:
+        run_command(["git", "add"] + files_to_commit)
+        run_command(["git", "commit", "-m", "chore(automation): auto-commit workflow changes"])
+
+def is_ignored(filepath):
+    result = run_command(["git", "check-ignore", filepath])
+    return bool(result)
+
 def main():
-    """
-    Main function to parse arguments and execute the corresponding command.
-    """
-    # First, check if the repository is clean
+    # First, auto-commit changes to tasks.yaml and new/untracked files
+    auto_commit_changes()
+    # Then check if the repository is clean
     git_status = run_command(["git", "status", "--porcelain"])
-    if git_status:
-        print("Error: Your working directory is not clean. There are uncommitted changes.", file=sys.stderr)
-        print("Please commit or stash your changes before running the automation script.", file=sys.stderr)
-        print("\nUncommitted changes:\n" + git_status, file=sys.stderr)
-        sys.exit(1)
+    for line in git_status.splitlines():
+        code, path = line[:2], line[3:]
+        if not is_ignored(path):
+            print("Error: Your working directory is not clean. There are uncommitted changes.", file=sys.stderr)
+            print("Please commit or stash your changes before running the automation script.", file=sys.stderr)
+            print("\nUncommitted changes:\n" + git_status, file=sys.stderr)
+            sys.exit(1)
 
     parser = argparse.ArgumentParser(
         description="Meqenet Git Automation Tool for enterprise-grade workflows."
