@@ -92,8 +92,11 @@ def start_task(task_id, base_branch):
     sanitized_name = ''.join(c if c.isalnum() else '-' for c in task_name.lower().replace(" ", "-"))
     task_name_slug = '-'.join(filter(None, sanitized_name.split('-')))
     branch_name = f"feature/{task_id}-{task_name_slug}"
+    
     print(f"Starting new task: {task_id} - {task_name}")
     print(f"Branch: {branch_name}")
+
+    # 0. Check if branch already exists on the remote
     print("Checking if branch already exists on remote...")
     remote_branch_exists = run_command(["git", "ls-remote", "--heads", "origin", branch_name])
     if remote_branch_exists:
@@ -101,23 +104,26 @@ def start_task(task_id, base_branch):
         print("Please sync your local repository or choose a different task.", file=sys.stderr)
         sys.exit(1)
     print("Branch does not exist on remote. Proceeding.")
+
+    # 1. Ensure the base branch is up-to-date
     checkout_branch(base_branch)
-    # 2. Create and checkout the new feature branch
-    print(f"\nCreating new branch '{branch_name}' from '{base_branch}'...")
-    local_branches = run_command(["git", "branch"])
-    if f" {branch_name}" in local_branches or f"* {branch_name}" in local_branches:
-        print(f"Branch '{branch_name}' already exists locally. Checking it out.")
-        checkout_result = run_command(["git", "checkout", branch_name])
-        if isinstance(checkout_result, subprocess.CalledProcessError):
-            print(f"Error checking out existing branch '{branch_name}'.", file=sys.stderr)
-            print(checkout_result.stderr, file=sys.stderr)
-            sys.exit(1)
+
+    # 2. Create and checkout the new feature branch, or check it out if it already exists
+    feature_branch_exists = subprocess.call(["git", "rev-parse", "--verify", branch_name], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) == 0
+    if feature_branch_exists:
+        print(f"Feature branch '{branch_name}' already exists locally. Checking it out.")
+        run_command(["git", "checkout", branch_name])
+        print(f"Pulling latest changes for '{branch_name}'...")
+        run_command(["git", "pull"])
+        print(f"Successfully switched to branch '{branch_name}'.")
     else:
+        print(f"\nCreating new branch '{branch_name}' from '{base_branch}'...")
         create_branch_result = run_command(["git", "checkout", "-b", branch_name])
         if isinstance(create_branch_result, subprocess.CalledProcessError):
             print(f"Error creating new branch '{branch_name}'.", file=sys.stderr)
             print(create_branch_result.stderr, file=sys.stderr)
             sys.exit(1)
+
     print(f"\nUpdating task '{task_id}' status to 'In Progress'...")
     task["status"] = "In Progress"
     save_tasks(tasks_data)
