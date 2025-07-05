@@ -1,7 +1,11 @@
 {
   "version": "6.0",
   "nxVersion": "21.2.1",
-  "pathMappings": {},
+  "pathMappings": {
+    "@meqenet/auth--service/*": [
+      "backend/services/auth--service/src/*"
+    ]
+  },
   "nxJsonPlugins": [
     {
       "name": "@nx/webpack/plugin",
@@ -34,159 +38,227 @@
   "fileMap": {
     "nonProjectFiles": [
       {
-        "file": "jest.preset.cjs",
-        "hash": "10748622380746030713"
-      },
-      {
-        "file": "infrastructure/deploy-github-protection.sh",
-        "hash": "8086054100032889388"
-      },
-      {
-        "file": "scripts/setup-database.bat",
-        "hash": "6552852839110577739"
-      },
-      {
-        "file": ".prettierignore",
-        "hash": "14688272390704683536"
-      },
-      {
-        "file": "scripts/setup-cookiecutter-template.bat",
-        "hash": "16557945189042122723"
-      },
-      {
-        "file": "scripts/setup-database.sh",
-        "hash": "16376022670326353455"
-      },
-      {
-        "file": "LICENSE",
-        "hash": "15837388819838843766"
-      },
-      {
-        "file": ".github/ISSUE_TEMPLATE/bug_report.yml",
-        "hash": "2305662020820089643"
-      },
-      {
-        "file": ".github/ISSUE_TEMPLATE/chore.yml",
-        "hash": "981143758305050479"
-      },
-      {
-        "file": "scripts/setup-cookiecutter-template.sh",
-        "hash": "2860568026114427589"
-      },
-      {
         "file": ".github/CODEOWNERS",
         "hash": "2499644011609788910"
       },
       {
-        "file": "tsconfig.base.json",
-        "hash": "918461261613401149"
-      },
-      {
-        "file": "scripts/create-service.ps1",
-        "hash": "14670201034457896454"
-      },
-      {
-        "file": "package.json",
-        "hash": "12171108572452499124"
-      },
-      {
-        "file": "infrastructure/terraform.tfvars.example",
-        "hash": "6794381271983308087"
-      },
-      {
-        "file": "pnpm-lock.yaml",
-        "hash": "15926910624572310232"
-      },
-      {
-        "file": ".github/ISSUE_TEMPLATE/config.yml",
-        "hash": "7452320248967604719"
-      },
-      {
-        "file": "nx.json",
-        "hash": "12545373158383652366"
-      },
-      {
-        "file": "scripts/dev-setup.sh",
-        "hash": "2105302492657962804"
-      },
-      {
-        "file": ".prettierrc.js",
-        "hash": "13037493845134931311"
-      },
-      {
-        "file": ".gitignore",
-        "hash": "1104179081099639703"
-      },
-      {
-        "file": "infrastructure/github-repository-management.tf",
-        "hash": "8331048611248405898"
-      },
-      {
-        "file": ".github/ISSUE_TEMPLATE/feature_request.yml",
-        "hash": "9659001048964349705"
-      },
-      {
-        "file": ".cursorrules",
-        "hash": "4997538613378972387"
+        "file": "tools/jest-transform-stub.cjs",
+        "hash": "15043361577285266645"
       },
       {
         "file": ".nxignore",
         "hash": "13149804047595096970"
       },
       {
+        "file": "2. tasks/tasks.yaml",
+        "hash": "13222768041004333973"
+      },
+      {
+        "file": ".github/ISSUE_TEMPLATE/security.yml",
+        "hash": "11748718487315736968"
+      },
+      {
+        "file": "nx.json",
+        "hash": "4489109242689168015"
+      },
+      {
+        "file": ".gitignore",
+        "hash": "2319567734113913906"
+      },
+      {
+        "file": "tsconfig.eslint.json",
+        "hash": "13979823936974258022"
+      },
+      {
+        "file": "jest.preset.ts",
+        "hash": "6471042596146376714"
+      },
+      {
+        "file": "tools/git/git-automation.py",
+        "hash": "6995341456253933625"
+      },
+      {
+        "file": "tsconfig.json",
+        "hash": "1267355784634178797"
+      },
+      {
+        "file": "scripts/setup-database.sh",
+        "hash": "554485908296317221"
+      },
+      {
+        "file": ".github/ISSUE_TEMPLATE/config.yml",
+        "hash": "15156731941763669855"
+      },
+      {
+        "file": "tsconfig.base.json",
+        "hash": "11175907793063572178"
+      },
+      {
+        "file": "LICENSE",
+        "hash": "15837388819838843766"
+      },
+      {
+        "file": "scripts/create-service.sh",
+        "hash": "13327003038430553445"
+      },
+      {
+        "file": "scripts/setup-database.bat",
+        "hash": "6552852839110577739"
+      },
+      {
+        "file": "2. tasks/update_progress.py",
+        "hash": "14674387692599690296"
+      },
+      {
+        "file": "scripts/setup-cookiecutter-template.bat",
+        "hash": "16557945189042122723"
+      },
+      {
+        "file": "tools/git/requirements.txt",
+        "hash": "11822567670578446964"
+      },
+      {
+        "file": "pnpm-workspace.yaml",
+        "hash": "7186662235074547836"
+      },
+      {
+        "file": "bom.json",
+        "hash": "11354828052538560424"
+      },
+      {
+        "file": ".github/ISSUE_TEMPLATE/bug_report.yml",
+        "hash": "9521855053921643808"
+      },
+      {
+        "file": "scripts/create-service.ps1",
+        "hash": "14670201034457896454"
+      },
+      {
+        "file": ".github/ISSUE_TEMPLATE/chore.yml",
+        "hash": "9655881516729930732"
+      },
+      {
         "file": "scripts/create-service.bat",
         "hash": "7091979240899560632"
       },
       {
-        "file": "pnpm-workspace.yaml",
-        "hash": "1400474811006436502"
+        "file": ".github/workflows/ci.yml",
+        "hash": "1197340011150689144"
       },
       {
-        "file": ".github/ISSUE_TEMPLATE/security.yml",
-        "hash": "11442447562449015894"
+        "file": ".prettierignore",
+        "hash": "12276341866337434695"
+      },
+      {
+        "file": "package.json",
+        "hash": "16509858855319707135"
+      },
+      {
+        "file": "scripts/setup-cookiecutter-template.sh",
+        "hash": "14850936065068661617"
+      },
+      {
+        "file": ".github/workflows/security.yml",
+        "hash": "10389317053933931668"
+      },
+      {
+        "file": "infrastructure/terraform.tfvars.example",
+        "hash": "6794381271983308087"
+      },
+      {
+        "file": "jest.config.cjs",
+        "hash": "8844881026911275784"
+      },
+      {
+        "file": "infrastructure/github-repository-management.tf",
+        "hash": "8331048611248405898"
+      },
+      {
+        "file": "infrastructure/deploy-github-protection.sh",
+        "hash": "11815768311611247691"
+      },
+      {
+        "file": ".github/workflows/deploy.yml",
+        "hash": "8777618532909801206"
+      },
+      {
+        "file": "scripts/docker-win.bat",
+        "hash": "6125106946214902469"
+      },
+      {
+        "file": ".github/ISSUE_TEMPLATE/feature_request.yml",
+        "hash": "7009620368749762983"
       },
       {
         "file": "eslint.config.js",
-        "hash": "3446315025086626173"
+        "hash": "7638613824810678795"
       },
       {
-        "file": "scripts/create-service.sh",
-        "hash": "11984184208349498444"
+        "file": "docker-compose.yml",
+        "hash": "16535440292078998828"
+      },
+      {
+        "file": "pnpm-lock.yaml",
+        "hash": "7251800774318029090"
+      },
+      {
+        "file": ".audit-ci.json",
+        "hash": "16033736456144595217"
+      },
+      {
+        "file": ".cursorrules",
+        "hash": "15621831265108626665"
+      },
+      {
+        "file": "scripts/dev-setup.sh",
+        "hash": "17631192461426267872"
+      },
+      {
+        "file": ".prettierrc.cjs",
+        "hash": "6679045620391099180"
       }
     ],
     "projectFileMap": {
       "api-gateway": [
         {
           "file": "backend/eslint.config.mjs",
-          "hash": "16700382382107546237"
+          "hash": "14278974431503379536"
         },
         {
-          "file": "backend/jest.config.ts",
-          "hash": "9612804458945873842"
+          "file": "backend/openapi.yaml",
+          "hash": "11524237129624566129"
         },
         {
           "file": "backend/project.json",
-          "hash": "11447891246835647331"
+          "hash": "2629733073811475109"
+        },
+        {
+          "file": "backend/services/auth--service/src/shared/interceptors/logging.interceptor.ts",
+          "hash": "7082451841480335865"
+        },
+        {
+          "file": "backend/services/auth--service/src/shared/utils/logging-sanitizer.util.ts",
+          "hash": "1997820262121021048"
         },
         {
           "file": "backend/src/app/app.controller.spec.ts",
-          "hash": "16195083839539355803"
+          "hash": "9499997688052526633"
         },
         {
           "file": "backend/src/app/app.controller.ts",
-          "hash": "15276891910009544695"
+          "hash": "13760134781576066585"
         },
         {
           "file": "backend/src/app/app.module.ts",
-          "hash": "11673476679848632172"
+          "hash": "3163250445227373966"
         },
         {
           "file": "backend/src/app/app.service.spec.ts",
-          "hash": "17298266700909662742"
+          "hash": "8587461140686713758"
         },
         {
           "file": "backend/src/app/app.service.ts",
-          "hash": "1398463054208547248"
+          "hash": "9967902337593410053"
         },
         {
           "file": "backend/src/assets/.gitkeep",
@@ -194,11 +266,11 @@
         },
         {
           "file": "backend/src/main.ts",
-          "hash": "2001345965177334983"
+          "hash": "7175221186486039440"
         },
         {
           "file": "backend/tsconfig.app.json",
-          "hash": "1988898304475917023"
+          "hash": "13303131798475978452"
         },
         {
           "file": "backend/tsconfig.json",
@@ -206,111 +278,83 @@
         },
         {
           "file": "backend/tsconfig.spec.json",
-          "hash": "3844750509877188351"
+          "hash": "14847024475827438161"
         },
         {
           "file": "backend/webpack.config.js",
-          "hash": "5420869928188734478"
+          "hash": "1279870486852937806"
         }
       ],
-      "@meqenet/auth-service": [
+      "@meqenet/api-gateway": [
         {
-          "file": "backend/services/auth-service/.github/workflows/security-scan.yml",
-          "hash": "7057679652954839791"
+          "file": "backend/services/api-gateway/Dockerfile",
+          "hash": "10303937026141325679"
         },
         {
-          "file": "backend/services/auth-service/Dockerfile",
-          "hash": "916590461487061996"
+          "file": "backend/services/api-gateway/jest.config.ts",
+          "hash": "17176570938855799945"
         },
         {
-          "file": "backend/services/auth-service/deploy/blue-green-deployment.yaml",
-          "hash": "12929607129689781968"
+          "file": "backend/services/api-gateway/package.json",
+          "hash": "5790747132334585364"
         },
         {
-          "file": "backend/services/auth-service/k8s/blue-green-deployment.yaml",
-          "hash": "16602155564610212046"
+          "file": "backend/services/api-gateway/src/app/app.controller.spec.ts",
+          "hash": "4233873843279974068"
         },
         {
-          "file": "backend/services/auth-service/package.json",
-          "hash": "2864893208397359282",
-          "deps": [
-            "npm:@nestjs/schematics",
-            "npm:@nestjs/testing",
-            "npm:@types/express",
-            "npm:@types/jest",
-            "npm:@types/node",
-            "npm:@typescript-eslint/eslint-plugin",
-            "npm:@typescript-eslint/parser",
-            "npm:eslint",
-            "npm:eslint-plugin-security",
-            "npm:jest",
-            "npm:prettier",
-            "npm:source-map-support@0.5.21",
-            "npm:ts-jest",
-            "npm:ts-loader",
-            "npm:ts-node",
-            "npm:tsconfig-paths",
-            "npm:typescript",
-            "npm:@nestjs/common",
-            "npm:@nestjs/core",
-            "npm:@nestjs/platform-express",
-            "npm:compression",
-            "npm:class-validator",
-            "npm:class-transformer",
-            "npm:reflect-metadata",
-            "npm:rxjs",
-            "npm:uuid"
-          ]
+          "file": "backend/services/api-gateway/src/app/app.controller.ts",
+          "hash": "17509258209528809081"
         },
         {
-          "file": "backend/services/auth-service/src/app/app.module.ts",
-          "hash": "2751376372764649020"
+          "file": "backend/services/api-gateway/src/app/app.module.ts",
+          "hash": "16807717843391852929"
         },
         {
-          "file": "backend/services/auth-service/src/main.ts",
-          "hash": "4065679119475845448"
+          "file": "backend/services/api-gateway/src/main.ts",
+          "hash": "11693546958753220396"
         },
         {
-          "file": "backend/services/auth-service/src/shared/config/security.config.ts",
-          "hash": "3028726817849183262"
+          "file": "backend/services/api-gateway/tsconfig.json",
+          "hash": "17386780481838134407"
         },
         {
-          "file": "backend/services/auth-service/src/shared/i18n/error-messages.ts",
-          "hash": "7165186311666486048"
-        },
-        {
-          "file": "backend/services/auth-service/src/shared/utils/fayda-encryption.util.ts",
-          "hash": "12975224257544215712"
+          "file": "backend/services/api-gateway/tsconfig.spec.json",
+          "hash": "5411174421632666799"
         }
       ],
       "api-gateway-e2e": [
         {
           "file": "backend-e2e/eslint.config.mjs",
-          "hash": "16700382382107546237"
+          "hash": "14278974431503379536"
         },
         {
-          "file": "backend-e2e/jest.config.ts",
-          "hash": "18291099013211925910"
+          "file": "backend-e2e/jest.config.cjs",
+          "hash": "11361405670314798277"
         },
         {
           "file": "backend-e2e/project.json",
-          "hash": "1710971608971191558"
+          "hash": "5702505214289385839"
         },
         {
           "file": "backend-e2e/src/api-gateway/api-gateway.spec.ts",
-          "hash": "4747019362565984448"
+          "hash": "4150086977375214304"
         },
         {
           "file": "backend-e2e/src/support/global-setup.ts",
-          "hash": "3444053551545844372"
+          "hash": "136367751463176838"
+        },
+        {
+          "file": "backend-e2e/src/support/global-teardown.cjs",
+          "hash": "3959283587583261748"
         },
         {
           "file": "backend-e2e/src/support/global-teardown.ts",
-          "hash": "18176614999450167852"
+          "hash": "14210317125869451873"
         },
         {
           "file": "backend-e2e/src/support/test-setup.ts",
-          "hash": "11749744855473391997"
+          "hash": "15521797170623961900"
         },
         {
           "file": "backend-e2e/tsconfig.json",
@@ -318,7 +362,117 @@
         },
         {
           "file": "backend-e2e/tsconfig.spec.json",
-          "hash": "17514012667061082414"
+          "hash": "14226830188665428950"
+        }
+      ],
+      "@meqenet/auth-service": [
+        {
+          "file": "backend/services/auth-service/.github/workflows/security-scan.yml",
+          "hash": "9125772508012986152"
+        },
+        {
+          "file": "backend/services/auth-service/Dockerfile",
+          "hash": "4005942798991811334"
+        },
+        {
+          "file": "backend/services/auth-service/deploy/blue-green-deployment.yaml",
+          "hash": "6995709426203984841"
+        },
+        {
+          "file": "backend/services/auth-service/jest.config.ts",
+          "hash": "226452883431783690"
+        },
+        {
+          "file": "backend/services/auth-service/k8s/blue-green-deployment.yaml",
+          "hash": "13511336993964936632"
+        },
+        {
+          "file": "backend/services/auth-service/package.json",
+          "hash": "5139515697440953534"
+        },
+        {
+          "file": "backend/services/auth-service/src/app/app.controller.spec.ts",
+          "hash": "8699711991861446735"
+        },
+        {
+          "file": "backend/services/auth-service/src/app/app.controller.ts",
+          "hash": "11947195931426321869"
+        },
+        {
+          "file": "backend/services/auth-service/src/app/app.module.ts",
+          "hash": "7510469453981347318"
+        },
+        {
+          "file": "backend/services/auth-service/src/app/app.service.ts",
+          "hash": "11487943207669903504"
+        },
+        {
+          "file": "backend/services/auth-service/src/features/auth/auth.module.ts",
+          "hash": "8452166461745068500"
+        },
+        {
+          "file": "backend/services/auth-service/src/infrastructure/database/database.module.ts",
+          "hash": "16259133929991612337"
+        },
+        {
+          "file": "backend/services/auth-service/src/infrastructure/messaging/messaging.module.ts",
+          "hash": "2850808232308635161"
+        },
+        {
+          "file": "backend/services/auth-service/src/main.ts",
+          "hash": "13312696509249286902"
+        },
+        {
+          "file": "backend/services/auth-service/src/shared/config/security.config.ts",
+          "hash": "16764235874496869026"
+        },
+        {
+          "file": "backend/services/auth-service/src/shared/config/throttler.config.ts",
+          "hash": "2213016177641116640"
+        },
+        {
+          "file": "backend/services/auth-service/src/shared/config/winston.config.ts",
+          "hash": "2502752755480832344"
+        },
+        {
+          "file": "backend/services/auth-service/src/shared/filters/global-exception.filter.ts",
+          "hash": "3833842332760506239"
+        },
+        {
+          "file": "backend/services/auth-service/src/shared/guards/jwt-auth.guard.ts",
+          "hash": "11277026548521902199"
+        },
+        {
+          "file": "backend/services/auth-service/src/shared/i18n/error-messages.ts",
+          "hash": "8843916296847355672"
+        },
+        {
+          "file": "backend/services/auth-service/src/shared/interceptors/logging.interceptor.ts",
+          "hash": "8143046026504644313"
+        },
+        {
+          "file": "backend/services/auth-service/src/shared/shared.module.ts",
+          "hash": "8258121406177422962"
+        },
+        {
+          "file": "backend/services/auth-service/src/shared/utils/fayda-encryption.util.ts",
+          "hash": "6481532776379745266"
+        },
+        {
+          "file": "backend/services/auth-service/src/shared/utils/logging-sanitizer.util.ts",
+          "hash": "13122908096896943328"
+        },
+        {
+          "file": "backend/services/auth-service/tsconfig.eslint.json",
+          "hash": "13201617810267933807"
+        },
+        {
+          "file": "backend/services/auth-service/tsconfig.json",
+          "hash": "1730523439089906335"
+        },
+        {
+          "file": "backend/services/auth-service/tsconfig.spec.json",
+          "hash": "6898991939206723030"
         }
       ]
     }
