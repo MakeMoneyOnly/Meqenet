@@ -30,6 +30,47 @@ def run_command(command):
         print("Please ensure that Git is installed and in your system's PATH.", file=sys.stderr)
         sys.exit(1)
 
+def checkout_branch(branch_name):
+    """Checks out a branch, creating it from remote if it doesn't exist locally."""
+    print(f"\nSwitching to branch '{branch_name}'...")
+    
+    # Check if branch exists locally
+    local_branches = run_command(["git", "branch"])
+    if f" {branch_name}" in local_branches or f"* {branch_name}" in local_branches:
+        print(f"Branch '{branch_name}' already exists locally. Checking it out.")
+        checkout_result = run_command(["git", "checkout", branch_name])
+    else:
+        # If not, check if it exists on the remote
+        print(f"Branch '{branch_name}' not found locally. Checking remote...")
+        run_command(["git", "fetch", "origin"])
+        remote_exists = run_command(["git", "ls-remote", "--heads", "origin", branch_name])
+        if not remote_exists:
+            print(f"Branch '{branch_name}' not found on remote. Creating it from 'main'.")
+            checkout_branch("main") # Ensure main is checked out and up-to-date
+            print(f"Creating new branch '{branch_name}' from 'main'...")
+            checkout_result = run_command(["git", "checkout", "-b", branch_name])
+            if isinstance(checkout_result, subprocess.CalledProcessError):
+                 print(f"Error creating new branch '{branch_name}'. Exiting.", file=sys.stderr)
+                 sys.exit(1)
+            print(f"Pushing new branch '{branch_name}' to remote...")
+            run_command(["git", "push", "-u", "origin", branch_name])
+            return # The branch is now checked out, so we can exit the function
+        
+        print(f"Creating local branch '{branch_name}' from 'origin/{branch_name}'...")
+        checkout_result = run_command(["git", "checkout", "-b", branch_name, f"origin/{branch_name}"])
+
+    if isinstance(checkout_result, subprocess.CalledProcessError):
+        print(f"Error checking out branch '{branch_name}'.", file=sys.stderr)
+        print(checkout_result.stderr, file=sys.stderr)
+        sys.exit(1)
+
+    print(f"Pulling latest changes for '{branch_name}'...")
+    pull_result = run_command(["git", "pull"])
+    if isinstance(pull_result, subprocess.CalledProcessError):
+        print(f"Warning: Could not pull latest changes for '{branch_name}'. It may be up-to-date or have conflicts.", file=sys.stderr)
+
+    print(f"Successfully switched to branch '{branch_name}'.")
+
 def load_tasks():
     """Loads tasks from the YAML file."""
     yaml = YAML()
@@ -79,23 +120,28 @@ def start_task(task_id, base_branch):
     print(f"Starting new task: {task_id} - {task_name}")
     print(f"Branch: {branch_name}")
 
+    # 0. Check if branch already exists on the remote
+    print("Checking if branch already exists on remote...")
+    remote_branch_exists = run_command(["git", "ls-remote", "--heads", "origin", branch_name])
+    if remote_branch_exists:
+        print(f"\nError: Branch '{branch_name}' already exists on the remote repository.", file=sys.stderr)
+        print("Please sync your local repository or choose a different task.", file=sys.stderr)
+        sys.exit(1)
+    print("Branch does not exist on remote. Proceeding.")
+
     # 1. Ensure the base branch is up-to-date
-    print(f"Checking out and pulling the latest changes for '{base_branch}'...")
-    run_command(["git", "fetch", "origin"])
-    
-    checkout_result = run_command(["git", "checkout", base_branch])
-    if isinstance(checkout_result, subprocess.CalledProcessError):
-        print(f"Local branch '{base_branch}' not found. Creating it from 'origin/{base_branch}'...")
-        run_command(["git", "checkout", "-b", base_branch, f"origin/{base_branch}"])
-    
-    run_command(["git", "pull"])
+    checkout_branch(base_branch)
 
     # 2. Create and checkout the new feature branch
-    print(f"Creating new branch '{branch_name}' from '{base_branch}'...")
-    run_command(["git", "checkout", "-b", branch_name])
+    print(f"\nCreating new branch '{branch_name}' from '{base_branch}'...")
+    create_branch_result = run_command(["git", "checkout", "-b", branch_name])
+    if isinstance(create_branch_result, subprocess.CalledProcessError):
+        print(f"Error creating new branch '{branch_name}'.", file=sys.stderr)
+        print(create_branch_result.stderr, file=sys.stderr)
+        sys.exit(1)
 
     # 3. Update task status in YAML
-    print(f"Updating task '{task_id}' status to 'In Progress'...")
+    print(f"\nUpdating task '{task_id}' status to 'In Progress'...")
     task["status"] = "In Progress"
     save_tasks(tasks_data)
 
@@ -169,7 +215,16 @@ def complete_task(reviewers=None, assignees=None, labels=None):
     # 3. Push changes to remote
     print("\nStep 3: Pushing changes to remote...")
     current_branch = run_command(["git", "rev-parse", "--abbrev-ref", "HEAD"])
-    run_command(["git", "push", "--set-upstream", "origin", current_branch])
+    push_output = run_command(["git", "push", "--set-upstream", "origin", current_branch])
+
+    if isinstance(push_output, subprocess.CalledProcessError):
+        print("\nError: Pushing to remote failed.", file=sys.stderr)
+        print("Git Error:", file=sys.stderr)
+        print(push_output.stderr, file=sys.stderr)
+        print("Reverting local commit...", file=sys.stderr)
+        run_command(["git", "reset", "HEAD~1"])
+        sys.exit(1)
+
     print(f"Pushed branch '{current_branch}' to origin.")
 
     # 4. Create a pull request using GitHub CLI
@@ -188,7 +243,7 @@ def complete_task(reviewers=None, assignees=None, labels=None):
         print("Please run 'gh auth login' to authenticate.", file=sys.stderr)
         sys.exit(1)
 
-    gh_command = ["gh", "pr", "create", "--title", pr_title, "--body", pr_body, "--base", "develop"]
+    gh_command = ["gh", "pr", "create", "--title", pr_title, "--body", pr_body, "--base", "develop", "--head", current_branch]
 
     if reviewers:
         gh_command.extend(["--reviewer", ",".join(reviewers)])
@@ -201,20 +256,30 @@ def complete_task(reviewers=None, assignees=None, labels=None):
     
     print(f"Running command: {' '.join(gh_command)}")
     pr_output = run_command(gh_command)
-    
+
     if isinstance(pr_output, subprocess.CalledProcessError):
         print("\nError: Pull Request creation failed.", file=sys.stderr)
         print("GitHub CLI Error:", file=sys.stderr)
         print(pr_output.stderr, file=sys.stderr)
+        # We need to revert the commit if the PR fails
+        print("Reverting local commit...", file=sys.stderr)
+        run_command(["git", "reset", "HEAD~1"])
         sys.exit(1)
-
-    # 5. Update task status
-    print(f"\nUpdating task '{task_id}' status to 'In Review'...")
-    task["status"] = "In Review"
-    save_tasks(tasks_data)
     
     print("\nPull Request created successfully!")
     print(pr_output)
+
+    # 5. Update task status in a separate commit
+    print(f"\nUpdating task '{task_id}' status to 'In Review'...")
+    task["status"] = "In Review"
+    save_tasks(tasks_data)
+
+    print("Committing and pushing task status update...")
+    status_commit_message = f"chore({task_id}): update task status to In Review"
+    run_command(["git", "add", TASKS_FILE_PATH])
+    run_command(["git", "commit", "-m", status_commit_message])
+    run_command(["git", "push"])
+    print("Task status update pushed successfully.")
 
 def merge_task(pr_identifier):
     """
@@ -356,8 +421,7 @@ def create_release(version, target_branch="main", source_branch="develop"):
         sys.exit(1)
 
     print(f"\nStep 1: Preparing '{target_branch}' for release...")
-    run_command(["git", "checkout", target_branch])
-    run_command(["git", "pull", "origin", target_branch])
+    checkout_branch(target_branch)
     
     print(f"Step 2: Merging '{source_branch}' into '{target_branch}'...")
     try:
@@ -392,6 +456,14 @@ def main():
     """
     Main function to parse arguments and execute the corresponding command.
     """
+    # First, check if the repository is clean
+    git_status = run_command(["git", "status", "--porcelain"])
+    if git_status:
+        print("Error: Your working directory is not clean. There are uncommitted changes.", file=sys.stderr)
+        print("Please commit or stash your changes before running the automation script.", file=sys.stderr)
+        print("\nUncommitted changes:\n" + git_status, file=sys.stderr)
+        sys.exit(1)
+
     parser = argparse.ArgumentParser(
         description="Meqenet Git Automation Tool for enterprise-grade workflows."
     )

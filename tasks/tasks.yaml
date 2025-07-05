@@ -138,7 +138,7 @@ stages:
             description:
               Integrate Prisma ORM, configure database connection URLs via environment
               variables.
-            status: In Review
+            status: To Do
             context: [docs/Stage 1 - Foundation/10-Database.md]
             personas: [
                 Senior Backend Developer,
