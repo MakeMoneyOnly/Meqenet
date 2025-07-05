@@ -173,8 +173,19 @@
   "packageManager": "pnpm@10.12.3",
   "pnpm": {
     "onlyBuiltDependencies": [
+      "@appthreat/sqlite3",
+      "@nestjs/core",
+      "@parcel/watcher",
+      "@prisma/client",
+      "@prisma/engines",
+      "@scarf/scarf",
+      "@swc/core",
       "argon2",
-      "grpc-tools"
+      "grpc-tools",
+      "nx",
+      "prisma",
+      "protobufjs",
+      "unrs-resolver"
     ],
     "peerDependencyRules": {
       "allowedVersions": {
