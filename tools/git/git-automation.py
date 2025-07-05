@@ -2,10 +2,14 @@ import argparse
 import subprocess
 import sys
 import json
+import os
 from ruamel.yaml import YAML
 from datetime import datetime
 
-TASKS_FILE_PATH = "2. tasks/tasks.yaml"
+# Make path to tasks.yaml absolute from the script's location
+SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
+PROJECT_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, '..', '..'))
+TASKS_FILE_PATH = os.path.join(PROJECT_ROOT, "tasks", "tasks.yaml")
 
 def run_command(command):
     """Executes a command and returns its output."""
@@ -198,6 +202,12 @@ def complete_task(reviewers=None, assignees=None, labels=None):
     print(f"Running command: {' '.join(gh_command)}")
     pr_output = run_command(gh_command)
     
+    if isinstance(pr_output, subprocess.CalledProcessError):
+        print("\nError: Pull Request creation failed.", file=sys.stderr)
+        print("GitHub CLI Error:", file=sys.stderr)
+        print(pr_output.stderr, file=sys.stderr)
+        sys.exit(1)
+
     # 5. Update task status
     print(f"\nUpdating task '{task_id}' status to 'In Review'...")
     task["status"] = "In Review"

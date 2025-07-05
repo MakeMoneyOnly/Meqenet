@@ -38,6 +38,54 @@
   "fileMap": {
     "nonProjectFiles": [
       {
+        "file": "LICENSE",
+        "hash": "15837388819838843766"
+      },
+      {
+        "file": ".github/ISSUE_TEMPLATE/security.yml",
+        "hash": "11748718487315736968"
+      },
+      {
+        "file": "scripts/setup-cookiecutter-template.sh",
+        "hash": "14850936065068661617"
+      },
+      {
+        "file": "2. tasks/tasks.yaml",
+        "hash": "16158681324627408973"
+      },
+      {
+        "file": "bom.json",
+        "hash": "11354828052538560424"
+      },
+      {
+        "file": "tsconfig.base.json",
+        "hash": "11175907793063572178"
+      },
+      {
+        "file": "tools/git/git-automation.py",
+        "hash": "2358807315266330565"
+      },
+      {
+        "file": ".prettierrc.cjs",
+        "hash": "6679045620391099180"
+      },
+      {
+        "file": "2. tasks/update_progress.py",
+        "hash": "8023317109246309306"
+      },
+      {
+        "file": "infrastructure/deploy-github-protection.sh",
+        "hash": "11815768311611247691"
+      },
+      {
+        "file": "pnpm-lock.yaml",
+        "hash": "7251800774318029090"
+      },
+      {
+        "file": "scripts/setup-cookiecutter-template.bat",
+        "hash": "16557945189042122723"
+      },
+      {
         "file": "tsconfig.eslint.json",
         "hash": "13979823936974258022"
       },
@@ -46,84 +94,108 @@
         "hash": "7186662235074547836"
       },
       {
-        "file": ".gitignore",
-        "hash": "2319567734113913906"
-      },
-      {
         "file": ".github/CODEOWNERS",
         "hash": "2499644011609788910"
-      },
-      {
-        "file": "tools/git/requirements.txt",
-        "hash": "11822567670578446964"
-      },
-      {
-        "file": ".github/ISSUE_TEMPLATE/security.yml",
-        "hash": "11748718487315736968"
-      },
-      {
-        "file": "tools/git/git-automation.py",
-        "hash": "15724487010151906627"
-      },
-      {
-        "file": "infrastructure/deploy-github-protection.sh",
-        "hash": "11815768311611247691"
-      },
-      {
-        "file": "tsconfig.json",
-        "hash": "1267355784634178797"
-      },
-      {
-        "file": "scripts/dev-setup.sh",
-        "hash": "17631192461426267872"
-      },
-      {
-        "file": "2. tasks/update_progress.py",
-        "hash": "8023317109246309306"
-      },
-      {
-        "file": ".github/ISSUE_TEMPLATE/bug_report.yml",
-        "hash": "9521855053921643808"
-      },
-      {
-        "file": "docker-compose.yml",
-        "hash": "16535440292078998828"
-      },
-      {
-        "file": "pnpm-lock.yaml",
-        "hash": "7251800774318029090"
-      },
-      {
-        "file": ".nxignore",
-        "hash": "13149804047595096970"
       },
       {
         "file": "infrastructure/terraform.tfvars.example",
         "hash": "6794381271983308087"
       },
       {
-        "file": "tsconfig.base.json",
-        "hash": "11175907793063572178"
+        "file": "scripts/dev-setup.sh",
+        "hash": "17631192461426267872"
       },
       {
-        "file": "2. tasks/tasks.yaml",
-        "hash": "16158681324627408973"
+        "file": "scripts/create-service.sh",
+        "hash": "13327003038430553445"
       },
       {
-        "file": "eslint.config.js",
-        "hash": "7638613824810678795"
+        "file": "docker-compose.yml",
+        "hash": "16535440292078998828"
+      },
+      {
+        "file": ".github/ISSUE_TEMPLATE/feature_request.yml",
+        "hash": "7009620368749762983"
+      },
+      {
+        "file": ".github/workflows/deploy.yml",
+        "hash": "8777618532909801206"
+      },
+      {
+        "file": ".github/ISSUE_TEMPLATE/bug_report.yml",
+        "hash": "9521855053921643808"
+      },
+      {
+        "file": ".prettierignore",
+        "hash": "12276341866337434695"
+      },
+      {
+        "file": ".nxignore",
+        "hash": "13149804047595096970"
+      },
+      {
+        "file": "tools/git/requirements.txt",
+        "hash": "11822567670578446964"
+      },
+      {
+        "file": "tasks/tasks.yaml",
+        "hash": "13854854749542307662"
+      },
+      {
+        "file": ".cursorrules",
+        "hash": "15621831265108626665"
+      },
+      {
+        "file": "scripts/create-service.ps1",
+        "hash": "14670201034457896454"
+      },
+      {
+        "file": ".github/ISSUE_TEMPLATE/chore.yml",
+        "hash": "9655881516729930732"
+      },
+      {
+        "file": "tools/jest-transform-stub.cjs",
+        "hash": "15043361577285266645"
+      },
+      {
+        "file": ".audit-ci.json",
+        "hash": "16033736456144595217"
+      },
+      {
+        "file": "scripts/create-service.bat",
+        "hash": "7091979240899560632"
+      },
+      {
+        "file": ".github/ISSUE_TEMPLATE/config.yml",
+        "hash": "15156731941763669855"
+      },
+      {
+        "file": "tsconfig.json",
+        "hash": "1267355784634178797"
+      },
+      {
+        "file": "jest.preset.ts",
+        "hash": "6471042596146376714"
+      },
+      {
+        "file": ".github/workflows/ci.yml",
+        "hash": "1197340011150689144"
+      },
+      {
+        "file": "nx.json",
+        "hash": "4489109242689168015"
       },
       {
         "file": ".github/workflows/security.yml",
         "hash": "10389317053933931668"
       },
       {
-        "file": "bom.json",
-        "hash": "11354828052538560424"
+        "file": "eslint.config.js",
+        "hash": "7638613824810678795"
       },
       {
-        "file": "nx.json",
-        "hash": "4489109242689168015"
+        "file": "package.json",
+        "hash": "16509858855319707135"
       },
       {
         "file": "infrastructure/github-repository-management.tf",
@@ -134,88 +206,20 @@
         "hash": "8844881026911275784"
       },
       {
-        "file": ".github/workflows/deploy.yml",
-        "hash": "8777618532909801206"
-      },
-      {
-        "file": ".prettierrc.cjs",
-        "hash": "6679045620391099180"
-      },
-      {
-        "file": ".audit-ci.json",
-        "hash": "16033736456144595217"
+        "file": "scripts/setup-database.sh",
+        "hash": "554485908296317221"
       },
       {
         "file": "scripts/setup-database.bat",
         "hash": "6552852839110577739"
       },
       {
-        "file": "scripts/setup-cookiecutter-template.bat",
-        "hash": "16557945189042122723"
-      },
-      {
-        "file": ".github/ISSUE_TEMPLATE/feature_request.yml",
-        "hash": "7009620368749762983"
-      },
-      {
-        "file": "scripts/setup-database.sh",
-        "hash": "554485908296317221"
-      },
-      {
-        "file": "scripts/create-service.bat",
-        "hash": "7091979240899560632"
-      },
-      {
-        "file": ".github/workflows/ci.yml",
-        "hash": "1197340011150689144"
+        "file": ".gitignore",
+        "hash": "2319567734113913906"
       },
       {
         "file": "scripts/docker-win.bat",
         "hash": "6125106946214902469"
-      },
-      {
-        "file": "LICENSE",
-        "hash": "15837388819838843766"
-      },
-      {
-        "file": ".github/ISSUE_TEMPLATE/chore.yml",
-        "hash": "9655881516729930732"
-      },
-      {
-        "file": ".prettierignore",
-        "hash": "12276341866337434695"
-      },
-      {
-        "file": "package.json",
-        "hash": "16509858855319707135"
-      },
-      {
-        "file": ".cursorrules",
-        "hash": "15621831265108626665"
-      },
-      {
-        "file": "scripts/create-service.sh",
-        "hash": "13327003038430553445"
-      },
-      {
-        "file": ".github/ISSUE_TEMPLATE/config.yml",
-        "hash": "15156731941763669855"
-      },
-      {
-        "file": "jest.preset.ts",
-        "hash": "6471042596146376714"
-      },
-      {
-        "file": "scripts/create-service.ps1",
-        "hash": "14670201034457896454"
-      },
-      {
-        "file": "scripts/setup-cookiecutter-template.sh",
-        "hash": "14850936065068661617"
-      },
-      {
-        "file": "tools/jest-transform-stub.cjs",
-        "hash": "15043361577285266645"
       }
     ],
     "projectFileMap": {
