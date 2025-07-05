@@ -44,39 +44,45 @@ def checkout_branch(branch_name):
     if f" {branch_name}" in local_branches or f"* {branch_name}" in local_branches:
         print(f"Branch '{branch_name}' already exists locally. Checking it out.")
         checkout_result = run_command(["git", "checkout", branch_name])
-    else:
-        # If not, check if it exists on the remote
-        print(f"Branch '{branch_name}' not found locally. Checking remote...")
-        run_command(["git", "fetch", "origin"])
-        remote_exists = run_command(["git", "ls-remote", "--heads", "origin", branch_name])
-        if not remote_exists:
-            print(f"Branch '{branch_name}' not found on remote. Creating it from 'main'.")
-            # Ensure main is checked out and up-to-date
-            checkout_branch("main")
-            print(f"Creating new branch '{branch_name}' from 'main'...")
-            create_result = run_command(["git", "checkout", "-b", branch_name])
-            if isinstance(create_result, subprocess.CalledProcessError):
-                print(f"Error creating new branch '{branch_name}'. Please ensure your working directory is clean and try again.", file=sys.stderr)
-                sys.exit(1)
-            print(f"Pushing new branch '{branch_name}' to remote...")
-            push_result = run_command(["git", "push", "-u", "origin", branch_name])
-            if isinstance(push_result, subprocess.CalledProcessError):
-                print(f"Error pushing new branch '{branch_name}' to remote.", file=sys.stderr)
-                sys.exit(1)
-            return # The branch is now checked out, so we can exit the function
-        print(f"Creating local branch '{branch_name}' from 'origin/{branch_name}'...")
-        checkout_result = run_command(["git", "checkout", "-b", branch_name, f"origin/{branch_name}"])
-
+        if isinstance(checkout_result, subprocess.CalledProcessError):
+            print(f"Error checking out branch '{branch_name}'.", file=sys.stderr)
+            print(checkout_result.stderr, file=sys.stderr)
+            sys.exit(1)
+        print(f"Pulling latest changes for '{branch_name}'...")
+        pull_result = run_command(["git", "pull"])
+        if isinstance(pull_result, subprocess.CalledProcessError):
+            print(f"Warning: Could not pull latest changes for '{branch_name}'. It may be up-to-date or have conflicts.", file=sys.stderr)
+        print(f"Successfully switched to branch '{branch_name}'.")
+        return
+    # If not, check if it exists on the remote
+    print(f"Branch '{branch_name}' not found locally. Checking remote...")
+    run_command(["git", "fetch", "origin"])
+    remote_exists = run_command(["git", "ls-remote", "--heads", "origin", branch_name])
+    if not remote_exists:
+        print(f"Branch '{branch_name}' not found on remote. Creating it from 'main'.")
+        # Ensure main is checked out and up-to-date
+        checkout_branch("main")
+        print(f"Creating new branch '{branch_name}' from 'main'...")
+        create_result = run_command(["git", "checkout", "-b", branch_name])
+        if isinstance(create_result, subprocess.CalledProcessError):
+            print(f"Error creating new branch '{branch_name}'. Please ensure your working directory is clean and try again.", file=sys.stderr)
+            sys.exit(1)
+        print(f"Pushing new branch '{branch_name}' to remote...")
+        push_result = run_command(["git", "push", "-u", "origin", branch_name])
+        if isinstance(push_result, subprocess.CalledProcessError):
+            print(f"Error pushing new branch '{branch_name}' to remote.", file=sys.stderr)
+            sys.exit(1)
+        return # The branch is now checked out, so we can exit the function
+    print(f"Creating local branch '{branch_name}' from 'origin/{branch_name}'...")
+    checkout_result = run_command(["git", "checkout", "-b", branch_name, f"origin/{branch_name}"])
     if isinstance(checkout_result, subprocess.CalledProcessError):
         print(f"Error checking out branch '{branch_name}'.", file=sys.stderr)
         print(checkout_result.stderr, file=sys.stderr)
         sys.exit(1)
-
     print(f"Pulling latest changes for '{branch_name}'...")
     pull_result = run_command(["git", "pull"])
     if isinstance(pull_result, subprocess.CalledProcessError):
         print(f"Warning: Could not pull latest changes for '{branch_name}'. It may be up-to-date or have conflicts.", file=sys.stderr)
-
     print(f"Successfully switched to branch '{branch_name}'.")
 
 def load_tasks():
