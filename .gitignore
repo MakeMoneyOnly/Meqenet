@@ -421,6 +421,14 @@ generated/
 
 # Nx
 .nx/cache
+/.nx
 
+/node_modules
+
+HEAD
 # Cursor directory
 .cursor/ 
+
+# Nx cache and workspace data
+.nx/workspace-data 
+ develop
