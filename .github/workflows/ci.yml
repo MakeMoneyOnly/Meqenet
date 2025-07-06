@@ -28,6 +28,11 @@ jobs:
         with:
           fetch-depth: 0 # Full history for security analysis
 
+      - name: 🔧 Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
       - name: 🔧 Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -36,11 +41,6 @@ jobs:
 
       - name: 📦 Enable Corepack
         run: corepack enable
-
-      - name: 🔧 Setup pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: ${{ env.PNPM_VERSION }}
 
       - name: 📚 Install Dependencies
         run: pnpm install --frozen-lockfile
@@ -74,6 +74,11 @@ jobs:
       - name: 📥 Checkout Repository
         uses: actions/checkout@v4
 
+      - name: 🔧 Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
       - name: 🔧 Setup Node.js & pnpm
         uses: actions/setup-node@v4
         with:
@@ -82,11 +87,6 @@ jobs:
 
       - name: 📦 Enable Corepack
         run: corepack enable
-
-      - name: 🔧 Setup pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: ${{ env.PNPM_VERSION }}
 
       - name: 📚 Install Dependencies
         run: pnpm install --frozen-lockfile
@@ -151,6 +151,11 @@ jobs:
       - name: 📥 Checkout Repository
         uses: actions/checkout@v4
 
+      - name: 🔧 Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
       - name: 🔧 Setup Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
@@ -159,11 +164,6 @@ jobs:
 
       - name: 📦 Enable Corepack
         run: corepack enable
-
-      - name: 🔧 Setup pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: ${{ env.PNPM_VERSION }}
 
       - name: 📚 Install Dependencies
         run: pnpm install --frozen-lockfile
@@ -271,6 +271,11 @@ jobs:
       - name: 📥 Checkout Repository
         uses: actions/checkout@v4
 
+      - name: 🔧 Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
       - name: 🔧 Setup Node.js & pnpm
         uses: actions/setup-node@v4
         with:
@@ -279,11 +284,6 @@ jobs:
 
       - name: 📦 Enable Corepack
         run: corepack enable
-
-      - name: 🔧 Setup pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: ${{ env.PNPM_VERSION }}
 
       - name: 📚 Install Dependencies
         run: pnpm install --frozen-lockfile
