@@ -1,23 +1,23 @@
+import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 
 import { AppModule } from './app/app.module';
 
-// Default port for API Gateway service
 const DEFAULT_PORT = 3000;
-// Default auth service URL for local development
 const DEFAULT_AUTH_SERVICE_URL = 'http://localhost:3001';
-
-const AUTH_SERVICE_URL =
-  process.env.AUTH_SERVICE_URL ?? DEFAULT_AUTH_SERVICE_URL;
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
+  const configService = app.get(ConfigService);
+
+  const authServiceUrl =
+    configService.get<string>('AUTH_SERVICE_URL') ?? DEFAULT_AUTH_SERVICE_URL;
 
   app.use(
     '/api/auth',
     createProxyMiddleware({
-      target: AUTH_SERVICE_URL,
+      target: authServiceUrl,
       changeOrigin: true,
       pathRewrite: {
         '^/api/auth': '/', // rewrite path
@@ -25,12 +25,13 @@ async function bootstrap(): Promise<void> {
     })
   );
 
-  const port = process.env.PORT ? Number(process.env.PORT) : DEFAULT_PORT;
+  const port = configService.get<number>('PORT') ?? DEFAULT_PORT;
   await app.listen(port);
+
   // eslint-disable-next-line no-console
   console.log(`API Gateway listening on http://localhost:${port}`);
   // eslint-disable-next-line no-console
-  console.log(`Proxying /api/auth to ${AUTH_SERVICE_URL}`);
+  console.log(`Proxying /api/auth to ${authServiceUrl}`);
 }
 
 bootstrap();
