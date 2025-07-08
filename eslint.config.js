@@ -246,7 +246,7 @@ module.exports = tseslint.config(
     files: ['backend/services/api-gateway/**/*.ts'],
     languageOptions: {
       parserOptions: {
-        project: ['./backend/services/api-gateway/tsconfig.json'],
+        project: ['./backend/services/api-gateway/tsconfig.eslint.json'],
       },
     },
     settings: {

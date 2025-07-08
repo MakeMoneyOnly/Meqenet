@@ -10,6 +10,7 @@
     "test": "jest --projects backend/services/auth-service backend/services/api-gateway backend-e2e",
     "test:integration": "echo 'No integration tests configured yet.'",
     "test:e2e": "jest --projects backend-e2e",
+    "test:coverage": "jest --projects backend/services/auth-service backend/services/api-gateway backend-e2e --coverage",
     "build": "pnpm -r --if-present build",
     "security:audit": "pnpm audit --audit-level moderate",
     "security:audit-ci": "audit-ci --config .audit-ci.json",
