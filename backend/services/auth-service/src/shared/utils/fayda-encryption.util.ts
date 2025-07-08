@@ -213,17 +213,18 @@ export class FaydaEncryptionUtil {
       const key = await this.deriveKey(salt);
 
       // Create decipher
-      const decipher = crypto.createDecipheriv(
-        metadata.algorithm,
-        key,
-        iv
-      ) as crypto.DecipherGCM;
-      decipher.setAAD(Buffer.from(additionalData ?? 'fayda-meqenet', 'utf8'));
-      decipher.setAuthTag(tag);
+      const decipher = crypto.createDecipheriv(metadata.algorithm, key, iv);
+
+      // Type assertion for GCM-specific methods
+      const gcmDecipher = decipher as crypto.DecipherGCM;
+      gcmDecipher.setAAD(
+        Buffer.from(additionalData ?? 'fayda-meqenet', 'utf8')
+      );
+      gcmDecipher.setAuthTag(tag);
 
       // Decrypt the data
-      let decrypted = decipher.update(encrypted);
-      decrypted = Buffer.concat([decrypted, decipher.final()]);
+      let decrypted = gcmDecipher.update(encrypted);
+      decrypted = Buffer.concat([decrypted, gcmDecipher.final()]);
 
       const faydaId = decrypted.toString('utf8');
 
