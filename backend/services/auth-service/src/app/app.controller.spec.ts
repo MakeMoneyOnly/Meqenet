@@ -5,7 +5,6 @@ import { AppService } from './app.service';
 
 describe('AppController', () => {
   let appController: AppController;
-  let appService: AppService;
 
   beforeEach(async () => {
     const app: TestingModule = await Test.createTestingModule({
@@ -14,7 +13,6 @@ describe('AppController', () => {
     }).compile();
 
     appController = app.get<AppController>(AppController);
-    appService = app.get<AppService>(AppService);
   });
 
   describe('getServiceName', () => {
@@ -24,7 +22,15 @@ describe('AppController', () => {
   });
 
   describe('getHealthCheck', () => {
-    it('should return the health status from AppService', () => {
+    it('should return the health status from AppService', async () => {
+      const app: TestingModule = await Test.createTestingModule({
+        controllers: [AppController],
+        providers: [AppService],
+      }).compile();
+
+      const appController = app.get<AppController>(AppController);
+      const appService = app.get<AppService>(AppService);
+
       const healthCheckStatus = {
         status: 'ok',
         timestamp: new Date().toISOString(),

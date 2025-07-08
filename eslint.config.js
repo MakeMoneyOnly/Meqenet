@@ -229,9 +229,14 @@ module.exports = [
   {
     files: ['backend/services/auth-service/**/*.ts'],
     languageOptions: {
+      parser: tsParser,
       parserOptions: {
-        project: ['./backend/services/auth-service/tsconfig.eslint.json'],
+        project: './backend/services/auth-service/tsconfig.eslint.json',
+        tsconfigRootDir: __dirname,
       },
+    },
+    plugins: {
+      '@typescript-eslint': tseslint,
     },
     settings: {
       'import/resolver': {
@@ -247,9 +252,14 @@ module.exports = [
   {
     files: ['backend/services/api-gateway/**/*.ts'],
     languageOptions: {
+      parser: tsParser,
       parserOptions: {
-        project: ['./backend/services/api-gateway/tsconfig.eslint.json'],
+        project: './backend/services/api-gateway/tsconfig.eslint.json',
+        tsconfigRootDir: __dirname,
       },
+    },
+    plugins: {
+      '@typescript-eslint': tseslint,
     },
     settings: {
       'import/resolver': {
