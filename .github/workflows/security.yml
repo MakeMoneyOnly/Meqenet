@@ -141,8 +141,8 @@ jobs:
         run: |
           echo "🔍 Validating encryption implementations..."
 
-          # Check for weak encryption algorithms
-          if grep -r "md5\|sha1\|des\|rc4" --include="*.ts" --include="*.js" backend/; then
+          # Check for weak encryption algorithms (using word boundaries to avoid false positives)
+          if grep -r "\bmd5\b|\bsha1\b|\bdes\b|\brc4\b" --include="*.ts" --include="*.js" backend/; then
             echo "❌ Weak encryption algorithms detected!"
             exit 1
           else

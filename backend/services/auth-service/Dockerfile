@@ -31,7 +31,9 @@ RUN apt-get update \
 # Copy pnpm and project configuration files
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY tsconfig.base.json ./
-COPY nest-cli.json ./
+
+# Copy service-specific configuration
+COPY backend/services/auth-service/nest-cli.json ./nest-cli.json
 
 # Install all dependencies using pnpm
 RUN corepack enable && corepack prepare pnpm@10.12.3 --activate

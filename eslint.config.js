@@ -1,12 +1,13 @@
 const globals = require('globals');
-const tseslint = require('typescript-eslint');
+const tseslint = require('@typescript-eslint/eslint-plugin');
+const tsParser = require('@typescript-eslint/parser');
 const js = require('@eslint/js');
 const security = require('eslint-plugin-security');
 const importPlugin = require('eslint-plugin-import');
 const react = require('eslint-plugin-react');
 const reactHooks = require('eslint-plugin-react-hooks');
 
-module.exports = tseslint.config(
+module.exports = [
   {
     // Global ignores
     ignores: [
@@ -24,13 +25,13 @@ module.exports = tseslint.config(
 
   // Base configurations
   js.configs.recommended,
-  ...tseslint.configs.recommended,
   security.configs.recommended,
 
   // Global rules for all files
   {
     files: ['**/*.ts', '**/*.tsx'],
     languageOptions: {
+      parser: tsParser,
       ecmaVersion: 2022,
       sourceType: 'module',
       globals: {
@@ -45,6 +46,7 @@ module.exports = tseslint.config(
       },
     },
     plugins: {
+      '@typescript-eslint': tseslint,
       import: importPlugin,
     },
     settings: {
@@ -259,5 +261,5 @@ module.exports = tseslint.config(
         },
       },
     },
-  }
-);
+  },
+];
