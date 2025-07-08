@@ -241,5 +241,23 @@ module.exports = tseslint.config(
         },
       },
     },
+  },
+  {
+    files: ['backend/services/api-gateway/**/*.ts'],
+    languageOptions: {
+      parserOptions: {
+        project: ['./backend/services/api-gateway/tsconfig.json'],
+      },
+    },
+    settings: {
+      'import/resolver': {
+        oxc: {
+          // Modern TypeScript resolver without deprecated dependencies
+        },
+        node: {
+          extensions: ['.js', '.ts'],
+        },
+      },
+    },
   }
 );
