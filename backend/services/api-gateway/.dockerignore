@@ -16,4 +16,7 @@ dist
 jest.config.ts
 tsconfig.spec.json
 *.spec.ts
-README.md 
+README.md
+
+# Ignore template files (cookiecutter templates should not be built)
+templates 
