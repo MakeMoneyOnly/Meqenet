@@ -245,7 +245,7 @@ jobs:
           output: "trivy-results-${{ matrix.service }}.sarif"
 
       - name: 📊 Upload Trivy Results to GitHub Security
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
           sarif_file: "trivy-results-${{ matrix.service }}.sarif"

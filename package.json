@@ -8,6 +8,7 @@
     "lint": "pnpm -r --if-present lint",
     "lint:fix": "eslint . --fix",
     "test": "jest --projects backend/services/auth-service backend/services/api-gateway backend-e2e",
+    "test:integration": "echo 'No integration tests configured yet.'",
     "build": "pnpm -r --if-present build",
     "security:audit": "pnpm audit --audit-level moderate",
     "security:audit-ci": "audit-ci --config .audit-ci.json",
@@ -127,6 +128,7 @@
     "prettier": "^3.6.0",
     "prisma": "^5.18.0",
     "source-map-support": "^0.5.21",
+    "sqlite3": "^5.1.7",
     "supertest": "^7.0.0",
     "swagger-ui-express": "^5.0.1",
     "ts-jest": "^29.4.0",
@@ -185,6 +187,7 @@
       "nx",
       "prisma",
       "protobufjs",
+      "sqlite3",
       "unrs-resolver"
     ],
     "peerDependencyRules": {

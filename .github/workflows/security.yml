@@ -38,7 +38,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
+          cache: "pnpm"
 
       - name: 📦 Enable Corepack
         run: corepack enable
@@ -124,7 +124,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
+          cache: "pnpm"
 
       - name: 📦 Enable Corepack
         run: corepack enable
@@ -289,7 +289,7 @@ jobs:
           severity-cutoff: high
 
       - name: 📊 Upload Trivy Results to Security Tab
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
           sarif_file: "trivy-results-${{ matrix.service }}.sarif"
