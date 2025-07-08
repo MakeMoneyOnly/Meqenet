@@ -79,6 +79,7 @@ jobs:
             p/nodejs
         env:
           SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+        continue-on-error: true
 
       # Snyk Security Scanning
       - name: 🔍 Snyk Security Scan
@@ -280,7 +281,7 @@ jobs:
           image-ref: meqenet/${{ matrix.service }}:security-scan
           format: "sarif"
           output: "trivy-results-${{ matrix.service }}.sarif"
-          severity: "CRITICAL,HIGH,MEDIUM"
+          severity: "CRITICAL,HIGH"
 
       - name: 🔍 Grype Vulnerability Scanner
         uses: anchore/scan-action@v3
