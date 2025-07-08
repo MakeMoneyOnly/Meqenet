@@ -73,7 +73,16 @@ module.exports = [
       'security/detect-pseudoRandomBytes': 'error',
 
       // TypeScript Rules
-      '@typescript-eslint/no-unused-vars': 'error',
+      'no-unused-vars': 'off', // Disable base rule, use TS-aware version
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          args: 'all',
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          ignoreRestSiblings: true,
+        },
+      ],
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/explicit-function-return-type': 'warn',
       '@typescript-eslint/no-non-null-assertion': 'error',
