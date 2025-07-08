@@ -81,7 +81,7 @@ export class FaydaEncryptionUtil {
         },
       };
     } catch (error) {
-      throw new Error(`Fayda ID encryption failed: ${error.message}`);
+      throw new Error(`Fayda ID encryption failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -146,7 +146,7 @@ export class FaydaEncryptionUtil {
 
       return faydaId;
     } catch (error) {
-      throw new Error(`Fayda ID decryption failed: ${error.message}`);
+      throw new Error(`Fayda ID decryption failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 

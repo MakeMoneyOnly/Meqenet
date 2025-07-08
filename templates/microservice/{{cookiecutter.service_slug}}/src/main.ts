@@ -30,6 +30,9 @@ async function bootstrap() {
   const logger = app.get(WINSTON_MODULE_NEST_PROVIDER);
   app.useLogger(logger);
 
+  // Log service startup information
+  logger.log(`Starting {{cookiecutter.service_name}} in ${configService.get('NODE_ENV', 'development')} mode`, 'Bootstrap');
+
   // Security middleware
   app.use(
     helmet({
