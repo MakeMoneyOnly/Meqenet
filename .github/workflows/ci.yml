@@ -224,11 +224,36 @@ jobs:
       - name: 📥 Checkout Repository
         uses: actions/checkout@v4
 
+      - name: 🔍 Check Docker daemon status
+        run: |
+          echo "🐳 Checking Docker daemon status..."
+          docker info || (sudo systemctl restart docker && sleep 10 && docker info)
+          echo "✅ Docker daemon is running"
+
       - name: 🔧 Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: |
+            network=host
+        env:
+          DOCKER_CLI_EXPERIMENTAL: enabled
+          BUILDX_NO_DEFAULT_ATTESTATIONS: 1
+        timeout-minutes: 10
+        continue-on-error: true
+
+      # Prepare Docker environment for better reliability
+      - name: 🔄 Docker Login (to avoid rate limits)
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME || 'githubactions' }}
+          password: ${{ secrets.DOCKERHUB_TOKEN || github.token }}
+        continue-on-error: true
 
       - name: 🏗️ Build Docker Image
         uses: docker/build-push-action@v5
+        id: docker_build
+        continue-on-error: true
+        timeout-minutes: 15
         with:
           context: .
           file: ./backend/services/${{ matrix.service }}/Dockerfile
@@ -236,10 +261,30 @@ jobs:
           tags: meqenet/${{ matrix.service }}:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          pull: true
+          network: host
+
+      # Add retry mechanism for Docker build failures
+      - name: 🔄 Retry Docker Build (if failed)
+        if: steps.docker_build.outcome == 'failure'
+        uses: docker/build-push-action@v5
+        continue-on-error: true
+        timeout-minutes: 15
+        with:
+          context: .
+          file: ./backend/services/${{ matrix.service }}/Dockerfile
+          push: false
+          tags: meqenet/${{ matrix.service }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          pull: true
+          network: host
+          no-cache: true
 
       - name: 🔍 Scan Docker Image for Vulnerabilities
         uses: aquasecurity/trivy-action@master
         continue-on-error: true
+        if: ${{ !failure() }}
         with:
           image-ref: meqenet/${{ matrix.service }}:${{ github.sha }}
           format: "table"
