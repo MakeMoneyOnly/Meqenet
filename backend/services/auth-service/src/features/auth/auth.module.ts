@@ -10,14 +10,11 @@ import { SharedModule } from '../../shared/shared.module';
  */
 @Module({
   imports: [SharedModule],
-  controllers: [
-    // TODO: Add auth controllers
-  ],
-  providers: [
-    // TODO: Add auth services
-  ],
-  exports: [
-    // TODO: Export auth services for other modules
-  ],
+  // TODO: Add auth controllers when implementing authentication features
+  controllers: [],
+  // TODO: Add auth services for user authentication and Fayda ID verification
+  providers: [],
+  // TODO: Export auth services for other modules to use
+  exports: [],
 })
 export class AuthModule {}

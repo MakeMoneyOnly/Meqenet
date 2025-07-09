@@ -7,14 +7,11 @@ import { Module } from '@nestjs/common';
  * for the authentication service.
  */
 @Module({
-  imports: [
-    // TODO: Add Prisma, TypeORM, or other database modules
-  ],
-  providers: [
-    // TODO: Add database services
-  ],
-  exports: [
-    // TODO: Export database services
-  ],
+  // TODO: Add Prisma, TypeORM, or other database modules
+  imports: [],
+  // TODO: Add database services for data persistence
+  providers: [],
+  // TODO: Export database services for dependency injection
+  exports: [],
 })
 export class DatabaseModule {}
