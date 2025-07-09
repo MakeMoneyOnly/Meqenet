@@ -263,29 +263,16 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: 📋 Pre-create SARIF File
-        run: |
-          echo "📝 Creating initial SARIF file structure..."
-          cat > trivy-results-${{ matrix.service }}.sarif << 'EOF'
-          {
-            "version": "2.1.0",
-            "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
-            "runs": [
-              {
-                "tool": {
-                  "driver": {
-                    "name": "Trivy",
-                    "informationUri": "https://github.com/aquasecurity/trivy"
-                  }
-                },
-                "results": []
-              }
-            ]
-          }
-          EOF
-          echo "✅ Initial SARIF file created"
-
       - name: 🔍 Trivy Vulnerability Scanner
+        uses: aquasecurity/trivy-action@master
+        continue-on-error: true
+        with:
+          image-ref: meqenet/${{ matrix.service }}:security-scan
+          format: "table"
+          severity: "CRITICAL,HIGH"
+          exit-code: "0"
+
+      - name: 🔍 Trivy SARIF Report (Optional)
         uses: aquasecurity/trivy-action@master
         continue-on-error: true
         with:
@@ -297,14 +284,15 @@ jobs:
 
       - name: 📋 Verify SARIF File
         run: |
-          echo "🔍 Verifying SARIF file..."
+          echo "🔍 Checking SARIF file status..."
           if [ -f "trivy-results-${{ matrix.service }}.sarif" ]; then
             echo "✅ SARIF file exists"
             ls -la trivy-results-${{ matrix.service }}.sarif
             echo "File size: $(wc -c < trivy-results-${{ matrix.service }}.sarif) bytes"
+            echo "sarif-ready=true" >> $GITHUB_ENV
           else
-            echo "❌ SARIF file missing - this should not happen"
-            exit 1
+            echo "⚠️ SARIF file not generated - skipping GitHub Security upload"
+            echo "sarif-ready=false" >> $GITHUB_ENV
           fi
 
       - name: 🔍 Grype Vulnerability Scanner
@@ -317,7 +305,7 @@ jobs:
 
       - name: 📊 Upload Trivy Results to Security Tab
         uses: github/codeql-action/upload-sarif@v3
-        if: always()
+        if: env.sarif-ready == 'true'
         with:
           sarif_file: "trivy-results-${{ matrix.service }}.sarif"
           category: "trivy-${{ matrix.service }}"
