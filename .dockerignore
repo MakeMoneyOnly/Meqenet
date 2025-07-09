@@ -38,15 +38,17 @@ tasks
 governance
 infrastructure
 
-# Testing files
+# Testing files - more specific patterns
 *.spec.ts
 *.test.ts
+**/*.spec.ts
+**/*.test.ts
 jest.config.*
 test-setup.ts
 tsconfig.spec.json
-backend-e2e
-test
-tests
+test/
+tests/
+__tests__/
 
 # Security and analysis files
 .security

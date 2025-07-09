@@ -18,8 +18,8 @@ RUN pnpm install --frozen-lockfile
 # Copy the entire monorepo source code
 COPY . .
 
-# Build the specific service
-RUN pnpm exec nest build api-gateway
+# Build the specific service using Nx
+RUN pnpm exec nx build api-gateway
 
 
 # Stage 2: Runner
@@ -27,8 +27,8 @@ FROM node:18-slim
 
 WORKDIR /app
 
-# Copy build artifacts from the builder stage (nest build outputs to dist/ in the service directory)
-COPY --from=builder /app/backend/services/api-gateway/dist ./dist
+# Copy build artifacts from the builder stage (Webpack builds to global dist)
+COPY --from=builder /app/dist ./dist
 
 # Copy node_modules and package.json
 COPY --from=builder /app/node_modules ./node_modules

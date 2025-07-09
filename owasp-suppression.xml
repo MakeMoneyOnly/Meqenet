@@ -7,28 +7,52 @@
   <!-- H2 Database vulnerabilities from SBOM generation tools -->
   <suppress>
     <notes><![CDATA[H2 Database vulnerabilities from development tools (cdxgen). Not used at runtime.]]></notes>
+    <packageUrl regex="true">.*h2database.*</packageUrl>
     <cve>CVE-2022-23221</cve>
+  </suppress>
+  
+  <suppress>
+    <notes><![CDATA[H2 Database vulnerabilities from development tools (cdxgen). Not used at runtime.]]></notes>
+    <packageUrl regex="true">.*h2database.*</packageUrl>
     <cve>CVE-2022-45868</cve>
   </suppress>
   
   <!-- Git parsing vulnerabilities from development tools -->
   <suppress>
     <notes><![CDATA[Git parsing library vulnerabilities from development tools. Not used at runtime.]]></notes>
+    <packageUrl regex="true">.*git-parse.*</packageUrl>
     <cve>CVE-2021-23463</cve>
+  </suppress>
+  
+  <suppress>
+    <notes><![CDATA[Git parsing library vulnerabilities from development tools. Not used at runtime.]]></notes>
+    <packageUrl regex="true">.*git-parse.*</packageUrl>
     <cve>CVE-2021-42392</cve>
   </suppress>
   
   <!-- Eclipse platform vulnerabilities from development tools -->
   <suppress>
     <notes><![CDATA[Eclipse platform vulnerabilities from development tools. Not used at runtime.]]></notes>
+    <packageUrl regex="true">.*eclipse.*</packageUrl>
     <cve>CVE-2020-27225</cve>
+  </suppress>
+  
+  <suppress>
+    <notes><![CDATA[Eclipse platform vulnerabilities from development tools. Not used at runtime.]]></notes>
+    <packageUrl regex="true">.*eclipse.*</packageUrl>
     <cve>CVE-2021-41033</cve>
   </suppress>
   
   <!-- Scala compiler and SBT vulnerabilities from development tools -->
   <suppress>
     <notes><![CDATA[Scala compiler vulnerabilities from development tools. Not used at runtime.]]></notes>
+    <packageUrl regex="true">.*scala.*</packageUrl>
     <cve>CVE-2017-1000034</cve>
+  </suppress>
+  
+  <suppress>
+    <notes><![CDATA[Scala compiler vulnerabilities from development tools. Not used at runtime.]]></notes>
+    <packageUrl regex="true">.*scala.*</packageUrl>
     <cve>CVE-2023-46122</cve>
   </suppress>
   
@@ -36,11 +60,6 @@
   <suppress>
     <notes><![CDATA[Suppress all vulnerabilities in development tools that bundle Java dependencies]]></notes>
     <filePath regex="true">.*node_modules/@cyclonedx/.*</filePath>
-  </suppress>
-  
-  <suppress>
-    <notes><![CDATA[Suppress vulnerabilities in Scala/SBT tools used by development dependencies]]></notes>
-    <filePath regex="true">.*scala.*</filePath>
   </suppress>
   
 </suppressions> 

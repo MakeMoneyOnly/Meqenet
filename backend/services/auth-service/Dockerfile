@@ -42,8 +42,8 @@ RUN pnpm install --frozen-lockfile
 # Copy the entire monorepo source code
 COPY . .
 
-# Build the specific service
-RUN pnpm exec nest build auth-service
+# Build the specific service using Nx
+RUN pnpm exec nx build auth-service
 
 
 # 2. Production Stage
@@ -51,8 +51,8 @@ FROM node:18-slim
 
 WORKDIR /app
 
-# Copy build artifacts from the builder stage (auth-service builds to global dist location)
-COPY --from=builder /app/dist/backend/services/auth-service/src ./dist
+# Copy build artifacts from the builder stage (Webpack builds to global dist)
+COPY --from=builder /app/dist ./dist
 
 # Copy proto files for gRPC (only root proto if it exists)
 COPY --from=builder /app/proto ./proto
