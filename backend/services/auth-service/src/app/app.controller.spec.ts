@@ -1,18 +1,27 @@
-import { Test, TestingModule } from '@nestjs/testing';
+/// <reference types="vitest" />
+import 'reflect-metadata'; // Required for NestJS dependency injection
+import { vi, describe, it, beforeEach, afterEach, expect } from 'vitest';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
 describe('AppController', () => {
   let appController: AppController;
+  let appService: AppService;
 
   beforeEach(async () => {
-    const app: TestingModule = await Test.createTestingModule({
-      controllers: [AppController],
-      providers: [AppService],
-    }).compile();
+    // Manual dependency injection to work around Vitest DI issues
+    appService = new AppService();
+    appController = new AppController(appService);
 
-    appController = app.get<AppController>(AppController);
+    // Verify manual injection worked
+    expect(appController).toBeDefined();
+    expect(appService).toBeDefined();
+  });
+
+  afterEach(() => {
+    // Clean up any mocks after each test
+    vi.clearAllMocks();
   });
 
   describe('getServiceName', () => {
@@ -22,25 +31,25 @@ describe('AppController', () => {
   });
 
   describe('getHealthCheck', () => {
-    it('should return the health status from AppService', async () => {
-      const app: TestingModule = await Test.createTestingModule({
-        controllers: [AppController],
-        providers: [AppService],
-      }).compile();
+    it('should return health status with proper structure', () => {
+      const result = appController.getHealthCheck();
 
-      const appController = app.get<AppController>(AppController);
-      const appService = app.get<AppService>(AppService);
+      // Verify the structure and content
+      expect(result).toHaveProperty('status', 'ok');
+      expect(result).toHaveProperty('timestamp');
+      expect(typeof result.timestamp).toBe('string');
+      expect(result.timestamp).toMatch(
+        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
+      ); // ISO string format
+    });
 
-      const healthCheckStatus = {
-        status: 'ok',
-        timestamp: new Date().toISOString(),
-      };
-      // Mock the service method
-      jest
-        .spyOn(appService, 'getHealthCheck')
-        .mockImplementation(() => healthCheckStatus);
+    it('should call AppService getHealthCheck method', () => {
+      // Test that the controller properly delegates to the service
+      const serviceSpy = vi.spyOn(appService, 'getHealthCheck');
 
-      expect(appController.getHealthCheck()).toBe(healthCheckStatus);
+      appController.getHealthCheck();
+
+      expect(serviceSpy).toHaveBeenCalledTimes(1);
     });
   });
 });
