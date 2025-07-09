@@ -17,6 +17,7 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "strict": true,
+    "types": [],
     "paths": {
       "@meqenet/auth-service/*": ["backend/services/auth-service/src/*"]
     }
