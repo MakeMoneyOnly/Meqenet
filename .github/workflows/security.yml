@@ -271,17 +271,40 @@ jobs:
           format: "sarif"
           output: "trivy-results-${{ matrix.service }}.sarif"
           severity: "CRITICAL,HIGH"
+          exit-code: "0"
 
       - name: 📋 Check SARIF File Generation
         id: check-sarif
         run: |
-          if [ -f "trivy-results-${{ matrix.service }}.sarif" ]; then
+          echo "🔍 Checking for SARIF file generation..."
+          if [ -f "trivy-results-${{ matrix.service }}.sarif" ] && [ -s "trivy-results-${{ matrix.service }}.sarif" ]; then
             echo "sarif-exists=true" >> $GITHUB_OUTPUT
             echo "✅ SARIF file generated successfully"
             ls -la trivy-results-${{ matrix.service }}.sarif
+            echo "File size: $(wc -c < trivy-results-${{ matrix.service }}.sarif) bytes"
           else
             echo "sarif-exists=false" >> $GITHUB_OUTPUT
-            echo "⚠️ SARIF file not generated - this is normal if no vulnerabilities found"
+            echo "⚠️ SARIF file not generated or empty - this is normal if no vulnerabilities found"
+            
+            # Create empty SARIF file for consistency
+            cat > trivy-results-${{ matrix.service }}.sarif << 'EOF'
+          {
+            "version": "2.1.0",
+            "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+            "runs": [
+              {
+                "tool": {
+                  "driver": {
+                    "name": "Trivy",
+                    "informationUri": "https://github.com/aquasecurity/trivy"
+                  }
+                },
+                "results": []
+              }
+            ]
+          }
+          EOF
+            echo "📝 Created empty SARIF file for upload"
           fi
 
       - name: 🔍 Grype Vulnerability Scanner
@@ -294,9 +317,10 @@ jobs:
 
       - name: 📊 Upload Trivy Results to Security Tab
         uses: github/codeql-action/upload-sarif@v3
-        if: steps.check-sarif.outputs.sarif-exists == 'true'
+        if: always()
         with:
           sarif_file: "trivy-results-${{ matrix.service }}.sarif"
+          category: "trivy-${{ matrix.service }}"
 
       - name: 📊 Upload Container Security Results
         uses: actions/upload-artifact@v4

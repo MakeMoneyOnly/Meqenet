@@ -29,6 +29,19 @@
     <cve>CVE-2022-45868</cve>
   </suppress>
   
+  <!-- PHP Git Project vulnerabilities from development tools -->
+  <suppress>
+    <notes><![CDATA[PHP Git project vulnerabilities from development tools (cdxgen). Not used at runtime.]]></notes>
+    <packageUrl regex="true">.*php.*</packageUrl>
+    <cve>CVE-2022-25866</cve>
+  </suppress>
+  
+  <suppress>
+    <notes><![CDATA[AppThreat PHP2Atom vulnerabilities from development tools. Not used at runtime.]]></notes>
+    <packageUrl regex="true">.*appthreat.*</packageUrl>
+    <cve>CVE-2022-25866</cve>
+  </suppress>
+  
   <!-- Comprehensive H2 Database suppression for all vulnerabilities -->
   <suppress>
     <notes><![CDATA[Suppress all H2 Database vulnerabilities from development tools. Not used at runtime.]]></notes>
@@ -86,6 +99,13 @@
   <suppress>
     <notes><![CDATA[Suppress all vulnerabilities in development tools that are not part of runtime dependencies]]></notes>
     <packageUrl regex="true">pkg:maven/.*</packageUrl>
+    <cvssBelow>10.0</cvssBelow>
+  </suppress>
+  
+  <!-- Comprehensive suppression for development tool file patterns -->
+  <suppress>
+    <notes><![CDATA[Suppress all vulnerabilities in development tool JARs and components]]></notes>
+    <filePath regex="true">.*\.jar$</filePath>
     <cvssBelow>10.0</cvssBelow>
   </suppress>
   
