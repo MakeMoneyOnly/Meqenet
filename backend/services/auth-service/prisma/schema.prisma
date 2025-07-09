@@ -1,0 +1,270 @@
+// ==================================================================================
+// Meqenet.et Authentication Service - Prisma Database Schema
+// NBE Compliant Financial Services Database Design
+// ==================================================================================
+// Data Classification Legend:
+// - PUBLIC: Non-sensitive data (e.g., user preferences)
+// - INTERNAL: Business data requiring protection (e.g., user roles)
+// - CONFIDENTIAL: Sensitive personal data (e.g., email, phone)
+// - RESTRICTED: Highly sensitive financial data (e.g., KYC data, Fayda ID)
+// ==================================================================================
+
+generator client {
+  provider = "prisma-client-js"
+  // Enable field-level encryption for RESTRICTED data
+  previewFeatures = ["fieldReference"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  // Enable SSL by default for Ethiopian financial compliance
+  relationMode = "foreignKeys"
+}
+
+// ==================================================================================
+// AUDIT AND COMPLIANCE MODELS
+// ==================================================================================
+
+/// AuditLog model for NBE compliance and regulatory tracking
+/// Data Classification: INTERNAL
+/// Retention: 7 years (NBE requirement)
+model AuditLog {
+  id              String   @id @default(uuid())
+  
+  // Event identification
+  eventType       String   // LOGIN, LOGOUT, PASSWORD_CHANGE, KYC_UPDATE, etc.
+  entityType      String   // USER, TRANSACTION, KYC, etc.
+  entityId        String?  // ID of the affected entity
+  
+  // User context
+  userId          String?
+  userEmail       String?  // Denormalized for audit trail
+  userRole        String?
+  
+  // Request context for security analysis
+  ipAddress       String   // For fraud detection
+  userAgent       String?  // Browser/app information
+  sessionId       String?  // Session tracking
+  
+  // Ethiopian specific context
+  location        String?  // City/Region in Ethiopia
+  deviceFingerprint String? // Device identification for security
+  
+  // Event details
+  eventData       Json?    // Structured event data
+  previousValues  Json?    // Before state for data changes
+  newValues       Json?    // After state for data changes
+  
+  // Compliance and security
+  riskScore       Float?   // Calculated risk score (0.0 - 1.0)
+  complianceFlags String[] // NBE, AML, KYC flags
+  
+  // Timestamps
+  createdAt       DateTime @default(now())
+  
+  // Indexes for Ethiopian regulatory reporting
+  @@index([eventType, createdAt])
+  @@index([userId, eventType])
+  @@index([ipAddress, createdAt])
+  @@index([createdAt]) // For NBE audit queries
+  @@map("audit_logs")
+}
+
+// ==================================================================================
+// USER AND AUTHENTICATION MODELS
+// ==================================================================================
+
+/// Core User model for Meqenet.et platform
+/// Data Classification: CONFIDENTIAL (email, phone) / RESTRICTED (KYC data)
+/// Retention: Active users: indefinite, Inactive: 2 years after last activity
+model User {
+  id              String   @id @default(uuid())
+  
+  // Authentication credentials - CONFIDENTIAL
+  email           String   @unique
+  emailVerified   Boolean  @default(false)
+  emailVerifiedAt DateTime?
+  passwordHash    String   // Argon2 hashed password
+  
+  // Profile information - CONFIDENTIAL
+  firstName       String?
+  lastName        String?
+  displayName     String?
+  phone           String?  @unique // Ethiopian phone format: +251XXXXXXXXX
+  phoneVerified   Boolean  @default(false)
+  phoneVerifiedAt DateTime?
+  
+  // Ethiopian specific data - RESTRICTED
+  preferredLanguage String @default("en") // en, am (Amharic)
+  timezone          String @default("Africa/Addis_Ababa")
+  
+  // KYC and Compliance - RESTRICTED
+  kycStatus         KycStatus @default(PENDING)
+  kycCompletedAt    DateTime?
+  fayda_id_hash     String?  @unique // Encrypted Fayda National ID
+  kycDocuments      Json?    // Encrypted document references
+  
+  // Account status - INTERNAL
+  status            UserStatus @default(ACTIVE)
+  role              UserRole   @default(CUSTOMER)
+  
+  // Security and fraud prevention - INTERNAL
+  lastLoginAt       DateTime?
+  lastLoginIp       String?
+  loginAttempts     Int      @default(0)
+  lockoutUntil      DateTime?
+  twoFactorEnabled  Boolean  @default(false)
+  twoFactorSecret   String?  // Encrypted TOTP secret
+  
+  // NBE Risk Assessment - INTERNAL
+  riskLevel         RiskLevel @default(LOW)
+  riskScore         Float?    // 0.0 (low) to 1.0 (high)
+  riskAssessedAt    DateTime?
+  
+  // Data governance and retention
+  dataClassification String @default("CONFIDENTIAL")
+  retentionPolicy    String @default("ACTIVE_USER") // ACTIVE_USER, INACTIVE_2Y, DELETED
+  gdprConsent        Boolean @default(false)
+  marketingConsent   Boolean @default(false)
+  
+  // Timestamps
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  deletedAt         DateTime? // Soft delete for audit compliance
+  
+  // Relationships
+  userSessions      UserSession[]
+  passwordResets    PasswordReset[]
+  
+  // Indexes for Ethiopian market performance
+  @@index([email])
+  @@index([phone])
+  @@index([kycStatus, status])
+  @@index([status, role])
+  @@index([riskLevel, kycStatus])
+  @@index([createdAt])
+  @@map("users")
+}
+
+/// User session tracking for security and compliance
+/// Data Classification: INTERNAL
+/// Retention: 90 days for active sessions, 7 years for audit
+model UserSession {
+  id              String   @id @default(uuid())
+  
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Session security
+  token           String   @unique // JWT token ID
+  refreshToken    String?  @unique
+  deviceId        String?  // Device fingerprint
+  
+  // Session context
+  ipAddress       String
+  userAgent       String?
+  location        String?  // Ethiopian city/region
+  
+  // Session lifecycle
+  isActive        Boolean  @default(true)
+  expiresAt       DateTime
+  lastActivityAt  DateTime @default(now())
+  
+  // Security flags
+  isSecure        Boolean  @default(true) // HTTPS only
+  riskFlags       String[] // Suspicious activity flags
+  
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([userId, isActive])
+  @@index([token])
+  @@index([expiresAt])
+  @@index([ipAddress, createdAt]) // For fraud detection
+  @@map("user_sessions")
+}
+
+/// Password reset tracking for security audit
+/// Data Classification: CONFIDENTIAL
+/// Retention: 30 days
+model PasswordReset {
+  id              String   @id @default(uuid())
+  
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Reset security
+  token           String   @unique
+  hashedToken     String   // Hashed version for DB storage
+  
+  // Request context for fraud detection
+  ipAddress       String
+  userAgent       String?
+  
+  // Reset lifecycle
+  isUsed          Boolean  @default(false)
+  usedAt          DateTime?
+  expiresAt       DateTime // 15 minutes expiry for security
+  
+  // Timestamps
+  createdAt       DateTime @default(now())
+  
+  @@index([token])
+  @@index([userId, isUsed])
+  @@index([expiresAt])
+  @@map("password_resets")
+}
+
+// ==================================================================================
+// ENUMS FOR ETHIOPIAN FINANCIAL SERVICES
+// ==================================================================================
+
+/// KYC Status following NBE guidelines
+enum KycStatus {
+  PENDING       // Initial state
+  IN_PROGRESS   // Documents submitted, under review
+  APPROVED      // KYC completed and approved
+  REJECTED      // KYC rejected, user cannot access financial services
+  EXPIRED       // KYC needs renewal (annual requirement)
+  SUSPENDED     // Temporarily suspended pending investigation
+}
+
+/// User account status
+enum UserStatus {
+  ACTIVE        // Normal active user
+  INACTIVE      // User has not logged in for extended period
+  SUSPENDED     // Temporarily suspended by admin
+  BANNED        // Permanently banned
+  PENDING       // Awaiting email/phone verification
+  DELETED       // Soft deleted, retained for audit
+}
+
+/// User roles in the Meqenet ecosystem
+enum UserRole {
+  CUSTOMER      // End consumer using BNPL services
+  MERCHANT      // Business partner accepting Meqenet payments
+  ADMIN         // Platform administrator
+  COMPLIANCE    // Compliance officer (NBE reporting)
+  SUPPORT       // Customer support agent
+  DEVELOPER     // API developer (limited access)
+}
+
+/// Risk level classification per NBE guidelines
+enum RiskLevel {
+  LOW           // Standard customers, low transaction volumes
+  MEDIUM        // Higher transaction volumes or some risk indicators
+  HIGH          // Requires enhanced due diligence
+  CRITICAL      // Requires manual review for all transactions
+}
+
+// ==================================================================================
+// DATABASE CONSTRAINTS AND VALIDATION
+// ==================================================================================
+
+// Ensure email format is valid for Ethiopian domains
+// Phone numbers must follow Ethiopian format: +251XXXXXXXXX
+// KYC data encryption must be enabled before storing Fayda ID
+// All timestamps must be in UTC with Ethiopian timezone conversion in application layer
+// All sensitive data (CONFIDENTIAL/RESTRICTED) must be encrypted at rest

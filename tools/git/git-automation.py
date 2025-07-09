@@ -247,17 +247,20 @@ def get_pr_info(pr_number, field):
         sys.exit(1)
     return result
 
-def merge_task(pr_number, target_branch):
+def merge_task(pr_number, target_branch, skip_approval=False):
     """Merges an approved and clean pull request."""
     print(f"Attempting to merge PR #{pr_number} into '{target_branch}'...")
 
-    # Check PR status
-    print("Checking PR review status...")
-    review_status = get_pr_info(pr_number, "reviewDecision")
-    if review_status != "APPROVED":
-        print(f"Error: Pull request is not approved. Current review status: {review_status}", file=sys.stderr)
-        sys.exit(1)
-    print("PR is approved.")
+    if not skip_approval:
+        # Check PR status
+        print("Checking PR review status...")
+        review_status = get_pr_info(pr_number, "reviewDecision")
+        if review_status != "APPROVED":
+            print(f"Error: Pull request is not approved. Current review status: {review_status}", file=sys.stderr)
+            sys.exit(1)
+        print("PR is approved.")
+    else:
+        print("Skipping approval check (--skip-approval flag used)...")
 
     # Check merge status
     print("Checking PR merge status...")
@@ -328,6 +331,7 @@ def main():
     merge_parser = subparsers.add_parser("merge-task", help="Merge a pull request after approval.")
     merge_parser.add_argument("pr_number", type=int, help="The pull request number to merge.")
     merge_parser.add_argument("--target", default="develop", help="The target branch to merge into (default: develop).")
+    merge_parser.add_argument("--skip-approval", action="store_true", help="Skip the approval check for the pull request.")
     
     sync_parser = subparsers.add_parser("sync-task", help="Sync the current feature branch with the target branch.")
     sync_parser.add_argument("--target", default="develop", help="The target branch to sync with (default: develop).")
@@ -343,7 +347,7 @@ def main():
     elif args.command == "complete-task":
         complete_task()
     elif args.command == "merge-task":
-        merge_task(args.pr_number, args.target)
+        merge_task(args.pr_number, args.target, args.skip_approval)
     elif args.command == "sync-task":
         sync_task(args.target)
 

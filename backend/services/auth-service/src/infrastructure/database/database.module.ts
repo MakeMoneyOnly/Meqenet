@@ -1,17 +1,24 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+
+import { PrismaService } from './prisma.service';
 
 /**
- * Database Module
+ * Database Module for Meqenet.et Authentication Service
  *
- * Handles database connections and configurations
- * for the authentication service.
+ * Provides secure, NBE-compliant database access with:
+ * - Prisma ORM integration with PostgreSQL
+ * - Connection pooling optimized for Ethiopian infrastructure
+ * - Comprehensive audit logging for NBE compliance
+ * - Health monitoring and automatic reconnection
+ * - SSL/TLS encryption for data in transit
+ *
+ * @author Financial Software Architect
+ * @author Data Security Specialist
  */
 @Module({
-  // TODO: Add Prisma, TypeORM, or other database modules
-  imports: [],
-  // TODO: Add database services for data persistence
-  providers: [],
-  // TODO: Export database services for dependency injection
-  exports: [],
+  imports: [ConfigModule],
+  providers: [PrismaService],
+  exports: [PrismaService],
 })
 export class DatabaseModule {}
