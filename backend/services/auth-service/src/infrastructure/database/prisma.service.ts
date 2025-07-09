@@ -150,46 +150,63 @@ export class PrismaService
    */
   private setupEventListeners(): void {
     // Query logging for audit compliance (NBE requirement)
-    this.$on('query', (event: Prisma.QueryEvent) => {
-      if (process.env.NODE_ENV !== 'production') {
-        this.logger.debug(
-          `Query: ${event.query} | Duration: ${event.duration}ms`
-        );
-      }
+    this.$on(
+      'query',
+      (event: {
+        query: string;
+        params: string;
+        duration: number;
+        target: string;
+      }) => {
+        if (process.env.NODE_ENV !== 'production') {
+          this.logger.debug(
+            `Query: ${event.query} | Duration: ${event.duration}ms`
+          );
+        }
 
-      // Log slow queries for performance monitoring
-      if (event.duration > RETRY_CONFIG.SLOW_QUERY_THRESHOLD) {
-        this.logger.warn(`Slow query detected: ${event.duration}ms`, {
-          query: event.query,
-          params: event.params,
-          duration: event.duration,
-        });
+        // Log slow queries for performance monitoring
+        if (event.duration > RETRY_CONFIG.SLOW_QUERY_THRESHOLD) {
+          this.logger.warn(`Slow query detected: ${event.duration}ms`, {
+            query: event.query,
+            params: event.params,
+            duration: event.duration,
+          });
+        }
       }
-    });
+    );
 
     // Error logging for security monitoring
-    this.$on('error', (event: Prisma.LogEvent) => {
-      this.logger.error(`Database error: ${event.message}`, {
-        target: event.target,
-        timestamp: event.timestamp,
-      });
-    });
+    this.$on(
+      'error',
+      (event: { message: string; target: string; timestamp: Date }) => {
+        this.logger.error(`Database error: ${event.message}`, {
+          target: event.target,
+          timestamp: event.timestamp,
+        });
+      }
+    );
 
     // Warning logging
-    this.$on('warn', (event: Prisma.LogEvent) => {
-      this.logger.warn(`Database warning: ${event.message}`, {
-        target: event.target,
-        timestamp: event.timestamp,
-      });
-    });
+    this.$on(
+      'warn',
+      (event: { message: string; target: string; timestamp: Date }) => {
+        this.logger.warn(`Database warning: ${event.message}`, {
+          target: event.target,
+          timestamp: event.timestamp,
+        });
+      }
+    );
 
     // Info logging for audit trail
-    this.$on('info', (event: Prisma.LogEvent) => {
-      this.logger.log(`Database info: ${event.message}`, {
-        target: event.target,
-        timestamp: event.timestamp,
-      });
-    });
+    this.$on(
+      'info',
+      (event: { message: string; target: string; timestamp: Date }) => {
+        this.logger.log(`Database info: ${event.message}`, {
+          target: event.target,
+          timestamp: event.timestamp,
+        });
+      }
+    );
   }
 
   /**
