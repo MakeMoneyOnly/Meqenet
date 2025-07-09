@@ -73,9 +73,11 @@ export class PrismaService
         },
       },
       // Enhanced error formatting for security and debugging
+       
       errorFormat: process.env.NODE_ENV === 'production' ? 'minimal' : 'pretty',
       // Log all queries in development for audit compliance
       log:
+         
         process.env.NODE_ENV === 'production'
           ? [
               { level: 'error', emit: 'event' },
@@ -158,6 +160,7 @@ export class PrismaService
         duration: number;
         target: string;
       }) => {
+         
         if (process.env.NODE_ENV !== 'production') {
           this.logger.debug(
             `Query: ${event.query} | Duration: ${event.duration}ms`

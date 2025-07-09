@@ -238,6 +238,7 @@ export type DatabaseConfig = z.infer<typeof DatabaseConfigSchema>;
  */
 export default registerAs('database', (): DatabaseConfig => {
   // Extract environment variables
+   
   const config = {
     url: process.env.DATABASE_URL,
     pool: {
@@ -264,6 +265,7 @@ export default registerAs('database', (): DatabaseConfig => {
       timeout: process.env.DB_HEALTH_CHECK_TIMEOUT,
     },
   };
+   
 
   // Validate configuration against schema
   try {
@@ -299,6 +301,7 @@ const PRODUCTION_LIMITS = {
  */
 function validateEthiopianCompliance(config: DatabaseConfig): void {
   // Ensure production environments have strict security settings
+   
   if (process.env.NODE_ENV === 'production') {
     if (!config.security.encryptionAtRest) {
       throw new Error(
@@ -336,6 +339,7 @@ function validateEthiopianCompliance(config: DatabaseConfig): void {
  * with proper typing and validation
  */
 export function getDatabaseConfig(): DatabaseConfig {
+   
   return DatabaseConfigSchema.parse({
     url: process.env.DATABASE_URL,
     pool: {
@@ -362,4 +366,5 @@ export function getDatabaseConfig(): DatabaseConfig {
       timeout: process.env.DB_HEALTH_CHECK_TIMEOUT,
     },
   });
+   
 }

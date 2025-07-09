@@ -174,7 +174,14 @@ module.exports = [
     },
   },
   {
-    files: ['**/*.test.ts', '**/*.test.tsx', '**/*.spec.ts', '**/*.spec.tsx'],
+    files: [
+      '**/*.test.ts',
+      '**/*.test.tsx',
+      '**/*.spec.ts',
+      '**/*.spec.tsx',
+      '**/test/**/*.ts',
+      '**/test/setup.ts',
+    ],
     languageOptions: {
       globals: {
         ...globals.jest,
@@ -183,6 +190,7 @@ module.exports = [
     rules: {
       'no-magic-numbers': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
+      'no-process-env': 'off', // Allow process.env in test files for environment setup
     },
   },
   {
