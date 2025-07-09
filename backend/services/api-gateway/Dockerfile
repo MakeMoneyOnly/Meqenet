@@ -27,7 +27,7 @@ FROM node:18-slim
 
 WORKDIR /app
 
-# Copy build artifacts from the builder stage (API Gateway builds to its local dist directory)  
+# Copy build artifacts from the builder stage (nest build outputs to dist/ in the service directory)
 COPY --from=builder /app/backend/services/api-gateway/dist ./dist
 
 # Copy node_modules and package.json

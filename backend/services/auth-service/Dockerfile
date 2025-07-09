@@ -51,7 +51,7 @@ FROM node:18-slim
 
 WORKDIR /app
 
-# Copy build artifacts from the builder stage (auth-service builds to global dist)
+# Copy build artifacts from the builder stage (auth-service builds to global dist location)
 COPY --from=builder /app/dist/backend/services/auth-service/src ./dist
 
 # Copy proto files for gRPC (only root proto if it exists)

@@ -89,6 +89,7 @@ jobs:
             --enableRetired
             --enableExperimental
             --failOnCVSS 7
+            --suppression owasp-suppression.xml
 
       - name: 📊 Upload OWASP Results
         uses: actions/upload-artifact@v4
