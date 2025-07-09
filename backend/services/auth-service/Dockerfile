@@ -6,7 +6,7 @@
 # -----------------------------------------------------------------------------
 # NOTE: We switch from **alpine** to **slim (debian)** here to avoid the sporadic
 # I/O errors seen when installing heavy build-time dependencies (g++, python3)
-# on musl based Alpine images under Docker-for-Windows. Debian based images have
+# on musl based images under Docker-for-Windows. Debian based images have
 # pre-built binaries for most native Node modules (e.g. argon2) which removes
 # the need to compile them from source and therefore removes the g++ dependency
 # entirely. This keeps the image small while making the build far more reliable
@@ -51,12 +51,11 @@ FROM node:18-slim
 
 WORKDIR /app
 
-# Copy build artifacts from the builder stage
+# Copy build artifacts from the builder stage (auth-service builds to global dist)
 COPY --from=builder /app/dist/backend/services/auth-service/src ./dist
 
-# Copy proto files for gRPC (both root and service-specific)
+# Copy proto files for gRPC (only root proto if it exists)
 COPY --from=builder /app/proto ./proto
-COPY --from=builder /app/backend/services/auth-service/proto ./proto
 
 # Copy node_modules and package.json
 COPY --from=builder /app/node_modules ./node_modules
