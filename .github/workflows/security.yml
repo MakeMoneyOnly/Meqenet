@@ -272,6 +272,18 @@ jobs:
           output: "trivy-results-${{ matrix.service }}.sarif"
           severity: "CRITICAL,HIGH"
 
+      - name: 📋 Check SARIF File Generation
+        id: check-sarif
+        run: |
+          if [ -f "trivy-results-${{ matrix.service }}.sarif" ]; then
+            echo "sarif-exists=true" >> $GITHUB_OUTPUT
+            echo "✅ SARIF file generated successfully"
+            ls -la trivy-results-${{ matrix.service }}.sarif
+          else
+            echo "sarif-exists=false" >> $GITHUB_OUTPUT
+            echo "⚠️ SARIF file not generated - this is normal if no vulnerabilities found"
+          fi
+
       - name: 🔍 Grype Vulnerability Scanner
         uses: anchore/scan-action@v3
         continue-on-error: true
@@ -282,7 +294,7 @@ jobs:
 
       - name: 📊 Upload Trivy Results to Security Tab
         uses: github/codeql-action/upload-sarif@v3
-        if: always() && hashFiles('trivy-results-${{ matrix.service }}.sarif') != ''
+        if: steps.check-sarif.outputs.sarif-exists == 'true'
         with:
           sarif_file: "trivy-results-${{ matrix.service }}.sarif"
 
@@ -295,6 +307,7 @@ jobs:
             trivy-results-${{ matrix.service }}.sarif
             anchore-reports/
           retention-days: 30
+          if-no-files-found: warn
 
   # ============================================================================
   # SECURITY SUMMARY
