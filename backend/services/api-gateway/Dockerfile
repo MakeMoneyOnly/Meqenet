@@ -21,6 +21,9 @@ COPY . .
 # Build the specific service using Nx
 RUN pnpm exec nx build api-gateway
 
+# Ensure proto directory exists (create empty one if not present)
+RUN mkdir -p /app/proto
+
 
 # Stage 2: Runner
 FROM node:18-slim
@@ -29,6 +32,9 @@ WORKDIR /app
 
 # Copy build artifacts from the builder stage (Webpack builds to global dist)
 COPY --from=builder /app/dist ./dist
+
+# Copy proto files for gRPC communication
+COPY --from=builder /app/proto ./proto
 
 # Copy node_modules and package.json
 COPY --from=builder /app/node_modules ./node_modules

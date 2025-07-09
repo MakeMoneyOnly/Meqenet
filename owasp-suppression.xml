@@ -56,10 +56,11 @@
     <cve>CVE-2023-46122</cve>
   </suppress>
   
-  <!-- Generic suppression for development tool bundled dependencies -->
+  <!-- Development tools bundled dependencies - suppress by package URL pattern -->
   <suppress>
-    <notes><![CDATA[Suppress all vulnerabilities in development tools that bundle Java dependencies]]></notes>
-    <filePath regex="true">.*node_modules/@cyclonedx/.*</filePath>
+    <notes><![CDATA[Suppress vulnerabilities in CycloneDx development tools that bundle Java dependencies]]></notes>
+    <packageUrl regex="true">.*@cyclonedx.*</packageUrl>
+    <cvssBelow>10.0</cvssBelow>
   </suppress>
   
 </suppressions> 
