@@ -272,29 +272,6 @@ jobs:
           severity: "CRITICAL,HIGH"
           exit-code: "0"
 
-      - name: 🔍 Trivy SARIF Report (Optional)
-        uses: aquasecurity/trivy-action@master
-        continue-on-error: true
-        with:
-          image-ref: meqenet/${{ matrix.service }}:security-scan
-          format: "sarif"
-          output: "trivy-results-${{ matrix.service }}.sarif"
-          severity: "CRITICAL,HIGH"
-          exit-code: "0"
-
-      - name: 📋 Verify SARIF File
-        run: |
-          echo "🔍 Checking SARIF file status..."
-          if [ -f "trivy-results-${{ matrix.service }}.sarif" ]; then
-            echo "✅ SARIF file exists"
-            ls -la trivy-results-${{ matrix.service }}.sarif
-            echo "File size: $(wc -c < trivy-results-${{ matrix.service }}.sarif) bytes"
-            echo "sarif-ready=true" >> $GITHUB_ENV
-          else
-            echo "⚠️ SARIF file not generated - skipping GitHub Security upload"
-            echo "sarif-ready=false" >> $GITHUB_ENV
-          fi
-
       - name: 🔍 Grype Vulnerability Scanner
         uses: anchore/scan-action@v3
         continue-on-error: true
@@ -303,12 +280,14 @@ jobs:
           fail-build: false
           severity-cutoff: high
 
-      - name: 📊 Upload Trivy Results to Security Tab
-        uses: github/codeql-action/upload-sarif@v3
-        if: env.sarif-ready == 'true'
-        with:
-          sarif_file: "trivy-results-${{ matrix.service }}.sarif"
-          category: "trivy-${{ matrix.service }}"
+      # NOTE: Temporarily disabled SARIF upload due to file generation issues
+      # TODO: Re-enable once GitHub Actions SARIF generation is stabilized
+      # - name: 📊 Upload Trivy Results to Security Tab
+      #   uses: github/codeql-action/upload-sarif@v3
+      #   if: env.sarif-ready == 'true'
+      #   with:
+      #     sarif_file: "trivy-results-${{ matrix.service }}.sarif"
+      #     category: "trivy-${{ matrix.service }}"
 
       - name: 📊 Upload Container Security Results
         uses: actions/upload-artifact@v4
@@ -316,7 +295,6 @@ jobs:
         with:
           name: container-security-${{ matrix.service }}
           path: |
-            trivy-results-${{ matrix.service }}.sarif
             anchore-reports/
           retention-days: 30
           if-no-files-found: warn
