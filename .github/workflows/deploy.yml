@@ -26,6 +26,15 @@ env:
   DOCKER_BUILDKIT: 1
   COMPOSE_BAKE: true
 
+# Define minimal required permissions following the principle of least privilege
+permissions:
+  contents: read # Required to checkout repository code
+  actions: read # Required to run GitHub Actions
+  packages: write # Required to push Docker images to GHCR
+  deployments: write # Required for deployment status updates
+  id-token: write # Required for OIDC authentication with cloud providers
+  security-events: write # Required for security scanning during deployment
+
 jobs:
   # ============================================================================
   # PRE-DEPLOYMENT VALIDATION

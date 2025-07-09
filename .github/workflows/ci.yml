@@ -13,6 +13,15 @@ env:
   DOCKER_BUILDKIT: 1
   COMPOSE_BAKE: true
 
+# Define minimal required permissions following the principle of least privilege
+permissions:
+  contents: read # Required to checkout repository code
+  actions: read # Required to run GitHub Actions
+  checks: write # Required to write check results and status
+  pull-requests: write # Required to comment on PRs and update status
+  security-events: write # Required for security scanning and CodeQL
+  packages: read # Required to read packages (Docker images, etc.)
+
 jobs:
   # ============================================================================
   # PHASE 1: SECURITY & COMPLIANCE SCANNING

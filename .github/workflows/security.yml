@@ -14,6 +14,13 @@ env:
   NODE_VERSION: "18"
   PNPM_VERSION: "10.12.3"
 
+# Define minimal required permissions following the principle of least privilege
+permissions:
+  contents: read # Required to checkout repository code
+  actions: read # Required to run GitHub Actions
+  security-events: write # Required for security scanning results
+  packages: read # Required to read packages and scan containers
+
 jobs:
   # ============================================================================
   # ADVANCED SECURITY SCANNING
@@ -105,6 +112,10 @@ jobs:
     name: 🏦 FinTech Security Validation
     runs-on: ubuntu-latest
     timeout-minutes: 20
+
+    permissions:
+      contents: read # Required to checkout repository code
+      actions: read # Required to run GitHub Actions
 
     steps:
       - name: 📥 Checkout Repository
@@ -242,6 +253,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
 
+    permissions:
+      contents: read # Required to checkout repository code
+      actions: read # Required to run GitHub Actions
+      packages: read # Required to read packages and scan containers
+
     strategy:
       matrix:
         service: [auth-service, api-gateway]
@@ -354,6 +370,10 @@ jobs:
     needs:
       [advanced-security-scan, fintech-security-validation, container-security]
     if: always()
+
+    permissions:
+      contents: read # Required to read repository information
+      actions: read # Required to run GitHub Actions
 
     steps:
       - name: 📊 Generate Security Summary
