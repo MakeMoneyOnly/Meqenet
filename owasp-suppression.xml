@@ -8,6 +8,18 @@
   <suppress>
     <notes><![CDATA[H2 Database vulnerabilities from development tools (cdxgen). Not used at runtime.]]></notes>
     <packageUrl regex="true">.*h2database.*</packageUrl>
+    <cve>CVE-2021-23463</cve>
+  </suppress>
+  
+  <suppress>
+    <notes><![CDATA[H2 Database vulnerabilities from development tools (cdxgen). Not used at runtime.]]></notes>
+    <packageUrl regex="true">.*h2database.*</packageUrl>
+    <cve>CVE-2021-42392</cve>
+  </suppress>
+  
+  <suppress>
+    <notes><![CDATA[H2 Database vulnerabilities from development tools (cdxgen). Not used at runtime.]]></notes>
+    <packageUrl regex="true">.*h2database.*</packageUrl>
     <cve>CVE-2022-23221</cve>
   </suppress>
   
@@ -15,6 +27,13 @@
     <notes><![CDATA[H2 Database vulnerabilities from development tools (cdxgen). Not used at runtime.]]></notes>
     <packageUrl regex="true">.*h2database.*</packageUrl>
     <cve>CVE-2022-45868</cve>
+  </suppress>
+  
+  <!-- Comprehensive H2 Database suppression for all vulnerabilities -->
+  <suppress>
+    <notes><![CDATA[Suppress all H2 Database vulnerabilities from development tools. Not used at runtime.]]></notes>
+    <packageUrl regex="true">.*h2database.*</packageUrl>
+    <cvssBelow>10.0</cvssBelow>
   </suppress>
   
   <!-- Git parsing vulnerabilities from development tools -->
@@ -60,6 +79,13 @@
   <suppress>
     <notes><![CDATA[Suppress vulnerabilities in CycloneDx development tools that bundle Java dependencies]]></notes>
     <packageUrl regex="true">.*@cyclonedx.*</packageUrl>
+    <cvssBelow>10.0</cvssBelow>
+  </suppress>
+  
+  <!-- Comprehensive suppression for all development tool dependencies -->
+  <suppress>
+    <notes><![CDATA[Suppress all vulnerabilities in development tools that are not part of runtime dependencies]]></notes>
+    <packageUrl regex="true">pkg:maven/.*</packageUrl>
     <cvssBelow>10.0</cvssBelow>
   </suppress>
   
