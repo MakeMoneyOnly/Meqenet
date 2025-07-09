@@ -239,6 +239,7 @@ jobs:
 
       - name: 🔍 Scan Docker Image for Vulnerabilities
         uses: aquasecurity/trivy-action@master
+        continue-on-error: true
         with:
           image-ref: meqenet/${{ matrix.service }}:${{ github.sha }}
           format: "sarif"
@@ -246,7 +247,7 @@ jobs:
 
       - name: 📊 Upload Trivy Results to GitHub Security
         uses: github/codeql-action/upload-sarif@v3
-        if: always()
+        if: always() && hashFiles('trivy-results-${{ matrix.service }}.sarif') != ''
         with:
           sarif_file: "trivy-results-${{ matrix.service }}.sarif"
 

@@ -51,20 +51,8 @@ jobs:
       - name: 📚 Install Dependencies
         run: pnpm install --frozen-lockfile
 
-      # CodeQL Analysis for Static Application Security Testing (SAST)
-      - name: 🔍 Initialize CodeQL
-        uses: github/codeql-action/init@v2
-        with:
-          languages: javascript, typescript
-          queries: security-extended,security-and-quality
-
-      - name: 🏗️ Autobuild
-        uses: github/codeql-action/autobuild@v2
-
-      - name: 🔍 Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2
-        with:
-          category: "/language:javascript"
+      # Note: CodeQL analysis is handled by GitHub's default setup
+      # This avoids conflicts with manual CodeQL configuration
 
       # Semgrep Static Analysis
       - name: 🔍 Semgrep Security Scan

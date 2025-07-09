@@ -64,9 +64,6 @@ async function bootstrap() {
       // Additional security for financial services
       crossOriginEmbedderPolicy: { policy: 'require-corp' },
       crossOriginResourcePolicy: { policy: 'cross-origin' },
-      // Prevent MIME type confusion
-      contentTypeOptions: 'nosniff',
-      // Enhanced XSS protection (already set above)
     })
   );
 
