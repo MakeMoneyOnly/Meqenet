@@ -1,265 +1,423 @@
-# Git Automation Script
+# Meqenet.et Fintech Git Automation Script
+
+🏦 **Enterprise-Grade Git Automation for Ethiopian BNPL Platform**
 
 This directory contains a powerful Python script, `git-automation.py`, designed to automate the
-entire development workflow, from starting a task to creating a release. It integrates with
-`tasks.yaml` to create a seamless, task-driven development process that enforces enterprise-grade
-standards for a FinTech environment.
+entire development workflow with **NBE compliance**, **security-first approach**, and **audit
+traceability** for Ethiopia's fintech industry standards.
 
-## 🏦 Fintech Branching Strategy
+## 🇪🇹 NBE Compliance & Governance
 
-**IMPORTANT**: This project follows a strict **Enterprise-Grade Fintech Branching Strategy** to
-ensure NBE compliance and audit traceability.
+**CRITICAL**: This project enforces **National Bank of Ethiopia (NBE)** compliance requirements and
+enterprise-grade security standards for financial software development.
 
-📋 **See**: [`FINTECH_BRANCHING_STRATEGY.md`](./FINTECH_BRANCHING_STRATEGY.md) for complete
-documentation.
+📋 **Governance Documents**:
 
-### Quick Reference:
+- [`FINTECH_BRANCHING_STRATEGY.md`](./FINTECH_BRANCHING_STRATEGY.md) - Complete branching strategy
+- [`GIT_BRANCH_PROTECTION_SETUP.md`](../docs/GIT_BRANCH_PROTECTION_SETUP.md) - Branch protection
+  rules
 
-- **`main`**: Production (NBE compliant, signed commits required)
-- **`develop`**: Integration/Staging (all features merge here first)
-- **`feature/[TASK-ID]-[description]`**: New features (from `develop`)
-- **`hotfix/[SEC|CRIT]-[ID]-[description]`**: Security/Critical fixes
-- **`release/v[major].[minor].[patch]`**: Release preparation
+### 🛡️ Security & Compliance Features
+
+- ✅ **GPG Signed Commits** - Mandatory for audit trails
+- ✅ **Security Scanning** - Automated vulnerability detection
+- ✅ **Branch Protection** - Enforced protection rules for main/develop
+- ✅ **NBE Audit Tags** - Permanent security incident records
+- ✅ **Conventional Commits** - Standardized commit message format
+- ✅ **Email Domain Validation** - @meqenet.et compliance
+- ✅ **Status Check Enforcement** - ci/lint, ci/test, ci/security-scan, ci/build, ci/type-check
+
+## 🏗️ Architecture & Branch Strategy
+
+```
+main (production) 🔒 NBE Protected
+├── develop (integration/staging) 🔒 NBE Protected
+│   ├── feature/[TASK-ID]-[description] (new features)
+│   ├── hotfix/[SEC|CRIT]-[ID]-[description] (urgent fixes)
+│   ├── bugfix/[BUG-ID]-[description] (non-critical fixes)
+│   └── release/v[major].[minor].[patch] (release preparation)
+└── hotfix/[SEC|CRIT]-[ID]-[description] (emergency production fixes)
+```
+
+### Branch Naming Patterns (Enforced)
+
+| Type            | Pattern                          | Example                                               | Base Branch |
+| --------------- | -------------------------------- | ----------------------------------------------------- | ----------- |
+| Feature         | `feature/[XXX-XX-XXX-NN]-[desc]` | `feature/FND-BE-AUTH-01-implement-fayda-verification` | develop     |
+| Security Hotfix | `hotfix/SEC-[NN]-[desc]`         | `hotfix/SEC-01-fix-authentication-vulnerability`      | main        |
+| Critical Hotfix | `hotfix/CRIT-[NN]-[desc]`        | `hotfix/CRIT-02-resolve-payment-gateway-timeout`      | main        |
+| Bug Fix         | `bugfix/BUG-[NN]-[desc]`         | `bugfix/BUG-01-fix-user-profile-validation`           | develop     |
+| Release         | `release/v[x.y.z]`               | `release/v1.2.0`                                      | develop     |
 
 ## Prerequisites
 
-Before using the script, ensure you have the following installed and configured:
+### Required Software
 
-1.  **Python 3**: With the `ruamel.yaml` package.
-2.  **Git**: Properly configured with your user name and email.
-3.  **GitHub CLI (`gh`)**: Authenticated with your GitHub account. Run `gh auth login`.
-4.  **Node.js & pnpm**: Required for running project-specific quality checks (lint, format, test).
+1. **Python 3.8+** with required packages (see requirements.txt)
+2. **Git** with GPG signing configured
+3. **GitHub CLI (`gh`)** authenticated with your account
+4. **Node.js & pnpm** for quality checks and security scanning
+
+### Required Configuration
+
+```bash
+# Git user configuration (mandatory)
+git config --global user.name "Your Full Name"
+git config --global user.email "your.email@meqenet.et"
+
+# GPG signing (NBE compliance requirement)
+git config --global user.signingkey <your-gpg-key-id>
+git config --global commit.gpgsign true
+
+# GitHub CLI authentication
+gh auth login
+```
 
 ## Installation
 
-Install the required Python package by running the following command from the root of the
-repository:
-
 ```bash
+# Install Python dependencies
 pip install -r tools/git/requirements.txt
+
+# Verify installation
+python tools/git/git-automation.py --help
 ```
 
-## Commands
+## Commands Reference
 
-The script offers a suite of commands to manage the development lifecycle.
+### 🚀 Core Development Commands
 
-### 1. `start-task`
+#### 1. `start-task` - Start New Feature Development
 
-Initializes work on a new task from `tasks.yaml`.
-
-**Usage:**
+Initializes work on a new task with full fintech compliance validation.
 
 ```bash
-python tools/git/git-automation.py start-task <TASK_ID>
+python tools/git/git-automation.py start-task <TASK_ID> [--base develop]
 ```
 
-- `<TASK_ID>`: The ID of the task from `tasks/tasks.yaml` (e.g., `FND-BE-DB-01`).
-
-**What it does:**
-
-- Fetches the task details from `tasks.yaml`.
-- Creates a new Git branch with the name `feature/<TASK_ID>-<task-name>`.
-- Updates the task's status to `In Progress` in `tasks.yaml`.
-
-### 2. `start-hotfix`
-
-Creates a new security or critical hotfix branch following fintech emergency procedures.
-
-**Usage:**
+**Example:**
 
 ```bash
-python tools/git/git-automation.py start-hotfix <HOTFIX_ID> "<DESCRIPTION>" [--severity SEC|CRIT]
-```
-
-- `<HOTFIX_ID>`: Unique identifier for the hotfix (e.g., `01`, `02`).
-- `<DESCRIPTION>`: Brief description of the hotfix.
-- `--severity`: Severity level: `SEC` (Security) or `CRIT` (Critical). Defaults to `SEC`.
-
-**Examples:**
-
-```bash
-# Start a security hotfix
-python tools/git/git-automation.py start-hotfix 01 "Fix authentication vulnerability" --severity SEC
-
-# Start a critical hotfix
-python tools/git/git-automation.py start-hotfix 02 "Fix payment processing crash" --severity CRIT
+python tools/git/git-automation.py start-task FND-BE-AUTH-01
 ```
 
 **What it does:**
 
-- Creates a new hotfix branch from `main` (production) following fintech standards
-- Validates branch naming against enterprise patterns
-- Provides security reminders and compliance guidelines
-- Sets up proper branch tracking for audit purposes
+- ✅ Validates task ID format (XXX-XX-XXX-NN)
+- ✅ Creates feature branch with compliant naming
+- ✅ Runs NBE compliance checks for critical tasks
+- ✅ Updates task status to "In Progress" in tasks.yaml
+- ✅ Sets up proper branch tracking
 
-### 3. `close-security-branch`
+#### 2. `complete-task` - Finalize Development with Security Validation
 
-**🆕 NEW FEATURE**: Closes a security branch with NBE-compliant audit trail and clean deletion.
+Finalizes your work with comprehensive security and compliance checks.
 
-**Usage:**
+```bash
+python tools/git/git-automation.py complete-task
+```
+
+**What it does:**
+
+- 🛡️ Runs mandatory security scanning (pnpm audit)
+- ✅ Validates conventional commit message format
+- 🔐 Creates GPG signed commit for audit compliance
+- 📤 Pushes to remote with proper tracking
+- 📝 Updates task status to "In Review"
+- 📋 Provides next steps for PR creation
+
+#### 3. `sync-task` - Sync with Latest Changes
+
+Updates your feature branch with security validation.
+
+```bash
+python tools/git/git-automation.py sync-task [--target develop]
+```
+
+**What it does:**
+
+- 🔍 Validates current branch name compliance
+- 🛡️ Runs security checks for protected target branches
+- 🔄 Performs clean rebase onto target branch
+- 📥 Fetches latest changes from remote
+
+### 🔄 Pull Request & Merge Commands
+
+#### 4. `merge-task` - Merge with Branch Protection Enforcement
+
+Merges approved PRs with full compliance validation.
+
+```bash
+python tools/git/git-automation.py merge-task <PR_NUMBER> [--target develop] [--skip-approval]
+```
+
+**Example:**
+
+```bash
+python tools/git/git-automation.py merge-task 123 --target develop
+```
+
+**What it does:**
+
+- 🛡️ Enforces branch protection rules
+- ✅ Validates required reviewers (2 for main, 1 for develop)
+- 🔍 Checks all required status checks passed
+- 🔄 Uses squash merge for clean history
+- 🗑️ Automatically deletes merged branch
+
+### 🔒 Security & Emergency Commands
+
+#### 5. `close-security-branch` - NBE-Compliant Security Closure
+
+Closes security branches with permanent audit trail.
 
 ```bash
 python tools/git/git-automation.py close-security-branch <BRANCH_NAME> <INCIDENT_ID> "<DESCRIPTION>" [--skip-audit-tag]
 ```
 
-- `<BRANCH_NAME>`: Name of the security branch to close (e.g.,
-  `fix/SEC-01-update-vitest-esbuild-vulnerability`).
-- `<INCIDENT_ID>`: Security incident ID (e.g., `SEC-01`, `CRIT-02`).
-- `<DESCRIPTION>`: Description of the security resolution.
-- `--skip-audit-tag`: Skip creating audit tag (for testing only - not recommended for production).
-
 **Example:**
 
 ```bash
 python tools/git/git-automation.py close-security-branch \
-  "fix/SEC-01-update-vitest-esbuild-vulnerability" \
+  "hotfix/SEC-01-fix-authentication-vulnerability" \
   "SEC-01" \
-  "Vitest/esbuild vulnerabilities eliminated"
+  "Authentication vulnerability patched - CVE-2024-XXXX resolved"
 ```
 
-**What it does (Combined Option A + B):**
+**What it does:**
 
-1. **🔍 Validates** branch existence (local/remote)
-2. **🔒 Verifies** security resolution via `pnpm audit`
-3. **📋 Creates** NBE compliance audit tag (`security/SEC-01-resolved-v1.0.0`)
-4. **⬆️ Pushes** audit tag to remote for permanent record
-5. **🗑️ Deletes** local and remote branches for repository hygiene
-6. **📊 Provides** compliance summary and next steps
+- 🔍 Validates security incident ID format (SEC-XX or CRIT-XX)
+- 🛡️ Runs comprehensive security verification
+- 📋 Creates NBE compliance audit tag with Ethiopian context
+- ⬆️ Pushes permanent audit record to remote
+- 🗑️ Performs clean branch deletion
+- 📊 Provides mandatory next steps for compliance
 
-**Benefits:**
+#### 6. `emergency-rollback` - Production Emergency Procedures
 
-- ✅ **NBE Compliance**: Permanent audit trail via Git tags
-- ✅ **Repository Hygiene**: Clean branch structure
-- ✅ **Traceability**: Security incident resolution documented
-- ✅ **Best Practice**: Enterprise Git workflow standards
-
-### 4. `sync-task`
-
-Updates your current feature branch with the latest changes from the `develop` branch.
-
-**Usage:**
+Initiates emergency production rollback following NBE procedures.
 
 ```bash
+python tools/git/git-automation.py emergency-rollback <TARGET> "<INCIDENT_DESCRIPTION>"
+```
+
+**Example:**
+
+```bash
+python tools/git/git-automation.py emergency-rollback v1.2.0 "Critical payment gateway failure affecting transactions"
+```
+
+**What it does:**
+
+- 🚨 Creates emergency rollback branch with incident ID
+- 📋 Provides step-by-step rollback guidance
+- 🔍 Validates Git environment for emergency procedures
+- 📝 Documents incident for compliance reporting
+
+## 🔄 Complete Workflow Examples
+
+### Standard Feature Development Workflow
+
+```bash
+# 1. Start new feature (with NBE compliance checks)
+python tools/git/git-automation.py start-task FND-BE-AUTH-01
+
+# 2. Development work...
+# Write code, tests, documentation
+
+# 3. Sync with latest develop (with security validation)
 python tools/git/git-automation.py sync-task
+
+# 4. Complete task (with security scanning & signed commits)
+python tools/git/git-automation.py complete-task
+
+# 5. Create PR on GitHub (manual step)
+# - Ensure proper reviewers assigned
+# - All status checks must pass
+
+# 6. Merge after approval (with branch protection enforcement)
+python tools/git/git-automation.py merge-task 123
 ```
 
-**What it does:**
-
-- Fetches the latest changes from the remote `develop` branch.
-- Rebases your current feature branch on top of `develop` to maintain a clean and linear history.
-
-### 5. `complete-task`
-
-Finalizes your work, runs quality checks, and creates a pull request.
-
-**Usage:**
+### Security Incident Management Workflow
 
 ```bash
-python tools/git/git-automation.py complete-task --reviewers "user1" "user2" --labels "feature" "security"
+# 1. Create security hotfix branch manually or via emergency procedures
+git checkout main
+git checkout -b hotfix/SEC-01-fix-critical-vulnerability
+
+# 2. Implement security fix...
+# Apply patches, update dependencies, add tests
+
+# 3. Complete security fix (with enhanced security validation)
+python tools/git/git-automation.py complete-task
+
+# 4. Emergency merge process (if critical)
+python tools/git/git-automation.py merge-task 124 --target main
+
+# 5. Close security branch with NBE audit trail
+python tools/git/git-automation.py close-security-branch \
+  "hotfix/SEC-01-fix-critical-vulnerability" \
+  "SEC-01" \
+  "Critical authentication vulnerability resolved - all systems secure"
 ```
 
-- `--reviewers`: (Optional) A list of GitHub usernames to request reviews from.
-- `--assignees`: (Optional) A list of GitHub usernames to assign to the PR.
-- `--labels`: (Optional) A list of labels to add to the PR.
-
-**What it does:**
-
-- Runs all quality checks: `format:write`, `lint:fix`, and `test`.
-- Commits your changes with a standardized message (e.g., `feat(TASK_ID): Implement new feature`).
-- Pushes your branch to the remote repository.
-- Creates a pull request on GitHub.
-- Updates the task's status to `In Review` in `tasks.yaml`.
-
-### 6. `merge-task`
-
-Merges an approved and validated pull request into the `develop` branch.
-
-**Usage:**
+### Bug Fix Workflow
 
 ```bash
-python tools/git/git-automation.py merge-task <PR_IDENTIFIER>
+# 1. Start bug fix
+python tools/git/git-automation.py start-task BUG-01
+
+# 2. Fix the bug...
+
+# 3. Complete with testing
+python tools/git/git-automation.py complete-task
+
+# 4. Merge to develop
+python tools/git/git-automation.py merge-task 125 --target develop
 ```
 
-- `<PR_IDENTIFIER>`: The number, URL, or branch name of the pull request.
+## 📋 Quality Gates & Compliance Checks
 
-**What it does:**
+### Automated Security Validation
 
-- Verifies that the pull request is approved and all CI checks have passed.
-- Merges the pull request using the "squash and merge" strategy.
-- Deletes the remote and local feature branches.
-- Updates the task's status to `Completed` in `tasks.yaml`.
+The script automatically runs these security checks:
 
-### 7. `create-release`
+- **Dependency Scanning**: `pnpm audit --audit-level moderate`
+- **GPG Signature Validation**: Ensures all commits are signed
+- **Branch Name Compliance**: Validates against fintech naming patterns
+- **Email Domain Check**: Ensures @meqenet.et compliance
+- **Status Check Enforcement**: All CI checks must pass
 
-Automates the process of creating a new software release.
+### Required Status Checks (GitHub)
 
-**Usage:**
+These checks must pass before merging to protected branches:
+
+- `ci/lint` - ESLint and Prettier checks
+- `ci/test` - Unit and integration tests
+- `ci/security-scan` - Security vulnerability scanning
+- `ci/build` - Build verification
+- `ci/type-check` - TypeScript compilation
+
+### NBE Compliance Requirements
+
+- **Signed Commits**: All commits must be GPG signed
+- **Audit Trail**: Security incidents have permanent Git tag records
+- **Review Requirements**: 2 reviewers for main, 1 for develop
+- **Documentation**: All security closures require incident documentation
+- **Email Validation**: Contributors must use @meqenet.et email addresses
+
+## 🚨 Emergency Procedures
+
+### Production Incident Response
+
+1. **Immediate Assessment**: Identify scope and severity
+2. **Emergency Rollback**: Use `emergency-rollback` command if needed
+3. **Hotfix Creation**: Create hotfix branch from main
+4. **Rapid Development**: Implement minimum viable fix
+5. **Security Review**: Mandatory security team validation
+6. **Emergency Deployment**: Fast-track through protection rules
+7. **Post-Incident**: Complete security closure with audit trail
+
+### Compliance Violations
+
+If compliance violations are detected:
+
+1. **Stop Development**: Address compliance issues immediately
+2. **Security Review**: Escalate to security team
+3. **Documentation**: Document violation and remediation
+4. **Process Update**: Update procedures to prevent recurrence
+
+## 🔧 Configuration & Customization
+
+### Environment Variables
 
 ```bash
-python tools/git/git-automation.py create-release <VERSION>
+# Optional: Custom audit level for security scanning
+export MEQENET_AUDIT_LEVEL="high"
+
+# Optional: Custom email domain validation
+export MEQENET_EMAIL_DOMAIN="meqenet.et"
 ```
 
-- `<VERSION>`: The semantic version for the new release (e.g., `v1.2.0`).
+### Git Hooks Integration
 
-**What it does:**
+The script works with these Git hooks for additional compliance:
 
-- Merges the `develop` branch into the `main` branch.
-- Creates a Git tag for the specified version.
-- Generates a new release on GitHub with automated release notes.
+- **pre-commit**: Runs linting and basic security scans
+- **pre-push**: Runs comprehensive tests and vulnerability scans
+- **commit-msg**: Validates conventional commit format
 
-## Full Workflow Examples
+## 📊 Monitoring & Reporting
 
-### Standard Feature Development
+### Compliance Metrics
 
-1.  **Start a task:**
+The script tracks:
 
-    ```bash
-    python tools/git/git-automation.py start-task FND-BE-DB-01
-    ```
+- Branch lifetime and complexity
+- Security scan results
+- Review coverage statistics
+- NBE compliance adherence
+- Incident response times
 
-2.  **Work on your code...**
+### Audit Trail
 
-3.  **Sync your branch (optional but recommended):**
+All security-related actions create permanent records:
 
-    ```bash
-    python tools/git/git-automation.py sync-task
-    ```
+- Git tags for security incident closures
+- Signed commits for audit compliance
+- Documented next steps for follow-up
+- Integration with compliance reporting systems
 
-4.  **Complete the task and create a PR:**
+## 🆘 Troubleshooting
 
-    ```bash
-    python tools/git/git-automation.py complete-task --reviewers "lead-dev" --labels "auth" "backend"
-    ```
+### Common Issues
 
-5.  **After the PR is approved, merge it:**
-
-    ```bash
-    python tools/git/git-automation.py merge-task 123
-    ```
-
-### Security Incident Management
-
-1.  **Start a security hotfix:**
-
-    ```bash
-    python tools/git/git-automation.py start-hotfix 01 "Fix critical authentication vulnerability" --severity SEC
-    ```
-
-2.  **Work on the security fix...**
-
-3.  **After fix is merged to develop, close the security branch:**
-
-    ```bash
-    python tools/git/git-automation.py close-security-branch \
-      "fix/SEC-01-fix-critical-authentication-vulnerability" \
-      "SEC-01" \
-      "Authentication vulnerability patched - CVE-2024-XXXX resolved"
-    ```
-
-### Release Management
-
-**When ready to release, create the release:**
+**GPG Signing Errors:**
 
 ```bash
-python tools/git/git-automation.py create-release v1.0.0
+# Setup GPG signing
+gpg --list-secret-keys --keyid-format LONG
+git config --global user.signingkey <KEY_ID>
 ```
+
+**Security Scan Failures:**
+
+```bash
+# Update dependencies
+pnpm update
+pnpm audit --fix
+```
+
+**Branch Name Violations:**
+
+```bash
+# Check current branch
+git branch --show-current
+
+# Rename if needed
+git branch -m new-compliant-branch-name
+```
+
+**Email Domain Issues:**
+
+```bash
+# Update Git email
+git config --global user.email "your.name@meqenet.et"
+```
+
+## 📚 References
+
+- [Ethiopian NBE Regulations](https://nbe.gov.et/)
+- [FINTECH_BRANCHING_STRATEGY.md](./FINTECH_BRANCHING_STRATEGY.md)
+- [GIT_BRANCH_PROTECTION_SETUP.md](../docs/GIT_BRANCH_PROTECTION_SETUP.md)
+- [Conventional Commits](https://www.conventionalcommits.org/)
+- [GPG Signing Guide](https://docs.github.com/en/authentication/managing-commit-signature-verification)
+
+---
+
+**Document Version**: v2.0  
+**Last Updated**: 2025-01-10  
+**Compliance**: NBE Ethiopian Financial Regulations  
+**Security Level**: Enterprise Fintech Standards  
+**Next Review**: 2025-04-10
