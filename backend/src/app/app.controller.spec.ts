@@ -1,19 +1,16 @@
 import 'reflect-metadata';
-import { Test, TestingModule } from '@nestjs/testing';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
 describe('AppController', () => {
   let appController: AppController;
+  let appService: AppService;
 
-  beforeEach(async () => {
-    const moduleRef: TestingModule = await Test.createTestingModule({
-      controllers: [AppController],
-      providers: [AppService],
-    }).compile();
-
-    appController = moduleRef.get<AppController>(AppController);
+  beforeEach(() => {
+    // Manual dependency injection to work around NestJS+Vitest compatibility issues
+    appService = new AppService();
+    appController = new AppController(appService);
   });
 
   describe('getData', () => {
