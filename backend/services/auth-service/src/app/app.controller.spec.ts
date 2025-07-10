@@ -1,4 +1,6 @@
+import 'reflect-metadata';
 import { Test, TestingModule } from '@nestjs/testing';
+import { vi } from 'vitest';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -29,10 +31,10 @@ describe('AppController', () => {
         status: 'ok',
         timestamp: new Date().toISOString(),
       };
-      // Mock the service method
-      jest
-        .spyOn(appService, 'getHealthCheck')
-        .mockImplementation(() => healthCheckStatus);
+      // Mock the service method using Vitest
+      vi.spyOn(appService, 'getHealthCheck').mockImplementation(
+        () => healthCheckStatus
+      );
 
       expect(appController.getHealthCheck()).toBe(healthCheckStatus);
     });

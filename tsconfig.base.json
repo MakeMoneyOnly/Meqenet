@@ -17,9 +17,11 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "strict": true,
+    "types": ["vitest/globals", "node"],
     "paths": {
       "@meqenet/auth--service/*": ["backend/services/auth--service/src/*"]
     }
   },
-  "exclude": ["node_modules", "tmp", "templates", "**/*.spec.ts", "**/*.test.ts"]
+  "include": ["vitest.d.ts"],
+  "exclude": ["node_modules", "tmp", "templates"]
 }
