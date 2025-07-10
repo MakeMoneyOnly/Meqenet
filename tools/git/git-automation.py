@@ -3,12 +3,28 @@ import subprocess
 import sys
 import json
 import os
+import re
 from ruamel.yaml import YAML
 from datetime import datetime
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, '..', '..'))
 TASKS_FILE_PATH = os.path.join(PROJECT_ROOT, "tasks", "tasks.yaml")
+
+# Fintech branching strategy enforcement
+ALLOWED_BRANCH_PATTERNS = {
+    'feature': r'^feature/[A-Z]+-[A-Z]+-[A-Z]+-\d+-[a-z0-9-]+$',
+    'hotfix': r'^hotfix/(SEC|CRIT)-\d+-[a-z0-9-]+$',
+    'bugfix': r'^bugfix/BUG-\d+-[a-z0-9-]+$',
+    'release': r'^release/v\d+\.\d+\.\d+$'
+}
+
+FINTECH_BASE_BRANCHES = {
+    'feature': 'develop',
+    'bugfix': 'develop',
+    'hotfix': 'main',  # Security hotfixes start from production
+    'release': 'develop'
+}
 
 def run_command(command):
     try:
@@ -27,6 +43,34 @@ def run_command(command):
         print("Please ensure that Git is installed and in your system's PATH.", file=sys.stderr)
         sys.exit(1)
 
+def validate_branch_name(branch_name):
+    """Validate branch name against fintech branching strategy."""
+    branch_type = branch_name.split('/')[0]
+    
+    if branch_type not in ALLOWED_BRANCH_PATTERNS:
+        print(f"Error: Invalid branch type '{branch_type}'.", file=sys.stderr)
+        print(f"Allowed types: {', '.join(ALLOWED_BRANCH_PATTERNS.keys())}", file=sys.stderr)
+        return False
+    
+    pattern = ALLOWED_BRANCH_PATTERNS[branch_type]
+    if not re.match(pattern, branch_name):
+        print(f"Error: Branch name '{branch_name}' doesn't match required pattern.", file=sys.stderr)
+        print(f"Required pattern for {branch_type}: {pattern}", file=sys.stderr)
+        print(f"Example: {get_branch_example(branch_type)}", file=sys.stderr)
+        return False
+    
+    return True
+
+def get_branch_example(branch_type):
+    """Get example branch name for each type."""
+    examples = {
+        'feature': 'feature/FND-BE-AUTH-01-implement-fayda-verification',
+        'hotfix': 'hotfix/SEC-01-fix-authentication-vulnerability',
+        'bugfix': 'bugfix/BUG-01-fix-user-profile-validation',
+        'release': 'release/v1.2.0'
+    }
+    return examples.get(branch_type, 'N/A')
+
 def checkout_branch(branch_name):
     print(f"\nSwitching to branch '{branch_name}'...")
     local_branches = run_command(["git", "branch"])
@@ -38,9 +82,12 @@ def checkout_branch(branch_name):
         run_command(["git", "fetch", "origin"])
         remote_exists = run_command(["git", "ls-remote", "--heads", "origin", branch_name])
         if not remote_exists:
-            print(f"Branch '{branch_name}' not found on remote. Creating it from 'main'.")
-            checkout_branch("main")
-            print(f"Creating new branch '{branch_name}' from 'main'...")
+            # For fintech strategy, determine the correct base branch
+            branch_type = branch_name.split('/')[0]
+            base_branch = FINTECH_BASE_BRANCHES.get(branch_type, 'develop')
+            print(f"Branch '{branch_name}' not found on remote. Creating it from '{base_branch}'.")
+            checkout_branch(base_branch)
+            print(f"Creating new branch '{branch_name}' from '{base_branch}'...")
             checkout_result = run_command(["git", "checkout", "-b", branch_name])
             if isinstance(checkout_result, subprocess.CalledProcessError):
                 print(f"Error creating new branch '{branch_name}'. Exiting.", file=sys.stderr)
@@ -131,6 +178,51 @@ def start_task(task_id, base_branch):
     print(f"You are now on branch: {branch_name}")
     print("You can now start working on your changes.")
 
+def start_hotfix(hotfix_id, description, base_branch="main", severity="SEC"):
+    """Start a new security or critical hotfix following fintech standards."""
+    if severity not in ["SEC", "CRIT"]:
+        print(f"Error: Severity must be either 'SEC' (Security) or 'CRIT' (Critical).", file=sys.stderr)
+        sys.exit(1)
+    
+    # Sanitize description for branch name
+    sanitized_desc = ''.join(c if c.isalnum() else '-' for c in description.lower().replace(" ", "-"))
+    desc_slug = '-'.join(filter(None, sanitized_desc.split('-')))
+    
+    branch_name = f"hotfix/{severity}-{hotfix_id}-{desc_slug}"
+    
+    # Validate branch name against fintech standards
+    if not validate_branch_name(branch_name):
+        sys.exit(1)
+    
+    print(f"🚨 Starting {severity} hotfix: {hotfix_id} - {description}")
+    print(f"Branch: {branch_name}")
+    print(f"Base: {base_branch} (fintech standard for hotfixes)")
+
+    # Check if branch already exists on the remote
+    print("Checking if branch already exists on remote...")
+    remote_branch_exists = run_command(["git", "ls-remote", "--heads", "origin", branch_name])
+    if remote_branch_exists:
+        print(f"\nError: Branch '{branch_name}' already exists on the remote repository.", file=sys.stderr)
+        sys.exit(1)
+    
+    # Ensure the base branch is up-to-date
+    checkout_branch(base_branch)
+    
+    # Create and checkout the new hotfix branch
+    print(f"\nCreating new hotfix branch '{branch_name}' from '{base_branch}'...")
+    create_branch_result = run_command(["git", "checkout", "-b", branch_name])
+    if isinstance(create_branch_result, subprocess.CalledProcessError):
+        print(f"Error creating new branch '{branch_name}'.", file=sys.stderr)
+        sys.exit(1)
+    
+    print(f"\n🔧 Hotfix branch created successfully.")
+    print(f"You are now on branch: {branch_name}")
+    print("\n⚠️  SECURITY REMINDER:")
+    print("1. Apply the minimal viable fix")
+    print("2. This hotfix will need to be merged to both 'main' and 'develop'")
+    print("3. Ensure thorough security review before deployment")
+    print("4. Document the fix in commit messages for audit compliance")
+
 def main():
     # First, check if the repository is clean
     git_status = run_command(["git", "status", "--porcelain"])
@@ -141,27 +233,45 @@ def main():
         sys.exit(1)
 
     parser = argparse.ArgumentParser(
-        description="Meqenet Git Automation Tool for enterprise-grade workflows."
+        description="Meqenet Git Automation Tool for enterprise-grade fintech workflows."
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     # Sub-parser for the start-task command
     start_parser = subparsers.add_parser(
-        "start-task", help="Start a new development task."
+        "start-task", help="Start a new development task following fintech branching strategy."
     )
     start_parser.add_argument("task_id", help="The unique identifier for the task from tasks.yaml (e.g., FND-BE-DB-01).")
     start_parser.add_argument(
         "--base-branch",
         default="develop",
-        help="The base branch to create the feature branch from. Defaults to 'develop'.",
+        help="The base branch to create the feature branch from. Defaults to 'develop' for fintech compliance.",
     )
 
-    # (Other subparsers for complete-task, merge-task, sync-task, create-release would go here)
+    # Sub-parser for the start-hotfix command
+    hotfix_parser = subparsers.add_parser(
+        "start-hotfix", help="Start a security or critical hotfix following fintech emergency procedures."
+    )
+    hotfix_parser.add_argument("hotfix_id", help="The unique identifier for the hotfix (e.g., 01, 02, 03).")
+    hotfix_parser.add_argument("description", help="Brief description of the hotfix.")
+    hotfix_parser.add_argument(
+        "--severity",
+        choices=["SEC", "CRIT"],
+        default="SEC",
+        help="Severity level: SEC (Security) or CRIT (Critical). Defaults to SEC.",
+    )
+    hotfix_parser.add_argument(
+        "--base-branch",
+        default="main",
+        help="The base branch to create the hotfix from. Defaults to 'main' for production hotfixes.",
+    )
 
     args = parser.parse_args()
 
     if args.command == "start-task":
         start_task(args.task_id, args.base_branch)
+    elif args.command == "start-hotfix":
+        start_hotfix(args.hotfix_id, args.description, args.base_branch, args.severity)
     # (Other command dispatches would go here)
 
 if __name__ == "__main__":
