@@ -1,0 +1,65 @@
+# Development and testing files
+node_modules
+**/node_modules
+backend/services/*/node_modules
+.git
+.gitignore
+.gitattributes
+.github
+.husky
+.vscode
+.DS_Store
+.env
+.env.*
+*.log
+*.pid
+*.seed
+*.pid.lock
+
+# Build artifacts
+dist
+coverage
+.nyc_output
+build
+
+# Documentation and non-essential files
+README.md
+CONTRIBUTING.md
+docs
+1. docs
+*.md
+
+# Templates and development tools (cookiecutter templates should not be built)
+templates
+cookiecutter.json
+tools
+scripts
+tasks
+governance
+infrastructure
+
+# Testing files - more specific patterns
+*.spec.ts
+*.test.ts
+**/*.spec.ts
+**/*.test.ts
+jest.config.*
+test-setup.ts
+tsconfig.spec.json
+test/
+tests/
+__tests__/
+
+# Security and analysis files
+.security
+bom.json
+.audit-ci.json
+
+# IDE and OS specific
+.cursorrules
+.prettierrc.cjs
+.prettierignore
+.nxignore
+
+# Environment specific
+.venv 

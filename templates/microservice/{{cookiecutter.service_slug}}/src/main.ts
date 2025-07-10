@@ -3,19 +3,11 @@ import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import helmet from 'helmet';
-import * as compression from 'compression';
+import compression from 'compression';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { AppModule } from './app/app.module';
-import { GlobalExceptionFilter } from './shared/filters/global-exception.filter';
-import { LoggingInterceptor } from './shared/interceptors/logging.interceptor';
-import { TransformResponseInterceptor } from './shared/interceptors/transform-response.interceptor';
-import { setupTracing } from './shared/observability/tracing';
-import { setupMetrics } from './shared/observability/metrics';
 
 async function bootstrap() {
-  // Initialize tracing before creating the app
-  setupTracing('{{cookiecutter.service_slug}}');
-
   const app = await NestFactory.create(AppModule, {
     bufferLogs: true,
     cors: {
@@ -29,6 +21,9 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const logger = app.get(WINSTON_MODULE_NEST_PROVIDER);
   app.useLogger(logger);
+
+  // Log service startup information
+  logger.log(`Starting {{cookiecutter.service_name}} in ${configService.get('NODE_ENV', 'development')} mode`, 'Bootstrap');
 
   // Security middleware
   app.use(
@@ -69,10 +64,6 @@ async function bootstrap() {
       // Additional security for financial services
       crossOriginEmbedderPolicy: { policy: 'require-corp' },
       crossOriginResourcePolicy: { policy: 'cross-origin' },
-      // Prevent MIME type confusion
-      contentTypeOptions: 'nosniff',
-      // Enhanced XSS protection
-      xssFilter: { reportUri: '/api/v1/security/xss-report' },
     })
   );
 
@@ -90,14 +81,7 @@ async function bootstrap() {
     })
   );
 
-  // Global filters
-  app.useGlobalFilters(new GlobalExceptionFilter(logger));
-
-  // Global interceptors
-  app.useGlobalInterceptors(
-    new LoggingInterceptor(logger),
-    new TransformResponseInterceptor()
-  );
+  // Global filters and interceptors can be added here when implemented
 
   // API versioning
   app.enableVersioning({
@@ -106,8 +90,7 @@ async function bootstrap() {
     prefix: 'api/v',
   });
 
-  // Setup metrics
-  setupMetrics(app);
+  // Metrics can be setup here when implemented
 
   // Swagger documentation
   if (configService.get('NODE_ENV') !== 'production') {

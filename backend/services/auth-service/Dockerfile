@@ -6,7 +6,7 @@
 # -----------------------------------------------------------------------------
 # NOTE: We switch from **alpine** to **slim (debian)** here to avoid the sporadic
 # I/O errors seen when installing heavy build-time dependencies (g++, python3)
-# on musl based Alpine images under Docker-for-Windows. Debian based images have
+# on musl based images under Docker-for-Windows. Debian based images have
 # pre-built binaries for most native Node modules (e.g. argon2) which removes
 # the need to compile them from source and therefore removes the g++ dependency
 # entirely. This keeps the image small while making the build far more reliable
@@ -31,7 +31,9 @@ RUN apt-get update \
 # Copy pnpm and project configuration files
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY tsconfig.base.json ./
-COPY nest-cli.json ./
+
+# Copy service-specific configuration
+COPY backend/services/auth-service/nest-cli.json ./nest-cli.json
 
 # Install all dependencies using pnpm
 RUN corepack enable && corepack prepare pnpm@10.12.3 --activate
@@ -40,8 +42,11 @@ RUN pnpm install --frozen-lockfile
 # Copy the entire monorepo source code
 COPY . .
 
-# Build the specific service
-RUN pnpm exec nest build auth-service
+# Build the specific service using Nx
+RUN pnpm exec nx build auth-service
+
+# Ensure proto directory exists (create empty one if not present)
+RUN mkdir -p /app/proto
 
 
 # 2. Production Stage
@@ -49,12 +54,11 @@ FROM node:18-slim
 
 WORKDIR /app
 
-# Copy build artifacts from the builder stage
-COPY --from=builder /app/dist/backend/services/auth-service/src ./dist
+# Copy build artifacts from the builder stage (Webpack builds to global dist)
+COPY --from=builder /app/dist ./dist
 
-# Copy proto files for gRPC (both root and service-specific)
+# Copy proto files for gRPC communication
 COPY --from=builder /app/proto ./proto
-COPY --from=builder /app/backend/services/auth-service/proto ./proto
 
 # Copy node_modules and package.json
 COPY --from=builder /app/node_modules ./node_modules

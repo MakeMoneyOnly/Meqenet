@@ -1,6 +1,8 @@
+import 'reflect-metadata'; // Required for NestJS dependency injection
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
+import { describe, it, beforeAll, afterAll } from 'vitest';
 
 import { AppModule } from './app.module';
 

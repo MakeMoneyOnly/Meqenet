@@ -1,12 +1,13 @@
 const globals = require('globals');
-const tseslint = require('typescript-eslint');
+const tseslint = require('@typescript-eslint/eslint-plugin');
+const tsParser = require('@typescript-eslint/parser');
 const js = require('@eslint/js');
 const security = require('eslint-plugin-security');
 const importPlugin = require('eslint-plugin-import');
 const react = require('eslint-plugin-react');
 const reactHooks = require('eslint-plugin-react-hooks');
 
-module.exports = tseslint.config(
+module.exports = [
   {
     // Global ignores
     ignores: [
@@ -24,13 +25,13 @@ module.exports = tseslint.config(
 
   // Base configurations
   js.configs.recommended,
-  ...tseslint.configs.recommended,
   security.configs.recommended,
 
   // Global rules for all files
   {
     files: ['**/*.ts', '**/*.tsx'],
     languageOptions: {
+      parser: tsParser,
       ecmaVersion: 2022,
       sourceType: 'module',
       globals: {
@@ -45,6 +46,7 @@ module.exports = tseslint.config(
       },
     },
     plugins: {
+      '@typescript-eslint': tseslint,
       import: importPlugin,
     },
     settings: {
@@ -71,7 +73,16 @@ module.exports = tseslint.config(
       'security/detect-pseudoRandomBytes': 'error',
 
       // TypeScript Rules
-      '@typescript-eslint/no-unused-vars': 'error',
+      'no-unused-vars': 'off', // Disable base rule, use TS-aware version
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          args: 'all',
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          ignoreRestSiblings: true,
+        },
+      ],
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/explicit-function-return-type': 'warn',
       '@typescript-eslint/no-non-null-assertion': 'error',
@@ -163,7 +174,14 @@ module.exports = tseslint.config(
     },
   },
   {
-    files: ['**/*.test.ts', '**/*.test.tsx', '**/*.spec.ts', '**/*.spec.tsx'],
+    files: [
+      '**/*.test.ts',
+      '**/*.test.tsx',
+      '**/*.spec.ts',
+      '**/*.spec.tsx',
+      '**/test/**/*.ts',
+      '**/test/setup.ts',
+    ],
     languageOptions: {
       globals: {
         ...globals.jest,
@@ -172,6 +190,7 @@ module.exports = tseslint.config(
     rules: {
       'no-magic-numbers': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
+      'no-process-env': 'off', // Allow process.env in test files for environment setup
     },
   },
   {
@@ -227,9 +246,14 @@ module.exports = tseslint.config(
   {
     files: ['backend/services/auth-service/**/*.ts'],
     languageOptions: {
+      parser: tsParser,
       parserOptions: {
-        project: ['./backend/services/auth-service/tsconfig.eslint.json'],
+        project: './backend/services/auth-service/tsconfig.eslint.json',
+        tsconfigRootDir: __dirname,
       },
+    },
+    plugins: {
+      '@typescript-eslint': tseslint,
     },
     settings: {
       'import/resolver': {
@@ -241,5 +265,28 @@ module.exports = tseslint.config(
         },
       },
     },
-  }
-);
+  },
+  {
+    files: ['backend/services/api-gateway/**/*.ts'],
+    languageOptions: {
+      parser: tsParser,
+      parserOptions: {
+        project: './backend/services/api-gateway/tsconfig.eslint.json',
+        tsconfigRootDir: __dirname,
+      },
+    },
+    plugins: {
+      '@typescript-eslint': tseslint,
+    },
+    settings: {
+      'import/resolver': {
+        oxc: {
+          // Modern TypeScript resolver without deprecated dependencies
+        },
+        node: {
+          extensions: ['.js', '.ts'],
+        },
+      },
+    },
+  },
+];

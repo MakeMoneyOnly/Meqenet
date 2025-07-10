@@ -7,14 +7,11 @@ import { Module } from '@nestjs/common';
  * including NBE compliance reporting and audit trails.
  */
 @Module({
-  imports: [
-    // TODO: Add messaging providers (RabbitMQ, SQS, etc.)
-  ],
-  providers: [
-    // TODO: Add messaging services
-  ],
-  exports: [
-    // TODO: Export messaging services
-  ],
+  // TODO: Add messaging providers (RabbitMQ, SQS, etc.)
+  imports: [],
+  // TODO: Add messaging services for event-driven communication
+  providers: [],
+  // TODO: Export messaging services for inter-service communication
+  exports: [],
 })
 export class MessagingModule {}

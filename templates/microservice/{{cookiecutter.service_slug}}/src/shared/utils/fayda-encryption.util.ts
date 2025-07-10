@@ -81,7 +81,7 @@ export class FaydaEncryptionUtil {
         },
       };
     } catch (error) {
-      throw new Error(`Fayda ID encryption failed: ${error.message}`);
+      throw new Error(`Fayda ID encryption failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -132,12 +132,15 @@ export class FaydaEncryptionUtil {
 
       // Create decipher
       const decipher = crypto.createDecipheriv(metadata.algorithm, key, iv);
-      decipher.setAAD(Buffer.from(additionalData || 'fayda-meqenet', 'utf8'));
-      decipher.setAuthTag(tag);
+      
+      // Type assertion for GCM-specific methods
+      const gcmDecipher = decipher as crypto.DecipherGCM;
+      gcmDecipher.setAAD(Buffer.from(additionalData || 'fayda-meqenet', 'utf8'));
+      gcmDecipher.setAuthTag(tag);
 
       // Decrypt the data
-      let decrypted = decipher.update(encrypted);
-      decrypted = Buffer.concat([decrypted, decipher.final()]);
+      let decrypted = gcmDecipher.update(encrypted);
+      decrypted = Buffer.concat([decrypted, gcmDecipher.final()]);
 
       const faydaId = decrypted.toString('utf8');
 
@@ -146,7 +149,7 @@ export class FaydaEncryptionUtil {
 
       return faydaId;
     } catch (error) {
-      throw new Error(`Fayda ID decryption failed: ${error.message}`);
+      throw new Error(`Fayda ID decryption failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 

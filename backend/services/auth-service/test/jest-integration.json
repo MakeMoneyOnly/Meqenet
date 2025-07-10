@@ -1,0 +1,22 @@
+{
+  "displayName": "Integration Tests",
+  "preset": "ts-jest",
+  "testEnvironment": "node",
+  "rootDir": "../",
+  "testMatch": ["<rootDir>/test/**/*.integration.spec.ts"],
+  "setupFilesAfterEnv": ["<rootDir>/test/setup.ts"],
+  "collectCoverageFrom": [
+    "src/**/*.ts",
+    "!src/**/*.spec.ts",
+    "!src/**/*.interface.ts",
+    "!src/**/*.dto.ts",
+    "!src/**/*.entity.ts"
+  ],
+  "coverageDirectory": "coverage/integration",
+  "coverageReporters": ["json", "lcov", "text", "clover"],
+  "testTimeout": 30000,
+  "maxWorkers": 1,
+  "forceExit": true,
+  "detectOpenHandles": true,
+  "verbose": true
+}
