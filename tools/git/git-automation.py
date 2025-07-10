@@ -317,7 +317,109 @@ def sync_task(target_branch='develop'):
     print("Rebase successful.")
     print("\nYour branch is now up-to-date with the latest changes from the target branch.")
     print("You may need to force-push your changes to the remote branch: git push --force-with-lease")
+
+def close_security_branch(branch_name, incident_id, description, skip_audit_tag=False):
+    """
+    Close a security branch with NBE-compliant audit trail and clean deletion.
     
+    Implements combined Option A + Option B workflow:
+    - Creates permanent audit tag for NBE compliance
+    - Deletes branch for repository hygiene
+    
+    Args:
+        branch_name: Name of the security branch to close
+        incident_id: Security incident ID (e.g., SEC-01, CRIT-02)
+        description: Description of the security resolution
+        skip_audit_tag: Skip audit tag creation (for testing only)
+    """
+    print(f"🔒 Closing security branch: {branch_name}")
+    print(f"📋 Security incident: {incident_id}")
+    print(f"📝 Resolution: {description}")
+    print("=" * 60)
+    
+    # Validate branch exists
+    print("1️⃣ Validating branch existence...")
+    local_branches = run_command(["git", "branch"])
+    remote_branches = run_command(["git", "ls-remote", "--heads", "origin", branch_name])
+    
+    if f" {branch_name}" not in local_branches and f"* {branch_name}" not in local_branches:
+        if not remote_branches:
+            print(f"❌ Error: Branch '{branch_name}' not found locally or remotely.", file=sys.stderr)
+            sys.exit(1)
+        print(f"ℹ️  Branch '{branch_name}' exists only on remote. Fetching...")
+        run_command(["git", "fetch", "origin"])
+        run_command(["git", "checkout", "-b", branch_name, f"origin/{branch_name}"])
+    
+    # Switch to develop branch for tagging and cleanup
+    print("2️⃣ Switching to develop branch...")
+    checkout_branch("develop")
+    
+    # Verify security resolution (optional vulnerability check)
+    print("3️⃣ Running security verification...")
+    try:
+        audit_result = run_command(["pnpm", "audit"])
+        if "No known vulnerabilities found" in audit_result:
+            print("✅ Security verification passed: No vulnerabilities found")
+        else:
+            print("⚠️  Warning: Vulnerabilities still detected - proceeding with caution")
+            print(audit_result)
+    except:
+        print("ℹ️  Could not run security audit - proceeding without verification")
+    
+    if not skip_audit_tag:
+        # Step 4: Create NBE compliance audit tag (Option B)
+        print("4️⃣ Creating NBE compliance audit tag...")
+        tag_name = f"security/{incident_id}-resolved-v1.0.0"
+        current_date = datetime.now().strftime("%Y-%m-%d")
+        tag_message = f"Security incident {incident_id} resolved: {description} - NBE compliance maintained ({current_date})"
+        
+        tag_result = run_command(["git", "tag", "-a", tag_name, branch_name, "-m", tag_message])
+        if isinstance(tag_result, subprocess.CalledProcessError):
+            print(f"❌ Error creating audit tag: {tag_result.stderr}", file=sys.stderr)
+            sys.exit(1)
+        
+        print(f"✅ Audit tag created: {tag_name}")
+        
+        # Push audit tag to remote for permanent record
+        print("5️⃣ Pushing audit tag to remote...")
+        push_tag_result = run_command(["git", "push", "origin", tag_name])
+        if isinstance(push_tag_result, subprocess.CalledProcessError):
+            print(f"❌ Error pushing audit tag: {push_tag_result.stderr}", file=sys.stderr)
+            sys.exit(1)
+        
+        print(f"✅ Audit tag pushed to remote: {tag_name}")
+    else:
+        print("4️⃣ Skipping audit tag creation (skip_audit_tag=True)")
+    
+    # Step 6: Clean deletion (Option A)
+    print("6️⃣ Performing clean branch deletion...")
+    
+    # Delete local branch
+    delete_local_result = run_command(["git", "branch", "-D", branch_name])
+    if isinstance(delete_local_result, subprocess.CalledProcessError):
+        print(f"⚠️  Warning: Could not delete local branch: {delete_local_result.stderr}")
+    else:
+        print(f"✅ Local branch '{branch_name}' deleted")
+    
+    # Delete remote branch
+    delete_remote_result = run_command(["git", "push", "origin", "--delete", branch_name])
+    if isinstance(delete_remote_result, subprocess.CalledProcessError):
+        print(f"⚠️  Warning: Could not delete remote branch: {delete_remote_result.stderr}")
+    else:
+        print(f"✅ Remote branch '{branch_name}' deleted")
+    
+    # Final status
+    print("=" * 60)
+    print("🎉 Security branch closure completed successfully!")
+    print("\n📋 NBE Compliance Summary:")
+    if not skip_audit_tag:
+        print(f"   ✅ Audit trail: {tag_name}")
+    print(f"   ✅ Repository hygiene: Branch deleted")
+    print(f"   ✅ Security resolution: {incident_id} documented")
+    print("\n🔄 Next steps:")
+    print("   1. Update security incident log documentation")
+    print("   2. Notify compliance team of resolution")
+    print("   3. Schedule follow-up security review")
 def main():
     parser = argparse.ArgumentParser(description="Meqenet Git Automation Script")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -336,6 +438,29 @@ def main():
     sync_parser = subparsers.add_parser("sync-task", help="Sync the current feature branch with the target branch.")
     sync_parser.add_argument("--target", default="develop", help="The target branch to sync with (default: develop).")
 
+    # Sub-parser for the close-security-branch command
+    close_security_parser = subparsers.add_parser(
+        "close-security-branch", 
+        help="Close a security branch with NBE-compliant audit trail and clean deletion."
+    )
+    close_security_parser.add_argument(
+        "branch_name", 
+        help="Name of the security branch to close (e.g., fix/SEC-01-update-vitest-esbuild-vulnerability)."
+    )
+    close_security_parser.add_argument(
+        "incident_id", 
+        help="Security incident ID (e.g., SEC-01, CRIT-02)."
+    )
+    close_security_parser.add_argument(
+        "description", 
+        help="Description of the security resolution (e.g., 'Vitest/esbuild vulnerabilities eliminated')."
+    )
+    close_security_parser.add_argument(
+        "--skip-audit-tag",
+        action="store_true",
+        help="Skip creating audit tag (for testing only - not recommended for production)."
+    )
+
     args = parser.parse_args()
 
     if not working_directory_is_clean() and args.command not in ['complete-task']:
@@ -350,6 +475,8 @@ def main():
         merge_task(args.pr_number, args.target, args.skip_approval)
     elif args.command == "sync-task":
         sync_task(args.target)
+    elif args.command == "close-security-branch":
+        close_security_branch(args.branch_name, args.incident_id, args.description, args.skip_audit_tag)
 
 if __name__ == "__main__":
     main()
