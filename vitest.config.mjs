@@ -1,46 +1,43 @@
+import { defineConfig } from 'vitest/config';
 import { resolve } from 'path';
 import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 
-import { defineConfig } from 'vitest/config';
-
-const __dirname = fileURLToPath(new globalThis.URL('.', import.meta.url));
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
+    setupFiles: ['./test/setup.ts'],
     include: [
-      'backend/services/**/*.{test,spec}.{js,ts}',
-      'backend-e2e/**/*.{test,spec}.{js,ts}'
+      'backend/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
+      'backend-e2e/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'
     ],
     exclude: [
-      'node_modules/**',
       '**/node_modules/**',
-      'dist/**',
-      'coverage/**',
-      'build/**',
-      'templates/**',
-      'backend/services/*/node_modules/**',
-      'backend-e2e/node_modules/**'
-    ],
-    setupFiles: [
-      'backend/services/auth-service/test/setup.ts'
+      '**/dist/**',
+      '**/cypress/**',
+      '**/.{idea,git,cache,output,temp}/**',
+      '**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*'
     ],
     testTimeout: 10000,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
       exclude: [
-        'node_modules/**',
-        '**/node_modules/**',
-        'dist/**',
         'coverage/**',
-        'build/**',
-        'templates/**',
+        'dist/**',
+        '**/node_modules/**',
+        '**/test/**',
         '**/*.d.ts',
         '**/*.config.*',
-        '**/test/**'
+        '**/main.ts'
       ]
+    },
+    typecheck: {
+      tsconfig: './tsconfig.json'
     },
     // Explicitly prevent vitest from scanning node_modules
     watchExclude: [
@@ -50,9 +47,12 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@': resolve(__dirname, './src'),
+      '@': resolve(__dirname, './backend/src'),
       '@auth': resolve(__dirname, './backend/services/auth-service/src'),
       '@api-gateway': resolve(__dirname, './backend/services/api-gateway/src'),
+      '@shared': resolve(__dirname, './backend/src/shared'),
+      '@features': resolve(__dirname, './backend/src/features'),
+      '@infrastructure': resolve(__dirname, './backend/src/infrastructure')
     }
   }
 });

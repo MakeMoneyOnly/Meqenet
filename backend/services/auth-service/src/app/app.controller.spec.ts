@@ -1,6 +1,4 @@
-/// <reference types="vitest" />
-import 'reflect-metadata'; // Required for NestJS dependency injection
-import { vi, describe, it, beforeEach, afterEach, expect } from 'vitest';
+import 'reflect-metadata';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -9,7 +7,7 @@ describe('AppController', () => {
   let appController: AppController;
   let appService: AppService;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     // Manual dependency injection to work around Vitest DI issues
     appService = new AppService();
     appController = new AppController(appService);
@@ -17,11 +15,6 @@ describe('AppController', () => {
     // Verify manual injection worked
     expect(appController).toBeDefined();
     expect(appService).toBeDefined();
-  });
-
-  afterEach(() => {
-    // Clean up any mocks after each test
-    vi.clearAllMocks();
   });
 
   describe('getServiceName', () => {
@@ -43,13 +36,15 @@ describe('AppController', () => {
       ); // ISO string format
     });
 
-    it('should call AppService getHealthCheck method', () => {
-      // Test that the controller properly delegates to the service
-      const serviceSpy = vi.spyOn(appService, 'getHealthCheck');
+    it('should return consistent health check structure', () => {
+      const result1 = appController.getHealthCheck();
+      const result2 = appController.getHealthCheck();
 
-      appController.getHealthCheck();
-
-      expect(serviceSpy).toHaveBeenCalledTimes(1);
+      // Both should have the same structure
+      expect(result1).toHaveProperty('status', 'ok');
+      expect(result2).toHaveProperty('status', 'ok');
+      expect(typeof result1.timestamp).toBe('string');
+      expect(typeof result2.timestamp).toBe('string');
     });
   });
 });

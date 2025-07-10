@@ -5,6 +5,22 @@ entire development workflow, from starting a task to creating a release. It inte
 `tasks.yaml` to create a seamless, task-driven development process that enforces enterprise-grade
 standards for a FinTech environment.
 
+## 🏦 Fintech Branching Strategy
+
+**IMPORTANT**: This project follows a strict **Enterprise-Grade Fintech Branching Strategy** to
+ensure NBE compliance and audit traceability.
+
+📋 **See**: [`FINTECH_BRANCHING_STRATEGY.md`](./FINTECH_BRANCHING_STRATEGY.md) for complete
+documentation.
+
+### Quick Reference:
+
+- **`main`**: Production (NBE compliant, signed commits required)
+- **`develop`**: Integration/Staging (all features merge here first)
+- **`feature/[TASK-ID]-[description]`**: New features (from `develop`)
+- **`hotfix/[SEC|CRIT]-[ID]-[description]`**: Security/Critical fixes
+- **`release/v[major].[minor].[patch]`**: Release preparation
+
 ## Prerequisites
 
 Before using the script, ensure you have the following installed and configured:

@@ -3,6 +3,7 @@ import subprocess
 import sys
 import json
 import os
+import re
 from ruamel.yaml import YAML
 from datetime import datetime
 
@@ -10,6 +11,21 @@ from datetime import datetime
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, '..', '..'))
 TASKS_FILE_PATH = os.path.join(PROJECT_ROOT, "tasks", "tasks.yaml")
+
+# Fintech branching strategy enforcement
+ALLOWED_BRANCH_PATTERNS = {
+    'feature': r'^feature/[A-Z]+-[A-Z]+-[A-Z]+-\d+-[a-z0-9-]+$',
+    'hotfix': r'^hotfix/(SEC|CRIT)-\d+-[a-z0-9-]+$',
+    'bugfix': r'^bugfix/BUG-\d+-[a-z0-9-]+$',
+    'release': r'^release/v\d+\.\d+\.\d+$'
+}
+
+FINTECH_BASE_BRANCHES = {
+    'feature': 'develop',
+    'bugfix': 'develop',
+    'hotfix': 'main',  # Security hotfixes start from production
+    'release': 'develop'
+}
 
 def run_command(command):
     """Executes a command and returns its output."""
@@ -37,6 +53,34 @@ def working_directory_is_clean():
         print("Error checking Git status.", file=sys.stderr)
         sys.exit(1)
     return not status_result
+
+def validate_branch_name(branch_name):
+    """Validate branch name against fintech branching strategy."""
+    branch_type = branch_name.split('/')[0]
+    
+    if branch_type not in ALLOWED_BRANCH_PATTERNS:
+        print(f"Error: Invalid branch type '{branch_type}'.", file=sys.stderr)
+        print(f"Allowed types: {', '.join(ALLOWED_BRANCH_PATTERNS.keys())}", file=sys.stderr)
+        return False
+    
+    pattern = ALLOWED_BRANCH_PATTERNS[branch_type]
+    if not re.match(pattern, branch_name):
+        print(f"Error: Branch name '{branch_name}' doesn't match required pattern.", file=sys.stderr)
+        print(f"Required pattern for {branch_type}: {pattern}", file=sys.stderr)
+        print(f"Example: {get_branch_example(branch_type)}", file=sys.stderr)
+        return False
+    
+    return True
+
+def get_branch_example(branch_type):
+    """Get example branch name for each type."""
+    examples = {
+        'feature': 'feature/FND-BE-AUTH-01-implement-fayda-verification',
+        'hotfix': 'hotfix/SEC-01-fix-authentication-vulnerability',
+        'bugfix': 'bugfix/BUG-01-fix-user-profile-validation',
+        'release': 'release/v1.2.0'
+    }
+    return examples.get(branch_type, 'N/A')
 
 def checkout_branch(branch_name):
     """Checks out a branch, creating it from remote if it doesn't exist locally. If not found, creates from 'main' after ensuring a clean working directory."""
@@ -420,6 +464,7 @@ def close_security_branch(branch_name, incident_id, description, skip_audit_tag=
     print("   1. Update security incident log documentation")
     print("   2. Notify compliance team of resolution")
     print("   3. Schedule follow-up security review")
+
 def main():
     parser = argparse.ArgumentParser(description="Meqenet Git Automation Script")
     subparsers = parser.add_subparsers(dest="command", required=True)
