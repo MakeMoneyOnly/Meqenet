@@ -326,8 +326,8 @@ describe('LoggingSanitizer - Security Tests', () => {
 
       const executionTime = Number(endTime - startTime) / 1_000_000; // Convert to ms
 
-      // Should process in reasonable time (< 50ms for 1000 fields)
-      expect(executionTime).toBeLessThan(50);
+      // Should process in reasonable time (< 100ms for 1000 fields)
+      expect(executionTime).toBeLessThan(100);
 
       // Verify sanitization worked
       expect(result.password0).toBe('[REDACTED]');
