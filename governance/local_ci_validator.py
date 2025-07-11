@@ -64,6 +64,7 @@ class ValidationCheck:
     output: str = ""
     duration: float = 0.0
     error_details: Optional[str] = None
+    process: Optional[asyncio.subprocess.Process] = None
 
 class LocalCIValidator:
     """Comprehensive local CI/CD validation that mirrors our GitHub Actions pipeline"""
@@ -80,6 +81,18 @@ class LocalCIValidator:
     
     def _initialize_checks(self):
         """Initialize all validation checks that mirror CI/CD pipeline"""
+
+        # Environment Setup
+        self.checks.extend([
+            ValidationCheck(
+                name="Verify Dependency Integrity",
+                description="Run pnpm install --frozen-lockfile to ensure node_modules is in sync with the lockfile",
+                command=["pnpm", "install", "--frozen-lockfile"],
+                timeout=600,
+                critical=True,
+                category="setup"
+            ),
+        ])
         
         # Code Quality & Linting Checks
         self.checks.extend([
@@ -157,11 +170,23 @@ class LocalCIValidator:
             ),
             ValidationCheck(
                 name="E2E Tests",
-                description="Run end-to-end tests",
-                command=["pnpm", "test", "backend-e2e"],
+                description="Run end-to-end tests for the backend.",
+                command=["pnpm", "nx", "e2e", "backend-e2e"],
                 timeout=600,
                 critical=True,
                 category="testing"
+            )
+        ])
+        
+        # Serve Apps for E2E
+        self.checks.extend([
+            ValidationCheck(
+                name="Serve API Gateway",
+                description="Serve the API Gateway for E2E tests",
+                command=["pnpm", "nx", "serve", "api-gateway-service"],
+                timeout=30, # Timeout for server to start
+                critical=True,
+                category="serve"
             )
         ])
         
@@ -182,6 +207,18 @@ class LocalCIValidator:
                 timeout=60,
                 critical=True,
                 category="database"
+            )
+        ])
+
+        # Database Setup
+        self.checks.extend([
+            ValidationCheck(
+                name="Prisma Client Generation",
+                description="Generate Prisma client for database access",
+                command=["pnpm", "prisma", "generate", "--schema=./backend/services/auth-service/prisma/schema.prisma"],
+                timeout=120,
+                critical=True,
+                category="database-setup"
             )
         ])
         
@@ -240,6 +277,23 @@ class LocalCIValidator:
                 stderr=asyncio.subprocess.PIPE,
                 cwd=self.project_root
             )
+            check.process = process # Store the process
+
+            # Special handling for serve tasks to run in background
+            if check.category == "serve":
+                # Wait a bit for the server to initialize and output potential errors
+                await asyncio.sleep(15)
+                # Don't wait for it to complete, just check if it started
+                if check.process.returncode is None:
+                    check.status = CheckStatus.PASSED
+                    logger.info(f"[PASSED] {check.name} is running in the background.")
+                    return True
+                else:
+                    stderr_output = await check.process.stderr.read()
+                    check.status = CheckStatus.FAILED
+                    check.error_details = stderr_output.decode('utf-8', errors='ignore')
+                    logger.error(f"[FAILED] {check.name} could not be started.")
+                    return False
             
             try:
                 stdout, stderr = await asyncio.wait_for(
@@ -322,9 +376,12 @@ class LocalCIValidator:
         
         # Define category execution order (some dependencies)
         category_order = [
+            "setup",           # Must run first
+            "database-setup",  # Must run before anything that needs the DB client
             "code_quality",    # Must pass first
             "security",        # Critical security checks
             "database",        # Database schema validation
+            "serve",           # Start servers for E2E tests
             "testing",         # Test suite execution
             "compliance",      # NBE and regulatory compliance
             "deployment",      # Build and deployment checks
@@ -352,6 +409,13 @@ class LocalCIValidator:
                 if category in ["code_quality", "security", "testing"]:
                     logger.error(f"[CRITICAL] Critical failure in {category} - stopping validation")
                     break
+        
+        # Terminate any background servers
+        for check in self.checks:
+            if check.category == "serve" and check.process and check.process.returncode is None:
+                logger.info(f"Terminating background server: {check.name}")
+                check.process.terminate()
+                await check.process.wait()
         
         return overall_success
     
