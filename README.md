@@ -161,6 +161,22 @@ graph TD
    pnpm run dev
    ```
 
+5. **🏛️ Setup C-Suite Governance Framework** _(Optional - For Enterprise Oversight)_
+
+   ```bash
+   # Automated setup (recommended)
+   cd governance
+   python setup.py
+
+   # Interactive launcher after setup (from project root)
+   cd ..
+   python quick_start.py
+   ```
+
+   The governance framework provides enterprise-grade executive dashboards for CEO, CFO, CTO, CCO,
+   and CISO roles with real-time monitoring, compliance tracking, and strategic analytics. See
+   [`governance/README.md`](governance/README.md) for details.
+
 ### Project Structure
 
 ```
