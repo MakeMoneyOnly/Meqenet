@@ -89,7 +89,7 @@ export class PrismaService
   private static getSecureNodeEnv(): string | undefined {
     // Security: Single-point access to NODE_ENV for constructor use
     // ESLint disabled for this specific secure access pattern
-     
+
     return process.env.NODE_ENV;
   }
 

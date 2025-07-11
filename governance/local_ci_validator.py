@@ -114,7 +114,7 @@ class LocalCIValidator:
             ValidationCheck(
                 name="Dependency Audit",
                 description="Check for vulnerable dependencies",
-                command=["pnpm", "audit", "--audit-level", "moderate"],
+                command=["pnpm", "audit", "--audit-level", "high"],
                 timeout=120,
                 critical=True,
                 category="security"
@@ -129,10 +129,10 @@ class LocalCIValidator:
             ),
             ValidationCheck(
                 name="OWASP Dependency Check",
-                description="Advanced dependency vulnerability scanning",
-                command=["npm", "audit", "--json"],
+                description="Advanced dependency vulnerability scanning for Python",
+                command=["pnpm", "run", "security:scan-python"],
                 timeout=240,
-                critical=False,  # Warning only since we have pnpm audit as critical
+                critical=True,
                 category="security"
             )
         ])
@@ -150,7 +150,7 @@ class LocalCIValidator:
             ValidationCheck(
                 name="Integration Tests",
                 description="Run database and service integration tests",
-                command=["pnpm", "test", "backend/services/auth-service/test/database.integration.spec.ts"],
+                command=["pnpm", "run", "test:integration"],
                 timeout=300,
                 critical=True,
                 category="testing"
