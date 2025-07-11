@@ -53,8 +53,8 @@ except ImportError:
             import warnings
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", UserWarning)
-                import pkg_resources
-            from packaging import version
+import pkg_resources
+from packaging import version
             HAS_METADATA = False
             HAS_PACKAGING = True
         except ImportError:
@@ -93,7 +93,7 @@ CORE_PACKAGES = {
 # Required packages for full functionality
 REQUIRED_PACKAGES = {
     "pyyaml": "6.0",
-    "schedule": "1.2.0", 
+    "schedule": "1.2.0",
     "aiohttp": "3.8.0",
     "pandas": "1.5.0",
     "numpy": "1.21.0",
@@ -301,14 +301,14 @@ def is_package_installed(package_name: str, min_version: str = None, simple_mode
         
         if package_name in builtin_modules:
             try:
-                __import__(package_name)
-                return True
+            __import__(package_name)
+            return True
             except ImportError:
                 return False
         
         # Special handling for version-specific packages
         if package_name == 'dataclasses' and sys.version_info >= (3, 7):
-            return True  # Built-in since Python 3.7
+                return True  # Built-in since Python 3.7
         
         if package_name == 'enum34' and sys.version_info >= (3, 4):
             return True  # Only needed for Python < 3.4
@@ -322,13 +322,13 @@ def is_package_installed(package_name: str, min_version: str = None, simple_mode
                     # Use packaging.version if available, otherwise use simple comparison
                     if HAS_PACKAGING:
                         if version.parse(installed_version) >= version.parse(min_version):
-                            return True
-                        else:
+                return True
+            else:
                             print_warning(f"{package_name} {installed_version} installed, but {min_version} required")
                             return False
                     else:
                         if simple_version_compare(installed_version, min_version):
-                            return True
+                return True
                         else:
                             print_warning(f"{package_name} {installed_version} installed, but {min_version} required")
                             return False
@@ -338,24 +338,24 @@ def is_package_installed(package_name: str, min_version: str = None, simple_mode
         elif 'pkg_resources' in globals():
             # Fallback to pkg_resources if available (with warnings suppressed)
             try:
-                installed_version = pkg_resources.get_distribution(package_name).version
-                
-                if min_version:
+        installed_version = pkg_resources.get_distribution(package_name).version
+        
+        if min_version:
                     if HAS_PACKAGING:
-                        if version.parse(installed_version) >= version.parse(min_version):
-                            return True
-                        else:
-                            print_warning(f"{package_name} {installed_version} installed, but {min_version} required")
-                            return False
+            if version.parse(installed_version) >= version.parse(min_version):
+                return True
+            else:
+                print_warning(f"{package_name} {installed_version} installed, but {min_version} required")
+                return False
                     else:
                         if simple_version_compare(installed_version, min_version):
                             return True
                         else:
                             print_warning(f"{package_name} {installed_version} installed, but {min_version} required")
                             return False
-                return True
-            except (pkg_resources.DistributionNotFound, ImportError, ModuleNotFoundError):
-                return False
+        return True
+    except (pkg_resources.DistributionNotFound, ImportError, ModuleNotFoundError):
+        return False
         else:
             # Fallback: try to import the package (no version checking)
             return simple_package_check(package_name)
@@ -449,8 +449,8 @@ def install_package(package_name: str, min_version: str = None, timeout: int = 3
             print_warning(f"Failed to install optional package {package_name} - skipping")
             return True  # Don't fail overall installation for optional packages
         else:
-            print_error(f"Failed to install {package_name}: {e.stderr}")
-            return False
+        print_error(f"Failed to install {package_name}: {e.stderr}")
+        return False
     except Exception as e:
         if is_optional:
             print_warning(f"Unexpected error installing optional package {package_name} - skipping")
@@ -617,15 +617,15 @@ def install_dependencies(include_optional: bool = False, simple_mode: bool = Fal
         print_info("Installing optional packages...")
         optional_installed = 0
         optional_skipped = 0
-        
-        for package, min_ver in OPTIONAL_PACKAGES.items():
+    
+    for package, min_ver in OPTIONAL_PACKAGES.items():
             if not is_package_installed(package, min_ver):
                 result = install_package(package, min_ver, is_optional=True)
                 if result:
                     # Check if it was actually installed or just skipped
                     if is_package_installed(package, None, simple_mode=True):  # Simple check for optional packages
                         optional_installed += 1
-                    else:
+                else:
                         optional_skipped += 1
                 else:
                     optional_skipped += 1
@@ -687,7 +687,7 @@ def create_configuration_files(simple_mode: bool = False):
                 "timeout_minutes": 15
             },
             "cfo": {
-                "name": "CFO Financial Dashboard", 
+                "name": "CFO Financial Dashboard",
                 "script_path": "dashboards/cfo_dashboard.py",
                 "enabled": True,
                 "schedule_cron": "0 9 * * *",
@@ -726,15 +726,15 @@ def create_configuration_files(simple_mode: bool = False):
         "platform": detect_platform(),
         "setup_timestamp": str(datetime.datetime.now()),
         "setup_mode": "simple" if (simple_mode or FALLBACK_MODE) else "full"
-    }
+            }
     
     # Write configuration (prefer YAML, fallback to JSON)
     try:
         if not simple_mode and not FALLBACK_MODE:
-            import yaml
+        import yaml
             config_path = GOVERNANCE_DIR / "config" / "governance_config.yaml"
             with open(config_path, 'w', encoding='utf-8') as f:
-                yaml.dump(config_content, f, default_flow_style=False, indent=2)
+            yaml.dump(config_content, f, default_flow_style=False, indent=2)
             print_success(f"Created configuration file: {config_path.name}")
         else:
             raise ImportError("Using JSON fallback")
@@ -1101,10 +1101,10 @@ def main():
     
     if (config_file.exists() or config_file_json.exists()) and not args.force:
         if not args.quick:
-            print_warning("Governance framework appears to already be set up.")
-            response = input("Do you want to proceed anyway? (y/N): ").strip().lower()
-            if response not in ['y', 'yes']:
-                print_info("Setup cancelled by user")
+        print_warning("Governance framework appears to already be set up.")
+        response = input("Do you want to proceed anyway? (y/N): ").strip().lower()
+        if response not in ['y', 'yes']:
+            print_info("Setup cancelled by user")
                 return 0
     
     try:
@@ -1116,7 +1116,7 @@ def main():
         # Step 2: Install dependencies
         include_optional = args.include_optional
         if not args.quick and not include_optional and not FALLBACK_MODE:
-            response = input("\\nInstall optional packages for enhanced features? (y/N): ").strip().lower()
+        response = input("\\nInstall optional packages for enhanced features? (y/N): ").strip().lower()
             include_optional = response in ['y', 'yes']
         
         if not install_dependencies(include_optional, simple_mode=FALLBACK_MODE):

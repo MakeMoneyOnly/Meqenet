@@ -62,21 +62,6 @@ export class PrismaService
           url: databaseUrl,
         },
       },
-      // Connection pool configuration optimized for Ethiopian infrastructure
-      // Accounts for potential network latency and intermittent connectivity
-      __internal: {
-        engine: {
-          pool: {
-            // Conservative pool size for Ethiopian cloud infrastructure
-            min: 2,
-            max: 10,
-            // Increased timeouts for Ethiopian network conditions
-            connectionTimeout: 30000, // 30 seconds
-            idleTimeout: 600000, // 10 minutes
-            maxLifetime: 1800000, // 30 minutes
-          },
-        },
-      },
       // Enhanced error formatting for security and debugging
       errorFormat: isProduction ? 'minimal' : 'pretty',
       // Log all queries in development for audit compliance
@@ -106,7 +91,6 @@ export class PrismaService
     // ESLint disabled for this specific secure access pattern
      
     return process.env.NODE_ENV;
-     
   }
 
   /**
@@ -166,7 +150,7 @@ export class PrismaService
    */
   private setupEventListeners(): void {
     // Query logging for audit compliance (NBE requirement)
-    this.$on(
+    (this as any).$on(
       'query',
       (event: {
         query: string;
@@ -193,7 +177,7 @@ export class PrismaService
     );
 
     // Error logging for security monitoring
-    this.$on(
+    (this as any).$on(
       'error',
       (event: { message: string; target: string; timestamp: Date }) => {
         this.logger.error(`Database error: ${event.message}`, {
@@ -204,7 +188,7 @@ export class PrismaService
     );
 
     // Warning logging
-    this.$on(
+    (this as any).$on(
       'warn',
       (event: { message: string; target: string; timestamp: Date }) => {
         this.logger.warn(`Database warning: ${event.message}`, {
@@ -215,7 +199,7 @@ export class PrismaService
     );
 
     // Info logging for audit trail
-    this.$on(
+    (this as any).$on(
       'info',
       (event: { message: string; target: string; timestamp: Date }) => {
         this.logger.log(`Database info: ${event.message}`, {

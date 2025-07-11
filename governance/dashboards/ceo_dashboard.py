@@ -635,7 +635,7 @@ class BoardReportGenerator:
     
     def __init__(self, db: ExecutiveDatabase):
         self.db = db
-
+    
     def generate_board_summary(self, kpis: List[BusinessKPI], 
                              initiatives: List[StrategicInitiative],
                              market_intel: List[MarketIntelligence],

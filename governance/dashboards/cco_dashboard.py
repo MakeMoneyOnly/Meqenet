@@ -287,7 +287,7 @@ class NBEComplianceMonitor:
             findings=findings,
             recommendations=recommendations
         )
-
+    
     def assess_dps_compliance(self) -> ComplianceMetric:
         """Assess Digital Payment Services compliance"""
         logger.info("Assessing Digital Payment Services compliance...")
@@ -300,15 +300,15 @@ class NBEComplianceMonitor:
             findings=[],
             recommendations=[]
         )
-
+    
     def _check_fayda_integration(self) -> bool:
         # Placeholder for actual Fayda integration check
         return True
-
+    
     def _check_risk_scoring_system(self) -> bool:
         # Placeholder
         return True
-
+    
     def _check_transaction_monitoring(self) -> bool:
         # Placeholder
         return True
@@ -350,11 +350,11 @@ class RiskAssessmentEngine:
         final_score -= self._calculate_external_risk_factors()
         
         return max(0, min(100, final_score))
-
+    
     def _calculate_trend_adjustment(self) -> float:
         # Placeholder for trend analysis
         return 1.5
-
+    
     def _calculate_external_risk_factors(self) -> float:
         # Placeholder for external risk factors (e.g., new government regulations)
         return 0.5
@@ -533,10 +533,10 @@ class ComplianceVisualizationGenerator:
 
 class ComplianceReportGenerator:
     """Generates text-based sections for the CCO report."""
-
+    
     def __init__(self, db: ComplianceDatabase):
         self.db = db
-
+    
     def generate_executive_summary(self, metrics: List[ComplianceMetric], 
                                  risk_score: float, alerts: List[RegulatoryAlert]) -> str:
         """Generates the executive summary section."""
@@ -606,8 +606,8 @@ async def main():
     viz_generator = ComplianceVisualizationGenerator(REPORTS_DIR)
 
     # 1. Assess Compliance
-    kyc_metric = nbe_monitor.assess_kyc_compliance()
-    aml_metric = nbe_monitor.assess_aml_compliance()
+        kyc_metric = nbe_monitor.assess_kyc_compliance()
+        aml_metric = nbe_monitor.assess_aml_compliance()
     dps_metric = nbe_monitor.assess_dps_compliance()
     all_metrics = [kyc_metric, aml_metric, dps_metric]
 
@@ -618,8 +618,8 @@ async def main():
     regulatory_alerts = await reg_tracker.fetch_regulatory_updates()
 
     # 4. Analyze Audit Trails
-    suspicious_patterns = audit_analyzer.analyze_suspicious_patterns()
-    
+        suspicious_patterns = audit_analyzer.analyze_suspicious_patterns()
+        
     # 5. Generate Report Sections
     summary_section = report_generator.generate_executive_summary(all_metrics, overall_risk_score, regulatory_alerts)
     report_manager.add_section("Executive Compliance Summary", summary_section)

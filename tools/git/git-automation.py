@@ -100,7 +100,7 @@ class FintechLogger:
     def __init__(self):
         self.setup_logging()
         self.session_id = self.generate_session_id()
-        self.start_time = datetime.now(tz.UTC if TIMEZONE_SUPPORT else None)
+        self.start_time = datetime.now(timezone.utc)
         
     def setup_logging(self):
         """Setup structured logging for audit compliance."""
@@ -123,7 +123,7 @@ class FintechLogger:
     def audit_log(self, action: str, details: Dict, level: str = 'INFO'):
         """Create structured audit log entry."""
         audit_entry = {
-            'timestamp': datetime.now(tz.UTC if TIMEZONE_SUPPORT else None).isoformat(),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
             'session_id': self.session_id,
             'action': action,
             'user': os.getenv('USER', 'unknown'),
@@ -349,7 +349,7 @@ def enhanced_security_scanning() -> Dict:
                 if vuln.get('severity') == 'HIGH':
                     print(f"{Fore.RED}  🚨 {vuln['description']}")
             for secret in scan_results['secret_leaks']:
-                print(f"{Fore.RED}  🚨 Potential secret in {secret['file']}:{secret['line']}")
+                print(f"{Fore.RED}  🚨 Potential secret detected. Please review the scan results for details.")
         
         return scan_results
         
@@ -476,10 +476,17 @@ def enhanced_validate_nbe_compliance() -> bool:
         )
         return False
 
-def main():
-    """Enhanced main function with comprehensive fintech governance."""
+def main() -> int:
+    """Main function to parse arguments and execute commands."""
     try:
-        print(f"{Fore.BLUE}🏦 MEQENET.ET ENHANCED FINTECH GIT AUTOMATION")
+        # Initialize colorama for Windows compatibility
+        init(autoreset=True)
+        
+        # Setup logger
+        fintech_logger = FintechLogger()
+        
+        # Print header
+        print(f"{Fore.BLUE}=== MEQENET.ET ENHANCED FINTECH GIT AUTOMATION ===")
         print(f"{Fore.BLUE}📄 Governed by: FINTECH_BRANCHING_STRATEGY.md & GIT_BRANCH_PROTECTION_SETUP.md")
         print(f"{Fore.BLUE}🇪🇹 Ethiopian BNPL Platform - NBE Compliant v2.0")
         print(f"{Fore.BLUE}🔐 Session ID: {fintech_logger.session_id}")
@@ -518,6 +525,38 @@ def main():
             help="Validate Git environment for fintech compliance"
         )
         
+        # Local CI/CD validation command
+        ci_parser = subparsers.add_parser(
+            "validate-ci",
+            help="Run comprehensive local CI/CD validation before pushing"
+        )
+        ci_parser.add_argument(
+            "--quick", 
+            action="store_true", 
+            help="Run only essential checks"
+        )
+        ci_parser.add_argument(
+            "--security-only", 
+            action="store_true", 
+            help="Run only security checks"
+        )
+        ci_parser.add_argument(
+            "--parallel", 
+            action="store_true", 
+            help="Run checks in parallel where possible"
+        )
+        
+        # Pre-push validation command (combines all checks)
+        prepush_parser = subparsers.add_parser(
+            "pre-push-check",
+            help="Complete pre-push validation (recommended before git push)"
+        )
+        prepush_parser.add_argument(
+            "--auto-fix", 
+            action="store_true", 
+            help="Automatically fix issues where possible"
+        )
+        
         # Other existing commands would be added here...
         
         args = parser.parse_args()
@@ -532,9 +571,15 @@ def main():
             
         elif args.command == "validate-environment":
             return 0 if enhanced_validate_nbe_compliance() else 1
+            
+        elif args.command == "validate-ci":
+            return run_local_ci_validation(args)
+            
+        elif args.command == "pre-push-check":
+            return run_comprehensive_pre_push_check(args)
         
         # Default fallback
-        print(f"{Fore.YELLOW}💡 Command not implemented in enhanced version yet")
+        print(f"{Fore.YELLOW}[INFO] Command not implemented in enhanced version yet")
         return 0
         
     except KeyboardInterrupt:
@@ -546,19 +591,138 @@ def main():
         return 130
         
     except Exception as e:
+        # Log critical errors with context
+        print(f"{Fore.RED}[ERROR] Unexpected error: {e}")
         fintech_logger.audit_log(
             action='SESSION_ERROR',
             details={'error': str(e), 'type': type(e).__name__},
             level='ERROR'
         )
-        print(f"{Fore.RED}❌ Unexpected error: {e}")
         return 1
         
     finally:
+        # Log session completion
         fintech_logger.audit_log(
             action='SESSION_END',
-            details={'duration_seconds': (datetime.now() - fintech_logger.start_time).total_seconds()}
+            details={'duration_seconds': (datetime.now(timezone.utc) - fintech_logger.start_time).total_seconds()}
         )
+        return 0
+
+def run_local_ci_validation(args) -> int:
+    """Run local CI/CD validation using our comprehensive validator"""
+    try:
+        print(f"{Fore.BLUE}🚀 Starting Local CI/CD Validation...")
+        
+        # Build command for local CI validator
+        cmd = ["python", "governance/local_ci_validator.py"]
+        
+        if args.quick:
+            cmd.append("--quick")
+        elif args.security_only:
+            cmd.append("--security-only")
+            
+        if args.parallel:
+            cmd.append("--parallel")
+        
+        # Run the validation
+        result = enhanced_run_command(cmd, timeout=1800)  # 30 minute timeout
+        
+        if isinstance(result, subprocess.CalledProcessError):
+            print(f"{Fore.RED}❌ Local CI/CD validation failed")
+            print(f"{Fore.YELLOW}💡 Check the detailed report in governance/logs/")
+            return 1
+        
+        print(f"{Fore.GREEN}✅ Local CI/CD validation passed")
+        return 0
+        
+    except Exception as e:
+        fintech_logger.audit_log(
+            action='LOCAL_CI_VALIDATION_ERROR',
+            details={'error': str(e)},
+            level='ERROR'
+        )
+        print(f"{Fore.RED}❌ Local CI validation error: {e}")
+        return 1
+
+def run_comprehensive_pre_push_check(args) -> int:
+    """Run comprehensive pre-push validation including all checks and auto-fixes"""
+    try:
+        print(f"{Fore.BLUE}🏦 MEQENET.ET COMPREHENSIVE PRE-PUSH VALIDATION")
+        print(f"{Fore.BLUE}================================================================")
+        
+        fintech_logger.audit_log(
+            action='PRE_PUSH_VALIDATION_START',
+            details={
+                'auto_fix': args.auto_fix,
+                'timestamp': datetime.now(timezone.utc).isoformat()
+            }
+        )
+        
+        # Step 1: Environment validation
+        print(f"{Fore.CYAN}🔧 Step 1: Validating development environment...")
+        if not enhanced_validate_nbe_compliance():
+            print(f"{Fore.RED}❌ Environment validation failed")
+            return 1
+        print(f"{Fore.GREEN}✅ Environment validation passed")
+        
+        # Step 2: Security scanning
+        print(f"{Fore.CYAN}🔒 Step 2: Running security scans...")
+        security_results = enhanced_security_scanning()
+        if security_results['overall_status'] != 'PASS':
+            print(f"{Fore.RED}❌ Security validation failed")
+            return 1
+        print(f"{Fore.GREEN}✅ Security scans passed")
+        
+        # Step 3: Auto-fix common issues if requested
+        if args.auto_fix:
+            print(f"{Fore.CYAN}🔧 Step 3: Auto-fixing common issues...")
+            
+            # Format code
+            format_result = enhanced_run_command(["pnpm", "run", "format:write"], timeout=120)
+            if not isinstance(format_result, subprocess.CalledProcessError):
+                print(f"{Fore.GREEN}  ✅ Code formatting applied")
+            
+            # Fix linting issues
+            lint_result = enhanced_run_command(["pnpm", "run", "lint", "--fix"], timeout=180)
+            if not isinstance(lint_result, subprocess.CalledProcessError):
+                print(f"{Fore.GREEN}  ✅ Linting auto-fixes applied")
+            
+            print(f"{Fore.GREEN}✅ Auto-fixes completed")
+        
+        # Step 4: Comprehensive CI validation
+        print(f"{Fore.CYAN}🧪 Step 4: Running comprehensive CI/CD validation...")
+        ci_result = enhanced_run_command([
+            "python", "governance/local_ci_validator.py", "--parallel"
+        ], timeout=1800)
+        
+        if isinstance(ci_result, subprocess.CalledProcessError):
+            print(f"{Fore.RED}❌ CI/CD validation failed")
+            print(f"{Fore.YELLOW}💡 Review detailed report in governance/logs/local_ci_validation_report.json")
+            return 1
+        
+        print(f"{Fore.GREEN}✅ CI/CD validation passed")
+        
+        # Step 5: Final summary
+        print(f"{Fore.CYAN}📋 Step 5: Final validation summary...")
+        print(f"{Fore.GREEN}🎉 ALL PRE-PUSH CHECKS PASSED!")
+        print(f"{Fore.GREEN}🚀 Ready to push to remote repository")
+        print(f"{Fore.BLUE}================================================================")
+        
+        fintech_logger.audit_log(
+            action='PRE_PUSH_VALIDATION_SUCCESS',
+            details={'timestamp': datetime.now(timezone.utc).isoformat()}
+        )
+        
+        return 0
+        
+    except Exception as e:
+        fintech_logger.audit_log(
+            action='PRE_PUSH_VALIDATION_ERROR',
+            details={'error': str(e)},
+            level='ERROR'
+        )
+        print(f"{Fore.RED}❌ Pre-push validation error: {e}")
+        return 1
 
 if __name__ == "__main__":
     sys.exit(main()) 

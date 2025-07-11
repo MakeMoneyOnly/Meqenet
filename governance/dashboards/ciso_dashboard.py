@@ -16,24 +16,22 @@ Author: Meqenet.et Governance Team
 """
 
 import json
+import yaml
 import sqlite3
+import requests
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
+import secrets
+import random
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, List, Any, Optional, Tuple
+from typing import Dict, List, Any, Optional, Tuple, Union
 from dataclasses import dataclass, asdict
 from enum import Enum
 import logging
 from functools import lru_cache
 import asyncio
 import aiohttp
-import hashlib
-import ipaddress
-from collections import defaultdict, Counter
-import requests
 import plotly.graph_objects as go
 import plotly.express as px
 from plotly.subplots import make_subplots
@@ -263,83 +261,68 @@ class SecurityDatabase:
         conn.commit()
         conn.close()
 
-class ThreatIntelligenceEngine:
-    """Advanced threat intelligence collection and analysis"""
+class SecurityThreatAnalyzer:
+    """Advanced AI-powered threat analysis and threat intelligence integration"""
     
     def __init__(self):
-        self.threat_feeds = [
-            "CISA Known Exploited Vulnerabilities",
-            "MITRE ATT&CK Framework",
-            "Ethiopian CERT Advisories",
-            "Financial Sector Threat Intelligence",
-            "Commercial Threat Feeds"
-        ]
-        
-        self.threat_categories = {
-            "ransomware": {"frequency": 0.15, "severity_range": (7.0, 9.5)},
-            "phishing": {"frequency": 0.35, "severity_range": (4.0, 7.0)},
-            "insider_threat": {"frequency": 0.08, "severity_range": (6.0, 8.5)},
-            "ddos": {"frequency": 0.12, "severity_range": (5.0, 7.5)},
-            "malware": {"frequency": 0.20, "severity_range": (6.0, 9.0)},
-            "data_breach": {"frequency": 0.05, "severity_range": (8.0, 10.0)},
-            "supply_chain": {"frequency": 0.03, "severity_range": (7.5, 9.5)},
-            "cloud_compromise": {"frequency": 0.02, "severity_range": (6.5, 8.5)}
+        self.threat_feeds = ["URLVoid", "VirusTotal", "OTX AlienVault", "Emerging Threats"]
+        self.threat_types = {
+            "malware": {"frequency": 0.15, "severity_range": (6.0, 9.5)},
+            "phishing": {"frequency": 0.25, "severity_range": (5.0, 8.0)}, 
+            "ddos": {"frequency": 0.10, "severity_range": (4.0, 7.5)},
+            "data_breach_attempt": {"frequency": 0.20, "severity_range": (7.0, 9.8)},
+            "insider_threat": {"frequency": 0.05, "severity_range": (6.5, 9.0)},
+            "supply_chain": {"frequency": 0.08, "severity_range": (7.5, 9.2)},
+            "zero_day_exploit": {"frequency": 0.02, "severity_range": (8.5, 10.0)},
+            "social_engineering": {"frequency": 0.15, "severity_range": (4.5, 7.0)}
         }
     
-    async def collect_threat_intelligence(self) -> List[ThreatIntelligence]:
-        """Collect and analyze current threat intelligence"""
-        logger.info("Collecting threat intelligence from multiple sources...")
-        
+    def generate_threat_intelligence(self) -> List[ThreatIntelligence]:
+        """Generate realistic threat intelligence data"""
         threats = []
         
-        for threat_type, config in self.threat_categories.items():
-            # Simulate threat intelligence collection
-            if np.random.random() < config["frequency"]:
-                severity = np.random.uniform(*config["severity_range"])
-                confidence = np.random.uniform(0.6, 0.95)
+        for threat_type, config in self.threat_types.items():
+            if secrets.randbelow(100) < int(config["frequency"] * 100):
+                severity_min, severity_max = config["severity_range"]
+                severity = severity_min + secrets.randbelow(int((severity_max - severity_min) * 100)) / 100
+                confidence = 0.6 + secrets.randbelow(35) / 100  # 0.6 to 0.95
                 
-                # Generate realistic IOCs
-                iocs = self._generate_iocs(threat_type)
-                ttps = self._generate_ttps(threat_type)
-                
-                threats.append(ThreatIntelligence(
-                    threat_id=f"TI-{datetime.now().strftime('%Y%m%d')}-{len(threats)+1:04d}",
+                threat = ThreatIntelligence(
+                    threat_id=f"TI-{secrets.token_hex(4).upper()}",
                     threat_type=threat_type,
-                    source=np.random.choice(self.threat_feeds),
-                    confidence_level=confidence,
-                    severity_score=severity,
-                    iocs=iocs,
-                    ttps=ttps,
+                    severity_score=round(severity, 2),
+                    confidence_level=round(confidence, 2),
+                    description=f"Advanced {threat_type.replace('_', ' ')} detected targeting fintech infrastructure",
+                    source=random.choice(self.threat_feeds),
+                    iocs=self._generate_iocs(),
+                    ttps=self._generate_ttps(threat_type), # Assuming _generate_ttps is defined elsewhere or will be added
                     targeted_sectors=["Financial Services", "Fintech", "Digital Payments"],
-                    geographic_origin=np.random.choice(["Unknown", "Eastern Europe", "Southeast Asia", "North America"]),
-                    first_seen=datetime.now() - timedelta(hours=np.random.randint(1, 72)),
+                    geographic_origin=random.choice(["Unknown", "Eastern Europe", "Southeast Asia", "North America"]),
+                    first_seen=datetime.now() - timedelta(hours=secrets.randbelow(72) + 1),
                     last_updated=datetime.now()
-                ))
+                )
+                threats.append(threat)
         
         return threats
     
-    def _generate_iocs(self, threat_type: str) -> List[str]:
-        """Generate realistic Indicators of Compromise"""
+    def _generate_iocs(self) -> List[str]:
+        """Generate Indicators of Compromise"""
         iocs = []
         
-        if threat_type in ["malware", "ransomware"]:
-            # File hashes
-            iocs.extend([
-                hashlib.sha256(f"malware_sample_{i}".encode()).hexdigest()[:16] 
-                for i in range(np.random.randint(1, 4))
-            ])
+        # Generate malicious IPs
+        for i in range(secrets.randbelow(3) + 1):
+            ip_parts = [str(secrets.randbelow(255) + 1) for _ in range(4)]
+            iocs.append(".".join(ip_parts))
         
-        if threat_type in ["phishing", "ddos", "cloud_compromise"]:
-            # Malicious IPs - generate valid IPv4 addresses
-            for _ in range(np.random.randint(1, 3)):
-                # Generate 4 octets for a valid IPv4 address
-                octets = [np.random.randint(1, 255) for _ in range(4)]
-                ip_address = ".".join(map(str, octets))
-                iocs.append(ip_address)
-            
-            # Malicious domains
-            domains = ["evil-fintech.com", "fake-banking.net", "phish-site.org"]
-            iocs.extend(np.random.choice(domains, size=np.random.randint(1, 2), replace=False))
+        # Generate file hashes  
+        for _ in range(secrets.randbelow(2) + 1):
+            iocs.append(f"sha256:{secrets.token_hex(32)}")
+        
+        # Generate suspicious domains
+        domains = ["suspicious-finance.net", "fake-payment.org", "malware-host.ru", "phish-bank.com"]
+        if domains:
+            selected_domains = random.choice(domains)
+            iocs.append(selected_domains)
         
         return iocs
     
@@ -358,83 +341,80 @@ class ThreatIntelligenceEngine:
         
         return ttp_mapping.get(threat_type, ["T1055 Process Injection"])
 
-class SecurityIncidentManager:
-    """Security incident management and response"""
+class SecurityIncidentTracker:
+    """Track and analyze security incidents with AI-powered classification"""
     
-    def __init__(self):
-        self.soc_analysts = ["Alice Johnson", "Bob Smith", "Carol Davis", "David Wilson"]
+    def __init__(self, db: SecurityDatabase):
+        self.db = db
         self.incident_types = [
-            "Malware Infection", "Phishing Attack", "Unauthorized Access", 
-            "Data Exfiltration", "DDoS Attack", "Insider Threat",
-            "Vulnerability Exploitation", "Social Engineering"
+            "Unauthorized Access Attempt", "Malware Detection", "Data Exfiltration Alert",
+            "Phishing Campaign", "DDoS Attack", "Insider Threat", "Compliance Violation",
+            "System Vulnerability", "Network Intrusion", "Social Engineering"
         ]
+        self.soc_analysts = ["Sarah Chen", "Ahmed Kassim", "Elena Rodriguez", "Marcus Thompson", "Fatima Al-Zahra"]
     
-    def generate_current_incidents(self) -> List[SecurityIncident]:
-        """Generate current security incidents"""
-        logger.info("Retrieving current security incidents...")
-        
+    def generate_recent_incidents(self) -> List[SecurityIncident]:
+        """Generate realistic security incidents for dashboard"""
         incidents = []
+        num_incidents = secrets.randbelow(5) + 3  # 3-8 incidents
         
-        # Generate realistic incidents
-        num_incidents = np.random.randint(3, 8)
+        for _ in range(num_incidents):
+            threat_level = random.choice(list(ThreatLevel))
+            status = random.choice(list(IncidentStatus))
         
-        for i in range(num_incidents):
-            threat_level = np.random.choice(list(ThreatLevel), p=[0.1, 0.25, 0.4, 0.2, 0.05])
-            status = np.random.choice(list(IncidentStatus), p=[0.2, 0.3, 0.2, 0.2, 0.1])
-            
+            # Generate realistic timestamps
             discovered_time = datetime.now() - timedelta(
-                hours=np.random.randint(1, 120),
-                minutes=np.random.randint(0, 60)
+                hours=secrets.randbelow(120) + 1,
+                minutes=secrets.randbelow(60)
             )
             
-            # Determine if incident is resolved
             resolved_time = None
-            if status in [IncidentStatus.RESOLVED, IncidentStatus.CLOSED]:
+            if status == IncidentStatus.RESOLVED:
                 resolved_time = discovered_time + timedelta(
-                    hours=np.random.randint(1, 48)
+                    hours=secrets.randbelow(48) + 1
                 )
             
-            incident_title = np.random.choice(self.incident_types)
+            incident_title = random.choice(self.incident_types)
+            environment = random.choice(['Production', 'Staging', 'Development'])
             
-            incidents.append(SecurityIncident(
-                incident_id=f"INC-{datetime.now().strftime('%Y%m%d')}-{i+1:04d}",
-                title=f"{incident_title} - {np.random.choice(['Production', 'Staging', 'Development'])} Environment",
-                description=f"Potential {incident_title.lower()} detected in system infrastructure",
+            incident = SecurityIncident(
+                incident_id=f"INC-{secrets.token_hex(4).upper()}",
+                title=f"{incident_title} - {environment} Environment",
                 threat_level=threat_level,
                 status=status,
+                description=f"Security incident involving {incident_title.lower()} detected in {environment.lower()} environment",
                 affected_systems=self._generate_affected_systems(),
                 attack_vector=self._generate_attack_vector(),
                 discovered_at=discovered_time,
-                reported_at=discovered_time + timedelta(minutes=np.random.randint(5, 30)),
+                reported_at=discovered_time + timedelta(minutes=secrets.randbelow(25) + 5),
                 resolved_at=resolved_time,
-                analyst_assigned=np.random.choice(self.soc_analysts),
+                analyst_assigned=random.choice(self.soc_analysts),
                 estimated_impact=self._estimate_impact(threat_level),
                 lessons_learned=None
-            ))
+            )
+            incidents.append(incident)
         
         return incidents
     
     def _generate_affected_systems(self) -> List[str]:
-        """Generate affected systems for incident"""
+        """Generate list of affected systems"""
         systems = [
-            "auth-service", "payments-service", "marketplace-service",
-            "rewards-service", "analytics-service", "api-gateway",
-            "database-cluster", "load-balancer", "cdn-infrastructure"
+            "auth-service", "payment-gateway", "customer-db", "admin-portal",
+            "api-gateway", "mobile-app", "web-frontend", "analytics-service",
+            "notification-service", "marketplace-api", "identity-provider"
         ]
         
-        num_affected = np.random.randint(1, 4)
-        return list(np.random.choice(systems, size=num_affected, replace=False))
+        num_affected = secrets.randbelow(3) + 1  # 1-4 systems
+        return random.sample(systems, min(num_affected, len(systems)))
     
     def _generate_attack_vector(self) -> str:
-        """Generate attack vector for incident"""
+        """Generate attack vector"""
         vectors = [
-            "Email Phishing", "Web Application", "Network Intrusion",
-            "Malicious Download", "Social Engineering", "Insider Activity",
-            "Third-party Integration", "Cloud Service Compromise",
-            "Mobile Application", "API Exploitation"
+            "Email Phishing", "SQL Injection", "Cross-Site Scripting", "Brute Force",
+            "Social Engineering", "Malware Download", "Man-in-the-Middle", "DNS Poisoning",
+            "Credential Stuffing", "Zero-Day Exploit", "Insider Access", "API Exploitation"
         ]
-        
-        return np.random.choice(vectors)
+        return random.choice(vectors)
     
     def _estimate_impact(self, threat_level: ThreatLevel) -> str:
         """Estimate business impact based on threat level"""
@@ -485,53 +465,86 @@ class SecurityMetricsCollector:
         
         metrics = []
         
-        for metric_name, config in self.security_kpis.items():
+        for metric_name, config in self.metric_categories.items():
             # Simulate realistic metric values with some variance
-            if config["category"] == "preventive":
+            if metric_name == "patch_coverage_percentage":
                 # Preventive metrics should generally be high
-                current_value = np.random.uniform(
-                    config["target"] * 0.8, 
-                    min(100, config["target"] * 1.1)
-                )
-            elif config["category"] == "detective":
+                current_value = secrets.randbelow(40) + 60 # 60% to 100%
+                target_met = current_value >= 90
+                performance_score = ((current_value - 60) / 40) * 100
+            elif metric_name == "mfa_adoption_rate":
+                # Preventive metrics should generally be high
+                current_value = secrets.randbelow(40) + 60 # 60% to 100%
+                target_met = current_value >= 95
+                performance_score = ((current_value - 60) / 40) * 100
+            elif metric_name == "security_training_completion":
+                # Preventive metrics should generally be high
+                current_value = secrets.randbelow(40) + 60 # 60% to 100%
+                target_met = current_value >= 85
+                performance_score = ((current_value - 60) / 40) * 100
+            elif metric_name == "threat_detection_time":
                 # Detective metrics vary more
-                current_value = np.random.uniform(
-                    config["target"] * 0.6,
-                    config["target"] * 1.4
-                )
-            else:  # responsive
+                current_value = secrets.randbelow(60) + 30 # 30 to 90 minutes
+                target_met = current_value <= 60
+                performance_score = max(0, 100 - ((current_value - 30) / 60) * 100)
+            elif metric_name == "incident_resolution_rate":
                 # Response metrics should be close to target
-                current_value = np.random.uniform(
-                    config["target"] * 0.7,
-                    config["target"] * 1.3
-                )
+                current_value = secrets.randbelow(40) + 60 # 60% to 100%
+                target_met = current_value >= 90
+                performance_score = ((current_value - 60) / 40) * 100
+            elif metric_name == "log_coverage_percentage":
+                # Detective metrics vary more
+                current_value = secrets.randbelow(40) + 60 # 60% to 100%
+                target_met = current_value >= 98
+                performance_score = ((current_value - 60) / 40) * 100
+            else: # responsive metrics
+                # Response metrics should be close to target
+                current_value = secrets.randbelow(40) + 60 # 60% to 100%
+                target_met = current_value >= 90
+                performance_score = ((current_value - 60) / 40) * 100
             
             # Calculate thresholds
-            if config["category"] == "preventive":
-                warning_threshold = config["target"] * 0.9
-                critical_threshold = config["target"] * 0.8
-            else:
-                warning_threshold = config["target"] * 1.2
-                critical_threshold = config["target"] * 1.5
+            if metric_name == "patch_coverage_percentage":
+                warning_threshold = 90
+                critical_threshold = 80
+            elif metric_name == "mfa_adoption_rate":
+                warning_threshold = 95
+                critical_threshold = 90
+            elif metric_name == "security_training_completion":
+                warning_threshold = 85
+                critical_threshold = 75
+            elif metric_name == "threat_detection_time":
+                warning_threshold = 60
+                critical_threshold = 30
+            elif metric_name == "incident_resolution_rate":
+                warning_threshold = 90
+                critical_threshold = 80
+            elif metric_name == "log_coverage_percentage":
+                warning_threshold = 98
+                critical_threshold = 95
+            else: # responsive metrics
+                warning_threshold = 90
+                critical_threshold = 80
             
             # Calculate trend (7-day)
-            trend_7d = np.random.uniform(-15, 15)
+            trend_7d = (secrets.randbelow(3000) - 1500) / 100  # -15.0 to +15.0
             
             # Benchmark comparison
-            benchmark_comparison = np.random.uniform(-10, 20)
+            benchmark_comparison = (secrets.randbelow(3000) - 1000) / 100  # -10.0 to +20.0
             
-            metrics.append(SecurityMetric(
+            metric = SecurityMetric(
                 metric_name=metric_name.replace('_', ' ').title(),
                 current_value=current_value,
-                target_value=config["target"],
+                target_value=90, # Placeholder, adjust as needed
                 threshold_warning=warning_threshold,
                 threshold_critical=critical_threshold,
-                unit=config["unit"],
-                category=config["category"],
-                trend_7d=trend_7d,
-                benchmark_comparison=benchmark_comparison,
+                unit="%",
+                category=metric_name.split('_')[0], # e.g., "preventive", "detective", "responsive"
+                trend_7d=round(trend_7d, 1),
+                benchmark_comparison=round(benchmark_comparison, 1),
                 last_updated=datetime.now()
-            ))
+            )
+            metrics.append(metric)
         
         return metrics
 
@@ -1043,10 +1056,10 @@ class VulnerabilityManager:
         vulnerabilities = []
         
         # Generate realistic vulnerabilities
-        num_vulns = np.random.randint(15, 35)
+        num_vulns = secrets.randbelow(20) + 15  # 15-35 vulnerabilities
         
         for i in range(num_vulns):
-            cvss_score = np.random.uniform(2.0, 10.0)
+            cvss_score = secrets.randbelow(800) / 100 + 2.0 # 2.0 to 10.0
             
             # Determine severity based on CVSS score
             if cvss_score >= 9.0:
@@ -1067,17 +1080,17 @@ class VulnerabilityManager:
             }
             
             vulnerabilities.append(VulnerabilityAssessment(
-                vuln_id=f"VULN-{datetime.now().strftime('%Y%m%d')}-{i+1:04d}",
-                system_name=np.random.choice(self.systems),
-                vulnerability_type=np.random.choice(self.vulnerability_types),
-                cvss_score=cvss_score,
+                vuln_id=f"VULN-{secrets.token_hex(4).upper()}",
+                system_name=random.choice(self.systems),
+                vulnerability_type=random.choice(self.vulnerability_types),
+                cvss_score=round(cvss_score, 1),
                 severity=severity,
-                description=f"Potential {np.random.choice(self.vulnerability_types).lower()} vulnerability detected",
+                description=f"Potential {random.choice(self.vulnerability_types).lower()} vulnerability detected",
                 remediation_timeline=remediation_timelines[severity],
                 business_impact=self._assess_business_impact(severity),
                 exploit_probability=self._calculate_exploit_probability(cvss_score),
-                patch_available=np.random.choice([True, False], p=[0.7, 0.3]),
-                discovered_date=datetime.now() - timedelta(days=np.random.randint(0, 30))
+                patch_available=random.choice([True, False]),
+                discovered_date=datetime.now() - timedelta(days=secrets.randbelow(30) + 1)
             ))
         
         return vulnerabilities
@@ -1096,7 +1109,8 @@ class VulnerabilityManager:
     def _calculate_exploit_probability(self, cvss_score: float) -> float:
         """Calculate probability of exploitation"""
         # Higher CVSS score = higher probability of exploitation
-        return min(1.0, (cvss_score / 10.0) * 0.8 + np.random.uniform(0, 0.2))
+        secure_random = secrets.randbelow(20) / 100  # 0.0 to 0.2
+        return min(1.0, (cvss_score / 10.0) * 0.8 + secure_random)
 
 class SecurityComplianceTracker:
     """Security compliance and framework tracking"""
@@ -1105,23 +1119,23 @@ class SecurityComplianceTracker:
         self.frameworks = {
             SecurityFramework.NIST: {
                 "controls": 98,
-                "implemented": np.random.randint(85, 95),
-                "last_assessment": datetime.now() - timedelta(days=90)
+                "implemented": secrets.randbelow(10) + 85, # 85-95
+                "last_assessment": datetime.now() - timedelta(days=secrets.randbelow(365) + 90) # 90-455 days ago
             },
             SecurityFramework.ISO27001: {
                 "controls": 114,
-                "implemented": np.random.randint(90, 100),
-                "last_assessment": datetime.now() - timedelta(days=180)
+                "implemented": secrets.randbelow(10) + 90, # 90-100
+                "last_assessment": datetime.now() - timedelta(days=secrets.randbelow(365) + 180) # 180-545 days ago
             },
             SecurityFramework.SOC2: {
                 "controls": 64,
-                "implemented": np.random.randint(88, 96),
-                "last_assessment": datetime.now() - timedelta(days=365)
+                "implemented": secrets.randbelow(10) + 88, # 88-96
+                "last_assessment": datetime.now() - timedelta(days=secrets.randbelow(365) + 365) # 365-730 days ago
             },
             SecurityFramework.PCI_DSS: {
                 "controls": 12,
-                "implemented": np.random.randint(10, 12),
-                "last_assessment": datetime.now() - timedelta(days=120)
+                "implemented": secrets.randbelow(10) + 10, # 10-20
+                "last_assessment": datetime.now() - timedelta(days=secrets.randbelow(365) + 120) # 120-485 days ago
             }
         }
     
@@ -1246,22 +1260,22 @@ class SecurityReportGenerator:
         summary += "|-------------|-------|--------------|--------|------------------|---------|------------|\n"
 
         for incident in sorted(incidents, key=lambda x: x.discovered_at, reverse=True):
-            threat_icon = ("🔴" if incident.threat_level == ThreatLevel.CRITICAL 
-                         else "🟡" if incident.threat_level == ThreatLevel.HIGH
-                         else "🟠" if incident.threat_level == ThreatLevel.MEDIUM
-                         else "🟢")
-            
-            status_color = ("🔴" if incident.status == IncidentStatus.OPEN
-                          else "🟡" if incident.status == IncidentStatus.INVESTIGATING
-                          else "🟠" if incident.status == IncidentStatus.CONTAINED
-                          else "🟢")
-            
-            systems_text = ", ".join(incident.affected_systems[:2])
-            if len(incident.affected_systems) > 2:
-                systems_text += f" (+{len(incident.affected_systems)-2} more)"
-            
-            discovered_str = incident.discovered_at.strftime('%m-%d %H:%M')
-            
+                    threat_icon = ("🔴" if incident.threat_level == ThreatLevel.CRITICAL 
+                                 else "🟡" if incident.threat_level == ThreatLevel.HIGH
+                                 else "🟠" if incident.threat_level == ThreatLevel.MEDIUM
+                                 else "🟢")
+                    
+                    status_color = ("🔴" if incident.status == IncidentStatus.OPEN
+                                  else "🟡" if incident.status == IncidentStatus.INVESTIGATING
+                                  else "🟠" if incident.status == IncidentStatus.CONTAINED
+                                  else "🟢")
+                    
+                    systems_text = ", ".join(incident.affected_systems[:2])
+                    if len(incident.affected_systems) > 2:
+                        systems_text += f" (+{len(incident.affected_systems)-2} more)"
+                    
+                    discovered_str = incident.discovered_at.strftime('%m-%d %H:%M')
+                    
             summary += f"| {incident.incident_id} | {incident.title} | {threat_icon} {incident.threat_level.value.upper()} | {status_color} {incident.status.value.title()} | {systems_text} | {incident.analyst_assigned} | {discovered_str} |\n"
         
         return summary
@@ -1284,11 +1298,11 @@ class SecurityReportGenerator:
         summary += "|------------------|--------|------|------------|----------|-----------------|---------------------|\n"
 
         critical_high_vulns = [v for v in vulnerabilities if v.severity in [ThreatLevel.CRITICAL, ThreatLevel.HIGH]]
-        if critical_high_vulns:
-            for vuln in sorted(critical_high_vulns, key=lambda x: x.cvss_score, reverse=True)[:10]:
-                severity_icon = "🔴" if vuln.severity == ThreatLevel.CRITICAL else "🟡"
-                patch_icon = "✅" if vuln.patch_available else "❌"
-                
+            if critical_high_vulns:
+                for vuln in sorted(critical_high_vulns, key=lambda x: x.cvss_score, reverse=True)[:10]:
+                    severity_icon = "🔴" if vuln.severity == ThreatLevel.CRITICAL else "🟡"
+                    patch_icon = "✅" if vuln.patch_available else "❌"
+                    
                 summary += f"| {vuln.vuln_id} | {vuln.system_name} | {vuln.vulnerability_type} | {vuln.cvss_score:.1f} | {severity_icon} {vuln.severity.value.upper()} | {patch_icon} | {vuln.remediation_timeline} |\n"
         
         return summary
@@ -1301,8 +1315,8 @@ class SecurityReportGenerator:
         summary = "### Security Compliance Status\n\n"
         summary += "| Framework | Compliance | Controls Implemented | Last Assessment | Next Assessment |\n"
         summary += "|-----------|------------|---------------------|-----------------|----------------|\n"
-
-        for framework, status in compliance_status.items():
+            
+            for framework, status in compliance_status.items():
             summary += f"| {framework.upper().replace('_', '-')} | {status['status_icon']} {status['percentage']:.1f}% | {status['controls_implemented']}/{status['total_controls']} | {status['last_assessment'].strftime('%Y-%m-%d')} | {status['next_assessment'].strftime('%Y-%m-%d')} |\n"
         
         return summary
@@ -1628,14 +1642,14 @@ async def main():
     viz_generator = SecurityVisualizationGenerator(REPORTS_DIR)
 
     # --- Data Analysis ---
-    threat_engine = ThreatIntelligenceEngine()
-    incident_manager = SecurityIncidentManager()
+    threat_engine = SecurityThreatAnalyzer()
+    incident_manager = SecurityIncidentTracker(db)
     metrics_collector = SecurityMetricsCollector()
     vuln_manager = VulnerabilityManager()
     compliance_tracker = SecurityComplianceTracker()
 
-    threats = await threat_engine.collect_threat_intelligence()
-    incidents = incident_manager.generate_current_incidents()
+    threats = threat_engine.generate_threat_intelligence()
+    incidents = incident_manager.generate_recent_incidents()
     metrics = metrics_collector.collect_security_metrics()
     vulnerabilities = vuln_manager.generate_vulnerability_assessment()
     compliance_status = compliance_tracker.assess_compliance_status()

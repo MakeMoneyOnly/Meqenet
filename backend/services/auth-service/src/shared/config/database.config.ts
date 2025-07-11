@@ -259,6 +259,7 @@ function getSecureEnvVars(): {
   // This is the ONLY place in the configuration where process.env is accessed
   // ESLint disabled for centralized environment access - fintech security pattern
    
+
   return {
     DATABASE_URL: process.env.DATABASE_URL,
     DB_POOL_MIN: process.env.DB_POOL_MIN,
@@ -327,8 +328,8 @@ export default registerAs('database', (): DatabaseConfig => {
     return validatedConfig;
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const errorMessages = error.errors
-        .map(err => `${err.path.join('.')}: ${err.message}`)
+      const errorMessages = error.issues
+        .map((err: z.ZodIssue) => `${err.path.join('.')}: ${err.message}`)
         .join(', ');
 
       throw new Error(

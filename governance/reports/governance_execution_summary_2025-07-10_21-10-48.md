@@ -42,7 +42,8 @@ asyncio.run(main()) ~~~~~~~~~~~^^^^^^^^ File "C:\Python313\Lib\asyncio\runners.p
 return runner.run(main) ~~~~~~~~~~^^^^^^ File "C:\Python313\Lib\asyncio\runners.py", line 118, in
 run return self.\_loop.run_until_complete(task) ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^ File
 "C:\Python313\Lib\asyncio\base_events.py", line 725, in run_until_complete return future.result()
-~~~~~~~~~~~~~^^ File "C:\Users\Rude Bwoy\Desktop\1\Meqenet\governance\dashboards\cfo_dashboard.py",
+
+```^^ File "C:\Users\Rude Bwoy\Desktop\1\Meqenet\governance\dashboards\cfo_dashboard.py",
 line 980, in main optimization_chart_path =
 visualization_generator.create_optimization_chart(recommendations) File "C:\Users\Rude
 Bwoy\Desktop\1\Meqenet\governance\dashboards\cfo_dashboard.py", line 669, in
@@ -159,3 +160,4 @@ The following interactive visualizations are available for detailed analysis:
 2. Hover over chart elements to see detailed data
 3. Use zoom and pan controls to explore the data
 4. Export charts as PNG images using the camera icon in the top-right corner
+```

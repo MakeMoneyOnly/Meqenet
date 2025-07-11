@@ -334,7 +334,7 @@ class GovernanceConfig:
             # Handle dictionary format
             for key, dashboard in dashboards_config.items():
                 if isinstance(dashboard, dict):
-                    configs.append(DashboardConfig(
+            configs.append(DashboardConfig(
                         name=dashboard.get("name", key),
                         script_path=dashboard["script_path"],
                         enabled=dashboard["enabled"],
@@ -355,7 +355,7 @@ class GovernanceConfig:
                         timeout_minutes=dashboard["timeout_minutes"],
                         dependencies=dashboard.get("dependencies", []),
                         environment_vars=dashboard.get("environment_vars", {})
-                    ))
+            ))
         return configs
 
 class DashboardExecutor:
@@ -366,7 +366,7 @@ class DashboardExecutor:
         self.display = display
         self.python_executable = sys.executable
         self.working_directory = PROJECT_ROOT
-        
+    
     async def execute_dashboard(self, dashboard_config: DashboardConfig, current: int, total: int) -> ExecutionResult:
         """Execute a single dashboard with visual feedback"""
         start_time = datetime.now()
@@ -376,7 +376,7 @@ class DashboardExecutor:
         
         # Log to file only
         logger.info(f"Starting execution of {dashboard_config.name}")
-        
+            
         try:
             # Prepare script path
             script_path = Path(dashboard_config.script_path)
@@ -440,19 +440,19 @@ class DashboardExecutor:
         
         try:
             # Use asyncio.create_subprocess_exec for better async support
-            process = await asyncio.create_subprocess_exec(
+                    process = await asyncio.create_subprocess_exec(
                 *cmd,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
+                        stdout=asyncio.subprocess.PIPE,
+                        stderr=asyncio.subprocess.PIPE,
                 cwd=str(self.working_directory)
             )
             
             # Wait for completion with timeout
-            stdout, stderr = await asyncio.wait_for(
-                process.communicate(),
+                    stdout, stderr = await asyncio.wait_for(
+                        process.communicate(),
                 timeout=timeout_minutes * 60
-            )
-            
+                    )
+                    
             # Create result object
             class Result:
                 def __init__(self, returncode, stdout, stderr):
@@ -461,11 +461,11 @@ class DashboardExecutor:
                     self.stderr = stderr.decode('utf-8', errors='replace') if stderr else ""
             
             return Result(process.returncode, stdout, stderr)
-            
-        except asyncio.TimeoutError:
+                    
+                except asyncio.TimeoutError:
             # Kill process if timeout
             try:
-                process.kill()
+                    process.kill()
                 await process.wait()
             except:
                 pass
@@ -1379,8 +1379,8 @@ async def main():
     elif args.run_dashboard:
         dashboard_configs = orchestrator.config.get_dashboard_configs()
         config = next((c for c in dashboard_configs if c.name.lower().startswith(args.run_dashboard.lower())), None)
-        
-        if config:
+            
+            if config:
             orchestrator.display.clear_screen()
             orchestrator.display.print_header()
             print(f"🚀 Running: {config.name}")
@@ -1398,10 +1398,10 @@ async def main():
             
             orchestrator.display.print_status_table([result_dict])
             
-            if result.error_message:
+                if result.error_message:
                 print(f"\n❌ Error Details:")
                 print(f"   {result.error_message}")
-        else:
+            else:
             print(f"❌ Dashboard '{args.run_dashboard}' not found")
             print("\n📋 Available dashboards:")
             for config in dashboard_configs:

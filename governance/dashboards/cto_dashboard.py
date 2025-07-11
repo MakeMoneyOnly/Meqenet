@@ -1139,15 +1139,15 @@ async def main():
     security_scanner = SecurityScanner()
     arch_analyzer = ArchitectureAnalyzer()
     devops_collector = DevOpsMetricsCollector()
-
-    system_health_metrics = await health_monitor.check_service_health()
-    infra_metrics = health_monitor.get_infrastructure_metrics()
-    all_health_metrics = system_health_metrics + infra_metrics
     
-    vulnerabilities = await security_scanner.scan_dependencies()
+    system_health_metrics = await health_monitor.check_service_health()
+        infra_metrics = health_monitor.get_infrastructure_metrics()
+    all_health_metrics = system_health_metrics + infra_metrics
+        
+        vulnerabilities = await security_scanner.scan_dependencies()
     violations = arch_analyzer.analyze_architecture_compliance()
-    tech_debt = arch_analyzer.analyze_technical_debt()
-    devops_metrics = devops_collector.collect_deployment_metrics()
+        tech_debt = arch_analyzer.analyze_technical_debt()
+        devops_metrics = devops_collector.collect_deployment_metrics()
 
     # --- Visualization Generation ---
     logger.info("📊 Generating interactive technical visualizations...")

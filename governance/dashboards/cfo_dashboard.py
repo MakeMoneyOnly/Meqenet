@@ -1001,7 +1001,7 @@ async def main():
     report_generator = FinancialReportGenerator(db)
     
     executive_summary = report_generator.generate_executive_summary(
-        cost_metrics, revenue_metrics, recommendations, forecasts
+                cost_metrics, revenue_metrics, recommendations, forecasts
     )
     report_manager.add_section("Executive Financial Summary", executive_summary)
 

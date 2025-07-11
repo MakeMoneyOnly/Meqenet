@@ -42,7 +42,8 @@ asyncio.run(main()) ~~~~~~~~~~~^^^^^^^^ File "C:\Python313\Lib\asyncio\runners.p
 return runner.run(main) ~~~~~~~~~~^^^^^^ File "C:\Python313\Lib\asyncio\runners.py", line 118, in
 run return self.\_loop.run_until_complete(task) ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^ File
 "C:\Python313\Lib\asyncio\base_events.py", line 725, in run_until_complete return future.result()
-~~~~~~~~~~~~~^^ File "C:\Users\Rude Bwoy\Desktop\1\Meqenet\governance\dashboards\cfo_dashboard.py",
+
+```^^ File "C:\Users\Rude Bwoy\Desktop\1\Meqenet\governance\dashboards\cfo_dashboard.py",
 line 980, in main optimization_chart_path =
 visualization_generator.create_optimization_chart(recommendations) File "C:\Users\Rude
 Bwoy\Desktop\1\Meqenet\governance\dashboards\cfo_dashboard.py", line 669, in
@@ -135,3 +136,4 @@ print("\U0001f3db\ufe0f UNIFIED GOVERNANCE FRAMEWORK SUMMARY")
 19, in encode return codecs.charmap_encode(input,self.errors,encoding_table)[0]
 ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ UnicodeEncodeError: 'charmap' codec can't
 encode characters in position 0-1: character maps to <undefined>
+```
