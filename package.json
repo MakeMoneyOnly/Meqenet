@@ -12,6 +12,7 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
     "test:integration": "vitest run integration",
+    "test:e2e": "pnpm nx e2e backend-e2e",
     "build": "pnpm -r --if-present build",
     "security:audit": "pnpm audit --audit-level moderate",
     "security:audit-ci": "audit-ci --config .audit-ci.json",
@@ -34,7 +35,7 @@
     "docker:logs": "docker-compose logs -f",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "format:write": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
-    "security:scan-python": "node -e \"const fs = require('fs'); const p = './.pip-audit-deps'; if (fs.existsSync(p)) fs.rmSync(p, { recursive: true, force: true }); fs.mkdirSync(p, { recursive: true });\" && pip install --target=./.pip-audit-deps -r tools/git/requirements.txt > nul && pip-audit --path ./.pip-audit-deps",
+    "security:scan-python": "python -m pip install --target=./.pip-audit-deps-temp -r tools/git/requirements.txt --upgrade > nul && cross-env PIPAPI_PYTHON_LOCATION=.venv/Scripts/python.exe pip-audit --path ./.pip-audit-deps-temp --strict",
     "security:sbom:validate": "cdxgen -o bom.json --include-formulation --include-crypto --validate . && echo '✅ SBOM validated successfully'"
   },
   "dependencies": {

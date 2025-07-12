@@ -97,10 +97,10 @@ class LocalCIValidator:
         # Code Quality & Linting Checks
         self.checks.extend([
             ValidationCheck(
-                name="ESLint Check",
-                description="Run ESLint on TypeScript/JavaScript files",
-                command=["pnpm", "run", "lint"],
-                timeout=180,
+                name="ESLint Check (Entire Workspace)",
+                description="Run ESLint on all projects in the workspace, mirroring the CI pipeline's strict checks.",
+                command=["pnpm", "nx", "run-many", "--target=lint", "--all"],
+                timeout=300,  # Increased timeout for a full workspace scan
                 critical=True,
                 category="code_quality"
             ),
@@ -170,8 +170,8 @@ class LocalCIValidator:
             ),
             ValidationCheck(
                 name="E2E Tests",
-                description="Run end-to-end tests for the backend.",
-                command=["pnpm", "nx", "e2e", "backend-e2e"],
+                description="Run end-to-end tests for the backend, mirroring the CI pipeline.",
+                command=["pnpm", "run", "test:e2e"],
                 timeout=600,
                 critical=True,
                 category="testing"
@@ -183,7 +183,7 @@ class LocalCIValidator:
             ValidationCheck(
                 name="Serve API Gateway",
                 description="Serve the API Gateway for E2E tests",
-                command=["pnpm", "nx", "serve", "api-gateway-service"],
+                command=["pnpm", "nx", "serve", "api-gateway"],
                 timeout=30, # Timeout for server to start
                 critical=True,
                 category="serve"
@@ -193,11 +193,35 @@ class LocalCIValidator:
         # Build and Deployment Checks
         self.checks.extend([
             ValidationCheck(
+                name="Docker Availability Check",
+                description="Verify Docker is installed and accessible",
+                command=["docker", "--version"],
+                timeout=10,
+                critical=True,  # Docker is required for fintech deployment
+                category="deployment"
+            ),
+            ValidationCheck(
+                name="Docker Configuration Validation",
+                description="Validate Docker Compose configuration syntax and structure",
+                command=["docker", "compose", "config", "--quiet"],
+                timeout=30,  # Quick syntax check
+                critical=True,
+                category="deployment"
+            ),
+            ValidationCheck(
+                name="Docker System Cleanup",
+                description="Clean Docker system to ensure fresh build environment",
+                command=["docker", "system", "prune", "-f", "--volumes"],
+                timeout=120,  # 2 minutes for cleanup
+                critical=False,  # Non-critical cleanup step
+                category="deployment"
+            ),
+            ValidationCheck(
                 name="Docker Build Validation",
-                description="Validate Docker builds for services",
-                command=["docker", "compose", "build", "--no-cache"],
-                timeout=900,  # 15 minutes for Docker builds
-                critical=False,  # Warning only - might not have Docker in all envs
+                description="Full Docker build validation for production readiness with BuildKit optimization",
+                command=["docker", "compose", "build", "--parallel"],
+                timeout=1200,  # 20 minutes for comprehensive Docker builds
+                critical=True,  # Critical for fintech - must catch all build issues
                 category="deployment"
             ),
             ValidationCheck(
@@ -269,13 +293,25 @@ class LocalCIValidator:
         
         try:
             logger.info(f"[RUNNING] {check.name}...")
-            
+
+            # Set up environment variables for Docker optimization
+            env = None
+            if check.command[0] == "docker":
+                import os
+                env = os.environ.copy()
+                env.update({
+                    'DOCKER_BUILDKIT': '1',
+                    'COMPOSE_DOCKER_CLI_BUILD': '1',
+                    'BUILDKIT_PROGRESS': 'plain'
+                })
+
             # Run the command
             process = await asyncio.create_subprocess_exec(
                 *check.command,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
-                cwd=self.project_root
+                cwd=self.project_root,
+                env=env
             )
             check.process = process # Store the process
 
@@ -315,15 +351,25 @@ class LocalCIValidator:
                 return True
             else:
                 check.status = CheckStatus.FAILED if check.critical else CheckStatus.WARNING
-                check.error_details = stderr.decode('utf-8', errors='ignore')
-                
+                error_output = stderr.decode('utf-8', errors='ignore')
+
+                # Enhanced error handling for Docker-related issues
+                if check.command[0] == "docker" and "command not found" in error_output:
+                    check.error_details = (
+                        "Docker is not installed or not in PATH. "
+                        "For fintech production readiness, Docker is required. "
+                        "Please install Docker Desktop from https://docker.com/get-started"
+                    )
+                else:
+                    check.error_details = error_output
+
                 if check.critical:
                     logger.error(f"[FAILED] {check.name} ({check.duration:.2f}s)")
                     self.failed_checks.append(check)
                 else:
                     logger.warning(f"[WARNING] {check.name} ({check.duration:.2f}s)")
                     self.warning_checks.append(check)
-                
+
                 return not check.critical
                 
         except Exception as e:

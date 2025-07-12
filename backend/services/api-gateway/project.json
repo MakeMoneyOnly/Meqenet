@@ -1,5 +1,5 @@
 {
-  "name": "api-gateway-service",
+  "name": "api-gateway",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "backend/services/api-gateway/src",
   "projectType": "application",
@@ -11,7 +11,8 @@
         "webpackConfig": "backend/services/api-gateway/webpack.config.js",
         "outputPath": "dist/backend/services/api-gateway",
         "main": "backend/services/api-gateway/src/main.ts",
-        "tsConfig": "backend/services/api-gateway/tsconfig.app.json"
+        "tsConfig": "backend/services/api-gateway/tsconfig.app.json",
+        "generatePackageJson": false
       },
       "configurations": {
         "production": {
@@ -24,18 +25,18 @@
     "serve": {
       "executor": "@nx/js:node",
       "options": {
-        "buildTarget": "api-gateway-service:build"
+        "buildTarget": "api-gateway:build"
       },
       "configurations": {
         "production": {
-          "buildTarget": "api-gateway-service:build:production"
+          "buildTarget": "api-gateway:build:production"
         }
       }
     },
     "serve-static": {
       "executor": "@nx/js:node",
       "options": {
-        "buildTarget": "api-gateway-service:build",
+        "buildTarget": "api-gateway:build",
         "watch": false
       }
     }

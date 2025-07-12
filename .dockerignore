@@ -1,65 +1,45 @@
-# Development and testing files
-node_modules
+# Ignore node_modules, as they should be installed within the container
 **/node_modules
-backend/services/*/node_modules
-.git
-.gitignore
-.gitattributes
-.github
-.husky
-.vscode
-.DS_Store
-.env
-.env.*
-*.log
-*.pid
-*.seed
-*.pid.lock
 
-# Build artifacts
+# Ignore build outputs and caches
 dist
 coverage
-.nyc_output
-build
+.nx/cache
+tmp-*
 
-# Documentation and non-essential files
-README.md
-CONTRIBUTING.md
-docs
-1. docs
-*.md
+# Ignore IDE and OS-specific files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 
-# Templates and development tools (cookiecutter templates should not be built)
-templates
-cookiecutter.json
-tools
-scripts
-tasks
-governance
-infrastructure
+# Ignore local development artifacts
+.env
+*.local
+.venv
 
-# Testing files - more specific patterns
-*.spec.ts
-*.test.ts
-**/*.spec.ts
-**/*.test.ts
-jest.config.*
-test-setup.ts
-tsconfig.spec.json
-test/
-tests/
-__tests__/
+# Ignore logs and temporary files
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
-# Security and analysis files
-.security
-bom.json
-.audit-ci.json
+# Ignore Git
+.git
+.gitignore
 
-# IDE and OS specific
-.cursorrules
-.prettierrc.cjs
-.prettierignore
-.nxignore
+# Ignore local CI validation reports
+governance/logs
+governance/reports
 
-# Environment specific
-.venv 
+# Ignore security audit temporary directories
+.pip-audit-deps*
+
+# Ignore system files
+Thumbs.db
+.DS_Store 

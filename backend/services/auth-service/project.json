@@ -1,0 +1,43 @@
+{
+  "name": "auth-service",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "backend/services/auth-service/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nx/webpack:webpack",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "webpackConfig": "backend/services/auth-service/webpack.config.js",
+        "outputPath": "dist/backend/services/auth-service",
+        "main": "backend/services/auth-service/src/main.ts",
+        "tsConfig": "backend/services/auth-service/tsconfig.app.json"
+      },
+      "configurations": {
+        "production": {
+          "optimization": true,
+          "extractLicenses": true,
+          "inspect": false
+        }
+      }
+    },
+    "serve": {
+      "executor": "@nx/js:node",
+      "options": {
+        "buildTarget": "auth-service:build"
+      },
+      "configurations": {
+        "production": {
+          "buildTarget": "auth-service:build:production"
+        }
+      }
+    },
+    "serve-static": {
+      "executor": "@nx/js:node",
+      "options": {
+        "buildTarget": "auth-service:build",
+        "watch": false
+      }
+    }
+  }
+}

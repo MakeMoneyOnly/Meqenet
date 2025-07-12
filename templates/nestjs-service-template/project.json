@@ -1,0 +1,57 @@
+{
+  "name": "{{SERVICE_NAME}}",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "backend/services/{{SERVICE_NAME}}/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nx/webpack:webpack",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "webpackConfig": "backend/services/{{SERVICE_NAME}}/webpack.config.js",
+        "outputPath": "dist/backend/services/{{SERVICE_NAME}}",
+        "main": "backend/services/{{SERVICE_NAME}}/src/main.ts",
+        "tsConfig": "backend/services/{{SERVICE_NAME}}/tsconfig.app.json"
+      },
+      "configurations": {
+        "production": {
+          "optimization": true,
+          "extractLicenses": true,
+          "inspect": false
+        }
+      }
+    },
+    "serve": {
+      "executor": "@nx/js:node",
+      "options": {
+        "buildTarget": "{{SERVICE_NAME}}:build"
+      },
+      "configurations": {
+        "production": {
+          "buildTarget": "{{SERVICE_NAME}}:build:production"
+        }
+      }
+    },
+    "serve-static": {
+      "executor": "@nx/js:node",
+      "options": {
+        "buildTarget": "{{SERVICE_NAME}}:build",
+        "watch": false
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["backend/services/{{SERVICE_NAME}}/src/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/backend/services/{{SERVICE_NAME}}"],
+      "options": {
+        "jestConfig": "backend/services/{{SERVICE_NAME}}/jest.config.ts"
+      }
+    }
+  }
+}
