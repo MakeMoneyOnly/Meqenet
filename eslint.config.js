@@ -195,8 +195,8 @@ module.exports = [
   },
   {
     files: [
-      '*.config.js',
-      '*.config.ts',
+      '**/*.config.js',
+      '**/*.config.ts',
       'jest.preset.ts',
       'eslint.config.js',
       '.prettierrc.js',
@@ -212,7 +212,12 @@ module.exports = [
     },
   },
   {
-    files: ['*.config.js', '*.config.cjs', '.prettierrc.cjs'],
+    files: [
+      '**/webpack.config.js',
+      '*.config.js',
+      '*.config.cjs',
+      '.prettierrc.cjs',
+    ],
     languageOptions: {
       globals: {
         ...globals.node,

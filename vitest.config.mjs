@@ -13,14 +13,14 @@ export default defineConfig({
     setupFiles: ['./test/setup.ts'],
     include: [
       'backend/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
-      'backend-e2e/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'
+      'backend-e2e/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
     ],
     exclude: [
       '**/node_modules/**',
       '**/dist/**',
       '**/cypress/**',
       '**/.{idea,git,cache,output,temp}/**',
-      '**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*'
+      '**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*',
     ],
     testTimeout: 10000,
     coverage: {
@@ -33,17 +33,14 @@ export default defineConfig({
         '**/test/**',
         '**/*.d.ts',
         '**/*.config.*',
-        '**/main.ts'
-      ]
+        '**/main.ts',
+      ],
     },
     typecheck: {
-      tsconfig: './tsconfig.json'
+      tsconfig: './tsconfig.json',
     },
     // Explicitly prevent vitest from scanning node_modules
-    watchExclude: [
-      'node_modules/**',
-      '**/node_modules/**'
-    ]
+    watchExclude: ['node_modules/**', '**/node_modules/**'],
   },
   resolve: {
     alias: {
@@ -52,7 +49,7 @@ export default defineConfig({
       '@api-gateway': resolve(__dirname, './backend/services/api-gateway/src'),
       '@shared': resolve(__dirname, './backend/src/shared'),
       '@features': resolve(__dirname, './backend/src/features'),
-      '@infrastructure': resolve(__dirname, './backend/src/infrastructure')
-    }
-  }
+      '@infrastructure': resolve(__dirname, './backend/src/infrastructure'),
+    },
+  },
 });

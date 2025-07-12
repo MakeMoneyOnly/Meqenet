@@ -2,16 +2,14 @@
   "name": "api-gateway-e2e",
   "$schema": "../node_modules/nx/schemas/project-schema.json",
   "projectType": "application",
-  "implicitDependencies": ["api-gateway"],
+  "implicitDependencies": ["api-gateway-service"],
   "targets": {
     "e2e": {
-      "executor": "@nx/jest:jest",
+      "executor": "@nx/vite:test",
       "outputs": ["{workspaceRoot}/coverage/{e2eProjectRoot}"],
       "options": {
-        "jestConfig": "backend-e2e/jest.config.cjs",
-        "passWithNoTests": true
-      },
-      "dependsOn": ["api-gateway:build", "api-gateway:serve"]
+        "devServerTarget": "api-gateway-service:serve-static"
+      }
     }
   }
 }
