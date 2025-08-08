@@ -31,6 +31,26 @@ const RETRY_CONFIG = {
   PASSWORD_MIN_LENGTH: 12,
 } as const;
 
+// Version-agnostic structural types for Prisma logging
+type PrismaEventLevel = 'query' | 'info' | 'warn' | 'error';
+type PrismaEmit = 'event' | 'stdout';
+interface PrismaEventLogDefinition {
+  level: PrismaEventLevel;
+  emit: PrismaEmit;
+}
+interface PrismaQueryEventLike {
+  timestamp?: Date | string;
+  query: string;
+  params: string;
+  duration: number;
+  target?: string;
+}
+interface PrismaLogEventLike {
+  timestamp?: Date | string;
+  message: string;
+  target?: string;
+}
+
 @Injectable()
 export class PrismaService
   extends PrismaClient
@@ -56,6 +76,18 @@ export class PrismaService
     const nodeEnv = PrismaService.getSecureNodeEnv();
     const isProduction = nodeEnv === 'production';
 
+    const log: PrismaEventLogDefinition[] = isProduction
+      ? [
+          { level: 'error', emit: 'event' },
+          { level: 'warn', emit: 'event' },
+        ]
+      : [
+          { level: 'query', emit: 'event' },
+          { level: 'error', emit: 'event' },
+          { level: 'warn', emit: 'event' },
+          { level: 'info', emit: 'event' },
+        ];
+
     super({
       datasources: {
         db: {
@@ -64,18 +96,8 @@ export class PrismaService
       },
       // Enhanced error formatting for security and debugging
       errorFormat: isProduction ? 'minimal' : 'pretty',
-      // Log all queries in development for audit compliance
-      log: isProduction
-        ? [
-            { level: 'error', emit: 'event' },
-            { level: 'warn', emit: 'event' },
-          ]
-        : [
-            { level: 'query', emit: 'event' },
-            { level: 'error', emit: 'event' },
-            { level: 'warn', emit: 'event' },
-            { level: 'info', emit: 'event' },
-          ],
+      // Log all queries in development for audit compliance (structural typing)
+      log,
     });
 
     // Set up event listeners for monitoring and compliance
@@ -90,6 +112,7 @@ export class PrismaService
     // Security: Single-point access to NODE_ENV for constructor use
     // ESLint disabled for this specific secure access pattern
 
+     
     return process.env.NODE_ENV;
   }
 
@@ -149,65 +172,72 @@ export class PrismaService
    * Sets up event listeners for audit logging and monitoring
    */
   private setupEventListeners(): void {
-    // Query logging for audit compliance (NBE requirement)
-    (this as any).$on(
-      'query',
-      (event: {
-        query: string;
-        params: string;
-        duration: number;
-        target: string;
-      }) => {
-        // Security: Use ConfigService for environment variable access
-        if (this.configService.get<string>('NODE_ENV') !== 'production') {
-          this.logger.debug(
-            `Query: ${event.query} | Duration: ${event.duration}ms`
-          );
-        }
+    // Prisma's $on method has a complex type signature that is difficult to satisfy
+    // when using conditional log levels. We use structural types to avoid
+    // coupling to specific Prisma versions while retaining strong typing.
 
-        // Log slow queries for performance monitoring
-        if (event.duration > RETRY_CONFIG.SLOW_QUERY_THRESHOLD) {
-          this.logger.warn(`Slow query detected: ${event.duration}ms`, {
-            query: event.query,
-            params: event.params,
-            duration: event.duration,
-          });
-        }
+    // Query logging for audit compliance (NBE requirement)
+    (
+      this.$on as unknown as (
+        event: 'query',
+        callback: (event: PrismaQueryEventLike) => void
+      ) => void
+    )('query', (event: PrismaQueryEventLike) => {
+      // Security: Use ConfigService for environment variable access
+      if (this.configService.get<string>('NODE_ENV') !== 'production') {
+        this.logger.debug(
+          `Query: ${event.query} | Duration: ${event.duration}ms`
+        );
       }
-    );
+
+      // Log slow queries for performance monitoring
+      if (event.duration > RETRY_CONFIG.SLOW_QUERY_THRESHOLD) {
+        this.logger.warn(`Slow query detected: ${event.duration}ms`, {
+          query: event.query,
+          params: event.params,
+          duration: event.duration,
+        });
+      }
+    });
 
     // Error logging for security monitoring
-    (this as any).$on(
-      'error',
-      (event: { message: string; target: string; timestamp: Date }) => {
-        this.logger.error(`Database error: ${event.message}`, {
-          target: event.target,
-          timestamp: event.timestamp,
-        });
-      }
-    );
+    (
+      this.$on as unknown as (
+        event: 'error',
+        callback: (event: PrismaLogEventLike) => void
+      ) => void
+    )('error', (event: PrismaLogEventLike) => {
+      this.logger.error(`Database error: ${event.message}`, {
+        target: event.target,
+        timestamp: event.timestamp,
+      });
+    });
 
     // Warning logging
-    (this as any).$on(
-      'warn',
-      (event: { message: string; target: string; timestamp: Date }) => {
-        this.logger.warn(`Database warning: ${event.message}`, {
-          target: event.target,
-          timestamp: event.timestamp,
-        });
-      }
-    );
+    (
+      this.$on as unknown as (
+        event: 'warn',
+        callback: (event: PrismaLogEventLike) => void
+      ) => void
+    )('warn', (event: PrismaLogEventLike) => {
+      this.logger.warn(`Database warning: ${event.message}`, {
+        target: event.target,
+        timestamp: event.timestamp,
+      });
+    });
 
     // Info logging for audit trail
-    (this as any).$on(
-      'info',
-      (event: { message: string; target: string; timestamp: Date }) => {
-        this.logger.log(`Database info: ${event.message}`, {
-          target: event.target,
-          timestamp: event.timestamp,
-        });
-      }
-    );
+    (
+      this.$on as unknown as (
+        event: 'info',
+        callback: (event: PrismaLogEventLike) => void
+      ) => void
+    )('info', (event: PrismaLogEventLike) => {
+      this.logger.log(`Database info: ${event.message}`, {
+        target: event.target,
+        timestamp: event.timestamp,
+      });
+    });
   }
 
   /**

@@ -69,15 +69,21 @@ class ValidationCheck:
 class LocalCIValidator:
     """Comprehensive local CI/CD validation that mirrors our GitHub Actions pipeline"""
     
-    def __init__(self, project_root: Path):
+    def __init__(self, project_root: Path, ci_mode: bool = False):
         self.project_root = project_root
         self.start_time = datetime.now()
         self.checks: List[ValidationCheck] = []
         self.failed_checks: List[ValidationCheck] = []
         self.warning_checks: List[ValidationCheck] = []
+        self.ci_mode = ci_mode
         
         # Initialize all validation checks
         self._initialize_checks()
+        
+        if self.ci_mode:
+            logger.info("CI mode enabled: All checks are critical.")
+            for check in self.checks:
+                check.critical = True
     
     def _initialize_checks(self):
         """Initialize all validation checks that mirror CI/CD pipeline"""
@@ -99,7 +105,7 @@ class LocalCIValidator:
             ValidationCheck(
                 name="ESLint Check (Entire Workspace)",
                 description="Run ESLint on all projects in the workspace, mirroring the CI pipeline's strict checks.",
-                command=["pnpm", "nx", "run-many", "--target=lint", "--all"],
+                command=["pnpm", "nx", "run-many", "--target=lint", "--all", "--", "--max-warnings=0"],
                 timeout=300,  # Increased timeout for a full workspace scan
                 critical=True,
                 category="code_quality"
@@ -126,9 +132,9 @@ class LocalCIValidator:
         self.checks.extend([
             ValidationCheck(
                 name="Dependency Audit",
-                description="Check for vulnerable dependencies",
-                command=["pnpm", "audit", "--audit-level", "high"],
-                timeout=120,
+                description="Check for vulnerable dependencies using audit-ci",
+                command=["pnpm", "run", "security:audit-ci"],
+                timeout=180,
                 critical=True,
                 category="security"
             ),
@@ -194,9 +200,9 @@ class LocalCIValidator:
         self.checks.extend([
             ValidationCheck(
                 name="Docker Availability Check",
-                description="Verify Docker is installed and accessible",
-                command=["docker", "--version"],
-                timeout=10,
+                description="Verify Docker daemon is running and accessible",
+                command=["docker", "info"],
+                timeout=20, # Increased timeout for daemon check
                 critical=True,  # Docker is required for fintech deployment
                 category="deployment"
             ),
@@ -465,7 +471,7 @@ class LocalCIValidator:
         
         return overall_success
     
-    def generate_report(self) -> Dict[str, Any]:
+    def generate_report(self) -> Dict[str, object]:
         """Generate comprehensive validation report"""
         total_duration = (datetime.now() - self.start_time).total_seconds()
         
@@ -540,7 +546,7 @@ class LocalCIValidator:
         
         return report
     
-    def print_summary(self, report: Dict[str, Any]):
+    def print_summary(self, report: Dict[str, object]):
         """Print a formatted summary of the validation results"""
         summary = report["validation_summary"]
         
@@ -582,7 +588,7 @@ class LocalCIValidator:
             json.dump(report, f, indent=2)
         print(f"Detailed report saved to: {report_file}")
 
-async def main():
+async def main() -> None:
     """Main function for CLI usage"""
     parser = argparse.ArgumentParser(
         description="Local CI/CD Validation Suite for Meqenet.et",
@@ -609,11 +615,16 @@ async def main():
         action="store_true", 
         help="Run only security-related checks"
     )
+    parser.add_argument(
+        '--ci',
+        action='store_true',
+        help='Run in CI mode with stricter settings, treating all warnings as critical failures.'
+    )
     
     args = parser.parse_args()
     
     project_root = Path.cwd()
-    validator = LocalCIValidator(project_root)
+    validator = LocalCIValidator(project_root, ci_mode=args.ci)
     
     # Determine categories to run
     if args.quick:
@@ -643,4 +654,4 @@ async def main():
     sys.exit(0 if success else 1)
 
 if __name__ == "__main__":
-    asyncio.run(main()) 
+    asyncio.run(main())
