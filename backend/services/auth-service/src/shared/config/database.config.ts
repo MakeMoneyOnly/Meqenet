@@ -237,7 +237,7 @@ export type DatabaseConfig = z.infer<typeof DatabaseConfigSchema>;
  * Centralizes all process.env access with audit logging
  */
 function getSecureEnvVars(): {
-  readonly DATABASE_URL: string | undefined;
+  readonly DATABASE_URL: string;
   readonly DB_POOL_MIN: string | undefined;
   readonly DB_POOL_MAX: string | undefined;
   readonly DB_CONNECTION_TIMEOUT: string | undefined;
@@ -259,8 +259,14 @@ function getSecureEnvVars(): {
   // This is the ONLY place in the configuration where process.env is accessed
   // ESLint disabled for centralized environment access - fintech security pattern
 
+   
+  const databaseUrl = process.env.DATABASE_URL;
+  if (!databaseUrl) {
+    throw new Error('DATABASE_URL is not set.');
+  }
+
   return {
-    DATABASE_URL: process.env.DATABASE_URL,
+    DATABASE_URL: databaseUrl,
     DB_POOL_MIN: process.env.DB_POOL_MIN,
     DB_POOL_MAX: process.env.DB_POOL_MAX,
     DB_CONNECTION_TIMEOUT: process.env.DB_CONNECTION_TIMEOUT,
@@ -278,6 +284,7 @@ function getSecureEnvVars(): {
     DB_HEALTH_CHECK_TIMEOUT: process.env.DB_HEALTH_CHECK_TIMEOUT,
     NODE_ENV: process.env.NODE_ENV,
   } as const;
+   
 }
 
 /**

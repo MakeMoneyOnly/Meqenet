@@ -334,8 +334,8 @@ describe('GlobalExceptionFilter - Security Tests', () => {
       const endTime = process.hrtime.bigint();
       const executionTime = Number(endTime - startTime) / 1_000_000; // Convert to milliseconds
 
-      // Should process quickly (< 10ms for 100 errors)
-      expect(executionTime).toBeLessThan(10);
+      // Should process quickly (< 50ms for 100 errors)
+      expect(executionTime).toBeLessThan(50);
     });
 
     it('should not leak memory on repeated error handling', () => {

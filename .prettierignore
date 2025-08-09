@@ -5,3 +5,4 @@
 /.nx/workspace-data
 /templates/microservice/
 .pip-audit-deps/
+.pip-audit-deps-temp/

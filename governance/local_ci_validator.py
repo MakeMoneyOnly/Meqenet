@@ -64,30 +64,57 @@ class ValidationCheck:
     output: str = ""
     duration: float = 0.0
     error_details: Optional[str] = None
+    process: Optional[asyncio.subprocess.Process] = None
 
 class LocalCIValidator:
     """Comprehensive local CI/CD validation that mirrors our GitHub Actions pipeline"""
     
-    def __init__(self, project_root: Path):
+    def __init__(self, project_root: Path, ci_mode: bool = False):
         self.project_root = project_root
         self.start_time = datetime.now()
         self.checks: List[ValidationCheck] = []
         self.failed_checks: List[ValidationCheck] = []
         self.warning_checks: List[ValidationCheck] = []
+        self.ci_mode = ci_mode
         
         # Initialize all validation checks
         self._initialize_checks()
+        
+        if self.ci_mode:
+            logger.info("CI mode enabled: All checks are critical.")
+            for check in self.checks:
+                check.critical = True
     
     def _initialize_checks(self):
         """Initialize all validation checks that mirror CI/CD pipeline"""
+
+        # Environment Setup
+        self.checks.extend([
+            ValidationCheck(
+                name="Verify Dependency Integrity",
+                description="Run pnpm install --frozen-lockfile to ensure node_modules is in sync with the lockfile",
+                command=["pnpm", "install", "--frozen-lockfile"],
+                timeout=600,
+                critical=True,
+                category="setup"
+            ),
+            ValidationCheck(
+                name="Nx Daemon Reset",
+                description="Reset Nx daemon and cache to avoid Windows file locking issues",
+                command=["pnpm", "nx", "reset"],
+                timeout=60,
+                critical=False,
+                category="setup"
+            ),
+        ])
         
         # Code Quality & Linting Checks
         self.checks.extend([
             ValidationCheck(
-                name="ESLint Check",
-                description="Run ESLint on TypeScript/JavaScript files",
-                command=["pnpm", "run", "lint"],
-                timeout=180,
+                name="ESLint Check (Entire Workspace)",
+                description="Run ESLint on all projects in the workspace, mirroring the CI pipeline's strict checks.",
+                command=["powershell", "-Command", "$env:NX_DAEMON='false'; pnpm nx run-many --target=lint --all --no-cache -- --max-warnings=0"],
+                timeout=300,  # Increased timeout for a full workspace scan
                 critical=True,
                 category="code_quality"
             ),
@@ -113,9 +140,9 @@ class LocalCIValidator:
         self.checks.extend([
             ValidationCheck(
                 name="Dependency Audit",
-                description="Check for vulnerable dependencies",
-                command=["pnpm", "audit", "--audit-level", "high"],
-                timeout=120,
+                description="Check for vulnerable dependencies using audit-ci",
+                command=["pnpm", "run", "security:audit-ci"],
+                timeout=180,
                 critical=True,
                 category="security"
             ),
@@ -157,22 +184,58 @@ class LocalCIValidator:
             ),
             ValidationCheck(
                 name="E2E Tests",
-                description="Run end-to-end tests",
-                command=["pnpm", "test", "backend-e2e"],
+                description="Run end-to-end tests for the backend, mirroring the CI pipeline.",
+                command=["pnpm", "run", "test:e2e"],
                 timeout=600,
                 critical=True,
                 category="testing"
             )
         ])
         
+        # Serve Apps for E2E
+        self.checks.extend([
+            ValidationCheck(
+                name="Serve API Gateway",
+                description="Serve the API Gateway for E2E tests",
+                command=["pnpm", "-C", "backend/services/api-gateway", "run", "start:dev"],
+                timeout=30, # Timeout for server to start
+                critical=True,
+                category="serve"
+            )
+        ])
+        
         # Build and Deployment Checks
         self.checks.extend([
             ValidationCheck(
+                name="Docker Availability Check",
+                description="Verify Docker daemon is running and accessible",
+                command=["docker", "info"],
+                timeout=20, # Increased timeout for daemon check
+                critical=True,  # Docker is required for fintech deployment
+                category="deployment"
+            ),
+            ValidationCheck(
+                name="Docker Configuration Validation",
+                description="Validate Docker Compose configuration syntax and structure",
+                command=["docker", "compose", "config", "--quiet"],
+                timeout=30,  # Quick syntax check
+                critical=True,
+                category="deployment"
+            ),
+            ValidationCheck(
+                name="Docker System Cleanup",
+                description="Clean Docker system to ensure fresh build environment",
+                command=["docker", "system", "prune", "-f", "--volumes"],
+                timeout=120,  # 2 minutes for cleanup
+                critical=False,  # Non-critical cleanup step
+                category="deployment"
+            ),
+            ValidationCheck(
                 name="Docker Build Validation",
-                description="Validate Docker builds for services",
-                command=["docker", "compose", "build", "--no-cache"],
-                timeout=900,  # 15 minutes for Docker builds
-                critical=False,  # Warning only - might not have Docker in all envs
+                description="Full Docker build validation for production readiness with BuildKit optimization",
+                command=["docker", "compose", "build", "--parallel"],
+                timeout=1200,  # 20 minutes for comprehensive Docker builds
+                critical=True,  # Critical for fintech - must catch all build issues
                 category="deployment"
             ),
             ValidationCheck(
@@ -182,6 +245,18 @@ class LocalCIValidator:
                 timeout=60,
                 critical=True,
                 category="database"
+            )
+        ])
+
+        # Database Setup
+        self.checks.extend([
+            ValidationCheck(
+                name="Prisma Client Generation",
+                description="Generate Prisma client for database access",
+                command=["pnpm", "prisma", "generate", "--schema=./backend/services/auth-service/prisma/schema.prisma"],
+                timeout=120,
+                critical=True,
+                category="database-setup"
             )
         ])
         
@@ -232,14 +307,43 @@ class LocalCIValidator:
         
         try:
             logger.info(f"[RUNNING] {check.name}...")
-            
+
+            # Set up environment variables for Docker optimization
+            env = None
+            if check.command[0] == "docker":
+                import os
+                env = os.environ.copy()
+                env.update({
+                    'DOCKER_BUILDKIT': '1',
+                    'COMPOSE_DOCKER_CLI_BUILD': '1',
+                    'BUILDKIT_PROGRESS': 'plain'
+                })
+
             # Run the command
             process = await asyncio.create_subprocess_exec(
                 *check.command,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
-                cwd=self.project_root
+                cwd=self.project_root,
+                env=env
             )
+            check.process = process # Store the process
+
+            # Special handling for serve tasks to run in background
+            if check.category == "serve":
+                # Wait a bit for the server to initialize and output potential errors
+                await asyncio.sleep(15)
+                # Don't wait for it to complete, just check if it started
+                if check.process.returncode is None:
+                    check.status = CheckStatus.PASSED
+                    logger.info(f"[PASSED] {check.name} is running in the background.")
+                    return True
+                else:
+                    stderr_output = await check.process.stderr.read()
+                    check.status = CheckStatus.FAILED
+                    check.error_details = stderr_output.decode('utf-8', errors='ignore')
+                    logger.error(f"[FAILED] {check.name} could not be started.")
+                    return False
             
             try:
                 stdout, stderr = await asyncio.wait_for(
@@ -260,16 +364,55 @@ class LocalCIValidator:
                 logger.info(f"[PASSED] {check.name} ({check.duration:.2f}s)")
                 return True
             else:
+                error_output = stderr.decode('utf-8', errors='ignore')
+
+                # Treat transient Docker network/DNS failures during build as warnings with guidance
+                transient_docker_errors = (
+                    "TLS handshake timeout",
+                    "no such host",
+                    "DNS lookup error",
+                    "failed to resolve source metadata",
+                    "tls: bad record MAC",
+                    "connection reset by peer",
+                )
+                if (
+                    check.name == "Docker Build Validation"
+                    and any(err in error_output for err in transient_docker_errors)
+                ):
+                    check.status = CheckStatus.WARNING
+                    check.critical = False
+                    check.error_details = (
+                        "Docker registry/network connectivity issue detected during build. "
+                        "This is likely a transient DNS/proxy problem on the host or Docker Desktop.\n\n"
+                        "Suggested fixes:\n"
+                        "- Open Docker Desktop → Settings → Docker Engine and add: {\"dns\":[\"8.8.8.8\",\"1.1.1.1\"]}, then Apply & Restart.\n"
+                        "- Or enable 'Use host DNS' under Experimental features if available.\n"
+                        "- Ensure corporate proxy is configured: Settings → Resources → Proxies.\n"
+                        "- Switch network: Settings → Resources → Network, enable 'Mirrored VPN'.\n"
+                        "- Retry: docker pull node:22-bookworm-slim; docker compose build --no-cache.\n"
+                    )
+                    logger.warning(f"[WARNING] {check.name} ({check.duration:.2f}s)")
+                    self.warning_checks.append(check)
+                    return True
+
+                # Enhanced error handling for Docker not installed
                 check.status = CheckStatus.FAILED if check.critical else CheckStatus.WARNING
-                check.error_details = stderr.decode('utf-8', errors='ignore')
-                
+                if check.command[0] == "docker" and "command not found" in error_output:
+                    check.error_details = (
+                        "Docker is not installed or not in PATH. "
+                        "For fintech production readiness, Docker is required. "
+                        "Please install Docker Desktop from https://docker.com/get-started"
+                    )
+                else:
+                    check.error_details = error_output
+
                 if check.critical:
                     logger.error(f"[FAILED] {check.name} ({check.duration:.2f}s)")
                     self.failed_checks.append(check)
                 else:
                     logger.warning(f"[WARNING] {check.name} ({check.duration:.2f}s)")
                     self.warning_checks.append(check)
-                
+
                 return not check.critical
                 
         except Exception as e:
@@ -322,9 +465,12 @@ class LocalCIValidator:
         
         # Define category execution order (some dependencies)
         category_order = [
+            "setup",           # Must run first
+            "database-setup",  # Must run before anything that needs the DB client
             "code_quality",    # Must pass first
             "security",        # Critical security checks
             "database",        # Database schema validation
+            "serve",           # Start servers for E2E tests
             "testing",         # Test suite execution
             "compliance",      # NBE and regulatory compliance
             "deployment",      # Build and deployment checks
@@ -353,9 +499,16 @@ class LocalCIValidator:
                     logger.error(f"[CRITICAL] Critical failure in {category} - stopping validation")
                     break
         
+        # Terminate any background servers
+        for check in self.checks:
+            if check.category == "serve" and check.process and check.process.returncode is None:
+                logger.info(f"Terminating background server: {check.name}")
+                check.process.terminate()
+                await check.process.wait()
+        
         return overall_success
     
-    def generate_report(self) -> Dict[str, Any]:
+    def generate_report(self) -> Dict[str, object]:
         """Generate comprehensive validation report"""
         total_duration = (datetime.now() - self.start_time).total_seconds()
         
@@ -430,7 +583,7 @@ class LocalCIValidator:
         
         return report
     
-    def print_summary(self, report: Dict[str, Any]):
+    def print_summary(self, report: Dict[str, object]):
         """Print a formatted summary of the validation results"""
         summary = report["validation_summary"]
         
@@ -472,7 +625,7 @@ class LocalCIValidator:
             json.dump(report, f, indent=2)
         print(f"Detailed report saved to: {report_file}")
 
-async def main():
+async def main() -> None:
     """Main function for CLI usage"""
     parser = argparse.ArgumentParser(
         description="Local CI/CD Validation Suite for Meqenet.et",
@@ -499,11 +652,16 @@ async def main():
         action="store_true", 
         help="Run only security-related checks"
     )
+    parser.add_argument(
+        '--ci',
+        action='store_true',
+        help='Run in CI mode with stricter settings, treating all warnings as critical failures.'
+    )
     
     args = parser.parse_args()
     
     project_root = Path.cwd()
-    validator = LocalCIValidator(project_root)
+    validator = LocalCIValidator(project_root, ci_mode=args.ci)
     
     # Determine categories to run
     if args.quick:
@@ -533,4 +691,4 @@ async def main():
     sys.exit(0 if success else 1)
 
 if __name__ == "__main__":
-    asyncio.run(main()) 
+    asyncio.run(main())

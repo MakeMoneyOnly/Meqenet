@@ -227,3 +227,6 @@ cython_debug/
 dmypy.json
 # Pyre
 .pyre/
+.pip-audit-deps-temp/ 
+.pip-audit-deps/ 
+audit.json

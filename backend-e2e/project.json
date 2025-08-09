@@ -5,13 +5,15 @@
   "implicitDependencies": ["api-gateway"],
   "targets": {
     "e2e": {
-      "executor": "@nx/jest:jest",
+      "executor": "@nx/vite:test",
       "outputs": ["{workspaceRoot}/coverage/{e2eProjectRoot}"],
+      "options": {}
+    },
+    "e2e-with-server": {
+      "executor": "@nx/vite:test",
       "options": {
-        "jestConfig": "backend-e2e/jest.config.cjs",
-        "passWithNoTests": true
-      },
-      "dependsOn": ["api-gateway:build", "api-gateway:serve"]
+        "devServerTarget": "api-gateway:serve-static"
+      }
     }
   }
 }

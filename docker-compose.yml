@@ -54,6 +54,7 @@ services:
     build:
       context: .
       dockerfile: ./backend/services/auth-service/Dockerfile
+      network: host
     container_name: meqenet-auth-service
     depends_on:
       postgres_auth:
@@ -65,13 +66,24 @@ services:
       - REDIS_URL=redis://redis:6379
       - JWT_SECRET=a-very-secret-key-for-local-dev
       - NODE_ENV=development
+      # Prisma engine configuration for reliable downloads
+      - PRISMA_ENGINES_MIRROR=https://binaries.prismadb.com
+      - PRISMA_CLI_BINARY_TARGETS=linux-musl-openssl-3.0.x
+      - PRISMA_QUERY_ENGINE_BINARY=/tmp/prisma-engines/query-engine
+      - PRISMA_MIGRATION_ENGINE_BINARY=/tmp/prisma-engines/migration-engine
+      - PRISMA_INTROSPECTION_ENGINE_BINARY=/tmp/prisma-engines/introspection-engine
+      - PRISMA_FMT_BINARY=/tmp/prisma-engines/prisma-fmt
     ports:
       - "3001:3001"
     networks:
       - meqenet-dev-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:3001/healthz || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "wget --quiet --tries=1 --spider http://localhost:3001/healthz || exit 1",
+        ]
 
   # --------------------------------------------------------------------------
   # API Gateway Service
@@ -80,6 +92,7 @@ services:
     build:
       context: .
       dockerfile: ./backend/services/api-gateway/Dockerfile
+      network: host
     container_name: meqenet-api-gateway
     depends_on:
       auth-service:
@@ -87,6 +100,9 @@ services:
     environment:
       - NODE_ENV=development
       - AUTH_SERVICE_URL=http://auth-service:3000
+      # Prisma engine configuration for reliable downloads
+      - PRISMA_ENGINES_MIRROR=https://binaries.prismadb.com
+      - PRISMA_CLI_BINARY_TARGETS=linux-musl-openssl-3.0.x
     ports:
       - "3000:3000"
     networks:

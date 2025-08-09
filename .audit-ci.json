@@ -2,17 +2,7 @@
   "moderate": true,
   "high": true,
   "critical": true,
-  "allowlist": [
-    "CVE-2022-23221",
-    "CVE-2022-45868",
-    "CVE-2021-23463",
-    "CVE-2021-42392",
-    "CVE-2020-27225",
-    "CVE-2021-41033",
-    "CVE-2020-27225",
-    "CVE-2017-1000034",
-    "CVE-2023-46122"
-  ],
+  "allowlist": [],
   "skip-dev": false,
   "report-type": "summary",
   "output-format": "text",

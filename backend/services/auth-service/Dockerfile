@@ -1,88 +1,78 @@
-# Multi-stage Dockerfile for Authentication Service
-# Optimized for production with security best practices
+# ---- Base Stage ----
+# Use a minimal approach to avoid I/O errors with build tools
+FROM node:22-bookworm-slim AS base
 
-# -----------------------------------------------------------------------------
-# Builder Stage
-# -----------------------------------------------------------------------------
-# NOTE: We switch from **alpine** to **slim (debian)** here to avoid the sporadic
-# I/O errors seen when installing heavy build-time dependencies (g++, python3)
-# on musl based images under Docker-for-Windows. Debian based images have
-# pre-built binaries for most native Node modules (e.g. argon2) which removes
-# the need to compile them from source and therefore removes the g++ dependency
-# entirely. This keeps the image small while making the build far more reliable
-# on Windows/WSL hosts.
+# Install only essential packages to minimize I/O operations
+RUN set -eux; \
+    for i in 1 2 3; do \
+      apt-get update && \
+      DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        ca-certificates tini \
+      && break || (echo "apt-get attempt $i failed" && sleep 5); \
+    done; \
+    rm -rf /var/lib/apt/lists/* && \
+    npm install -g pnpm@10.12.3
 
-FROM node:18-slim AS builder
-
-# Set working directory
 WORKDIR /app
 
-# Install minimal dependencies required for node-gyp (only if a module really
-# needs compilation). We deliberately omit **g++** here because Debian based
-# images ship with many pre-compiled binaries for common native modules. If a
-# compilation is still required, adding build-essential back can be evaluated
-# later.
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends python3 make \
-    && ln -sf python3 /usr/bin/python \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+# ---- Dependencies Stage ----
+# Copies only package manifests and installs ALL dependencies (incl. dev)
+# This layer is cached and only re-runs if package manifests change.
+FROM base AS deps
 
-# Copy pnpm and project configuration files
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY tsconfig.base.json ./
+# Copy package files
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 
-# Copy service-specific configuration
-COPY backend/services/auth-service/nest-cli.json ./nest-cli.json
+# Install dependencies with enhanced resilience and cache mount
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
+    --mount=type=cache,id=prisma,target=/tmp/prisma-engines \
+    set -e && \
+    echo "Configuring pnpm for network resilience..." && \
+    pnpm config set fetch-retries 10 && \
+    pnpm config set fetch-retry-maxtimeout 300000 && \
+    pnpm config set fetch-timeout 300000 && \
+    pnpm config set network-concurrency 3 && \
+    echo "Configuring Prisma for offline engines..." && \
+    export PRISMA_ENGINES_MIRROR=https://binaries.prismadb.com && \
+    export PRISMA_CLI_BINARY_TARGETS=linux-musl-openssl-3.0.x && \
+    echo "Starting dependency installation with retries..." && \
+    for i in 1 2 3; do \
+        echo "Installation attempt $i..." && \
+        pnpm install && break || \
+        (echo "Attempt $i failed, cleaning and retrying..." && \
+         pnpm store prune && \
+         rm -rf node_modules && \
+         sleep 10); \
+    done
 
-# Install all dependencies using pnpm
-RUN corepack enable && corepack prepare pnpm@10.12.3 --activate
-RUN pnpm install --frozen-lockfile
+# ---- Build Stage ----
+# Copies source code and builds the specific application.
+FROM deps AS builder
 
-# Copy the entire monorepo source code
+# Copy the rest of the monorepo source (respecting .dockerignore)
 COPY . .
 
-# Build the specific service using Nx
-RUN pnpm exec nx build auth-service
+# Ensure node_modules are properly linked and build the application
+RUN echo "Ensuring dependencies are available..." && \
+    ls -la node_modules/.bin/ | head -10 && \
+    echo "Building auth-service with nx..." && \
+    ./node_modules/.bin/nx build auth-service
 
-# Ensure proto directory exists (create empty one if not present)
-RUN mkdir -p /app/proto
+# Create production deployment
+RUN pnpm deploy --filter=@meqenet/auth-service ./deploy --legacy
 
-
-# 2. Production Stage
-FROM node:18-slim
-
+# ---- Production Stage ----
+# Creates the final, small, and secure production image.
+FROM base AS production
 WORKDIR /app
-
-# Copy build artifacts from the builder stage (Webpack builds to global dist)
-COPY --from=builder /app/dist ./dist
-
-# Copy proto files for gRPC communication
-COPY --from=builder /app/proto ./proto
-
-# Copy node_modules and package.json
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
-
-# Install wget for health checks and create a non-root user for security
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends wget ca-certificates \
-    && rm -rf /var/lib/apt/lists/* \
-    # Create non-root group and user (matching IDs for consistency across stages)
-    && groupadd -g 1001 nodejs \
-    && useradd -m -u 1001 -g nodejs appuser
-
-# Ensure correct permissions for the app user
-RUN chown -R appuser:nodejs /app
-
-# Switch to the non-root user
+# Copy the pruned production-ready files from the builder stage's deploy folder
+COPY --from=builder /app/deploy .
+# Create a non-root user for security
+RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
 USER appuser
-
+# Expose the port the app runs on
 EXPOSE 3001
-
-# Health check (using a simple HTTP request to the health endpoint)
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:3001/healthz || exit 1
-
-# Start the application
+# Use Tini as the entrypoint to properly handle signals
+ENTRYPOINT ["/usr/bin/tini", "--"]
+# Command to run the application
 CMD ["node", "dist/main.js"] 

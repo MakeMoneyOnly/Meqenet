@@ -17,4 +17,8 @@ GitPython==3.1.43
 
 # Development and testing utilities
 pytest==8.3.2
-pytest-cov==5.0.0 
+pytest-cov==5.0.0
+
+# Security auditing tools
+pip-audit==2.7.3
+filelock==3.16.1
