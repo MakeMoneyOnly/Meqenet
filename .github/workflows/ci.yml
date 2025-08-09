@@ -54,6 +54,9 @@ jobs:
       - name: 📚 Install Dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: 🔧 Generate Prisma Client
+        run: pnpm prisma generate --schema=./backend/services/auth-service/prisma/schema.prisma
+
       - name: 🔍 Dependency Vulnerability Scan
         run: pnpm run security:audit-ci
         continue-on-error: false

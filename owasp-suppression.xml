@@ -10,11 +10,13 @@
   <suppress>
     <notes>False positive: GitPython incorrectly linked to CPython interpreter CVEs</notes>
     <packageUrl regex="true">^pkg:pypi/gitpython@.*$</packageUrl>
+    <cvssBelow>10.0</cvssBelow>
   </suppress>
 
   <suppress>
     <notes>False positive: pandas appears from tooling caches; not a runtime dependency</notes>
     <packageUrl regex="true">^pkg:pypi/pandas@.*$</packageUrl>
+    <cvssBelow>10.0</cvssBelow>
   </suppress>
   
   <!-- Suppress vulnerabilities in Java dependencies bundled with development tools -->
