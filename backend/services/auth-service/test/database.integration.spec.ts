@@ -13,6 +13,7 @@ import {
 
 import { DatabaseModule } from '../src/infrastructure/database/database.module';
 import { PrismaService } from '../src/infrastructure/database/prisma.service';
+import { SecretsService } from '../src/shared/secrets/secrets.service';
 
 /**
  * Database Integration Tests for Meqenet.et Authentication Service
@@ -68,6 +69,14 @@ describe('Database Integration', () => {
         DatabaseModule,
       ],
     })
+      // Mock SecretsService to avoid real AWS client in tests
+      .overrideProvider(SecretsService)
+      .useValue({
+        getSecretString: vi
+          .fn()
+          .mockResolvedValue(JSON.stringify({ DATABASE_URL: testDatabaseUrl })),
+        getJson: vi.fn().mockResolvedValue({ DATABASE_URL: testDatabaseUrl }),
+      })
       .overrideProvider(PrismaService)
       .useValue({
         $connect: vi.fn(),
