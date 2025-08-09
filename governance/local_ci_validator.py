@@ -23,6 +23,7 @@ import json
 import time
 import re
 from pathlib import Path
+import os
 from typing import Dict, List, Any, Optional, Tuple
 from dataclasses import dataclass
 from enum import Enum
@@ -69,13 +70,15 @@ class ValidationCheck:
 class LocalCIValidator:
     """Comprehensive local CI/CD validation that mirrors our GitHub Actions pipeline"""
     
-    def __init__(self, project_root: Path, ci_mode: bool = False):
+    def __init__(self, project_root: Path, ci_mode: bool = False, aws_profile: Optional[str] = None):
         self.project_root = project_root
         self.start_time = datetime.now()
         self.checks: List[ValidationCheck] = []
         self.failed_checks: List[ValidationCheck] = []
         self.warning_checks: List[ValidationCheck] = []
         self.ci_mode = ci_mode
+        # Prefer explicit profile, else env, else secure default for dev
+        self.aws_profile = aws_profile or os.environ.get('AWS_PROFILE') or 'meqenet-dev'
         
         # Initialize all validation checks
         self._initialize_checks()
@@ -343,6 +346,17 @@ class LocalCIValidator:
                 })
 
             # Run the command
+            # Inject AWS profile/env for Vault checks to enforce 07-Security.md
+            if check.name == "Vault Resolution Smoke Test":
+                env = (env or os.environ.copy())
+                env.update({
+                    'AWS_PROFILE': self.aws_profile,
+                    'AWS_SDK_LOAD_CONFIG': '1',
+                    'AWS_REGION': env.get('AWS_REGION') or os.environ.get('AWS_REGION') or 'us-east-1',
+                    'AWS_DEFAULT_REGION': env.get('AWS_DEFAULT_REGION') or os.environ.get('AWS_DEFAULT_REGION') or 'us-east-1',
+                    'AWS_EC2_METADATA_DISABLED': 'true',
+                })
+
             process = await asyncio.create_subprocess_exec(
                 *check.command,
                 stdout=asyncio.subprocess.PIPE,
@@ -680,11 +694,16 @@ async def main() -> None:
         action='store_true',
         help='Run in CI mode with stricter settings, treating all warnings as critical failures.'
     )
+    parser.add_argument(
+        '--aws-profile',
+        type=str,
+        help='Named AWS profile to use for vault resolution (e.g., meqenet-dev). Defaults to env AWS_PROFILE or meqenet-dev.'
+    )
     
     args = parser.parse_args()
     
     project_root = Path.cwd()
-    validator = LocalCIValidator(project_root, ci_mode=args.ci)
+    validator = LocalCIValidator(project_root, ci_mode=args.ci, aws_profile=args.aws_profile)
     
     # Determine categories to run
     if args.quick:

@@ -13,7 +13,6 @@ import {
 
 import { DatabaseModule } from '../src/infrastructure/database/database.module';
 import { PrismaService } from '../src/infrastructure/database/prisma.service';
-import databaseConfig from '../src/shared/config/database.config';
 
 /**
  * Database Integration Tests for Meqenet.et Authentication Service
@@ -63,7 +62,6 @@ describe('Database Integration', () => {
     module = await Test.createTestingModule({
       imports: [
         ConfigModule.forRoot({
-          load: [databaseConfig],
           isGlobal: true,
           envFilePath: [],
         }),
