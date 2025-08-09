@@ -147,6 +147,17 @@ class LocalCIValidator:
                 category="security"
             ),
             ValidationCheck(
+                name="OWASP Dependency Check (local)",
+                description="Run OWASP Dependency-Check locally for parity with CI",
+                command=[
+                    "powershell", "-Command",
+                    "npx --yes dependency-check --project Meqenet --scan . --format ALL --failOnCVSS 7 --suppression owasp-suppression.xml"
+                ],
+                timeout=600,
+                critical=True,
+                category="security"
+            ),
+            ValidationCheck(
                 name="Security Secrets Scan",
                 description="Scan for exposed secrets and credentials",
                 command=["python", "tools/git/git-automation.py", "security-scan"],
