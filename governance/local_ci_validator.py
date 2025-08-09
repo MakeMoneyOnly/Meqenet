@@ -337,7 +337,6 @@ class LocalCIValidator:
             # Set up environment variables for Docker optimization
             env = None
             if check.command[0] == "docker":
-                import os
                 env = os.environ.copy()
                 env.update({
                     'DOCKER_BUILDKIT': '1',

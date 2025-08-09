@@ -1,25 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
   <!--
-    Suppress known false-positives from OWASP Dependency-Check for Python ecosystem.
-    - GitPython is incorrectly tokenized/mapped to the CPE for CPython (python:python),
-      which pulls in a large set of unrelated interpreter CVEs. These are not applicable.
-    - Pandas occasionally appears from tooling caches; not a runtime dependency here.
+    Consolidated suppression file (schema 1.3). Avoid duplicate roots and use
+    schema-supported elements only. For regex PURL matching use:
+    <packageUrl regex="true">…</packageUrl>
   -->
+
+  <!-- Python ecosystem false positives -->
   <suppress>
-    <notes>False positive: GitPython matched to CPE python:python (CPython interpreter)</notes>
-    <packageUrlRegex>^pkg:pypi/gitpython@.*$</packageUrlRegex>
-    <cpe>cpe:2.3:a:python:python:.*</cpe>
+    <notes>False positive: GitPython incorrectly linked to CPython interpreter CVEs</notes>
+    <packageUrl regex="true">^pkg:pypi/gitpython@.*$</packageUrl>
   </suppress>
 
   <suppress>
-    <notes>False positive: pandas not used in this repo</notes>
-    <packageUrlRegex>^pkg:pypi/pandas@.*$</packageUrlRegex>
+    <notes>False positive: pandas appears from tooling caches; not a runtime dependency</notes>
+    <packageUrl regex="true">^pkg:pypi/pandas@.*$</packageUrl>
   </suppress>
-</suppressions>
-
-<?xml version="1.0" encoding="UTF-8"?>
-<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
   
   <!-- Suppress vulnerabilities in Java dependencies bundled with development tools -->
   <!-- These are not runtime dependencies and don't affect our Node.js application security -->
@@ -129,4 +125,4 @@
     <cvssBelow>10.0</cvssBelow>
   </suppress>
   
-</suppressions> 
+</suppressions>
