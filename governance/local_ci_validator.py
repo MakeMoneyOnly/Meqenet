@@ -119,6 +119,18 @@ class LocalCIValidator:
                 category="code_quality"
             ),
             ValidationCheck(
+                name="Vault Resolution Smoke Test",
+                description="Verify AWS Secrets Manager can resolve required secrets (DATABASE_SECRET_ID) without exposing secrets in env.",
+                command=[
+                    "node",
+                    "-e",
+                    "(async()=>{try{const {SecretsManagerClient,GetSecretValueCommand}=require('@aws-sdk/client-secrets-manager');const id=process.env.DATABASE_SECRET_ID||'meqenet/auth/db';const c=new SecretsManagerClient({region:process.env.AWS_REGION||'us-east-1'});const r=await c.send(new GetSecretValueCommand({SecretId:id})); if(!r||!(r.SecretString||r.SecretBinary)){console.error('No secret payload');process.exit(1);} console.log('Vault OK');}catch(e){console.error('Vault check failed',e?.message||e);process.exit(1)}})();"
+                ],
+                timeout=120,
+                critical=True,
+                category="security"
+            ),
+            ValidationCheck(
                 name="TypeScript Compilation",
                 description="Verify TypeScript compilation without errors",
                 command=["pnpm", "run", "build"],

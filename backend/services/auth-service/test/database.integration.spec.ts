@@ -33,6 +33,7 @@ describe('Database Integration', () => {
   let prismaService: PrismaService;
 
   // Test database configuration
+
   const testDatabaseUrl =
     process.env.TEST_DATABASE_URL ??
     'postgresql://test_user:test_password@localhost:5433/meqenet_auth_test?sslmode=require';

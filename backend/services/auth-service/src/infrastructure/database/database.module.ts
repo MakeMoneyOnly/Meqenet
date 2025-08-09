@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
+import { SecretsModule } from '../../shared/secrets/secrets.module';
+
 import { PrismaService } from './prisma.service';
 
 /**
@@ -17,7 +19,7 @@ import { PrismaService } from './prisma.service';
  * @author Data Security Specialist
  */
 @Module({
-  imports: [ConfigModule],
+  imports: [ConfigModule, SecretsModule],
   providers: [PrismaService],
   exports: [PrismaService],
 })

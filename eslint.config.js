@@ -139,7 +139,7 @@ module.exports = [
   {
     files: ['services/**/*.ts', 'packages/api/**/*.ts'],
     rules: {
-      'no-process-env': 'warn',
+      'no-process-env': 'error',
       'security/detect-non-literal-fs-filename': 'error',
     },
   },

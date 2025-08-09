@@ -7,6 +7,8 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { PrismaClient, Prisma } from '@prisma/client';
 
+import { SecretsService } from '../../shared/secrets/secrets.service';
+
 /**
  * Prisma Database Service for Meqenet.et Authentication Service
  *
@@ -61,19 +63,17 @@ export class PrismaService
   private readonly maxRetries = RETRY_CONFIG.MAX_RETRIES;
   private readonly baseDelay = RETRY_CONFIG.BASE_DELAY;
 
-  constructor(private configService: ConfigService) {
-    const databaseUrl = configService.get<string>('DATABASE_URL');
-
-    if (!databaseUrl) {
-      throw new Error('DATABASE_URL environment variable is required');
-    }
-
-    // Validate database URL format and security requirements
-    PrismaService.validateDatabaseUrl(databaseUrl);
-
-    // Security: Extract NODE_ENV via ConfigService before super() call
+  constructor(
+    private configService: ConfigService,
+    private secretsService: SecretsService
+  ) {
+    // Note: we cannot use async before super(); use placeholder URL then patch in onModuleInit
+    const placeholderUrl =
+      'postgresql://placeholder/placeholder?sslmode=require';
     const nodeEnv = configService.get<string>('NODE_ENV') ?? 'development';
     const isProduction = nodeEnv === 'production';
+
+    // Security: Extract NODE_ENV via ConfigService before super() call
 
     const log: PrismaEventLogDefinition[] = isProduction
       ? [
@@ -90,7 +90,7 @@ export class PrismaService
     super({
       datasources: {
         db: {
-          url: databaseUrl,
+          url: placeholderUrl,
         },
       },
       // Enhanced error formatting for security and debugging
@@ -232,6 +232,24 @@ export class PrismaService
    * Essential for Ethiopian infrastructure reliability
    */
   async onModuleInit(): Promise<void> {
+    // Resolve database URL from AWS Secrets Manager before connecting
+    const dbSecretId =
+      this.configService.get<string>('DATABASE_SECRET_ID') ?? 'meqenet/auth/db';
+    const secret = await this.secretsService.getJson<{ DATABASE_URL: string }>(
+      dbSecretId
+    );
+    const databaseUrl = secret.DATABASE_URL;
+    if (!databaseUrl) {
+      throw new Error(
+        'DATABASE_URL missing in secret; ensure AWS Secrets Manager is configured per 07-Security.md'
+      );
+    }
+    PrismaService.validateDatabaseUrl(databaseUrl);
+
+    // Patch datasource URL at runtime
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (this as any)._engine?.setDatasourceUrls({ db: databaseUrl });
+
     await this.connectWithRetry();
     this.logger.log('✅ Database connection established successfully');
 

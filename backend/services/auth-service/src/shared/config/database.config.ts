@@ -258,8 +258,8 @@ function getSecureEnvVars(): {
   // Security: Single point of environment variable access for audit compliance
   // This is the ONLY place in the configuration where process.env is accessed
   // ESLint disabled for centralized environment access - fintech security pattern
-
    
+
   const databaseUrl = process.env.DATABASE_URL;
   if (!databaseUrl) {
     throw new Error('DATABASE_URL is not set.');
@@ -283,8 +283,8 @@ function getSecureEnvVars(): {
     DB_HEALTH_CHECK_INTERVAL: process.env.DB_HEALTH_CHECK_INTERVAL,
     DB_HEALTH_CHECK_TIMEOUT: process.env.DB_HEALTH_CHECK_TIMEOUT,
     NODE_ENV: process.env.NODE_ENV,
+     
   } as const;
-   
 }
 
 /**
