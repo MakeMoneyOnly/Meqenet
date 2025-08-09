@@ -1,9 +1,16 @@
 # ---- Base Stage ----
 # Use a minimal approach to avoid I/O errors with build tools
-FROM node:22-alpine AS base
+FROM node:22-bookworm-slim AS base
 
 # Install only essential packages to minimize I/O operations
-RUN apk add --no-cache openssl tini && \
+RUN set -eux; \
+    for i in 1 2 3; do \
+      apt-get update && \
+      DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        ca-certificates tini \
+      && break || (echo "apt-get attempt $i failed" && sleep 5); \
+    done; \
+    rm -rf /var/lib/apt/lists/* && \
     npm install -g pnpm@10.12.3
 
 WORKDIR /app

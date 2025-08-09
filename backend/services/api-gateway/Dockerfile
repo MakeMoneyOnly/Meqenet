@@ -1,8 +1,15 @@
 # ---- Base Stage ----
 # Sets up a base image with pnpm installed, used by other stages.
-FROM node:22-alpine AS base
-# Install OpenSSL for Prisma, tini for process management, and build tools for native modules.
-RUN apk add --no-cache openssl tini python3 build-base
+FROM node:22-bookworm-slim AS base
+# Install tini for process management and build tools for native modules.
+RUN set -eux; \
+    for i in 1 2 3; do \
+      apt-get update && \
+      DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        ca-certificates tini python3 build-essential \
+      && break || (echo "apt-get attempt $i failed" && sleep 5); \
+    done; \
+    rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 RUN npm install -g pnpm@10.12.3
 
@@ -14,7 +21,8 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 # Use a Docker cache mount to make pnpm's store persistent.
 # This makes builds much faster and more resilient to network issues.
 # Enhanced retry logic for network resilience in fintech environments.
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
+RUN --network=host \
+    --mount=type=cache,id=pnpm,target=/pnpm/store \
     --mount=type=cache,id=prisma,target=/tmp/prisma-engines \
     set -e && \
     echo "Configuring pnpm for maximum network resilience..." && \

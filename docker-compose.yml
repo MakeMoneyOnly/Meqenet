@@ -54,6 +54,7 @@ services:
     build:
       context: .
       dockerfile: ./backend/services/auth-service/Dockerfile
+      network: host
     container_name: meqenet-auth-service
     depends_on:
       postgres_auth:
@@ -91,6 +92,7 @@ services:
     build:
       context: .
       dockerfile: ./backend/services/api-gateway/Dockerfile
+      network: host
     container_name: meqenet-api-gateway
     depends_on:
       auth-service:

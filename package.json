@@ -12,7 +12,7 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
     "test:integration": "vitest run integration",
-    "test:e2e": "pnpm nx e2e backend-e2e",
+    "test:e2e": "pnpm vitest run --config backend-e2e/vite.config.ts",
     "build": "pnpm -r --if-present build",
     "security:audit": "pnpm audit --audit-level moderate",
     "security:audit-ci": "audit-ci --config .audit-ci.json",

@@ -71,9 +71,8 @@ export class PrismaService
     // Validate database URL format and security requirements
     PrismaService.validateDatabaseUrl(databaseUrl);
 
-    // Security: Extract NODE_ENV safely before super() call
-    // Using controlled access pattern for fintech compliance
-    const nodeEnv = PrismaService.getSecureNodeEnv();
+    // Security: Extract NODE_ENV via ConfigService before super() call
+    const nodeEnv = configService.get<string>('NODE_ENV') ?? 'development';
     const isProduction = nodeEnv === 'production';
 
     const log: PrismaEventLogDefinition[] = isProduction
@@ -102,18 +101,6 @@ export class PrismaService
 
     // Set up event listeners for monitoring and compliance
     this.setupEventListeners();
-  }
-
-  /**
-   * Secure access to NODE_ENV environment variable
-   * Centralized for fintech compliance and audit purposes
-   */
-  private static getSecureNodeEnv(): string | undefined {
-    // Security: Single-point access to NODE_ENV for constructor use
-    // ESLint disabled for this specific secure access pattern
-
-     
-    return process.env.NODE_ENV;
   }
 
   /**

@@ -4,6 +4,14 @@
   "affected": {
     "defaultBase": "main"
   },
+  "tasksRunnerOptions": {
+    "default": {
+      "runner": "nx/tasks-runners/default",
+      "options": {
+        "useDaemonProcess": false
+      }
+    }
+  },
   "targetDefaults": {
     "build": {
       "cache": true,

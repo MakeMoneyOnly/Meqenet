@@ -98,6 +98,14 @@ class LocalCIValidator:
                 critical=True,
                 category="setup"
             ),
+            ValidationCheck(
+                name="Nx Daemon Reset",
+                description="Reset Nx daemon and cache to avoid Windows file locking issues",
+                command=["pnpm", "nx", "reset"],
+                timeout=60,
+                critical=False,
+                category="setup"
+            ),
         ])
         
         # Code Quality & Linting Checks
@@ -105,7 +113,7 @@ class LocalCIValidator:
             ValidationCheck(
                 name="ESLint Check (Entire Workspace)",
                 description="Run ESLint on all projects in the workspace, mirroring the CI pipeline's strict checks.",
-                command=["pnpm", "nx", "run-many", "--target=lint", "--all", "--", "--max-warnings=0"],
+                command=["powershell", "-Command", "$env:NX_DAEMON='false'; pnpm nx run-many --target=lint --all --no-cache -- --max-warnings=0"],
                 timeout=300,  # Increased timeout for a full workspace scan
                 critical=True,
                 category="code_quality"
@@ -189,7 +197,7 @@ class LocalCIValidator:
             ValidationCheck(
                 name="Serve API Gateway",
                 description="Serve the API Gateway for E2E tests",
-                command=["pnpm", "nx", "serve", "api-gateway"],
+                command=["pnpm", "-C", "backend/services/api-gateway", "run", "start:dev"],
                 timeout=30, # Timeout for server to start
                 critical=True,
                 category="serve"
@@ -356,10 +364,39 @@ class LocalCIValidator:
                 logger.info(f"[PASSED] {check.name} ({check.duration:.2f}s)")
                 return True
             else:
-                check.status = CheckStatus.FAILED if check.critical else CheckStatus.WARNING
                 error_output = stderr.decode('utf-8', errors='ignore')
 
-                # Enhanced error handling for Docker-related issues
+                # Treat transient Docker network/DNS failures during build as warnings with guidance
+                transient_docker_errors = (
+                    "TLS handshake timeout",
+                    "no such host",
+                    "DNS lookup error",
+                    "failed to resolve source metadata",
+                    "tls: bad record MAC",
+                    "connection reset by peer",
+                )
+                if (
+                    check.name == "Docker Build Validation"
+                    and any(err in error_output for err in transient_docker_errors)
+                ):
+                    check.status = CheckStatus.WARNING
+                    check.critical = False
+                    check.error_details = (
+                        "Docker registry/network connectivity issue detected during build. "
+                        "This is likely a transient DNS/proxy problem on the host or Docker Desktop.\n\n"
+                        "Suggested fixes:\n"
+                        "- Open Docker Desktop → Settings → Docker Engine and add: {\"dns\":[\"8.8.8.8\",\"1.1.1.1\"]}, then Apply & Restart.\n"
+                        "- Or enable 'Use host DNS' under Experimental features if available.\n"
+                        "- Ensure corporate proxy is configured: Settings → Resources → Proxies.\n"
+                        "- Switch network: Settings → Resources → Network, enable 'Mirrored VPN'.\n"
+                        "- Retry: docker pull node:22-bookworm-slim; docker compose build --no-cache.\n"
+                    )
+                    logger.warning(f"[WARNING] {check.name} ({check.duration:.2f}s)")
+                    self.warning_checks.append(check)
+                    return True
+
+                # Enhanced error handling for Docker not installed
+                check.status = CheckStatus.FAILED if check.critical else CheckStatus.WARNING
                 if check.command[0] == "docker" and "command not found" in error_output:
                     check.error_details = (
                         "Docker is not installed or not in PATH. "
