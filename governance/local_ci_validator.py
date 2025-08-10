@@ -42,8 +42,10 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Ensure logs directory exists
+# Ensure logs and OWASP working directories exist
 Path('governance/logs').mkdir(exist_ok=True, parents=True)
+Path('governance/owasp-data').mkdir(exist_ok=True, parents=True)
+Path('governance/owasp-reports').mkdir(exist_ok=True, parents=True)
 
 class CheckStatus(Enum):
     PENDING = "pending"
@@ -154,6 +156,19 @@ class LocalCIValidator:
         # Security Analysis Checks
         self.checks.extend([
             ValidationCheck(
+                name="OWASP DC Data Update",
+                description="Pre-warm OWASP Dependency-Check data cache for faster scans",
+                command=[
+                    "docker","run","--rm",
+                    "-v", str(self.project_root/"governance"/"owasp-data")+":/usr/share/dependency-check/data",
+                    "owasp/dependency-check:latest",
+                    "--updateonly"
+                ],
+                timeout=600,
+                critical=False,
+                category="security"
+            ),
+            ValidationCheck(
                 name="Dependency Audit",
                 description="Check for vulnerable dependencies using audit-ci",
                 command=["pnpm", "run", "security:audit-ci"],
@@ -163,12 +178,29 @@ class LocalCIValidator:
             ),
             ValidationCheck(
                 name="OWASP Dependency Check (local)",
-                description="Run OWASP Dependency-Check locally for parity with CI",
+                description="Run OWASP Dependency-Check (official) via Docker for CI parity",
                 command=[
-                    "powershell", "-Command",
-                    "npx --yes dependency-check --project Meqenet --scan . --format ALL --failOnCVSS 7 --suppression owasp-suppression.xml"
+                    "docker","run","--rm",
+                    "-v", str(self.project_root)+":/src",
+                    "-v", str(self.project_root/"governance"/"owasp-data")+":/usr/share/dependency-check/data",
+                    "-v", str(self.project_root/"governance"/"owasp-reports")+":/report",
+                    "owasp/dependency-check:latest",
+                    "--noupdate",
+                    "--scan","/src/backend",
+                    "--scan","/src/governance/requirements.txt",
+                    "--scan","/src/tools/git/requirements.txt",
+                    "--exclude","/src/**/node_modules/**",
+                    "--exclude","/src/.git/**",
+                    "--exclude","/src/docs/**",
+                    "--exclude","/src/governance/logs/**",
+                    "--exclude","/src/bom.json",
+                    "--format","ALL",
+                    "--project","Meqenet",
+                    "--failOnCVSS","7",
+                    "--suppression","/src/owasp-suppression.xml",
+                    "--out","/report"
                 ],
-                timeout=600,
+                timeout=1200,
                 critical=True,
                 category="security"
             ),
