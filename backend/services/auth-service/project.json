@@ -4,6 +4,14 @@
   "sourceRoot": "backend/services/auth-service/src",
   "projectType": "application",
   "targets": {
+    "test": {
+      "executor": "@nx/vite:test",
+      "outputs": ["{workspaceRoot}/coverage/backend/services/auth-service"],
+      "options": {
+        "config": "vitest.config.mjs",
+        "reportsDirectory": "coverage/backend/services/auth-service"
+      }
+    },
     "build": {
       "executor": "@nx/webpack:webpack",
       "outputs": ["{options.outputPath}"],

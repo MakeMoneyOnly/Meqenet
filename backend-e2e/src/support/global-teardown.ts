@@ -1,4 +1,4 @@
-import { killPort } from '@nx/node/utils';
+import kill from 'kill-port';
 /* eslint-disable */
 
 // Type declaration for global teardown message
@@ -10,7 +10,7 @@ module.exports = async function () {
   // Put clean up logic here (e.g. stopping services, docker-compose, etc.).
   // Hint: `globalThis` is shared between setup and teardown.
   const port = process.env.PORT ? Number(process.env.PORT) : 3000;
-  await killPort(port);
+  await (kill as any)(port);
 
   // Safe access to global teardown message
   if (globalThis.__TEARDOWN_MESSAGE__) {

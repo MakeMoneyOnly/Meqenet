@@ -4,6 +4,14 @@
   "sourceRoot": "backend/services/api-gateway/src",
   "projectType": "application",
   "targets": {
+    "test": {
+      "executor": "@nx/vite:test",
+      "outputs": ["{workspaceRoot}/coverage/backend/services/api-gateway"],
+      "options": {
+        "config": "vitest.config.mjs",
+        "reportsDirectory": "coverage/backend/services/api-gateway"
+      }
+    },
     "build": {
       "executor": "@nx/webpack:webpack",
       "outputs": ["{options.outputPath}"],
