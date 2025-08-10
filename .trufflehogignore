@@ -1,0 +1,30 @@
+# Exclude vendor/deps and generated artifacts
+node_modules/
+**/node_modules/
+.git/
+**/.git/
+.pnpm-store/
+**/.pnpm-store/
+**/dist/
+**/build/
+**/coverage/
+**/.cache/
+**/.vite/
+**/.eslintcache
+**/.nx/cache/
+**/.ignored_prisma/
+**/.scannerwork/
+**/.DS_Store
+**/*.lock
+pnpm-lock.yaml
+yarn.lock
+package-lock.json
+bom.json
+trufflehog_report.json
+# Exclude binary/media
+**/*.png
+**/*.jpg
+**/*.jpeg
+**/*.gif
+**/*.webp
+**/*.svg

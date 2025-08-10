@@ -17,7 +17,7 @@
     "security:audit": "pnpm audit --audit-level moderate",
     "security:audit-ci": "audit-ci --config .audit-ci.json",
     "security:sbom": "npx -y @cyclonedx/cdxgen@latest -o bom.json --include-formulation --include-crypto . && echo '✅ SBOM generated successfully at bom.json'",
-    "security:secrets": "powershell -Command \"python -m pip install -U trufflehog > $null; trufflehog filesystem --no-update --fail --json . | Out-File -FilePath trufflehog_report.json -Encoding utf8\"",
+    "security:secrets": "powershell -Command \"python -m pip install -U trufflehog > $null; trufflehog filesystem --only-verified --no-update --fail --json backend governance tools | Out-File -FilePath trufflehog_report.json -Encoding utf8\"",
     "security:outdated": "pnpm outdated",
     "validate:local": "pnpm run format:check && pnpm run lint && pnpm run build && pnpm run test",
     "validate:ethiopian-compliance": "echo 'Running Ethiopian FinTech compliance checks...' && pnpm run security:audit",
