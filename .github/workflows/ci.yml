@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 env:
-  NODE_VERSION: "18"
+  NODE_VERSION: "22"
   PNPM_VERSION: "10.12.3"
   DOCKER_BUILDKIT: 1
   COMPOSE_BAKE: true
@@ -62,7 +62,7 @@ jobs:
         continue-on-error: false
 
       - name: 📋 Generate SBOM (Software Bill of Materials)
-        run: pnpm run security:sbom
+        run: docker run --rm -v ${{ github.workspace }}:/src ghcr.io/cyclonedx/cdxgen:latest -o /src/bom.json --include-formulation --include-crypto --spec-version 1.5 --exclude "node_modules,dist,coverage,.pnpm-store,.git,bom.json" /src/backend /src/governance /src/tools
 
       - name: 🚨 Upload Security Results
         uses: actions/upload-artifact@v4

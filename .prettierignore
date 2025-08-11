@@ -1,8 +1,11 @@
-# Add files here to ignore them from prettier formatting
-/dist
-/coverage
-/.nx/cache
-/.nx/workspace-data
-/templates/microservice/
-.pip-audit-deps/
-.pip-audit-deps-temp/
+# Generated artifacts
+bom.json
+java-reachables.slices.json
+# Dependency scanner caches
+/governance/owasp-data/
+/governance/owasp-reports/
+
+# Exclude cookiecutter templates and generated JSON slices
+/templates/
+backend/java-openapi.json
+java-usages.slices.json

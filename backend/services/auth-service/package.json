@@ -37,6 +37,7 @@
     "security:check": "snyk test"
   },
   "dependencies": {
+    "express": "^4.19.2",
     "@aws-sdk/client-secrets-manager": "^3.835.0",
     "@nestjs/common": "^11.1.6",
     "@nestjs/config": "^4.0.2",

@@ -119,9 +119,42 @@ class LocalCIValidator:
                 name="ESLint Check (Entire Workspace)",
                 description="Run ESLint on all projects in the workspace, mirroring the CI pipeline's strict checks.",
                 command=["powershell", "-Command", "$env:NX_DAEMON='false'; pnpm nx run-many --target=lint --all --no-cache -- --max-warnings=0"],
-                timeout=300,  # Increased timeout for a full workspace scan
+                timeout=300,
                 critical=True,
                 category="code_quality"
+            ),
+            ValidationCheck(
+                name="ESLint Check (Per-Project)",
+                description="Run per-project lint the same way GH uses pnpm -r --if-present lint.",
+                command=["pnpm", "-r", "--if-present", "lint"],
+                timeout=300,
+                critical=True,
+                category="code_quality"
+            ),
+            ValidationCheck(
+                name="Generate SBOM",
+                description="Generate Software Bill of Materials (same as CI, dockerized)",
+                command=[
+                    "docker","run","--rm",
+                    "-v", str(self.project_root)+":/src",
+                    "ghcr.io/cyclonedx/cdxgen:latest",
+                    "-o","/src/bom.json",
+                    "--include-formulation","--include-crypto",
+                    "--spec-version","1.5",
+                    "--exclude","node_modules,dist,coverage,.pnpm-store,.cache,.nx,.vite,.git,bom.json",
+                    "/src/backend","/src/governance","/src/tools"
+                ],
+                timeout=1200,
+                critical=True,
+                category="security"
+            ),
+            ValidationCheck(
+                name="Secrets Scan",
+                description="Run trufflehog secrets scan like CI pre-push",
+                command=["pnpm", "run", "security:secrets"],
+                timeout=600,
+                critical=True,
+                category="security"
             ),
             ValidationCheck(
                 name="Vault Resolution Smoke Test",
@@ -186,6 +219,7 @@ class LocalCIValidator:
                     "-v", str(self.project_root/"governance"/"owasp-reports")+":/report",
                     "owasp/dependency-check:latest",
                     "--noupdate",
+                    "--disableOssIndex",
                     "--scan","/src/backend",
                     "--scan","/src/governance/requirements.txt",
                     "--scan","/src/tools/git/requirements.txt",
@@ -383,8 +417,8 @@ class LocalCIValidator:
                 env.update({
                     'AWS_PROFILE': self.aws_profile,
                     'AWS_SDK_LOAD_CONFIG': '1',
-                    'AWS_REGION': env.get('AWS_REGION') or os.environ.get('AWS_REGION') or 'us-east-1',
-                    'AWS_DEFAULT_REGION': env.get('AWS_DEFAULT_REGION') or os.environ.get('AWS_DEFAULT_REGION') or 'us-east-1',
+                    'AWS_REGION': (env.get('AWS_REGION') or os.environ.get('AWS_REGION') or 'us-east-1').strip(),
+                    'AWS_DEFAULT_REGION': (env.get('AWS_DEFAULT_REGION') or os.environ.get('AWS_DEFAULT_REGION') or 'us-east-1').strip(),
                     'AWS_EC2_METADATA_DISABLED': 'true',
                 })
 

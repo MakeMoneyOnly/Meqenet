@@ -230,5 +230,8 @@ dmypy.json
 .pip-audit-deps-temp/ 
 .pip-audit-deps/ 
 audit.json
-governance/owasp-data/ 
-governance/owasp-reports/ 
+governance/owasp-data/
+governance/owasp-reports/
+# SBOM and generated analysis slices
+bom.json
+java-reachables.slices.json
