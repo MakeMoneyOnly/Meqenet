@@ -136,6 +136,11 @@ class LocalCIValidator:
                 description="Generate Software Bill of Materials (same as CI, dockerized)",
                 command=[
                     "docker","run","--rm",
+                    "-u","0:0",
+                    "-e","NPM_CONFIG_IGNORE_SCRIPTS=true",
+                    "-e","HUSKY=0",
+                    "-e","HUSKY_SKIP_INSTALL=1",
+                    "-e","CI=1",
                     "-v", str(self.project_root)+":/src",
                     "ghcr.io/cyclonedx/cdxgen:latest",
                     "-o","/src/bom.json",
