@@ -104,20 +104,6 @@ export class PrismaService
   }
 
   /**
-<<<<<<< HEAD
-=======
-   * Secure access to NODE_ENV environment variable
-   * Centralized for fintech compliance and audit purposes
-   */
-  private static getSecureNodeEnv(): string | undefined {
-    // Security: Single-point access to NODE_ENV for constructor use
-    // ESLint disabled for this specific secure access pattern
-
-    return process.env.NODE_ENV;
-  }
-
-  /**
->>>>>>> origin/main
    * Validates database URL for security compliance
    * Ensures SSL is enabled and credentials are not exposed
    */
