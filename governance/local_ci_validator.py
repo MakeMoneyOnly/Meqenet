@@ -777,7 +777,8 @@ async def main() -> None:
     
     # Determine categories to run
     if args.quick:
-        categories = ["code_quality", "security", "testing"]
+        # Include database-setup first so Prisma client is generated before building
+        categories = ["database-setup", "code_quality", "security", "testing"]
         logger.info("[MODE] Running QUICK validation (essential checks only)")
     elif args.security_only:
         categories = ["security", "compliance"]

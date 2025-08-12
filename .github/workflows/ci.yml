@@ -109,6 +109,9 @@ jobs:
       - name: 🔍 ESLint Analysis
         run: pnpm run lint
 
+      - name: 🔧 Generate Prisma Client
+        run: pnpm prisma generate --schema=./backend/services/auth-service/prisma/schema.prisma
+
       - name: 🏗️ TypeScript Compilation Check
         run: pnpm run build
 
