@@ -12,7 +12,7 @@ on:
 
 env:
   NODE_VERSION: "22"
-  PNPM_VERSION: "10.12.3"
+  PNPM_VERSION: "10.14.0"
 
 # Define minimal required permissions following the principle of least privilege
 permissions:
