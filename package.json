@@ -129,14 +129,16 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-security": "^3.0.1",
-    "form-data": "4.0.4",
+    "form-data": "^4.0.4",
     "globals": "^16.3.0",
     "happy-dom": "^18.0.1",
     "husky": "^9.1.7",
     "kill-port": "^2.0.1",
     "lint-staged": "^16.1.5",
+    "multer": "^2.0.2",
     "npm-check-updates": "^18.0.2",
     "nx": "^21.3.11",
+    "on-headers": "^1.1.0",
     "prettier": "^3.6.2",
     "prisma": "^5.22.0",
     "source-map-support": "^0.5.21",
@@ -186,12 +188,6 @@
     "pnpm": "10.14.0"
   },
   "packageManager": "pnpm@10.14.0",
-  "overrides": {
-    "@inquirer/editor": "^4.2.16",
-    "tmp": ">=0.2.4",
-    "http-proxy-middleware": "^3.0.3",
-    "express": "^4.21.2"
-  },
   "pnpm": {
     "onlyBuiltDependencies": [
       "@appthreat/sqlite3",
@@ -210,7 +206,9 @@
       "unrs-resolver"
     ],
     "ignoredBuiltDependencies": [
-      "esbuild"
+      "bufferutil",
+      "esbuild",
+      "utf-8-validate"
     ]
   }
 }

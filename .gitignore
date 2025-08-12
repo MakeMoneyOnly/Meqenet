@@ -82,18 +82,50 @@ test-results.xml
 jest-stare/
 
 # =============================================================================
-# Python
+# Python (Git Automation Tools)
 # =============================================================================
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 .Python
-/venv/
-/env/
-/.venv/
-/.env/
+venv/
+env/
+.venv/
+.env/
 *.egg-info/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+.installed.cfg
+*.egg
+MANIFEST
+*.manifest
+*.spec
+pip-wheel-metadata/
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+instance/
+.webassets-cache
+.flask_session/
+.scrapy
+docs/_build/
+target/
+.ipynb_checkpoints
+profile_default/
+ipython_config.py
+__pypackages__/
 
 # =============================================================================
 # Mobile (React Native / Expo)
@@ -139,6 +171,7 @@ local.properties
 .gradle/
 captures/
 .externalNativeBuild/
+# Resolved merge conflict markers removed
 -C/Users/Rude
 Bwoy/Desktop/1/Meqenet/tools/git/git-automation.py
 /.venv
@@ -235,3 +268,60 @@ governance/owasp-reports/
 # SBOM and generated analysis slices
 bom.json
 java-reachables.slices.json
+
+# =============================================================================
+# Security & NBE Compliance
+# =============================================================================
+*.key
+*.crt
+*.p12
+keys/
+secrets/
+.secrets/
+
+# =============================================================================
+# Backup & Temporary Files
+# =============================================================================
+*.backup
+*.tmp
+*~
+*.bak
+.*.swp
+.*.swo
+
+# =============================================================================
+# Database & Storage
+# =============================================================================
+*.db
+*.sqlite
+*.sqlite3
+data/
+uploads/
+storage/
+
+# =============================================================================
+# Docker & Deployment
+# =============================================================================
+.dockerignore.bak
+docker-compose.override.yml
+*.tar
+
+# =============================================================================
+# Ethiopian FinTech Specific
+# =============================================================================
+# NBE compliance audit files (generated)
+audit-*.json
+compliance-reports/
+fayda-test-data/
+
+# =============================================================================
+# Nx Workspace
+# =============================================================================
+.nx/cache
+.nx/workspace-data
+
+# =============================================================================
+# Package Manager Locks (managed by pnpm)
+# =============================================================================
+package-lock.json
+yarn.lock
