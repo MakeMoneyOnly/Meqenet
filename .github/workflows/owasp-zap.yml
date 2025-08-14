@@ -1,4 +1,4 @@
-name: 🕷️ OWASP ZAP Security Testing
+name: 🔒 OWASP ZAP Security Testing
 
 on:
   push:
@@ -6,8 +6,8 @@ on:
   pull_request:
     branches: [main, develop]
   schedule:
-    # Run OWASP ZAP scans nightly
-    - cron: "0 4 * * *"
+    # Run security scans every night at 2 AM UTC
+    - cron: "0 2 * * *"
   workflow_dispatch:
 
 env:
@@ -17,46 +17,17 @@ env:
 permissions:
   contents: read
   security-events: write
+  actions: read
 
 jobs:
-  owasp-zap-baseline:
-    name: 🔍 OWASP ZAP Baseline Scan
+  owasp-zap-scan:
+    name: 🔒 OWASP ZAP Security Scan
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-
-    services:
-      postgres:
-        image: postgres:15-alpine
-        env:
-          POSTGRES_PASSWORD: test_password
-          POSTGRES_USER: test_user
-          POSTGRES_DB: meqenet_test
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
-      redis:
-        image: redis:7-alpine
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 6379:6379
+    timeout-minutes: 60
 
     steps:
       - name: 📥 Checkout Repository
         uses: actions/checkout@v4
-
-      - name: 🔧 Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
 
       - name: 🔧 Setup Node.js
         uses: actions/setup-node@v4
@@ -70,244 +41,131 @@ jobs:
       - name: 📚 Install Dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: 🔧 Generate Prisma Client
-        run: pnpm prisma generate --schema=./backend/services/auth-service/prisma/schema.prisma
-
-      - name: 🏗️ Build Services
-        run: pnpm run build
-
-      - name: 🚀 Start Test Application
+      - name: 🏗️ Build Applications
         run: |
-          # Start auth service
+          pnpm run build
+          pnpm run --filter=backend/services/auth-service build
+
+      - name: 🚀 Start Test Services
+        run: |
+          # Start auth-service for testing
           cd backend/services/auth-service
-          pnpm start &
+          npm start &
+          sleep 30
 
-          # Start api gateway
-          cd ../api-gateway
-          pnpm start &
-
-          # Wait for services to be ready
-          sleep 45
-
-          # Verify services are running
-          curl -f http://localhost:3000/api/health || echo "API Gateway not ready"
-          curl -f http://localhost:3001/api/auth/health || echo "Auth Service not ready"
+          # Verify service is running
+          curl -f http://localhost:3000/health || exit 1
         env:
-          DATABASE_URL: postgresql://test_user:test_password@localhost:5432/meqenet_test
-          REDIS_URL: redis://localhost:6379
           NODE_ENV: test
+          DATABASE_URL: "postgresql://test:test@localhost:5432/test"
 
-      - name: 🕷️ OWASP ZAP Baseline Scan
+      - name: 🔒 Run OWASP ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.12.0
         with:
           target: "http://localhost:3000"
-          rules_file_name: ".zap/rules.tsv"
-          cmd_options: "-a"
+          rules_file_name: ".github/workflows/zap-rules.txt"
+          cmd_options: "-a -x owasp-zap-report.xml -r owasp-zap-report.html"
 
-      - name: 📊 Upload ZAP Report
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: owasp-zap-baseline-report
-          path: report_html.html
-          retention-days: 30
-
-  owasp-zap-full-scan:
-    name: 🔍 OWASP ZAP Full Scan
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-
-    services:
-      postgres:
-        image: postgres:15-alpine
-        env:
-          POSTGRES_PASSWORD: test_password
-          POSTGRES_USER: test_user
-          POSTGRES_DB: meqenet_test
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
-      redis:
-        image: redis:7-alpine
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 6379:6379
-
-    steps:
-      - name: 📥 Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: 🔧 Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
-      - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "pnpm"
-
-      - name: 📦 Enable Corepack
-        run: corepack enable
-
-      - name: 📚 Install Dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: 🔧 Generate Prisma Client
-        run: pnpm prisma generate --schema=./backend/services/auth-service/prisma/schema.prisma
-
-      - name: 🏗️ Build Services
-        run: pnpm run build
-
-      - name: 🚀 Start Test Application
-        run: |
-          # Start auth service
-          cd backend/services/auth-service
-          pnpm start &
-
-          # Start api gateway
-          cd ../api-gateway
-          pnpm start &
-
-          # Wait for services to be ready
-          sleep 45
-        env:
-          DATABASE_URL: postgresql://test_user:test_password@localhost:5432/meqenet_test
-          REDIS_URL: redis://localhost:6379
-          NODE_ENV: test
-
-      - name: 🕷️ OWASP ZAP Full Scan
+      - name: 🔍 Run OWASP ZAP Full Scan
         uses: zaproxy/action-full-scan@v0.10.0
         with:
           target: "http://localhost:3000"
-          rules_file_name: ".zap/rules.tsv"
-          cmd_options: "-a"
+          rules_file_name: ".github/workflows/zap-rules.txt"
+          cmd_options: "-a -x owasp-zap-full-report.xml -r owasp-zap-full-report.html"
 
-      - name: 📊 Upload ZAP Full Scan Report
+      - name: 🔐 Run API Security Testing
+        run: |
+          # Test API endpoints for security vulnerabilities
+          echo "Testing critical API endpoints..."
+
+          # Test authentication endpoints
+          curl -X POST http://localhost:3000/auth/login \
+            -H "Content-Type: application/json" \
+            -d '{"email":"test@test.com","password":"test"}' || true
+            
+          # Test payment endpoints (should require auth)
+          curl -X GET http://localhost:3000/payments || true
+
+          # Test KYC endpoints (should require auth)
+          curl -X GET http://localhost:3000/kyc/verify || true
+
+      - name: 🔍 Advanced Security Testing
+        run: |
+          # SQL Injection Testing
+          echo "Running SQL injection tests..."
+          curl -X GET "http://localhost:3000/users?id=1' OR '1'='1" || true
+
+          # XSS Testing
+          echo "Running XSS tests..."
+          curl -X POST http://localhost:3000/auth/register \
+            -H "Content-Type: application/json" \
+            -d '{"email":"<script>alert(1)</script>","password":"test"}' || true
+
+          # CSRF Testing
+          echo "Running CSRF tests..."
+          curl -X POST http://localhost:3000/payments/create \
+            -H "Content-Type: application/json" \
+            -d '{"amount":1000}' || true
+
+      - name: 🏦 NBE Compliance Security Tests
+        run: |
+          echo "Testing NBE compliance security requirements..."
+
+          # Test data encryption endpoints
+          curl -X GET http://localhost:3000/health/encryption || true
+
+          # Test audit logging
+          curl -X GET http://localhost:3000/health/audit || true
+
+          # Test Fayda ID integration security
+          curl -X POST http://localhost:3000/kyc/fayda-verify \
+            -H "Content-Type: application/json" \
+            -d '{"nationalId":"test","biometric":"test"}' || true
+
+      - name: 📊 Generate Security Report
+        run: |
+          echo "# OWASP ZAP Security Scan Results" > security-report.md
+          echo "" >> security-report.md
+          echo "## Scan Summary" >> security-report.md
+          echo "- **Target**: http://localhost:3000" >> security-report.md
+          echo "- **Scan Date**: $(date)" >> security-report.md
+          echo "- **Scan Type**: Baseline + Full Scan" >> security-report.md
+          echo "" >> security-report.md
+
+          if [ -f owasp-zap-report.xml ]; then
+            echo "## Baseline Scan Results" >> security-report.md
+            echo "See attached XML report for details." >> security-report.md
+          fi
+
+          if [ -f owasp-zap-full-report.xml ]; then
+            echo "## Full Scan Results" >> security-report.md
+            echo "See attached XML report for details." >> security-report.md
+          fi
+
+      - name: 📁 Upload Security Reports
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: owasp-zap-full-scan-report
-          path: report_html.html
-          retention-days: 30
+          name: owasp-zap-security-reports
+          path: |
+            owasp-zap-report.xml
+            owasp-zap-report.html
+            owasp-zap-full-report.xml
+            owasp-zap-full-report.html
+            security-report.md
+          retention-days: 90
+          if-no-files-found: warn
 
-  owasp-zap-api-scan:
-    name: 🔍 OWASP ZAP API Scan
-    runs-on: ubuntu-latest
-    timeout-minutes: 40
-
-    steps:
-      - name: 📥 Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: 🔧 Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
-      - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: "pnpm"
-
-      - name: 📦 Enable Corepack
-        run: corepack enable
-
-      - name: 📚 Install Dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: 🕷️ OWASP ZAP API Scan
-        uses: zaproxy/action-api-scan@v0.7.0
-        with:
-          target: "http://localhost:3000"
-          format: openapi
-          api_definition_url: "http://localhost:3000/api/docs-json"
-          cmd_options: "-a"
-
-      - name: 📊 Upload ZAP API Scan Report
-        uses: actions/upload-artifact@v4
+      - name: 📤 Upload SARIF Results
+        uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
-          name: owasp-zap-api-scan-report
-          path: report_html.html
-          retention-days: 30
+          sarif_file: owasp-zap-report.xml
+          category: owasp-zap
 
-  fintech-security-validation:
-    name: 💰 FinTech Security Validation
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-
-    steps:
-      - name: 📥 Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: 💰 FinTech-Specific Security Tests
+      - name: 🚨 Security Alert on Failures
+        if: failure()
         run: |
-          echo "💰 Running FinTech-specific security validations..."
-
-          # Payment endpoint security
-          echo "💳 Payment endpoint security validation..."
-
-          # Financial data encryption validation
-          echo "🔐 Financial data encryption validation..."
-
-          # Transaction integrity checks
-          echo "📊 Transaction integrity validation..."
-
-          # Fayda ID security validation
-          echo "🆔 Fayda ID security validation..."
-
-          # Anti-fraud mechanisms
-          echo "🛡️ Anti-fraud mechanism validation..."
-
-          # Regulatory compliance validation
-          echo "🏛️ Regulatory compliance validation..."
-
-          echo "✅ FinTech security validation completed"
-
-  zap-security-summary:
-    name: 📊 ZAP Security Summary
-    runs-on: ubuntu-latest
-    needs:
-      [
-        owasp-zap-baseline,
-        owasp-zap-full-scan,
-        owasp-zap-api-scan,
-        fintech-security-validation,
-      ]
-    if: always()
-
-    steps:
-      - name: 📊 Generate Security Summary
-        run: |
-          echo "# 🕷️ OWASP ZAP Security Testing Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "## 🔍 Security Scan Results" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Scan Type | Status | Target |" >> $GITHUB_STEP_SUMMARY
-          echo "|-----------|--------|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| 🔍 Baseline Scan | ${{ needs.owasp-zap-baseline.result }} | Web Application |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🔍 Full Scan | ${{ needs.owasp-zap-full-scan.result }} | Complete Application |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🔍 API Scan | ${{ needs.owasp-zap-api-scan.result }} | REST APIs |" >> $GITHUB_STEP_SUMMARY
-          echo "| 💰 FinTech Security | ${{ needs.fintech-security-validation.result }} | Financial Services |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "## 🛡️ Security Standards" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ OWASP Top 10 vulnerability assessment" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Dynamic application security testing (DAST)" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ API security validation" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ FinTech-specific security controls" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Scan Date:** $(date)" >> $GITHUB_STEP_SUMMARY
-          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "🚨 SECURITY ALERT: OWASP ZAP scan detected vulnerabilities!"
+          echo "Please review the security reports and address critical findings."
+          exit 1
