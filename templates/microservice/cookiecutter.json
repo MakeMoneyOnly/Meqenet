@@ -11,7 +11,7 @@
   "author_email": "dev@meqenet.et",
   "year": "{% now 'utc', '%Y' %}",
   "version": "1.0.0",
-  "node_version": "18.19.0",
+  "node_version": "22.0.0",
   "nestjs_version": "^10.0.0",
   "prisma_version": "^5.0.0",
   "environment": "development",

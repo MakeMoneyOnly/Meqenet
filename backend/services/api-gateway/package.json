@@ -4,6 +4,9 @@
   "description": "API Gateway microservice",
   "private": true,
   "license": "UNLICENSED",
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "main": "dist/main.js",
   "scripts": {
     "build": "nest build",
