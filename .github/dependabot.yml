@@ -1,0 +1,84 @@
+version: 2
+updates:
+  # Enable version updates for pnpm (Node.js dependencies)
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "MakeMoneyOnly"
+    assignees:
+      - "MakeMoneyOnly"
+    commit-message:
+      prefix: "chore"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "security"
+    allow:
+      - dependency-type: "all"
+    # Group related dependency updates
+    groups:
+      nestjs:
+        patterns:
+          - "@nestjs/*"
+      nx:
+        patterns:
+          - "@nx/*"
+          - "nx"
+      prisma:
+        patterns:
+          - "@prisma/*"
+          - "prisma"
+      testing:
+        patterns:
+          - "@types/*"
+          - "vitest"
+          - "jest"
+          - "@testing-library/*"
+      security:
+        patterns:
+          - "argon2"
+          - "helmet"
+          - "express-rate-limit"
+
+  # Enable version updates for Docker
+  - package-ecosystem: "docker"
+    directory: "/backend/services/auth-service"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+    reviewers:
+      - "MakeMoneyOnly"
+    labels:
+      - "dependencies"
+      - "docker"
+
+  - package-ecosystem: "docker"
+    directory: "/backend/services/api-gateway"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+    reviewers:
+      - "MakeMoneyOnly"
+    labels:
+      - "dependencies"
+      - "docker"
+
+  # Enable version updates for GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+    reviewers:
+      - "MakeMoneyOnly"
+    labels:
+      - "dependencies"
+      - "github-actions"
