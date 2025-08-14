@@ -336,7 +336,7 @@ jobs:
           timeout: "10m"
 
       - name: 🔍 Grype Vulnerability Scanner
-        uses: anchore/scan-action@v3
+        uses: anchore/scan-action@v6
         continue-on-error: true
         with:
           image: meqenet/${{ matrix.service }}:security-scan
