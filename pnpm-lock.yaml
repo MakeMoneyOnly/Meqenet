@@ -369,7 +369,7 @@ importers:
         version: 11.0.10(@swc/core@1.13.3(@swc/helpers@0.5.17))(@types/node@24.2.1)(esbuild@0.25.8)(webpack-cli@5.1.4)
       '@nestjs/schematics':
         specifier: ^10.2.3
-        version: 10.2.3(chokidar@3.6.0)(typescript@5.9.2)
+        version: 10.2.3(chokidar@4.0.3)(typescript@5.9.2)
       '@types/express':
         specifier: ^5.0.1
         version: 5.0.3
@@ -386,8 +386,8 @@ importers:
         specifier: ^8.39.0
         version: 8.39.1(eslint@9.33.0)(typescript@5.9.2)
       chokidar:
-        specifier: ^3.5.3
-        version: 3.6.0
+        specifier: ^4.0.3
+        version: 4.0.3
       eslint:
         specifier: ^9.32.0
         version: 9.33.0
@@ -7756,7 +7756,7 @@ snapshots:
       '@jridgewell/gen-mapping': 0.3.13
       '@jridgewell/trace-mapping': 0.3.30
 
-  '@angular-devkit/core@17.3.11(chokidar@3.6.0)':
+  '@angular-devkit/core@17.3.11(chokidar@4.0.3)':
     dependencies:
       ajv: 8.12.0
       ajv-formats: 2.1.1(ajv@8.12.0)
@@ -7765,7 +7765,7 @@ snapshots:
       rxjs: 7.8.1
       source-map: 0.7.4
     optionalDependencies:
-      chokidar: 3.6.0
+      chokidar: 4.0.3
 
   '@angular-devkit/core@19.2.15(chokidar@4.0.3)':
     dependencies:
@@ -7790,9 +7790,9 @@ snapshots:
       - '@types/node'
       - chokidar
 
-  '@angular-devkit/schematics@17.3.11(chokidar@3.6.0)':
+  '@angular-devkit/schematics@17.3.11(chokidar@4.0.3)':
     dependencies:
-      '@angular-devkit/core': 17.3.11(chokidar@3.6.0)
+      '@angular-devkit/core': 17.3.11(chokidar@4.0.3)
       jsonc-parser: 3.2.1
       magic-string: 0.30.8
       ora: 5.4.1
@@ -9459,10 +9459,10 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@nestjs/schematics@10.2.3(chokidar@3.6.0)(typescript@5.9.2)':
+  '@nestjs/schematics@10.2.3(chokidar@4.0.3)(typescript@5.9.2)':
     dependencies:
-      '@angular-devkit/core': 17.3.11(chokidar@3.6.0)
-      '@angular-devkit/schematics': 17.3.11(chokidar@3.6.0)
+      '@angular-devkit/core': 17.3.11(chokidar@4.0.3)
+      '@angular-devkit/schematics': 17.3.11(chokidar@4.0.3)
       comment-json: 4.2.5
       jsonc-parser: 3.3.1
       pluralize: 8.0.0
