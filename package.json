@@ -89,7 +89,7 @@
     "utf-8-validate": "^6.0.5",
     "uuid": "^10.0.0",
     "winston": "^3.17.0",
-    "zod": "^3.25.76"
+    "zod": "^4.0.17"
   },
   "devDependencies": {
     "@eslint/plugin-kit": "0.3.5",
