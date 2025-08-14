@@ -185,7 +185,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: 🔧 Setup Kubectl
-        uses: azure/setup-kubectl@v3
+        uses: azure/setup-kubectl@v4
         with:
           version: "v1.28.0"
 
@@ -286,7 +286,7 @@ jobs:
             **Please review and approve this production deployment.**
 
       - name: 🔧 Setup Kubectl
-        uses: azure/setup-kubectl@v3
+        uses: azure/setup-kubectl@v4
         with:
           version: "v1.28.0"
 
