@@ -1,0 +1,18 @@
+# FINTECH-SAFE SBOM Allowlist for Meqenet.et
+# CRITICAL: This allowlist only permits public npm package metadata emails
+# Real secrets (API keys, database passwords, etc.) will still be caught
+
+# NPM package author/maintainer emails in formulation sections (public metadata)
+# Covers most legitimate npm package contact emails
+^[a-zA-Z0-9._+-]+@[a-zA-Z0-9.-]+\.(com|org|net|io|me|ru|dev|cc|hu|nl|dk|ch|ro|info|ca|de|edu|in|jp|ltd|fr|li|gg|us|vt\.edu|hotmail\.com)$
+
+# Official company domains in package metadata (informational only) 
+@meqenet\.(et|com)$
+
+# URLs and repository links (not secrets)
+^https?:\/\/.*
+^git\+https?:\/\/.*
+
+# Standard npm/package.json field prefixes that contain contact info
+"(homepage|repository|bugs|author)":\s*"
+

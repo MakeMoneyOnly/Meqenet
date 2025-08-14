@@ -213,6 +213,14 @@ All validation runs generate detailed JSON reports:
    python tools/git/git-automation.py pre-push-check
    ```
 
+### GitHub CI Parity
+
+GitHub Actions now runs the same validator in CI mode, ensuring parity with local checks:
+
+- Workflow: `.github/workflows/ci.yml`
+- Command executed in CI: `python governance/local_ci_validator.py --ci`
+- Vault check is skipped automatically if no AWS creds/profile are present.
+
 ### Git Hooks Integration
 
 You can integrate these tools with Git hooks for automatic validation:
