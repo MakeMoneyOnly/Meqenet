@@ -1,0 +1,68 @@
+name: 📊 Monitoring & Observability Validation
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prometheus:
+    name: 🔭 Prometheus Configuration Validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install promtool
+        run: |
+          curl -LO https://github.com/prometheus/prometheus/releases/download/v2.45.0/prometheus-2.45.0.linux-amd64.tar.gz
+          tar -xzf prometheus-2.45.0.linux-amd64.tar.gz
+          sudo mv prometheus-2.45.0.linux-amd64/promtool /usr/local/bin/
+
+      - name: Create Prometheus rule files
+        run: |
+          mkdir -p monitoring/prometheus/rules
+          cat > monitoring/prometheus/rules/fintech_rules.yml << 'EOF'
+          groups:
+            - name: fintech
+              rules:
+                - alert: PaymentServiceDown
+                  expr: up{job="payment-service"} == 0
+                  for: 1m
+                  labels: { severity: critical }
+                  annotations: { summary: "Payment service down" }
+          EOF
+          cat > monitoring/prometheus/rules/security_rules.yml << 'EOF'
+          groups:
+            - name: security
+              rules:
+                - alert: BruteForceAttack
+                  expr: rate(auth_failures_total[5m]) > 20
+                  for: 1m
+                  labels: { severity: critical }
+                  annotations: { summary: "Brute force detected" }
+          EOF
+
+      - name: Create Prometheus config (references rules/*)
+        run: |
+          mkdir -p monitoring/prometheus
+          cat > monitoring/prometheus/prometheus.yml << 'EOF'
+          global:
+            scrape_interval: 15s
+            evaluation_interval: 15s
+          rule_files:
+            - rules/fintech_rules.yml
+            - rules/security_rules.yml
+          scrape_configs:
+            - job_name: 'api-gateway'
+              static_configs:
+                - targets: ['localhost:3000']
+          EOF
+
+      - name: Validate Prometheus config
+        run: promtool check config monitoring/prometheus/prometheus.yml

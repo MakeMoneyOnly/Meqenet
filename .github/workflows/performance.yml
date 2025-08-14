@@ -1,0 +1,81 @@
+name: ⚡ Performance Testing & Load Testing
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: "22"
+  PNPM_VERSION: "10.14.0"
+
+permissions:
+  contents: read
+
+jobs:
+  api-performance:
+    name: 🔥 API Performance Testing
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: 📦 Enable Corepack
+        run: corepack enable
+
+      - name: 📚 Install Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: 🚀 Run API Performance Tests (k6)
+        run: |
+          if [ -f "scripts/performance/api.k6.js" ]; then
+            docker run --rm -i -v ${{ github.workspace }}:/work -w /work grafana/k6 run scripts/performance/api.k6.js
+          else
+            echo "No k6 script found at scripts/performance/api.k6.js. Skipping." 
+          fi
+
+  mobile-performance:
+    name: 📱 Mobile Performance Testing
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: 📦 Enable Corepack
+        run: corepack enable
+
+      - name: 📚 Install Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: 🚀 Run Mobile Perf Tests (placeholder)
+        run: |
+          echo "Add real mobile perf scripts under scripts/performance/mobile/*.js to activate."
+          echo "Skipping for now."

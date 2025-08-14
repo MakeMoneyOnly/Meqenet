@@ -111,6 +111,44 @@ class LocalCIValidator:
                 critical=False,
                 category="setup"
             ),
+            ValidationCheck(
+                name="Workflow Sanity Validation (pnpm/Node/Corepack)",
+                description="Ensure all GitHub workflows set up pnpm, Node 22 and enable Corepack to prevent CI parity failures",
+                command=[
+                    "python",
+                    "-c",
+                    (
+                        "import os,re,sys; base=os.path.join('.github','workflows'); missing=[]; "
+                        "\nif os.path.isdir(base):\n"
+                        "    for fname in os.listdir(base):\n"
+                        "        if not (fname.endswith('.yml') or fname.endswith('.yaml')):\n"
+                        "            continue\n"
+                        "        path=os.path.join(base,fname)\n"
+                        "        try:\n"
+                        "            content=open(path,'r',encoding='utf-8').read()\n"
+                        "        except Exception as e:\n"
+                        "            missing.append((fname,f'read-error: {e}')); continue\n"
+                        "        has_pnpm='pnpm/action-setup@' in content\n"
+                        "        has_node='actions/setup-node@' in content\n"
+                        "        node22=re.search(r"""node-version:\\s*['\"]?22""",content) is not None\n"
+                        "        has_corepack=re.search(r'\\bcorepack enable\\b',content) is not None\n"
+                        "        if not (has_pnpm and has_node and node22 and has_corepack):\n"
+                        "            reasons=[]\n"
+                        "            if not has_pnpm: reasons.append('pnpm/action-setup missing')\n"
+                        "            if not has_node: reasons.append('actions/setup-node missing')\n"
+                        "            if not node22: reasons.append('node-version 22 missing')\n"
+                        "            if not has_corepack: reasons.append('corepack enable missing')\n"
+                        "            missing.append((fname, ', '.join(reasons)))\n"
+                        "\nif missing:\n"
+                        "    print('CI workflow parity issues found:');\n"
+                        "    [print(f' - {n}: {r}') for n,r in missing]; sys.exit(1)\n"
+                        "print('✅ All workflows contain pnpm setup, Node 22, and corepack enable')\n"
+                    ),
+                ],
+                timeout=60,
+                critical=True,
+                category="setup"
+            ),
         ])
         
         # Code Quality & Linting Checks

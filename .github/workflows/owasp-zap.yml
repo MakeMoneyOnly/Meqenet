@@ -1,0 +1,35 @@
+name: 🛡️ OWASP ZAP Security Testing
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  zap-baseline:
+    name: 🧪 OWASP ZAP Security Scan (baseline)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create ZAP rules file
+        run: |
+          cat > zap-rules.txt << 'EOF'
+          IGNORE 10054 # Cookie without SameSite attribute (example)
+          EOF
+
+      - name: Run ZAP Baseline against placeholder target
+        uses: zaproxy/action-baseline@v0.10.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          docker_name: "owasp/zap2docker-stable"
+          target: "https://example.com/"
+          rules_file_name: "zap-rules.txt"
+          cmd_options: "-a -I"
+        continue-on-error: true

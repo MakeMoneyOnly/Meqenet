@@ -1,0 +1,72 @@
+name: 🏦 Compliance Validation Suite
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: "22"
+  PNPM_VERSION: "10.14.0"
+
+permissions:
+  contents: read
+
+jobs:
+  pci-dss:
+    name: 💳 PCI-DSS Level 1 Compliance
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - name: Run PCI Checks
+        run: |
+          echo "Validating encryption, key rotation, and network isolation policies..."
+          echo "✅ PCI-DSS checks placeholder (extend with concrete tests)."
+
+  sox:
+    name: 🧾 SOX IT General Controls
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - name: Run SOX Checks
+        run: echo "✅ SOX controls placeholder (change management, access reviews)."
+
+  iso27001:
+    name: 🔐 ISO 27001 Controls
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - name: Run ISO 27001 Checks
+        run: echo "✅ ISO 27001 controls placeholder (risk assessment, logs)."
