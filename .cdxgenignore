@@ -1,0 +1,46 @@
+# CycloneDx cdxgen ignore file
+# Exclude directories that cause duplicate workspace detection
+
+# Build artifacts and caches
+**/dist/**
+**/build/**
+**/coverage/**
+**/.nx/**
+**/.cache/**
+**/.pnpm-store/**
+**/.vite/**
+
+# Logs and reports
+**/logs/**
+**/reports/**
+**/owasp-data/**
+**/owasp-reports/**
+
+# Git and version control
+**/.git/**
+**/.hg/**
+**/.svn/**
+
+# Temporary files
+**/tmp/**
+**/temp/**
+
+# Backend service node_modules (to prevent duplicates)
+backend/services/*/node_modules/**
+
+# Test directories
+**/test/**
+**/tests/**
+**/__tests__/**
+
+# Documentation
+**/docs/**
+**/*.md
+
+# Configuration files that don't need scanning
+**/.env*
+**/tsconfig*.json
+**/eslint.config.*
+**/prettier.config.*
+**/vitest.config.*
+**/webpack.config.*

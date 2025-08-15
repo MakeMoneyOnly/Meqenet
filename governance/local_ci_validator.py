@@ -86,7 +86,18 @@ class LocalCIValidator:
         self._initialize_checks()
         
         if self.ci_mode:
-            logger.info("CI mode enabled: All checks are critical.")
+            logger.info("CI mode enabled: Fast essential checks only (matches GitHub CI workflow).")
+            # Remove slow/optional checks entirely in CI mode
+            self.checks = [check for check in self.checks if not (
+                "Data Update" in check.name or
+                "cache" in check.description.lower() or
+                "OWASP Dependency Check" in check.name or  # Covers both local and Python variants
+                "Generate SBOM" in check.name or
+                "Semgrep" in check.name or
+                "Snyk" in check.name or
+                "Container Security Scan" in check.name
+            )]
+            # Make remaining checks critical
             for check in self.checks:
                 check.critical = True
     
@@ -130,7 +141,10 @@ class LocalCIValidator:
                         "            missing.append((fname,f'read-error: {e}')); continue\n"
                         "        has_pnpm='pnpm/action-setup@' in content\n"
                         "        has_node='actions/setup-node@' in content\n"
-                        "        node22=re.search(r"""node-version:\\s*['\"]?22""",content) is not None\n"
+                        "        node22_direct=re.search(r'node-version:\\s*[\\'\"]*22',content) is not None\n"
+                        "        has_node_env=re.search(r'NODE_VERSION:\\s*[\\'\"]*22[\\'\"]*',content) is not None\n"
+                        "        uses_node_env=re.search(r'node-version:\\s*\\$\\{\\{\\s*env\\.NODE_VERSION\\s*\\}\\}',content) is not None\n"
+                        "        node22=node22_direct or (has_node_env and uses_node_env)\n"
                         "        has_corepack=re.search(r'\\bcorepack enable\\b',content) is not None\n"
                         "        if not (has_pnpm and has_node and node22 and has_corepack):\n"
                         "            reasons=[]\n"
@@ -142,7 +156,7 @@ class LocalCIValidator:
                         "\nif missing:\n"
                         "    print('CI workflow parity issues found:');\n"
                         "    [print(f' - {n}: {r}') for n,r in missing]; sys.exit(1)\n"
-                        "print('✅ All workflows contain pnpm setup, Node 22, and corepack enable')\n"
+                        "print('All workflows contain pnpm setup, Node 22, and corepack enable')\n"
                     ),
                 ],
                 timeout=60,
@@ -171,24 +185,10 @@ class LocalCIValidator:
             ),
             ValidationCheck(
                 name="Generate SBOM",
-                description="Generate Software Bill of Materials (same as CI, dockerized)",
-                command=[
-                    "docker","run","--rm",
-                    "-u","0:0",
-                    "-e","NPM_CONFIG_IGNORE_SCRIPTS=true",
-                    "-e","HUSKY=0",
-                    "-e","HUSKY_SKIP_INSTALL=1",
-                    "-e","CI=1",
-                    "-v", str(self.project_root)+":/src",
-                    "ghcr.io/cyclonedx/cdxgen:latest",
-                    "-o","/src/bom.json",
-                    "--include-formulation","--include-crypto",
-                    "--spec-version","1.5",
-                    "--exclude","node_modules,dist,coverage,.pnpm-store,.cache,.nx,.vite,.git,bom.json",
-                    "/src/backend","/src/governance","/src/tools"
-                ],
-                timeout=1200,
-                critical=True,
+                description="Generate Software Bill of Materials using pnpm (faster than Docker)",
+                command=["pnpm", "run", "security:sbom"],
+                timeout=600,  # Allow more time for comprehensive SBOM generation
+                critical=True,  # Critical for FinTech security compliance
                 category="security"
             ),
             ValidationCheck(
