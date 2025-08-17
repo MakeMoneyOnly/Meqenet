@@ -9,3 +9,6 @@ java-reachables.slices.json
 /templates/
 backend/java-openapi.json
 java-usages.slices.json
+
+bom.api-gateway.json
+bom.auth-service.json

@@ -11,7 +11,7 @@ RUN set -eux; \
       && break || (echo "apt-get attempt $i failed" && sleep 5); \
     done; \
     rm -rf /var/lib/apt/lists/* && \
-    npm install -g pnpm@10.12.3
+    npm install -g pnpm@10.14.0
 
 WORKDIR /app
 

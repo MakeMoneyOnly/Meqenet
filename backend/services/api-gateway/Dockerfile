@@ -11,7 +11,7 @@ RUN set -eux; \
     done; \
     rm -rf /var/lib/apt/lists/*
 WORKDIR /app
-RUN npm install -g pnpm@10.12.3
+RUN npm install -g pnpm@10.14.0
 
 # ---- Dependencies Stage ----
 # Copies only package manifests and installs ALL dependencies (incl. dev)
@@ -21,8 +21,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 # Use a Docker cache mount to make pnpm's store persistent.
 # This makes builds much faster and more resilient to network issues.
 # Enhanced retry logic for network resilience in fintech environments.
-RUN --network=host \
-    --mount=type=cache,id=pnpm,target=/pnpm/store \
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
     --mount=type=cache,id=prisma,target=/tmp/prisma-engines \
     set -e && \
     echo "Configuring pnpm for maximum network resilience..." && \

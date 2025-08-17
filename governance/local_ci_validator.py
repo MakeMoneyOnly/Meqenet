@@ -124,35 +124,36 @@ class LocalCIValidator:
             ),
             ValidationCheck(
                 name="Workflow Sanity Validation (pnpm/Node/Corepack)",
-                description="Ensure all GitHub workflows set up pnpm, Node 22 and enable Corepack to prevent CI parity failures",
+                description="Ensure GitHub workflows exist and set up pnpm, Node 22 and Corepack (CI parity)",
                 command=[
                     "python",
                     "-c",
                     (
                         "import os,re,sys; base=os.path.join('.github','workflows'); missing=[]; "
-                        "\nif os.path.isdir(base):\n"
-                        "    for fname in os.listdir(base):\n"
-                        "        if not (fname.endswith('.yml') or fname.endswith('.yaml')):\n"
-                        "            continue\n"
-                        "        path=os.path.join(base,fname)\n"
-                        "        try:\n"
-                        "            content=open(path,'r',encoding='utf-8').read()\n"
-                        "        except Exception as e:\n"
-                        "            missing.append((fname,f'read-error: {e}')); continue\n"
-                        "        has_pnpm='pnpm/action-setup@' in content\n"
-                        "        has_node='actions/setup-node@' in content\n"
-                        "        node22_direct=re.search(r'node-version:\\s*[\\'\"]*22',content) is not None\n"
-                        "        has_node_env=re.search(r'NODE_VERSION:\\s*[\\'\"]*22[\\'\"]*',content) is not None\n"
-                        "        uses_node_env=re.search(r'node-version:\\s*\\$\\{\\{\\s*env\\.NODE_VERSION\\s*\\}\\}',content) is not None\n"
-                        "        node22=node22_direct or (has_node_env and uses_node_env)\n"
-                        "        has_corepack=re.search(r'\\bcorepack enable\\b',content) is not None\n"
-                        "        if not (has_pnpm and has_node and node22 and has_corepack):\n"
-                        "            reasons=[]\n"
-                        "            if not has_pnpm: reasons.append('pnpm/action-setup missing')\n"
-                        "            if not has_node: reasons.append('actions/setup-node missing')\n"
-                        "            if not node22: reasons.append('node-version 22 missing')\n"
-                        "            if not has_corepack: reasons.append('corepack enable missing')\n"
-                        "            missing.append((fname, ', '.join(reasons)))\n"
+                        "\nif not os.path.isdir(base):\n"
+                        "    print('CI workflows missing (.github/workflows)'); sys.exit(1)\n"
+                        "for fname in os.listdir(base):\n"
+                        "    if not (fname.endswith('.yml') or fname.endswith('.yaml')):\n"
+                        "        continue\n"
+                        "    path=os.path.join(base,fname)\n"
+                        "    try:\n"
+                        "        content=open(path,'r',encoding='utf-8').read()\n"
+                        "    except Exception as e:\n"
+                        "        missing.append((fname,f'read-error: {e}')); continue\n"
+                        "    has_pnpm='pnpm/action-setup@' in content\n"
+                        "    has_node='actions/setup-node@' in content\n"
+                        "    node22_direct=('node-version: 22' in content) or (\"node-version: '22'\" in content) or (\"node-version: \\\"22\\\"\" in content)\n"
+                        "    has_node_env=('NODE_VERSION: 22' in content) or (\"NODE_VERSION: '22'\" in content) or (\"NODE_VERSION: \\\"22\\\"\" in content)\n"
+                        "    uses_node_env='node-version: ${{ env.NODE_VERSION }}' in content\n"
+                        "    node22=node22_direct or (has_node_env and uses_node_env)\n"
+                        "    has_corepack=('corepack enable' in content)\n"
+                        "    if not (has_pnpm and has_node and node22 and has_corepack):\n"
+                        "        reasons=[]\n"
+                        "        if not has_pnpm: reasons.append('pnpm/action-setup missing')\n"
+                        "        if not has_node: reasons.append('actions/setup-node missing')\n"
+                        "        if not node22: reasons.append('node-version 22 missing')\n"
+                        "        if not has_corepack: reasons.append('corepack enable missing')\n"
+                        "        missing.append((fname, ', '.join(reasons)))\n"
                         "\nif missing:\n"
                         "    print('CI workflow parity issues found:');\n"
                         "    [print(f' - {n}: {r}') for n,r in missing]; sys.exit(1)\n"
@@ -160,6 +161,30 @@ class LocalCIValidator:
                     ),
                 ],
                 timeout=60,
+                critical=True,
+                category="setup"
+            ),
+
+            ValidationCheck(
+                name="Toolchain Parity (Node/pnpm engines vs packageManager/volta)",
+                description="Validate engines.node=22, pnpm major=10 parity across engines/packageManager/volta",
+                command=[
+                    sys.executable if hasattr(sys, 'executable') and sys.executable else 'python',
+                    "governance/tools/check_toolchain_parity.py"
+                ],
+                timeout=60,
+                critical=True,
+                category="setup"
+            ),
+
+            ValidationCheck(
+                name="Dockerfile Policy Lint (disallowed flags)",
+                description="Scan Dockerfiles and compose for disallowed flags like --network=host or privileged options",
+                command=[
+                    sys.executable if hasattr(sys, 'executable') and sys.executable else 'python',
+                    "governance/tools/lint_docker_flags.py"
+                ],
+                timeout=30,
                 critical=True,
                 category="setup"
             ),

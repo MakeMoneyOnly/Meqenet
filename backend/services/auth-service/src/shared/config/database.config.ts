@@ -260,6 +260,7 @@ function getSecureEnvVars(): {
   // ESLint disabled for centralized environment access - fintech security pattern
   // This is the ONLY authorized location for process.env access in the auth-service
   // All environment variable access must go through this centralized, validated function
+
    
   return {
     DATABASE_URL: process.env.DATABASE_URL,
