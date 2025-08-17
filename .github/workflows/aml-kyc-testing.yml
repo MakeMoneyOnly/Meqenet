@@ -30,6 +30,8 @@ jobs:
           cache: pnpm
       - run: corepack enable
       - run: pnpm install --frozen-lockfile
+      - name: 🔧 Generate Prisma Client
+        run: pnpm prisma generate --schema=./backend/services/auth-service/prisma/schema.prisma
       - name: Run AML/KYC tests
         run: |
           if pnpm exec vitest --version >/dev/null 2>&1; then

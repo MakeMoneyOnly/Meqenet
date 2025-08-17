@@ -305,7 +305,6 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           pull: true
-          network: host
 
       # Add retry mechanism for Docker build failures
       - name: 🔄 Retry Docker Build (if failed)
@@ -321,7 +320,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           pull: true
-          network: host
+
           no-cache: true
 
       - name: 🔍 Trivy Vulnerability Scanner

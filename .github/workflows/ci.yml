@@ -188,6 +188,9 @@ jobs:
         env:
           DATABASE_URL: postgresql://test_user:test_password@localhost:5432/meqenet_test
           REDIS_URL: redis://localhost:6379
+      - name: 🔧 Generate Prisma Client
+        run: pnpm prisma generate --schema=./backend/services/auth-service/prisma/schema.prisma
+        if: always()
 
       - name: 🔄 Run Integration Tests
         run: pnpm run test:integration
@@ -247,9 +250,6 @@ jobs:
 
       - name: 🔧 Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-        with:
-          driver-opts: |
-            network=host
         env:
           DOCKER_CLI_EXPERIMENTAL: enabled
           BUILDX_NO_DEFAULT_ATTESTATIONS: 1
@@ -277,7 +277,6 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           pull: true
-          network: host
 
       # Add retry mechanism for Docker build failures
       - name: 🔄 Retry Docker Build (if failed)
@@ -293,7 +292,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           pull: true
-          network: host
+
           no-cache: true
 
       - name: 🔍 Scan Docker Image for Vulnerabilities

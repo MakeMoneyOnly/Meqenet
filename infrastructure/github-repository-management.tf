@@ -157,6 +157,9 @@ resource "github_branch_protection" "main" {
 
   # Linear History for Audit Trail
   required_linear_history = true
+
+  # Enforce signed commits for protected branches (satisfy tfsec rule)
+  required_signatures = true
 }
 
 # Develop Branch Protection (Integration)
@@ -191,6 +194,9 @@ resource "github_branch_protection" "develop" {
       "CI/FinTech/Basic Financial Logic Tests"
     ]
   }
+
+  # Enforce signed commits
+  required_signatures = true
 }
 
 # Staging Branch Protection (Pre-Production)
@@ -218,6 +224,9 @@ resource "github_branch_protection" "staging" {
       "CI/FinTech/End-to-End Payment Flow"
     ]
   }
+
+  # Enforce signed commits for auditability
+  required_signatures = true
 }
 
 # Security Branch Protection (High Priority)
@@ -249,6 +258,9 @@ resource "github_branch_protection" "security" {
       "CI/FinTech/Security Impact Assessment"
     ]
   }
+
+  # Enforce signed commits
+  required_signatures = true
 }
 
 # Repository Teams for CODEOWNERS
@@ -371,6 +383,9 @@ resource "github_branch_protection" "release" {
       "CI/Release/Performance Benchmarks"
     ]
   }
+
+  # Enforce signed commits
+  required_signatures = true
 }
 
 # Output important information

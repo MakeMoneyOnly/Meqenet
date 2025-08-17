@@ -21,7 +21,7 @@ on:
         type: boolean
 
 env:
-  NODE_VERSION: "18"
+  NODE_VERSION: "22"
   PNPM_VERSION: "10.12.3"
   DOCKER_BUILDKIT: 1
   COMPOSE_BAKE: true
