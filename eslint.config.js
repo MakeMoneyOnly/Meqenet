@@ -7,19 +7,83 @@ const importPlugin = require('eslint-plugin-import');
 const react = require('eslint-plugin-react');
 const reactHooks = require('eslint-plugin-react-hooks');
 
+// Internal plugin: restrict process.env usage to files under **/shared/config/** only
+const internalSecurityPlugin = {
+  rules: {
+    'no-process-env-outside-config': {
+      meta: {
+        type: 'problem',
+        docs: {
+          description:
+            'Disallow process.env usage outside of shared/config gateway files',
+          recommended: true,
+        },
+        schema: [],
+        messages: {
+          forbidden:
+            "Direct access to process.env is forbidden outside of 'shared/config'. Use the centralized ConfigService gateway.",
+        },
+      },
+      create(context) {
+        const filename = context.getFilename().replace(/\\/g, '/');
+        const isAllowedGateway = /\/shared\/config\//.test(filename);
+        const isTest =
+          /\.(test|spec)\.[tj]sx?$/.test(filename) || /\/test\//.test(filename);
+        if (isAllowedGateway || isTest) {
+          return {};
+        }
+        return {
+          MemberExpression(node) {
+            // Match process.env or process["env"]
+            const isProcess = node.object && node.object.name === 'process';
+            const isEnvIdentifier =
+              node.property &&
+              node.property.type === 'Identifier' &&
+              node.property.name === 'env';
+            const isEnvLiteral =
+              node.property &&
+              node.property.type === 'Literal' &&
+              node.property.value === 'env';
+            if (isProcess && (isEnvIdentifier || isEnvLiteral)) {
+              context.report({ node, messageId: 'forbidden' });
+            }
+          },
+        };
+      },
+    },
+  },
+};
+
 module.exports = [
   {
     // Global ignores
     ignores: [
       'node_modules/',
+      '**/dist/**',
       'dist/',
+      '**/build/**',
       'build/',
+      '**/coverage/**',
       'coverage/',
-      '*.min.js',
+      '**/*.min.js',
       'public/',
       '.next/',
       '.cache/',
       'templates/',
+      '**/templates/**',
+      'governance/reports/**',
+      'governance/owasp-reports/**',
+      'governance/logs/**',
+      // Explicit service build artifacts
+      'backend/services/api-gateway/dist/**',
+      'backend/services/auth-service/dist/**',
+      'backend/dist/**',
+      // Misc cache/output dirs
+      '.turbo/',
+      '**/.turbo/**',
+      'out/',
+      'tmp/',
+      'logs/',
     ],
   },
 
@@ -48,6 +112,7 @@ module.exports = [
     plugins: {
       '@typescript-eslint': tseslint,
       import: importPlugin,
+      internal: internalSecurityPlugin,
     },
     settings: {
       'import/resolver': {
@@ -132,6 +197,9 @@ module.exports = [
 
       // Ethiopian/Localization Rules
       'no-template-curly-in-string': 'error',
+
+      // Enforce centralized environment access
+      'internal/no-process-env-outside-config': 'error',
     },
   },
 
@@ -139,7 +207,6 @@ module.exports = [
   {
     files: ['services/**/*.ts', 'packages/api/**/*.ts'],
     rules: {
-      'no-process-env': 'error',
       'security/detect-non-literal-fs-filename': 'error',
     },
   },
@@ -191,6 +258,7 @@ module.exports = [
       'no-magic-numbers': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
       'no-process-env': 'off', // Allow process.env in test files for environment setup
+      'internal/no-process-env-outside-config': 'off', // Disable internal rule in tests as well
     },
   },
   {

@@ -204,8 +204,41 @@ class LocalCIValidator:
             ValidationCheck(
                 name="ESLint Check (Entire Workspace)",
                 description="Run ESLint on all projects in the workspace, mirroring the CI pipeline's strict checks.",
-                command=["powershell", "-Command", "$env:NX_DAEMON='false'; pnpm nx run-many --target=lint --all --no-cache -- --max-warnings=0"],
+                command=[
+                    "pnpm","-w","eslint",".",
+                    "--max-warnings=0",
+                    "--no-error-on-unmatched-pattern"
+                ],
                 timeout=300,
+                critical=True,
+                category="code_quality"
+            ),
+            # Enforce centralized env access: no process.env outside shared/config files
+            ValidationCheck(
+                name="Centralized Env Access Enforcement",
+                description="Fail if 'process.env' is used outside of trusted gateway files in 'shared/config/'.",
+                command=[
+                    "python","-c",
+                    (
+                        "import os,sys; bad=[];\n"
+                        "for root,_,files in os.walk('backend'):\n"
+                        "  for f in files:\n"
+                        "    if not f.endswith('.ts'): continue\n"
+                        "    p=os.path.join(root,f)\n"
+                        "    # allow only within shared/config/ files\n"
+                        "    allow=('/shared/config/' in p.replace('\\\\','/'))\n"
+                        "    with open(p,'r',encoding='utf-8',errors='ignore') as fh:\n"
+                        "      c=fh.read()\n"
+                        "    if 'process.env' in c and not allow:\n"
+                        "      bad.append(p)\n"
+                        "if bad:\n"
+                        "  print('Disallowed process.env usage found in:')\n"
+                        "  [print(' -', b) for b in bad]\n"
+                        "  sys.exit(1)\n"
+                        "print('Centralized env access: OK')\n"
+                    )
+                ],
+                timeout=60,
                 critical=True,
                 category="code_quality"
             ),
