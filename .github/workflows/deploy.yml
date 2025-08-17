@@ -22,7 +22,7 @@ on:
 
 env:
   NODE_VERSION: "22"
-  PNPM_VERSION: "10.12.3"
+  PNPM_VERSION: "10.14.0"
   DOCKER_BUILDKIT: 1
   COMPOSE_BAKE: true
 
@@ -68,7 +68,7 @@ jobs:
           fi
 
       - name: 🔧 Setup pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
         with:
           version: ${{ env.PNPM_VERSION }}
 
@@ -146,6 +146,7 @@ jobs:
             type=sha,prefix={{branch}}-
 
       - name: 🏗️ Build and Push Docker Image
+        id: build
         uses: docker/build-push-action@v5
         with:
           context: .

@@ -53,7 +53,7 @@
     "compliance:transaction-security": "echo 'Financial transaction security validation passed'",
     "test:performance": "echo 'Performance testing would run here with k6'",
     "test:mobile-performance": "echo 'Mobile performance testing would run here'",
-    "infrastructure:tfsec": "echo 'Terraform security validation passed'",
+    "infrastructure:tfsec": "docker run --rm -v \"%cd%\":/src aquasec/tfsec:latest /src/infrastructure --minimum-severity HIGH --format json --out /src/tfsec-results.json || (type tfsec-results.json && exit 1)",
     "infrastructure:kubesec": "echo 'Kubernetes security validation passed'",
     "infrastructure:compliance-report": "echo 'Infrastructure compliance report generated'",
     "monitoring:validate-prometheus": "echo 'Prometheus configuration validation passed'",

@@ -84,7 +84,7 @@ pip install --upgrade pip
 pip install pyyaml>=6.0 requests>=2.28.0 packaging>=21.0
 
 # Full dependencies (for complete features)
-pip install schedule>=1.2.0 aiohttp>=3.8.0 pandas>=1.5.0
+pip install schedule>=1.2.0 aiohttp>=3.12.14 pandas>=1.5.0
 pip install numpy>=1.21.0 matplotlib>=3.5.0 seaborn>=0.11.0
 pip install plotly>=5.0.0
 ```

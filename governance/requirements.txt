@@ -5,7 +5,7 @@
 pyyaml>=6.0
 schedule>=1.2.0
 # Patched version to address CVEs (see OWASP report)
-aiohttp>=3.9.5
+aiohttp>=3.12.14
 pandas>=1.5.0
 numpy>=1.21.0
 matplotlib>=3.5.0
