@@ -261,7 +261,6 @@ function getSecureEnvVars(): {
   // This is the ONLY authorized location for process.env access in the auth-service
   // All environment variable access must go through this centralized, validated function
 
-   
   return {
     DATABASE_URL: process.env.DATABASE_URL,
     DB_POOL_MIN: process.env.DB_POOL_MIN,
@@ -281,7 +280,6 @@ function getSecureEnvVars(): {
     DB_HEALTH_CHECK_TIMEOUT: process.env.DB_HEALTH_CHECK_TIMEOUT,
     NODE_ENV: process.env.NODE_ENV,
   } as const;
-   
 }
 
 /**
