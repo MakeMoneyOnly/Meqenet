@@ -172,7 +172,7 @@ resource "github_branch_protection" "develop" {
   allows_force_pushes = false
 
   required_pull_request_reviews {
-    required_approving_review_count = 1
+    required_approving_review_count = 2
     dismiss_stale_reviews          = true
     require_code_owner_reviews     = true
   }
@@ -209,7 +209,7 @@ resource "github_branch_protection" "staging" {
   allows_force_pushes = true  # Emergency hotfixes only
 
   required_pull_request_reviews {
-    required_approving_review_count = 1
+    required_approving_review_count = 2
     require_code_owner_reviews     = true
     dismiss_stale_reviews          = false # Keep for deployment history
   }
@@ -246,6 +246,12 @@ resource "github_branch_protection" "security" {
     dismissal_restrictions         = [
       "meqenet-et/data-security-specialists"
     ]
+  }
+
+  required_pull_request_reviews {
+    required_approving_review_count = 2
+    require_code_owner_reviews     = true
+    dismiss_stale_reviews          = true
   }
 
   required_status_checks {
