@@ -159,7 +159,7 @@ resource "github_branch_protection" "main" {
   required_linear_history = true
 
   # Enforce signed commits for protected branches (satisfy tfsec rule)
-  required_signatures = true
+  require_signed_commits = true
 }
 
 # Develop Branch Protection (Integration)
@@ -196,7 +196,7 @@ resource "github_branch_protection" "develop" {
   }
 
   # Enforce signed commits
-  required_signatures = true
+  require_signed_commits = true
 }
 
 # Staging Branch Protection (Pre-Production)
@@ -226,7 +226,7 @@ resource "github_branch_protection" "staging" {
   }
 
   # Enforce signed commits for auditability
-  required_signatures = true
+  require_signed_commits = true
 }
 
 # Security Branch Protection (High Priority)
@@ -260,7 +260,7 @@ resource "github_branch_protection" "security" {
   }
 
   # Enforce signed commits
-  required_signatures = true
+  require_signed_commits = true
 }
 
 # Repository Teams for CODEOWNERS

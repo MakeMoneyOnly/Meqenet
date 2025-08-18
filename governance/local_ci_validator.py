@@ -539,6 +539,14 @@ class LocalCIValidator:
                 category="deployment"
             ),
             ValidationCheck(
+                name="Terraform Security Validation (tfsec)",
+                description="Run tfsec via Docker on infrastructure/; fail on HIGH severity",
+                command=["pnpm","run","infrastructure:tfsec"],
+                timeout=300,
+                critical=True,
+                category="deployment"
+            ),
+            ValidationCheck(
                 name="Prisma Schema Validation",
                 description="Validate Prisma database schema",
                 command=["pnpm", "run", "--filter=backend/services/auth-service", "prisma:validate"],

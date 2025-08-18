@@ -179,7 +179,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     needs: [pre-deployment-validation, build-and-package]
-    if: needs.pre-deployment-validation.outputs.deploy-environment == 'staging'
+    if:
+      needs.pre-deployment-validation.outputs.deploy-environment == 'staging' &&
+      secrets.AWS_ACCESS_KEY_ID != '' && secrets.AWS_SECRET_ACCESS_KEY != ''
 
     environment:
       name: staging
@@ -251,7 +253,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     needs: [pre-deployment-validation, build-and-package]
-    if: needs.pre-deployment-validation.outputs.deploy-environment == 'production'
+    if:
+      needs.pre-deployment-validation.outputs.deploy-environment == 'production' &&
+      secrets.AWS_ACCESS_KEY_ID_PROD != '' && secrets.AWS_SECRET_ACCESS_KEY_PROD != ''
 
     environment:
       name: production
