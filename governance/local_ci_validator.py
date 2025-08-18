@@ -887,7 +887,23 @@ class LocalCIValidator:
                     self.warning_checks.append(check)
                     return True
                 # Special handling for SBOM validation Docker network issues - make it non-blocking
-                elif "SBOM" in check.name and ("ghcr.io" in error_output or "connection failed" in error_output):
+                # Treat transient registry connectivity errors during SBOM validation as warnings
+                # Avoid substring checks against raw URLs (CodeQL: incomplete URL sanitization)
+                # by matching on generic, non-URL error keywords only.
+                elif (
+                    "SBOM" in check.name
+                    and any(
+                        kw in error_output.lower()
+                        for kw in (
+                            "connection failed",
+                            "no such host",
+                            "dns",
+                            "tls handshake timeout",
+                            "network is unreachable",
+                            "temporary failure in name resolution",
+                        )
+                    )
+                ):
                     check.status = CheckStatus.WARNING
                     check.critical = False
                     check.error_details = (
