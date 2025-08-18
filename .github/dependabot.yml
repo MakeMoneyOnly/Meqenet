@@ -1,12 +1,98 @@
 version: 2
 updates:
+  # 1) Node / pnpm workspace (minor + patch grouped, weekly)
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Africa/Addis_Ababa"
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+      - npm
+    groups:
+      tooling-minor-patch:
+        patterns:
+          - "eslint*"
+          - "prettier*"
+          - "@typescript-eslint/*"
+          - "vitest*"
+          - "jest*"
+          - "nx*"
+          - "typescript"
+          - "@swc*"
+        update-types: ["minor", "patch"]
+      runtime-minor-patch:
+        patterns:
+          - "@nestjs/*"
+          - "@prisma/*"
+          - "prisma"
+          - "rxjs"
+          - "zod"
+          - "winston"
+          - "ioredis"
+          - "prom-client"
+        update-types: ["minor", "patch"]
+      security-patch-only:
+        applies-to: security-updates
+        update-types: ["patch"]
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-major"
+
+  # 2) Security-only feed (daily) to surface urgent alerts fast
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "daily"
-    open-pull-requests-limit: 10
+      time: "06:00"
+      timezone: "Africa/Addis_Ababa"
+    security-updates-only: true
+    labels:
+      - dependencies
+      - security
+      - npm
+
+  # 3) Major upgrades into long-running upgrade branch
+  - package-ecosystem: "npm"
+    directory: "/"
+    target-branch: "upgrade"
+    schedule:
+      interval: "weekly"
+      day: "wednesday"
+      time: "06:00"
+      timezone: "Africa/Addis_Ababa"
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+      - npm
+      - major
+    groups:
+      major-upgrades:
+        patterns: ["*"]
+        update-types: ["major"]
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-minor"
+          - "version-update:semver-patch"
+
+  # 4) GitHub Actions updates (minor + patch), weekly
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Africa/Addis_Ababa"
     open-pull-requests-limit: 5
+    labels:
+      - dependencies
+      - github-actions
+    groups:
+      actions-minor-patch:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]

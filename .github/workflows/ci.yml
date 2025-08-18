@@ -242,6 +242,13 @@ jobs:
       - name: 📥 Checkout Repository
         uses: actions/checkout@v4
 
+      - name: 🧩 Auto-merge policy for Dependabot (tooling/actions minor+patch)
+        if: >-
+          github.actor == 'dependabot[bot]' &&
+          (contains(github.head_ref, 'tooling-minor-patch') || contains(github.head_ref, 'actions-minor-patch'))
+        run: |
+          echo "Dependabot PR from allowed group detected; will rely on branch protection auto-merge once checks pass."
+
       - name: 🔍 Check Docker daemon status
         run: |
           echo "🐳 Checking Docker daemon status..."
