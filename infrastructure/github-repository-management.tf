@@ -385,7 +385,7 @@ resource "github_branch_protection" "release" {
   }
 
   # Enforce signed commits
-  required_signatures = true
+  require_signed_commits = true
 }
 
 # Output important information

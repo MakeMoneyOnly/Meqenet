@@ -547,6 +547,22 @@ class LocalCIValidator:
                 category="deployment"
             ),
             ValidationCheck(
+                name="Terraform Signed Commits Policy",
+                description="Static check: ensure github_branch_protection blocks unsigned commits (require_signed_commits=true)",
+                command=[
+                    "python","-c",
+                    (
+                        "import re,sys; p='infrastructure/github-repository-management.tf'; c=open(p,'r',encoding='utf-8').read();"
+                        "ok=bool(re.search(r'require_signed_commits\s*=\s*true', c));"
+                        "print('Signed commits enforced' if ok else 'Missing require_signed_commits=true');"
+                        "sys.exit(0 if ok else 1)"
+                    )
+                ],
+                timeout=10,
+                critical=True,
+                category="deployment"
+            ),
+            ValidationCheck(
                 name="Prisma Schema Validation",
                 description="Validate Prisma database schema",
                 command=["pnpm", "run", "--filter=backend/services/auth-service", "prisma:validate"],
