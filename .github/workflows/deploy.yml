@@ -162,8 +162,12 @@ jobs:
         uses: sigstore/cosign-installer@v3
 
       - name: 🔏 Sign the Published Docker Image
+        id: cosign
         run: |
-          cosign sign --yes ghcr.io/${{ github.repository }}/${{ matrix.service }}@${{ steps.build.outputs.digest }}
+          REPO_LOWER=$(echo "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]')
+          IMAGE_REF="ghcr.io/${REPO_LOWER}/${{ matrix.service }}@${{ steps.build.outputs.digest }}"
+          echo "Signing image: ${IMAGE_REF}"
+          cosign sign --yes "${IMAGE_REF}"
         env:
           COSIGN_EXPERIMENTAL: 1
 

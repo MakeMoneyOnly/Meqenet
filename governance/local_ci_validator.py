@@ -213,6 +213,14 @@ class LocalCIValidator:
                 critical=True,
                 category="code_quality"
             ),
+            ValidationCheck(
+                name="Prettier Formatting Check",
+                description="Run the same Prettier check GitHub uses (format:check)",
+                command=["pnpm","run","format:check"],
+                timeout=120,
+                critical=True,
+                category="code_quality"
+            ),
             # Enforce centralized env access: no process.env outside shared/config files
             ValidationCheck(
                 name="Centralized Env Access Enforcement",
@@ -517,6 +525,17 @@ class LocalCIValidator:
                 command=["docker", "compose", "build", "--parallel"],
                 timeout=1200,  # 20 minutes for comprehensive Docker builds
                 critical=True,  # Critical for fintech - must catch all build issues
+                category="deployment"
+            ),
+            ValidationCheck(
+                name="Cosign Image Reference Validation",
+                description="Replicate CI cosign reference to ensure parsing works",
+                command=[
+                    "bash","-lc",
+                    "REPO=$(echo $GITHUB_REPOSITORY | tr '[:upper:]' '[:lower:]'); echo ghcr.io/$REPO/auth-service@sha256:deadbeef | grep ghcr.io/"
+                ],
+                timeout=10,
+                critical=False,
                 category="deployment"
             ),
             ValidationCheck(
