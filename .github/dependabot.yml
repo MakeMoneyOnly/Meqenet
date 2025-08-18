@@ -43,21 +43,7 @@ updates:
         update-types:
           - "version-update:semver-major"
 
-  # 2) Security-only feed (daily) to surface urgent alerts fast
-  - package-ecosystem: "npm"
-    directory: "/"
-    schedule:
-      interval: "daily"
-      time: "06:00"
-      timezone: "Africa/Addis_Ababa"
-    target-branch: "security-updates"
-    security-updates-only: true
-    labels:
-      - dependencies
-      - security
-      - npm
-
-  # 3) Major upgrades into long-running upgrade branch
+  # 2) Major upgrades into long-running upgrade branch
   - package-ecosystem: "npm"
     directory: "/"
     target-branch: "upgrade"
@@ -81,7 +67,7 @@ updates:
           - "version-update:semver-minor"
           - "version-update:semver-patch"
 
-  # 4) GitHub Actions updates (minor + patch), weekly
+  # 3) GitHub Actions updates (minor + patch), weekly
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
