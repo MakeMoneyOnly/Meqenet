@@ -10,6 +10,7 @@ on:
 permissions:
   contents: read
   security-events: write
+  actions: read
 
 jobs:
   terraform-security:
@@ -42,11 +43,13 @@ jobs:
       - name: tfsec
         uses: aquasecurity/tfsec-action@v1.0.3
         with:
+          working_directory: infrastructure
           format: sarif
+          sarif_file: results.sarif
       - name: checkov
         uses: bridgecrewio/checkov-action@v12
         with:
-          directory: terraform/
+          directory: infrastructure/
           framework: terraform
           output_format: sarif
           output_file_path: checkov-terraform.sarif

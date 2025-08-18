@@ -34,6 +34,7 @@ permissions:
   deployments: write # Required for deployment status updates
   id-token: write # Required for OIDC authentication with cloud providers
   security-events: write # Required for security scanning during deployment
+  checks: write
 
 jobs:
   # ============================================================================
