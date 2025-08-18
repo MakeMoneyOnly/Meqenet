@@ -202,8 +202,8 @@ importers:
         specifier: ^1.8.1
         version: 1.8.1
       '@types/express':
-        specifier: ^4.17.23
-        version: 4.17.23
+        specifier: ^5.0.3
+        version: 5.0.3
       '@types/node':
         specifier: ~24.2.1
         version: 24.2.1
@@ -371,7 +371,7 @@ importers:
         specifier: ^10.2.3
         version: 10.2.3(chokidar@3.6.0)(typescript@5.9.2)
       '@types/express':
-        specifier: ^5.0.1
+        specifier: ^5.0.3
         version: 5.0.3
       '@types/node':
         specifier: ^24.0.12
@@ -464,8 +464,8 @@ importers:
         specifier: ^0.14.2
         version: 0.14.2
       express:
-        specifier: ^4.19.2
-        version: 4.21.2
+        specifier: ^5.1.0
+        version: 5.1.0
       nest-winston:
         specifier: ^1.10.2
         version: 1.10.2(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(winston@3.17.0)
@@ -10707,7 +10707,7 @@ snapshots:
 
   '@types/connect-history-api-fallback@1.5.4':
     dependencies:
-      '@types/express-serve-static-core': 4.19.6
+      '@types/express-serve-static-core': 5.0.7
       '@types/node': 24.2.1
 
   '@types/connect@3.4.38':
