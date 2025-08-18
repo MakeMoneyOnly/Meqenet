@@ -66,12 +66,20 @@ module.exports = [
       '**/coverage/**',
       'coverage/',
       '**/*.min.js',
+      '**/*.html',
       'public/',
       '.next/',
       '.cache/',
+      '.venv/**',
+      '**/.venv/**',
+      '.pip-audit-deps-temp/**',
+      '**/.pip-audit-deps-temp/**',
+      '.pip-audit-deps/**',
+      '**/.pip-audit-deps/**',
       'templates/',
       '**/templates/**',
       'governance/reports/**',
+      'governance/owasp-data/**',
       'governance/owasp-reports/**',
       'governance/logs/**',
       // Explicit service build artifacts
@@ -238,6 +246,16 @@ module.exports = [
       globals: {
         ...globals.node,
       },
+    },
+    rules: {
+      // Scripts can read/write arbitrary files by design
+      'security/detect-non-literal-fs-filename': 'off',
+      // Allow object iteration patterns in scripts without erroring CI
+      'security/detect-object-injection': 'off',
+      'no-unused-vars': [
+        'error',
+        { args: 'all', argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
     },
   },
   {

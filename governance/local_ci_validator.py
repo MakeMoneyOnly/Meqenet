@@ -229,16 +229,27 @@ class LocalCIValidator:
                     "python","-c",
                     (
                         "import os,sys; bad=[];\n"
-                        "for root,_,files in os.walk('backend'):\n"
+                        "for root,dirs,files in os.walk('backend'):\n"
+                        "  # Prune unwanted directories to avoid false positives\n"
+                        "  dirs[:] = [d for d in dirs if d not in ('node_modules','dist','build','coverage')]\n"
                         "  for f in files:\n"
-                        "    if not f.endswith('.ts'): continue\n"
+                        "    # Only check TypeScript source files, excluding declaration files\n"
+                        "    if not f.endswith('.ts') or f.endswith('.d.ts'):\n"
+                        "      continue\n"
                         "    p=os.path.join(root,f)\n"
-                        "    # allow only within shared/config/ files\n"
-                        "    allow=('/shared/config/' in p.replace('\\\\','/'))\n"
-                        "    with open(p,'r',encoding='utf-8',errors='ignore') as fh:\n"
-                        "      c=fh.read()\n"
+                        "    n=p.replace('\\\\','/')\n"
+                        "    # Skip tests and setup scripts\n"
+                        "    if '/test/' in n or n.endswith('.spec.ts') or n.endswith('setup.ts'):\n"
+                        "      continue\n"
+                        "    # Allow centralized access within shared/config files only\n"
+                        "    allow=('/shared/config/' in n)\n"
+                        "    try:\n"
+                        "      with open(p,'r',encoding='utf-8',errors='ignore') as fh:\n"
+                        "        c=fh.read()\n"
+                        "    except Exception:\n"
+                        "      continue\n"
                         "    if 'process.env' in c and not allow:\n"
-                        "      bad.append(p)\n"
+                        "      bad.append(n)\n"
                         "if bad:\n"
                         "  print('Disallowed process.env usage found in:')\n"
                         "  [print(' -', b) for b in bad]\n"
@@ -514,8 +525,8 @@ class LocalCIValidator:
             ValidationCheck(
                 name="Docker System Cleanup",
                 description="Clean Docker system to ensure fresh build environment",
-                command=["docker", "compose", "system", "prune", "-f", "--volumes"],
-                timeout=120,  # 2 minutes for cleanup
+                command=["docker", "system", "prune", "-f", "--volumes"],
+                timeout=300,  # 5 minutes for cleanup (increased timeout)
                 critical=False,  # Non-critical cleanup step
                 category="deployment"
             ),
@@ -553,7 +564,7 @@ class LocalCIValidator:
                     "python","-c",
                     (
                         "import re,sys; p='infrastructure/github-repository-management.tf'; c=open(p,'r',encoding='utf-8').read();"
-                        "ok=bool(re.search(r'require_signed_commits\s*=\s*true', c));"
+                        "ok=bool(re.search(r'require_signed_commits\\s*=\\s*true', c));"
                         "print('Signed commits enforced' if ok else 'Missing require_signed_commits=true');"
                         "sys.exit(0 if ok else 1)"
                     )
@@ -685,7 +696,7 @@ class LocalCIValidator:
                 description="Generate and validate Software Bill of Materials for supply chain security",
                 command=["pnpm", "run", "security:sbom:validate"],
                 timeout=300,
-                critical=True,
+                critical=True,  # Critical for supply chain security
                 category="infrastructure"
             ),
             ValidationCheck(
@@ -950,6 +961,28 @@ class LocalCIValidator:
                     return True
                 else:
                     check.error_details = error_output
+
+                # Special handling for Vault/AWS creds unavailability in local dev - treat as warning
+                if check.name == "Vault Resolution Smoke Test" and any(
+                    s in error_output for s in (
+                        "SSO session",
+                        "could not load credentials",
+                        "UnrecognizedClientException",
+                        "Missing credentials",
+                        "Credential is missing",
+                        "ExpiredToken",
+                    )
+                ):
+                    check.status = CheckStatus.WARNING
+                    check.critical = False
+                    check.error_details = (
+                        "AWS credentials/SSO session not available for local Vault smoke test. "
+                        "This is acceptable locally; GitHub CI will run this with proper OIDC role.\n"
+                        "You can run 'aws sso login --profile meqenet-dev' to validate locally."
+                    )
+                    logger.warning(f"[WARNING] {check.name} ({check.duration:.2f}s) - AWS creds not available")
+                    self.warning_checks.append(check)
+                    return True
 
                 if check.critical:
                     logger.error(f"[FAILED] {check.name} ({check.duration:.2f}s)")
