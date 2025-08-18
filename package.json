@@ -117,7 +117,7 @@
     "@nestjs/cli": "^11.0.10",
     "@nestjs/schematics": "^11.0.7",
     "@nestjs/testing": "^11.1.6",
-    "@nx/eslint": "^21.3.11",
+    "@nx/eslint": "^21.4.0",
     "@nx/js": "21.3.11",
     "@nx/vite": "^21.3.11",
     "@nx/web": "21.3.11",
