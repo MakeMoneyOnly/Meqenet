@@ -1,15 +1,17 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
+import appConfig from '../shared/config/app.config';
+
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import appConfig from './shared/config/app.config';
+import bootstrapConfig from './shared/config/app.config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [appConfig],
+      load: [appConfig, bootstrapConfig],
     }),
   ],
   controllers: [AppController],

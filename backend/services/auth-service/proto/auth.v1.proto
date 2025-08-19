@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package auth.v1;
+
+// Version 1 of the Auth service contract
+service AuthService {
+  rpc ValidateToken(ValidateTokenRequest) returns (ValidateTokenResponse);
+}
+
+message ValidateTokenRequest {
+  string accessToken = 1;
+}
+
+message ValidateTokenResponse {
+  bool valid = 1;
+  string subject = 2; // user id
+  repeated string roles = 3;
+}
+
+

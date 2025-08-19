@@ -1,0 +1,12 @@
+# Generated files
+registry/generated/
+
+# Build artifacts
+*.pb.go
+*.pb.ts
+*.pb.js
+*.d.ts
+
+# Temporary files
+.buf/
+.cache/

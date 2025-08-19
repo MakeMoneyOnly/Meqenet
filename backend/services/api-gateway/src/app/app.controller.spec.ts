@@ -1,5 +1,5 @@
 import 'reflect-metadata'; // Required for NestJS dependency injection
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, VersioningType } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { describe, it, beforeAll, afterAll } from 'vitest';
@@ -15,6 +15,7 @@ describe('API Gateway', () => {
     }).compile();
 
     app = moduleRef.createNestApplication();
+    app.enableVersioning({ type: VersioningType.URI, defaultVersion: '1' });
     await app.init();
   });
 
@@ -27,5 +28,10 @@ describe('API Gateway', () => {
       .get('/api')
       .expect(200)
       .expect({ message: 'Hello API' });
+  });
+
+  it('/metrics (GET)', async () => {
+    const res = await request(app.getHttpServer()).get('/metrics').expect(200);
+    expect(res.text).toContain('http_requests_total');
   });
 });

@@ -17,8 +17,10 @@ import { throttlerConfig } from '../shared/config/throttler.config';
 import { winstonConfig } from '../shared/config/winston.config';
 import { GlobalExceptionFilter } from '../shared/filters/global-exception.filter';
 import { JwtAuthGuard } from '../shared/guards/jwt-auth.guard';
+import { HealthModule } from '../shared/health/health.module';
 import { LoggingInterceptor } from '../shared/interceptors/logging.interceptor';
 import { SharedModule } from '../shared/shared.module';
+import { ValidationModule } from '../shared/validation/validation.module';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -67,6 +69,8 @@ import { AppService } from './app.service';
 
     // Application modules
     SharedModule,
+    ValidationModule,
+    HealthModule,
     AuthModule,
     DatabaseModule,
     MessagingModule,

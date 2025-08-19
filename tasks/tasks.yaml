@@ -150,7 +150,7 @@ stages:
             description:
               Implement a global configuration service (e.g., `@nestjs/config`)
               to manage all environment variables.
-            status: To Do
+            status: Completed
             context: [docs/Stage 1 - Foundation/08-Architecture.md]
             personas: [
                 Senior Backend Developer,
@@ -160,7 +160,7 @@ stages:
               ]
           - id: FND-BE-LOG-01
             description: Set up a structured logger (e.g., Pino) for application-wide logging.
-            status: To Do
+            status: Completed
             context:
               [
                 docs/Stage 3 - Deployment & Operations/25-Monitoring_And_Logging.md,
@@ -175,7 +175,7 @@ stages:
             description:
               Implement a global exception filter for consistent, structured
               error responses.
-            status: To Do
+            status: Completed
             context: [docs/Stage 2 -Development/20-Error_Handling.md]
             personas:
               [
@@ -187,7 +187,7 @@ stages:
             description:
               "[BE] Implement the custom exception hierarchy as defined in `20-Error_Handling.md`
               (e.g., `FinancialServiceException`)."
-            status: To Do
+            status: Completed
             context: [docs/Stage 2 -Development/20-Error_Handling.md]
             personas:
               [
@@ -199,7 +199,7 @@ stages:
             description:
               Configure ESLint and Prettier with strict rules, including eslint-plugin-security,
               and custom rules to enforce FSA principles in the backend monorepo.
-            status: To Do
+            status: Completed
             context: [
                 docs/Stage 2 -Development/21-Code_Review.md,
                 docs/Stage 3 - Deployment
@@ -216,7 +216,7 @@ stages:
             description:
               "[API Gov] Create the initial `openapi.yaml` file defining info,
               servers, and JWT security scheme."
-            status: To Do
+            status: Completed
             context:
               [docs/Stage 1 - Foundation/02-API_Specification_and_Governance.md]
             personas:
@@ -227,7 +227,7 @@ stages:
               ]
           - id: FND-BE-API-02
             description: "[API Gov] Configure NestJS for URI-based versioning (e.g., '/api/v1')."
-            status: To Do
+            status: Completed
             context:
               [docs/Stage 1 - Foundation/02-API_Specification_and_Governance.md]
             personas:
@@ -236,11 +236,42 @@ stages:
                 Senior Backend Developer,
                 Product Manager,
               ]
+          - id: FND-BE-API-03
+            description: "[API Gov] Create per-service OpenAPI 3.0 specs (e.g., auth-service) and expose Swagger endpoints; validate per-service specs against the central contract."
+            status: Completed
+            context:
+              [docs/Stage 1 - Foundation/02-API_Specification_and_Governance.md]
+            personas: [Financial Software Architect, Senior Backend Developer]
+          - id: FND-BE-GRPC-01
+            description: "[API Gov] Define and version service-to-service gRPC contracts in `.proto` files (e.g., `auth.v1`) and enable code generation for TypeScript/NestJS."
+            status: Completed
+            context:
+              [docs/Stage 1 - Foundation/02-API_Specification_and_Governance.md]
+            personas: [Senior Backend Developer, Financial Software Architect]
+          - id: FND-BE-GRPC-02
+            description: "[API Gov/CI] Establish a shared `.proto` registry and CI to publish generated client/server stubs to the internal package registry."
+            status: Completed
+            context:
+              [docs/Stage 1 - Foundation/02-API_Specification_and_Governance.md]
+            personas: [FinTech DevOps Engineer, Senior Backend Developer]
+          - id: FND-BE-RES-01
+            description: "[BE/Resilience] Configure HTTP client timeouts, retries with exponential backoff, and circuit breakers for the API Gateway and outbound service calls."
+            status: Completed
+            context: [docs/Stage 2 -Development/20-Error_Handling.md]
+            personas: [Senior Backend Developer, FinTech DevOps Engineer]
+          - id: FND-BE-APM-01
+            description: "[BE/Monitoring] Initialize OpenTelemetry SDK in services (resource attrs, http/express instrumentation) to enable traces/metrics/log correlation."
+            status: Completed
+            context:
+              [
+                docs/Stage 3 - Deployment & Operations/25-Monitoring_And_Logging.md,
+              ]
+            personas: [Senior Backend Developer, FinTech DevOps Engineer]
           - id: FND-BE-ERD-01
             description:
               "[Arch Gov] Create initial database ERD diagrams for each core\
               \ microservice's domain (e.g., User, Payments) as Mermaid diagrams in `10-Database.md`."
-            status: To Do
+            status: Completed
             context: [
                 docs/Stage 1 - Foundation/01-Architecture_Governance.md,
                 docs/Stage
@@ -256,7 +287,7 @@ stages:
             description:
               "[BE/Monitoring] Instrument backend services with a Prometheus
               client to expose custom business and application metrics."
-            status: To Do
+            status: Completed
             context:
               [
                 docs/Stage 3 - Deployment & Operations/25-Monitoring_And_Logging.md,
@@ -271,7 +302,7 @@ stages:
             description:
               "[BE/Security] Configure Helmet middleware for security headers
               (HSTS, CSP, X-Frame-Options, etc.) across all services."
-            status: To Do
+            status: Completed
             context: [docs/Stage 1 - Foundation/07-Security.md]
             personas: [
                 Senior Backend Developer,
@@ -283,7 +314,7 @@ stages:
             description:
               "[BE/Security] Implement comprehensive input validation framework
               using Zod/Joi with sanitization for all API endpoints."
-            status: To Do
+            status: Completed
             context: [docs/Stage 1 - Foundation/07-Security.md]
             personas: [
                 Senior Backend Developer,
@@ -295,7 +326,7 @@ stages:
             description:
               "[BE/Security] Configure CORS policies with strict origin controls
               and secure defaults for all services."
-            status: To Do
+            status: Completed
             context: [docs/Stage 1 - Foundation/07-Security.md]
             personas: [
                 Senior Backend Developer,
@@ -307,7 +338,7 @@ stages:
             description:
               "[BE/Security] Implement comprehensive rate limiting and DDoS protection
               using ThrottlerGuard across all API endpoints."
-            status: To Do
+            status: Completed
             context: [docs/Stage 1 - Foundation/07-Security.md]
             personas: [
                 Senior Backend Developer,
@@ -319,7 +350,7 @@ stages:
             description:
               "[BE/Security] Implement structured request/response logging with
               audit trails for all API calls (excluding sensitive data)."
-            status: To Do
+            status: Completed
             context: [
                 docs/Stage 1 - Foundation/07-Security.md,
                 docs/Stage 3 - Deployment
@@ -335,7 +366,7 @@ stages:
             description:
               "[BE/Config] Implement environment variable validation using Zod
               schemas to ensure all required config is present and valid."
-            status: To Do
+            status: Completed
             context:
               [
                 docs/Stage 1 - Foundation/08-Architecture.md,
@@ -351,7 +382,7 @@ stages:
             description:
               "[BE/Monitoring] Implement comprehensive health checks using @nestjs/terminus
               for database, external services, and system resources."
-            status: To Do
+            status: Completed
             context: [
                 docs/Stage 1 - Foundation/05-Compliance_Framework.md,
                 docs/Stage 3
@@ -837,6 +868,11 @@ stages:
                 Senior Backend
                 Developer,
               ]
+          - id: FND-TEST-E2E-06
+            description: "[E2E] Add end-to-end tests covering API Gateway proxying to Auth service (login/register flows via gateway)."
+            status: To Do
+            context: [docs/Stage 2 -Development/22-Testing_Guidelines.md]
+            personas: [Financial QA Specialist, Senior Backend Developer]
 
       - id: MEQ-FND-08
         name: Localization & API Documentation
@@ -887,6 +923,11 @@ stages:
                 Product Manager,
                 FinTech DevOps Engineer,
               ]
+          - id: FND-BE-I18N-01
+            description: "[BE/i18n] Wire bilingual (Amharic/English) error responses across backend controllers and DTO validation messages."
+            status: To Do
+            context: [docs/Stage 2 -Development/20-Error_Handling.md]
+            personas: [Senior Backend Developer, UX Designer]
 
   - stage: "Stage 2: Authentication & User Management"
     tasks:
@@ -1016,6 +1057,16 @@ stages:
                 Senior Mobile Developer,
                 Product Manager,
               ]
+          - id: AUTH-BE-MFA-01
+            description: "[Security] Implement Multi-Factor Authentication (MFA) via SMS and Email OTP with secure rate-limiting and anti-SIM swap controls."
+            status: To Do
+            context: [docs/Stage 1 - Foundation/07-Security.md]
+            personas: [Senior Backend Developer, Data Security Specialist]
+          - id: AUTH-BE-MFA-02
+            description: "[Security/Mobile] Integrate biometric factor (device biometrics) into MFA flow and risk-based step-up authentication."
+            status: To Do
+            context: [docs/Stage 1 - Foundation/07-Security.md]
+            personas: [Senior Backend Developer, Data Security Specialist]
           - id: AUTH-BE-GUA-01
             description:
               Implement a global NestJS Guard using Passport.js to validate JWTs
@@ -2299,6 +2350,12 @@ stages:
                 Data Security Specialist,
                 Financial QA Specialist,
               ]
+          - id: DEP-DB-ENC-01
+            description: "[IaC/DBA] Enable at-rest encryption for RDS (KMS-managed keys/TDE) and define key rotation policies; validate PITR."
+            status: To Do
+            context:
+              [docs/Stage 3 - Deployment & Operations/24-Infrastructure.md]
+            personas: [FinTech DevOps Engineer, Data Security Specialist]
           - id: DEP-CI-01
             description:
               "[CI/CD] Create workflow to build and push versioned Docker images\
@@ -2366,6 +2423,11 @@ stages:
                 Financial Software
                 Architect,
               ]
+          - id: DEP-SEC-06
+            description: "[Security/IAM] Adopt SPIFFE/SPIRE for workload identities and automate certificate issuance/rotation for mesh mTLS."
+            status: To Do
+            context: [docs/Stage 1 - Foundation/07-Security.md]
+            personas: [FinTech DevOps Engineer, Data Security Specialist]
           - id: DEP-IAC-08
             description:
               "[IaC/DevOps] Provision and configure a managed Redis cluster (e.g.,

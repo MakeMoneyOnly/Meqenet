@@ -8,6 +8,7 @@ import helmet from 'helmet';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { AppModule } from './app/app.module';
+import { initializeOpenTelemetry } from './shared/observability/otel';
 
 const DEFAULT_PORT = 3001;
 const DEFAULT_GRPC_URL = 'localhost:5000';
@@ -25,6 +26,15 @@ async function bootstrap(): Promise<void> {
 
     const configService = app.get(ConfigService);
     app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
+
+    // Initialize OpenTelemetry with centralized config (non-blocking). Fulfills APM instrumentation requirement.
+    initializeOpenTelemetry({
+      nodeEnv: configService.get<string>('NODE_ENV'),
+      jaegerEndpoint: configService.get<string>(
+        'OTEL_EXPORTER_JAEGER_ENDPOINT'
+      ),
+      serviceName: configService.get<string>('OTEL_SERVICE_NAME'),
+    });
 
     // Security middleware
     app.use(helmet());
@@ -75,8 +85,8 @@ async function bootstrap(): Promise<void> {
     app.connectMicroservice<MicroserviceOptions>({
       transport: Transport.GRPC,
       options: {
-        package: 'auth',
-        protoPath: './proto/auth.proto',
+        package: 'auth.v1',
+        protoPath: '../../../proto/registry/auth/v1/auth.proto',
         url: grpcUrl,
       },
     });
@@ -90,6 +100,7 @@ async function bootstrap(): Promise<void> {
 
     if (configService.get<string>('NODE_ENV') !== 'production') {
       logger.log(`📚 API Documentation: http://localhost:${port}/api/docs`);
+      logger.log(`📘 OpenAPI JSON: http://localhost:${port}/api/docs-json`);
     }
   } catch (error) {
     logger.error('💥 Failed to start Auth Service:', error);
