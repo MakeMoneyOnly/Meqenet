@@ -222,9 +222,9 @@ describe('JwtAuthGuard - Security Tests', () => {
         guard.canActivate(mockExecutionContext);
       }
 
-      // Guard should have minimal state (only configuration options)
+      // Guard should have minimal state (only configuration options and reflector)
       const guardKeys = Object.keys(guard);
-      expect(guardKeys.length).toBeLessThanOrEqual(1); // Should only have options
+      expect(guardKeys.length).toBeLessThanOrEqual(2); // Should only have options and reflector
     });
 
     it('should have minimal execution overhead', () => {

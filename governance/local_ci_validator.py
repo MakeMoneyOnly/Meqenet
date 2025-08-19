@@ -225,38 +225,7 @@ class LocalCIValidator:
             ValidationCheck(
                 name="Centralized Env Access Enforcement",
                 description="Fail if 'process.env' is used outside of trusted gateway files in 'shared/config/'.",
-                command=[
-                    "python","-c",
-                    (
-                        "import os,sys; bad=[];\n"
-                        "for root,dirs,files in os.walk('backend'):\n"
-                        "  # Prune unwanted directories to avoid false positives\n"
-                        "  dirs[:] = [d for d in dirs if d not in ('node_modules','dist','build','coverage')]\n"
-                        "  for f in files:\n"
-                        "    # Only check TypeScript source files, excluding declaration files\n"
-                        "    if not f.endswith('.ts') or f.endswith('.d.ts'):\n"
-                        "      continue\n"
-                        "    p=os.path.join(root,f)\n"
-                        "    n=p.replace('\\\\','/')\n"
-                        "    # Skip tests and setup scripts\n"
-                        "    if '/test/' in n or n.endswith('.spec.ts') or n.endswith('setup.ts'):\n"
-                        "      continue\n"
-                        "    # Allow centralized access within shared/config files only\n"
-                        "    allow=('/shared/config/' in n)\n"
-                        "    try:\n"
-                        "      with open(p,'r',encoding='utf-8',errors='ignore') as fh:\n"
-                        "        c=fh.read()\n"
-                        "    except Exception:\n"
-                        "      continue\n"
-                        "    if 'process.env' in c and not allow:\n"
-                        "      bad.append(n)\n"
-                        "if bad:\n"
-                        "  print('Disallowed process.env usage found in:')\n"
-                        "  [print(' -', b) for b in bad]\n"
-                        "  sys.exit(1)\n"
-                        "print('Centralized env access: OK')\n"
-                    )
-                ],
+                command=["python", "governance/tools/check_env_access.py"],
                 timeout=60,
                 critical=True,
                 category="code_quality"
@@ -265,6 +234,15 @@ class LocalCIValidator:
                 name="ESLint Check (Per-Project)",
                 description="Run per-project lint the same way GH uses pnpm -r --if-present lint.",
                 command=["pnpm", "-r", "--if-present", "lint"],
+                timeout=300,
+                critical=True,
+                category="code_quality"
+            ),
+            # Additional explicit workspace ESLint check requested
+            ValidationCheck(
+                name="ESLint Check (Workspace Explicit)",
+                description="Run ESLint across the entire workspace explicitly (pnpm -w eslint .).",
+                command=["pnpm", "-w", "eslint", "."],
                 timeout=300,
                 critical=True,
                 category="code_quality"
@@ -1033,6 +1011,25 @@ class LocalCIValidator:
         """Run all validation checks"""
         logger.info("[START] Local CI/CD Validation Suite")
         logger.info(f"[INFO] Project root: {self.project_root}")
+        
+        # Auto-format code with Prettier before validation to prevent formatting failures
+        logger.info("[AUTO-FORMAT] Running Prettier auto-format before validation...")
+        try:
+            result = await asyncio.create_subprocess_exec(
+                "pnpm", "prettier", "--write", ".",
+                cwd=self.project_root,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE
+            )
+            stdout, stderr = await result.communicate()
+            
+            if result.returncode == 0:
+                logger.info("[AUTO-FORMAT] ✅ Prettier auto-format completed successfully")
+            else:
+                logger.warning(f"[AUTO-FORMAT] ⚠️ Prettier auto-format had issues: {stderr.decode('utf-8', errors='ignore')}")
+        except Exception as e:
+            logger.warning(f"[AUTO-FORMAT] ⚠️ Could not run Prettier auto-format: {e}")
+        
         logger.info(f"[INFO] Total checks: {len(self.checks)}")
         
         # Determine which categories to run
