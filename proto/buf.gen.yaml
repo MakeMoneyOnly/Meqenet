@@ -1,0 +1,25 @@
+version: v2
+managed:
+  enabled: true
+  disable:
+    - file_option: go_package_prefix
+plugins:
+  # TypeScript/JavaScript generation for NestJS
+  - remote: buf.build/connectrpc/es
+    out: registry/generated/typescript
+    opt:
+      - target=ts
+      - import_extension=.js
+  # NestJS-specific generation
+  - local: protoc-gen-ts_proto
+    out: registry/generated/nestjs
+    opt:
+      - nestJs=true
+      - addGrpcMetadata=true
+      - addNestjsRestParameter=true
+      - returnObservable=false
+      - useExactTypes=false
+  # Go generation (for future Go services)
+  - remote: buf.build/protocolbuffers/go
+    out: registry/generated/go
+    opt: paths=source_relative

@@ -1,0 +1,83 @@
+syntax = "proto3";
+
+package auth.v1;
+
+import "common/v1/metadata.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/meqenet/proto/auth/v1;authv1";
+
+// Version 1 of the Auth service contract
+service AuthService {
+  // Validates an access token and returns user context
+  rpc ValidateToken(ValidateTokenRequest) returns (ValidateTokenResponse);
+  
+  // Authenticates user with Fayda National ID
+  rpc AuthenticateUser(AuthenticateUserRequest) returns (AuthenticateUserResponse);
+  
+  // Refreshes an access token
+  rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse);
+  
+  // Logs out a user session
+  rpc LogoutUser(LogoutUserRequest) returns (LogoutUserResponse);
+}
+
+message ValidateTokenRequest {
+  string access_token = 1 [(common.v1.validation) = {required: true, min_length: 10}];
+  common.v1.RequestMetadata metadata = 2;
+}
+
+message ValidateTokenResponse {
+  bool valid = 1;
+  string subject = 2; // user id
+  repeated string roles = 3;
+  google.protobuf.Timestamp expires_at = 4;
+  common.v1.ResponseMetadata metadata = 5;
+}
+
+message AuthenticateUserRequest {
+  string fayda_id = 1 [(common.v1.validation) = {required: true, pattern: "^[0-9]{16}$"}];
+  string password = 2 [(common.v1.validation) = {required: true, min_length: 8}];
+  string device_fingerprint = 3;
+  common.v1.RequestMetadata metadata = 4;
+}
+
+message AuthenticateUserResponse {
+  string access_token = 1;
+  string refresh_token = 2;
+  google.protobuf.Timestamp expires_at = 3;
+  UserInfo user_info = 4;
+  common.v1.ResponseMetadata metadata = 5;
+}
+
+message RefreshTokenRequest {
+  string refresh_token = 1 [(common.v1.validation) = {required: true}];
+  common.v1.RequestMetadata metadata = 2;
+}
+
+message RefreshTokenResponse {
+  string access_token = 1;
+  string refresh_token = 2;
+  google.protobuf.Timestamp expires_at = 3;
+  common.v1.ResponseMetadata metadata = 4;
+}
+
+message LogoutUserRequest {
+  string access_token = 1 [(common.v1.validation) = {required: true}];
+  common.v1.RequestMetadata metadata = 2;
+}
+
+message LogoutUserResponse {
+  bool success = 1;
+  common.v1.ResponseMetadata metadata = 2;
+}
+
+message UserInfo {
+  string user_id = 1;
+  string fayda_id = 2; // Encrypted Fayda National ID
+  string email = 3;
+  string phone_number = 4;
+  repeated string roles = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp last_login = 7;
+}

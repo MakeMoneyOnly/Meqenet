@@ -1,0 +1,97 @@
+syntax = "proto3";
+
+package common.v1;
+
+import "google/protobuf/descriptor.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/meqenet/proto/common/v1;commonv1";
+
+// Field validation extension
+extend google.protobuf.FieldOptions {
+  Validation validation = 50001;
+}
+
+// Security classification extension
+extend google.protobuf.FieldOptions {
+  SecurityClassification security = 50002;
+}
+
+// NBE compliance extension  
+extend google.protobuf.MessageOptions {
+  NbeCompliance nbe_compliance = 50003;
+}
+
+// Validation rules for fields
+message Validation {
+  bool required = 1;
+  int32 min_length = 2;
+  int32 max_length = 3;
+  string pattern = 4; // regex pattern
+  double min_value = 5;
+  double max_value = 6;
+  repeated string allowed_values = 7;
+}
+
+// Security classification levels
+enum SecurityLevel {
+  SECURITY_LEVEL_UNSPECIFIED = 0;
+  SECURITY_LEVEL_PUBLIC = 1;
+  SECURITY_LEVEL_INTERNAL = 2;
+  SECURITY_LEVEL_CONFIDENTIAL = 3;
+  SECURITY_LEVEL_RESTRICTED = 4; // Fayda ID, PII
+  SECURITY_LEVEL_TOP_SECRET = 5; // Financial keys, HSM data
+}
+
+message SecurityClassification {
+  SecurityLevel level = 1;
+  bool encrypt_at_rest = 2;
+  bool encrypt_in_transit = 3;
+  bool requires_audit_log = 4;
+  string data_retention_policy = 5; // e.g., "7_years" for NBE compliance
+}
+
+// NBE compliance metadata
+message NbeCompliance {
+  bool requires_reporting = 1;
+  string regulation_reference = 2; // e.g., "AML/CFT Directive No. 01/2021"
+  bool financial_transaction = 3;
+  bool kyc_required = 4;
+}
+
+// Standard request metadata
+message RequestMetadata {
+  string request_id = 1 [(validation) = {required: true}];
+  string user_id = 2;
+  string session_id = 3;
+  string device_id = 4;
+  string ip_address = 5;
+  string user_agent = 6;
+  google.protobuf.Timestamp timestamp = 7;
+  string correlation_id = 8; // For distributed tracing
+  map<string, string> custom_headers = 9;
+}
+
+// Standard response metadata
+message ResponseMetadata {
+  string request_id = 1;
+  google.protobuf.Timestamp timestamp = 2;
+  int32 processing_time_ms = 3;
+  string server_id = 4;
+  string api_version = 5;
+  map<string, string> custom_headers = 6;
+}
+
+// Error details following Google API design guide
+message ErrorDetails {
+  string code = 1; // Machine-readable error code
+  string message = 2; // Human-readable message
+  repeated ErrorField field_errors = 3;
+  map<string, string> metadata = 4;
+}
+
+message ErrorField {
+  string field = 1;
+  string code = 2;
+  string message = 3;
+}
