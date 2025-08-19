@@ -150,7 +150,7 @@
     "audit-ci": "^7.1.0",
     "axios": "^1.11.0",
     "cross-env": "^7.0.3",
-    "esbuild": "0.25.8",
+    "esbuild": "0.25.9",
     "eslint": "^9.33.0",
     "eslint-import-resolver-oxc": "^0.15.0",
     "eslint-plugin-import": "^2.32.0",
