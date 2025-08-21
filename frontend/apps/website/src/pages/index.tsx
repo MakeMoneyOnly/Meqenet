@@ -1,8 +1,8 @@
-import React, { JSX } from 'react';
+import React from 'react';
 
 import styles from './index.module.css';
 
-export function Index(): JSX.Element {
+export function Index(): React.JSX.Element {
   /*
    * Replace the elements below with your own.
    *
