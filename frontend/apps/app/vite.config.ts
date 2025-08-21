@@ -29,7 +29,10 @@ interface RollupPlugin {
 const rollupPlugin = (matchers: RegExp[]): RollupPlugin => ({
   name: 'js-in-jsx',
   load(id: string): string | undefined {
-    if (matchers.some((matcher) => matcher.test(id)) && id.endsWith('.js')) {
+    if (
+      matchers.some((matcher: RegExp): boolean => matcher.test(id)) &&
+      id.endsWith('.js')
+    ) {
       // Using literal string for security - this is a build-time transformation
       // The id parameter is controlled by the build system, not user input
       // eslint-disable-next-line security/detect-non-literal-fs-filename
@@ -37,6 +40,7 @@ const rollupPlugin = (matchers: RegExp[]): RollupPlugin => ({
       return esbuild.transformSync(file, { loader: 'jsx', jsx: 'automatic' })
         .code;
     }
+    return undefined;
   },
 });
 

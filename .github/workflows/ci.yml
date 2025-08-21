@@ -226,6 +226,35 @@ jobs:
           retention-days: 30
 
   # ============================================================================
+  # PHASE 4: MOBILE CODE ANALYSIS (CODEQL)
+  # ============================================================================
+  analyze-java-kotlin:
+    name: 🔒 CodeQL Analysis (Java/Kotlin)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: 🔧 Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: 🔧 Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: java-kotlin
+
+      - name: 🏗️ Build Android (Java/Kotlin) Project
+        run: ./gradlew -p frontend/apps/app/android build
+
+      - name: 🔬 Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+
+  # ============================================================================
   # PHASE 4: DOCKER BUILD & SECURITY SCAN
   # ============================================================================
   docker-build:

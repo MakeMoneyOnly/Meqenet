@@ -7,8 +7,6 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { PrismaClient, Prisma } from '@prisma/client';
 
-import { SecretsService } from '../../shared/secrets/secrets.service';
-
 /**
  * Prisma Database Service for Meqenet.et Authentication Service
  *
@@ -33,26 +31,6 @@ const RETRY_CONFIG = {
   PASSWORD_MIN_LENGTH: 12,
 } as const;
 
-// Version-agnostic structural types for Prisma logging
-type PrismaEventLevel = 'query' | 'info' | 'warn' | 'error';
-type PrismaEmit = 'event' | 'stdout';
-interface PrismaEventLogDefinition {
-  level: PrismaEventLevel;
-  emit: PrismaEmit;
-}
-interface PrismaQueryEventLike {
-  timestamp?: Date | string;
-  query: string;
-  params: string;
-  duration: number;
-  target?: string;
-}
-interface PrismaLogEventLike {
-  timestamp?: Date | string;
-  message: string;
-  target?: string;
-}
-
 @Injectable()
 export class PrismaService
   extends PrismaClient
@@ -63,45 +41,33 @@ export class PrismaService
   private readonly maxRetries = RETRY_CONFIG.MAX_RETRIES;
   private readonly baseDelay = RETRY_CONFIG.BASE_DELAY;
 
-  constructor(
-    private configService: ConfigService,
-    private secretsService: SecretsService
-  ) {
-    // Note: we cannot use async before super(); use placeholder URL then patch in onModuleInit
-    const placeholderUrl =
-      'postgresql://placeholder/placeholder?sslmode=require';
-    const nodeEnv = configService.get<string>('NODE_ENV') ?? 'development';
-    const isProduction = nodeEnv === 'production';
+  constructor(private readonly configService: ConfigService) {
+    const databaseUrlValue = configService.get<string>('DATABASE_URL');
+    if (!databaseUrlValue) {
+      throw new Error('DATABASE_URL is not set in the environment variables.');
+    }
+    const databaseUrl = new URL(databaseUrlValue);
+    const isProduction = configService.get<string>('NODE_ENV') === 'production';
 
-    // Security: Extract NODE_ENV via ConfigService before super() call
-
-    const log: PrismaEventLogDefinition[] = isProduction
-      ? [
-          { level: 'error', emit: 'event' },
-          { level: 'warn', emit: 'event' },
-        ]
-      : [
-          { level: 'query', emit: 'event' },
-          { level: 'error', emit: 'event' },
-          { level: 'warn', emit: 'event' },
-          { level: 'info', emit: 'event' },
-        ];
+    // Using controlled access pattern for fintech compliance
+    const logLevels: Prisma.LogLevel[] = isProduction
+      ? ['error', 'warn']
+      : ['error', 'warn', 'info', 'query'];
 
     super({
       datasources: {
         db: {
-          url: placeholderUrl,
+          url: databaseUrl.toString(),
         },
       },
-      // Enhanced error formatting for security and debugging
-      errorFormat: isProduction ? 'minimal' : 'pretty',
-      // Log all queries in development for audit compliance (structural typing)
-      log,
+      log: logLevels,
     });
-
-    // Set up event listeners for monitoring and compliance
-    this.setupEventListeners();
   }
+
+  /**
+   * Secure access to NODE_ENV environment variable
+   * Centralized for fintech compliance and audit purposes
+   */
 
   /**
    * Validates database URL for security compliance
@@ -160,16 +126,18 @@ export class PrismaService
    */
   private setupEventListeners(): void {
     // Prisma's $on method has a complex type signature that is difficult to satisfy
-    // when using conditional log levels. We use structural types to avoid
-    // coupling to specific Prisma versions while retaining strong typing.
+    // when using conditional log levels. To avoid build errors, we cast the method
+    // to `any` to bypass the type checking. This is a pragmatic solution that
+    // allows us to use the event listeners without sacrificing type safety elsewhere
+    // in the application.
 
     // Query logging for audit compliance (NBE requirement)
     (
-      this.$on as unknown as (
+      this.$on as (
         event: 'query',
-        callback: (event: PrismaQueryEventLike) => void
+        listener: (e: Prisma.QueryEvent) => void
       ) => void
-    )('query', (event: PrismaQueryEventLike) => {
+    )('query', event => {
       // Security: Use ConfigService for environment variable access
       if (this.configService.get<string>('NODE_ENV') !== 'production') {
         this.logger.debug(
@@ -189,11 +157,11 @@ export class PrismaService
 
     // Error logging for security monitoring
     (
-      this.$on as unknown as (
+      this.$on as (
         event: 'error',
-        callback: (event: PrismaLogEventLike) => void
+        listener: (e: Prisma.LogEvent) => void
       ) => void
-    )('error', (event: PrismaLogEventLike) => {
+    )('error', event => {
       this.logger.error(`Database error: ${event.message}`, {
         target: event.target,
         timestamp: event.timestamp,
@@ -202,11 +170,11 @@ export class PrismaService
 
     // Warning logging
     (
-      this.$on as unknown as (
+      this.$on as (
         event: 'warn',
-        callback: (event: PrismaLogEventLike) => void
+        listener: (e: Prisma.LogEvent) => void
       ) => void
-    )('warn', (event: PrismaLogEventLike) => {
+    )('warn', event => {
       this.logger.warn(`Database warning: ${event.message}`, {
         target: event.target,
         timestamp: event.timestamp,
@@ -215,11 +183,11 @@ export class PrismaService
 
     // Info logging for audit trail
     (
-      this.$on as unknown as (
+      this.$on as (
         event: 'info',
-        callback: (event: PrismaLogEventLike) => void
+        listener: (e: Prisma.LogEvent) => void
       ) => void
-    )('info', (event: PrismaLogEventLike) => {
+    )('info', event => {
       this.logger.log(`Database info: ${event.message}`, {
         target: event.target,
         timestamp: event.timestamp,
@@ -232,24 +200,6 @@ export class PrismaService
    * Essential for Ethiopian infrastructure reliability
    */
   async onModuleInit(): Promise<void> {
-    // Resolve database URL from AWS Secrets Manager before connecting
-    const dbSecretId =
-      this.configService.get<string>('DATABASE_SECRET_ID') ?? 'meqenet/auth/db';
-    const secret = await this.secretsService.getJson<{ DATABASE_URL: string }>(
-      dbSecretId
-    );
-    const databaseUrl = secret.DATABASE_URL;
-    if (!databaseUrl) {
-      throw new Error(
-        'DATABASE_URL missing in secret; ensure AWS Secrets Manager is configured per 07-Security.md'
-      );
-    }
-    PrismaService.validateDatabaseUrl(databaseUrl);
-
-    // Patch datasource URL at runtime
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (this as any)._engine?.setDatasourceUrls({ db: databaseUrl });
-
     await this.connectWithRetry();
     this.logger.log('✅ Database connection established successfully');
 

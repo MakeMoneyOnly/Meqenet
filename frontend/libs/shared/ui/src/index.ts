@@ -1,1 +1,1 @@
-export * from './lib/ErrorBoundary';
+export { default as ErrorBoundary } from './lib/ErrorBoundary';

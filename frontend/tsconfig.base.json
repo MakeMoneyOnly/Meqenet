@@ -19,7 +19,8 @@
     "customConditions": ["development"],
     "paths": {
       "@frontend/shared-api-client": ["libs/shared/api-client/src/index.ts"],
-      "@frontend/shared-ui": ["libs/shared/ui/src/index.ts"]
+      "@frontend/shared-ui": ["libs/shared/ui/src/index.ts"],
+      "@frontend/shared-config": ["libs/shared/config/src/index.ts"]
     }
   }
 }

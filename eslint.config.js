@@ -213,6 +213,8 @@ module.exports = [
       ...react.configs.recommended.rules,
       ...reactHooks.configs.recommended.rules,
       ...jsxA11y.configs.recommended.rules,
+      // Disable deprecated jsx-a11y rules
+      'jsx-a11y/accessible-emoji': 'off',
       'react/prop-types': 'error',
       'react/jsx-no-bind': [
         'error',
