@@ -3,3 +3,7 @@ packages:
   - "backend"
   # All individual microservices located under the backend/services/ directory.
   - "backend/services/*"
+  # The root frontend application
+  - "frontend"
+  # All frontend apps
+  - "frontend/apps/*"
