@@ -1,0 +1,15 @@
+{
+  "name": "@frontend/app",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "@react-native/metro-config": "*",
+    "@testing-library/react-native": "*",
+    "metro-config": "*",
+    "react": "*",
+    "react-native": "*",
+    "react-native-svg": "*",
+    "react-test-renderer": "*",
+    "twrnc": "^4.9.1"
+  }
+}

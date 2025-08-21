@@ -1,6 +1,7 @@
-const { NxAppWebpackPlugin } = require('@nx/webpack/app-plugin');
-const { join } = require('path');
 const fs = require('fs');
+const { join } = require('path');
+
+const { NxAppWebpackPlugin } = require('@nx/webpack/app-plugin');
 
 // Check if assets directory exists
 const assetsPath = './src/assets';
