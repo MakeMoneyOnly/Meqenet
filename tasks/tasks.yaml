@@ -403,7 +403,7 @@ stages:
             description:
               Initialize frontend monorepo with Nx, a Next.js app ('website'),
               and a React Native app ('app').
-            status: To Do
+            status: Completed
             context:
               [
                 docs/Stage 1 - Foundation/08-Architecture.md,
@@ -417,7 +417,7 @@ stages:
               ]
           - id: FND-FE-STY-01
             description: Set up Tailwind CSS for the Next.js 'website' application.
-            status: To Do
+            status: Completed
             context:
               [docs/Stage 1 - Foundation/12-User_Experience_Guidelines.md]
             personas: [Senior Mobile Developer, UX Designer, Product Manager]
@@ -425,7 +425,7 @@ stages:
             description:
               Set up a compatible styling solution (e.g., `twrnc`) for the React
               Native 'app'.
-            status: To Do
+            status: Completed
             context:
               [docs/Stage 1 - Foundation/12-User_Experience_Guidelines.md]
             personas: [Senior Mobile Developer, UX Designer, Product Manager]
@@ -433,7 +433,7 @@ stages:
             description:
               Create a shared API client library (e.g., using Axios) for both
               frontends to communicate with the backend.
-            status: To Do
+            status: Completed
             context:
               [docs/Stage 1 - Foundation/02-API_Specification_and_Governance.md]
             personas: [
@@ -446,7 +446,7 @@ stages:
             description:
               Configure ESLint and Prettier for both Next.js and React Native
               apps, including eslint-plugin-security and custom rules to enforce FSA principles.
-            status: To Do
+            status: Completed
             context:
               [
                 docs/Stage 2 -Development/21-Code_Review.md,
@@ -463,7 +463,7 @@ stages:
             description:
               "[Web] Configure the Next.js app to be a fully compliant Progressive
               Web App (PWA) with a service worker and manifest."
-            status: To Do
+            status: Completed
             context: [docs/Stage 1 - Foundation/08-Architecture.md]
             personas:
               [Senior Mobile Developer, UX Designer, FinTech DevOps Engineer]
@@ -471,7 +471,7 @@ stages:
             description:
               "[Web] Implement a root React Error Boundary to catch rendering
               errors and show a graceful fallback UI."
-            status: To Do
+            status: Completed
             context: [docs/Stage 2 -Development/20-Error_Handling.md]
             personas:
               [Senior Mobile Developer, UX Designer, Financial QA Specialist]
