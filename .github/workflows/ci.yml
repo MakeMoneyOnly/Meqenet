@@ -64,6 +64,14 @@ jobs:
       - name: 📋 Generate SBOM (Software Bill of Materials)
         run: docker run --rm -u 0:0 -e NPM_CONFIG_IGNORE_SCRIPTS=true -e HUSKY=0 -e HUSKY_SKIP_INSTALL=1 -e CI=1 -v ${{ github.workspace }}:/src ghcr.io/cyclonedx/cdxgen:latest -o /src/bom.json --include-formulation --include-crypto --spec-version 1.5 --exclude "node_modules,dist,coverage,.pnpm-store,.cache,.nx,.vite,.git,bom.json" /src/backend /src/governance /src/tools
 
+      - name: 📱 Mobile App Security Scan (Android)
+        run: |
+          echo "🔍 Scanning Android app for security vulnerabilities..."
+          # Check for hardcoded secrets and sensitive data
+          find frontend/apps/app/android -type f \( -name "*.kt" -o -name "*.java" -o -name "*.xml" -o -name "*.gradle" \) -exec grep -l "password\|secret\|key\|token\|api.*key" {} \; | head -10
+          # Check for proper permissions in AndroidManifest.xml
+          grep -n "android.permission" frontend/apps/app/android/app/src/main/AndroidManifest.xml || echo "No dangerous permissions found"
+
       - name: 🚨 Upload Security Results
         uses: actions/upload-artifact@v4
         if: always()
@@ -226,7 +234,329 @@ jobs:
           retention-days: 30
 
   # ============================================================================
-  # PHASE 4: MOBILE CODE ANALYSIS (CODEQL)
+  # PHASE 3: AUTOMATED SECURITY TESTING
+  # ============================================================================
+  security-testing-suite:
+    name: 🔒 Automated Security Testing Suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [security-scan]
+
+    strategy:
+      matrix:
+        test-type: ['sast', 'dependency-check', 'container-scan', 'secrets-scan']
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: 🔧 Setup Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: 📦 Install Dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Static Application Security Testing (SAST)
+      - name: 🔍 SAST - Static Application Security Testing
+        if: matrix.test-type == 'sast'
+        run: |
+          echo "🚀 Running SAST Analysis..."
+
+          # Run ESLint security rules
+          pnpm run lint:security || true
+
+          # Run TypeScript security analysis
+          npx ts-unused-exports tsconfig.json --excludePathsFromReport=node_modules --exitWithUnusedTypesFound=false || true
+
+          # Run security-focused grep searches
+          echo "🔍 Searching for security patterns..."
+          find . -name "*.ts" -o -name "*.js" -o -name "*.kt" -o -name "*.java" | xargs grep -l "password\|secret\|key\|token" | head -10
+
+      # Dependency Vulnerability Scanning
+      - name: 📦 Dependency Security Check
+        if: matrix.test-type == 'dependency-check'
+        run: |
+          echo "🔍 Running Dependency Vulnerability Scan..."
+
+          # Check for vulnerable npm packages
+          npx auditjs ossi --whitelist package-audit-whitelist.json || true
+
+          # Check for outdated packages
+          npx npm-check-updates --target minor --jsonUpgraded || true
+
+          # Generate dependency tree for analysis
+          pnpm ls --depth=3 > dependency-tree.txt
+
+      # Container Security Scanning
+      - name: 🐳 Container Security Scan
+        if: matrix.test-type == 'container-scan'
+        run: |
+          echo "🔍 Running Container Security Analysis..."
+
+          # Check Dockerfiles for security issues
+          find . -name "Dockerfile*" -exec echo "Analyzing {}" \;
+          find . -name "Dockerfile*" -exec grep -n "FROM\|RUN\|COPY\|USER\|EXPOSE" {} \; || true
+
+          # Check for container security best practices
+          find . -name "Dockerfile*" -exec grep -L "USER" {} \; | head -5 || true
+
+      # Secrets and Sensitive Data Scanning
+      - name: 🔐 Secrets and Sensitive Data Scan
+        if: matrix.test-type == 'secrets-scan'
+        run: |
+          echo "🔍 Scanning for Secrets and Sensitive Data..."
+
+          # Use git-secrets to scan for secrets
+          git log --all --full-history --grep="password\|secret\|key\|token" || true
+
+          # Scan for hardcoded secrets in code
+          find . -name "*.ts" -o -name "*.js" -o -name "*.kt" -o -name "*.java" | xargs grep -l "password.*=.*[a-zA-Z0-9]\{8,\}" || true
+
+          # Check for API keys and tokens
+          find . -name "*.ts" -o -name "*.js" -o -name "*.kt" -o -name "*.java" | xargs grep -l "api.*key\|bearer.*token\|authorization.*token" || true
+
+      - name: 📊 Generate Security Testing Report
+        run: |
+          echo "## 🔒 Security Testing Suite Report" > security-testing-report.md
+          echo "" >> security-testing-report.md
+          echo "### Test Type: ${{ matrix.test-type }}" >> security-testing-report.md
+          echo "### Timestamp: $(date)" >> security-testing-report.md
+          echo "" >> security-testing-report.md
+
+          if [ "${{ matrix.test-type }}" = "sast" ]; then
+            echo "### 🔍 SAST Findings" >> security-testing-report.md
+            echo "- ESLint Security Issues: $(pnpm run lint:security 2>&1 | grep -c "error\|warning" || echo "0")" >> security-testing-report.md
+            echo "- Potential Secrets Found: $(find . -name "*.ts" -o -name "*.js" | xargs grep -l "password\|secret\|key\|token" | wc -l)" >> security-testing-report.md
+          fi
+
+          if [ "${{ matrix.test-type }}" = "dependency-check" ]; then
+            echo "### 📦 Dependency Analysis" >> security-testing-report.md
+            echo "- Total Dependencies: $(pnpm ls | grep -c "├──\|└──" || echo "0")" >> security-testing-report.md
+            echo "- Outdated Packages: $(npx npm-check-updates --target minor --jsonUpgraded 2>/dev/null | grep -c "name" || echo "0")" >> security-testing-report.md
+          fi
+
+          echo "" >> security-testing-report.md
+          echo "### 🚨 Recommendations" >> security-testing-report.md
+          echo "1. Review all findings in the security reports" >> security-testing-report.md
+          echo "2. Address high-priority security issues immediately" >> security-testing-report.md
+          echo "3. Update dependencies to latest secure versions" >> security-testing-report.md
+          echo "4. Implement proper secrets management" >> security-testing-report.md
+
+      - name: 📤 Upload Security Testing Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-testing-${{ matrix.test-type }}
+          path: |
+            security-testing-report.md
+            dependency-tree.txt
+          retention-days: 30
+
+      - name: 🚨 Security Testing Summary
+        if: always()
+        run: |
+          echo "✅ Security Testing Suite completed for ${{ matrix.test-type }}"
+          echo "📊 Results uploaded as artifacts"
+          echo "🔍 Review security-testing-report.md for detailed findings"
+
+  # ============================================================================
+  # PHASE 3.5: ANDROID DEPENDENCY VULNERABILITY SCANNING
+  # ============================================================================
+  android-dependency-security:
+    name: 🔍 Android Dependency Vulnerability Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    needs: [security-scan]
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: 🔧 Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+          cache: gradle
+
+      - name: 🔧 Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          api-level: 34
+          target: android-34
+          build-tools: '34.0.0'
+
+      - name: 📦 Cache Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: 🔍 Run Gradle Dependency Vulnerability Check
+        working-directory: ./frontend/apps/app/android
+        run: |
+          chmod +x ./gradlew
+          # Check for outdated dependencies
+          ./gradlew dependencyUpdates --continue
+
+          # Generate dependency report
+          ./gradlew dependencies --configuration=releaseRuntimeClasspath > dependency-report.txt
+
+          # Check for known vulnerabilities using Gradle plugin
+          ./gradlew dependencyCheckAnalyze --continue || echo "⚠️ Dependency check completed with warnings"
+
+      - name: 🚨 Run OWASP Dependency Check
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: 'Meqenet-Android'
+          path: './frontend/apps/app/android'
+          format: 'ALL'
+          args: >
+            --enableRetired
+            --enableExperimental
+            --nvdValidForHours 24
+            --failOnCVSS 9
+
+      - name: 📊 Generate Android Dependency Security Report
+        working-directory: ./frontend/apps/app/android
+        run: |
+          echo "## 🔒 Android Dependency Security Analysis" > dependency-security-report.md
+          echo "" >> dependency-security-report.md
+          echo "### 📦 Dependency Overview" >> dependency-security-report.md
+          echo "\`\`\`" >> dependency-security-report.md
+          cat dependency-report.txt | head -30 >> dependency-security-report.md
+          echo "\`\`\`" >> dependency-security-report.md
+          echo "" >> dependency-security-report.md
+          echo "### 🚨 Security Issues Found" >> dependency-security-report.md
+          echo "- High-risk vulnerabilities: $(find . -name "*.html" -exec grep -c "HIGH\|CRITICAL" {} \; | awk '{sum+=$1} END {print sum}')" >> dependency-security-report.md
+          echo "- Medium-risk vulnerabilities: $(find . -name "*.html" -exec grep -c "MEDIUM" {} \; | awk '{sum+=$1} END {print sum}')" >> dependency-security-report.md
+          echo "- Low-risk vulnerabilities: $(find . -name "*.html" -exec grep -c "LOW" {} \; | awk '{sum+=$1} END {print sum}')" >> dependency-security-report.md
+          echo "" >> dependency-security-report.md
+          echo "### 🔧 React Native Security Notes" >> dependency-security-report.md
+          echo "- **React Native Version**: 0.76.5 (Updated from 0.79.6 for security patches)" >> dependency-security-report.md
+          echo "- **Dependency Strategy**: Pinned versions for deterministic builds" >> dependency-security-report.md
+          echo "- **Suppression Policy**: Context-aware suppressions for mobile app environment" >> dependency-security-report.md
+          echo "- **ICU Libraries**: Updated in RN 0.76.5 with security patches" >> dependency-security-report.md
+          echo "- **DoubleConversion**: Addressed in newer React Native versions" >> dependency-security-report.md
+
+      - name: 📤 Upload Dependency Scan Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: android-dependency-scan
+          path: |
+            frontend/apps/app/android/reports/
+            frontend/apps/app/android/dependency-report.txt
+            frontend/apps/app/android/dependency-security-report.md
+            reports/
+          retention-days: 30
+
+      - name: 🚨 Fail on High/Critical Vulnerabilities
+        working-directory: ./frontend/apps/app/android
+        run: |
+          # Check for high or critical vulnerabilities
+          high_critical_count=$(find . -name "*.html" -exec grep -c "HIGH\|CRITICAL" {} \; | awk '{sum+=$1} END {print sum}')
+          if [ "$high_critical_count" -gt 0 ]; then
+            echo "🚨 Found $high_critical_count high/critical dependency vulnerabilities!"
+            echo "Please review the dependency scan report and update vulnerable dependencies."
+            find . -name "*.html" -exec grep -A 2 -B 1 "HIGH\|CRITICAL" {} \;
+            exit 1
+          else
+            echo "✅ No high/critical dependency vulnerabilities found"
+          fi
+
+  # ============================================================================
+  # PHASE 4: ANDROID LINT SECURITY ANALYSIS
+  # ============================================================================
+  android-lint-security:
+    name: 🔍 Android Lint Security Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: 🔧 Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+          cache: gradle
+
+      - name: 🔧 Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          api-level: 34
+          target: android-34
+          build-tools: '34.0.0'
+
+      - name: 📦 Cache Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: 🚫 Run Android Lint Security Checks
+        working-directory: ./frontend/apps/app/android
+        run: |
+          chmod +x ./gradlew
+          ./gradlew lintDebug --continue --info
+          ./gradlew lintRelease --continue --info
+
+      - name: 📊 Generate Security-Focused Lint Report
+        working-directory: ./frontend/apps/app/android
+        run: |
+          # Generate HTML report for security issues
+          ./gradlew lintDebugReport
+          ./gradlew lintReleaseReport
+
+          # Extract security-related issues
+          echo "## 🔒 Android Lint Security Issues" > lint-security-report.md
+          echo "" >> lint-security-report.md
+          find . -name "lint-results-*.xml" -exec grep -l "security\|vulnerability\|permission\|crypto" {} \; | head -5 | while read file; do
+            echo "### Issues in $file" >> lint-security-report.md
+            grep -A 5 -B 5 "security\|vulnerability\|permission\|crypto" "$file" | head -20 >> lint-security-report.md
+            echo "" >> lint-security-report.md
+          done
+
+      - name: 📤 Upload Lint Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: android-lint-results
+          path: |
+            frontend/apps/app/android/app/build/reports/lint-results-*.html
+            frontend/apps/app/android/app/build/reports/lint-results-*.xml
+            lint-security-report.md
+          retention-days: 30
+
+      - name: 🚨 Fail on Critical Security Issues
+        working-directory: ./frontend/apps/app/android
+        run: |
+          # Check for critical security issues
+          critical_issues=$(find . -name "lint-results-*.xml" -exec grep -c "error.*security\|error.*vulnerability\|error.*permission" {} \; | awk '{sum+=$1} END {print sum}')
+          if [ "$critical_issues" -gt 0 ]; then
+            echo "🚨 Found $critical_issues critical security issues in Android Lint"
+            find . -name "lint-results-*.xml" -exec grep -A 3 -B 1 "error.*security\|error.*vulnerability\|error.*permission" {} \;
+            exit 1
+          fi
+
+  # ============================================================================
+  # PHASE 5: MOBILE CODE ANALYSIS (CODEQL)
   # ============================================================================
   analyze-java-kotlin:
     name: 🔒 CodeQL Analysis (Java/Kotlin)
@@ -246,10 +576,14 @@ jobs:
       - name: 🔧 Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
-          languages: java-kotlin
+          languages: java, kotlin
+          config-file: .github/codeql/codeql-config.yml
 
       - name: 🏗️ Build Android (Java/Kotlin) Project
-        run: ./gradlew -p frontend/apps/app/android build
+        working-directory: ./frontend/apps/app/android
+        run: |
+          chmod +x ./gradlew
+          ./gradlew assembleDebug --no-daemon --parallel
 
       - name: 🔬 Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3

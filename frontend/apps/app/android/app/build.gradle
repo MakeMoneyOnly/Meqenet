@@ -103,6 +103,10 @@ android {
             signingConfig signingConfigs.debug
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+            // Enable shrinkResources for smaller APK size and better security
+            shrinkResources true
+            // Enable zipAlign for better performance
+            zipAlignEnabled true
         }
     }
 }
