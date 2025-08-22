@@ -38,7 +38,25 @@ jobs:
 
       - uses: github/codeql-action/init@v3
         with:
-          languages: javascript, typescript
+          languages: javascript, typescript, java, kotlin
+          config-file: .github/codeql/codeql-config.yml
+
+      # Setup Java for Android/Kotlin analysis
+      - name: 🔧 Setup Java (JDK 17)
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+          cache: gradle
+
+      # Build Android project for Java/Kotlin analysis
+      - name: 🏗️ Build Android Project
+        if: contains(matrix.language, 'java') || contains(matrix.language, 'kotlin')
+        working-directory: ./frontend/apps/app/android
+        run: |
+          chmod +x ./gradlew
+          ./gradlew assembleDebug --no-daemon --parallel
+
       - uses: github/codeql-action/analyze@v3
         continue-on-error: true # Avoid failure when default setup is enabled in repo settings
 

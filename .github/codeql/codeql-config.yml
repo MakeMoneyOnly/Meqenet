@@ -1,0 +1,103 @@
+---
+name: "Meqenet CodeQL Configuration"
+
+# CodeQL configuration for fintech-grade security analysis
+# Enables comprehensive security scanning for Node.js, Java, and Kotlin code
+
+# Global settings
+disable-default-queries: false
+queries:
+  # Java/Kotlin (Android) Security Queries
+  - uses: security-and-quality
+  - uses: security-extended
+
+# Android-specific security configuration
+paths:
+  - frontend/apps/app/android
+paths-ignore:
+  - "node_modules"
+  - "dist"
+  - "build"
+  - ".git"
+
+# Language-specific configurations
+java:
+  # Enable Android-specific security rules
+  android:
+    # WebView security
+    - "java/android/webview-javascript-enabled"
+    - "java/android/webview-clear-cache"
+    - "java/android/webview-file-access"
+
+    # Cryptography
+    - "java/android/insecure-crypto-algorithm"
+    - "java/android/insecure-random"
+    - "java/android/insecure-key-size"
+
+    # Data storage
+    - "java/android/sql-injection"
+    - "java/android/cleartext-storage"
+    - "java/android/external-storage"
+
+    # Network security
+    - "java/android/insecure-hostname-verifier"
+    - "java/android/cleartext-traffic"
+    - "java/android/insecure-socket"
+
+    # Permissions
+    - "java/android/overly-permissive-file-permissions"
+    - "java/android/dangerous-permissions"
+
+    # Intents and IPC
+    - "java/android/implicit-pendingintent"
+    - "java/android/exposed-intent"
+    - "java/android/unsafe-intent-launch"
+
+kotlin:
+  # Same Android security rules apply to Kotlin
+  android:
+    - "kotlin/android/webview-javascript-enabled"
+    - "kotlin/android/webview-clear-cache"
+    - "kotlin/android/insecure-crypto-algorithm"
+    - "kotlin/android/sql-injection"
+    - "kotlin/android/cleartext-storage"
+    - "kotlin/android/cleartext-traffic"
+    - "kotlin/android/dangerous-permissions"
+    - "kotlin/android/exposed-intent"
+
+# Severity thresholds for fintech compliance
+severity:
+  critical: ["sql-injection", "hardcoded-credentials", "insecure-crypto"]
+  high: ["cleartext-storage", "cleartext-traffic", "dangerous-permissions"]
+  medium: ["webview-javascript-enabled", "overly-permissive-permissions"]
+  low: ["insecure-random", "implicit-pendingintent"]
+
+# Custom query suites for fintech-specific security
+query-suites:
+  - name: "fintech-security"
+    description: "Fintech-specific security queries for Meqenet"
+    queries:
+      - "java/fintech/sensitive-data-exposure"
+      - "kotlin/fintech/sensitive-data-exposure"
+      - "java/fintech/insecure-data-transmission"
+      - "kotlin/fintech/insecure-data-transmission"
+
+# Exclude false positives for known safe patterns
+exclude:
+  paths:
+    - "frontend/apps/app/android/app/src/debug"
+    - "**/test*/**"
+    - "**/*Test.*"
+    - "**/*Tests.*"
+  queries:
+    - "java/android/cleartext-traffic" # Exclude if using local development servers
+    - "kotlin/android/cleartext-traffic" # Exclude if using local development servers
+
+# Performance optimization
+threads: 2
+timeout: 300 # 5 minutes per query
+
+# Output configuration
+output:
+  format: sarif-latest
+  file: codeql-results.sarif
