@@ -261,11 +261,10 @@ jobs:
           node-version: 22
 
       - name: 📦 Install Dependencies
-        working-directory: ./frontend
         run: |
           pnpm install --no-frozen-lockfile
           corepack enable
-          cd apps/app && npx react-native doctor --fix || true
+          cd frontend/apps/app && npx react-native doctor --fix || true
 
       # Static Application Security Testing (SAST)
       - name: 🔍 SAST - Static Application Security Testing
@@ -399,13 +398,12 @@ jobs:
           corepack prepare pnpm@10.14.0 --activate
 
       - name: 📦 Install Dependencies
-        working-directory: ./frontend
         run: |
           pnpm install --no-frozen-lockfile
           # Ensure React Native CLI is properly set up
           npm install -g @react-native-community/cli || true
-          cd apps/app && npx react-native doctor --fix || true
-          cd apps/app && npx @react-native-community/cli doctor || true
+          cd frontend/apps/app && npx react-native doctor --fix || true
+          cd frontend/apps/app && npx @react-native-community/cli doctor || true
 
       - name: 🔧 Setup Java
         uses: actions/setup-java@v4
@@ -537,13 +535,12 @@ jobs:
           corepack prepare pnpm@10.14.0 --activate
 
       - name: 📦 Install Dependencies
-        working-directory: ./frontend
         run: |
           pnpm install --no-frozen-lockfile
           # Ensure React Native CLI is properly set up
           npm install -g @react-native-community/cli || true
-          cd apps/app && npx react-native doctor --fix || true
-          cd apps/app && npx @react-native-community/cli doctor || true
+          cd frontend/apps/app && npx react-native doctor --fix || true
+          cd frontend/apps/app && npx @react-native-community/cli doctor || true
 
       - name: 🔧 Setup Node.js Environment for React Native
         working-directory: ./frontend/apps/app
@@ -664,6 +661,22 @@ jobs:
         with:
           languages: java, kotlin
           config-file: .github/codeql/codeql-config.yml
+
+      - name: 🔧 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 📦 Enable Corepack
+        run: corepack enable
+
+      - name: 📚 Install Dependencies
+        run: pnpm install --no-frozen-lockfile
 
       - name: 🏗️ Build Android (Java/Kotlin) Project
         working-directory: ./frontend/apps/app/android
