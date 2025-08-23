@@ -1,6 +1,40 @@
 pluginManagement {
-    includeBuild("../../../node_modules/@react-native/gradle-plugin")
+    def findReactNativeGradlePlugin = {
+        def currentDir = new File('.')
+        def possiblePaths = []
+
+        // Standard React Native project structure
+        possiblePaths.add(new File(currentDir, '../../../node_modules/@react-native/gradle-plugin'))
+
+        // CI environment paths
+        possiblePaths.add(new File(currentDir, '../../../../../node_modules/@react-native/gradle-plugin'))
+        possiblePaths.add(new File(currentDir, '../../../../node_modules/@react-native/gradle-plugin'))
+
+        // Try to find plugin directory
+        for (path in possiblePaths) {
+            if (path.exists() && path.isDirectory()) {
+                return path.absolutePath
+            }
+        }
+
+        // If no path found, try to use the standard React Native approach
+        def standardPath = new File(currentDir, '../../../node_modules/@react-native/gradle-plugin')
+        if (standardPath.exists()) {
+            return standardPath.absolutePath
+        }
+
+        return null
+    }
+
+    def pluginPath = findReactNativeGradlePlugin()
+    if (pluginPath) {
+        includeBuild(pluginPath)
+    } else {
+        // Fallback: try to resolve without includeBuild for CI environments
+        println "React Native gradle plugin not found in expected locations, using classpath resolution"
+    }
 }
+
 plugins {
     id("com.facebook.react.settings")
 }
