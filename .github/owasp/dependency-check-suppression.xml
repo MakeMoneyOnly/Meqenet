@@ -13,6 +13,30 @@
     -->
 
     <!--
+    ============================================================================
+    CPE-BASED SUPPRESSION FOR REACT NATIVE ICU LIBRARIES
+    ============================================================================
+    RATIONALE:
+    The filePath and packageUrl based suppressions for React Native's bundled
+    ICU libraries are not reliably matching in the CI environment. This is
+    likely due to how the dependency-check scanner interacts with the pnpm
+    node_modules structure.
+
+    This suppression rule uses the CPE (Common Platform Enumeration) identifier,
+    which is being correctly identified by the scanner, to suppress the known
+    vulnerability CVE-2015-5922. This is a more robust method for ensuring
+    these known false positives are correctly suppressed in the CI/CD pipeline.
+    -->
+    <suppress>
+        <notes><![CDATA[
+        Suppressing React Native ICU vulnerability based on CPE as other methods failed.
+        See rationale above for justification.
+        ]]></notes>
+        <cpe>cpe:/a:icu-project:international_components_for_unicode</cpe>
+        <cve>CVE-2015-5922</cve>
+    </suppress>
+
+    <!--
     React Native ICU (International Components for Unicode) Library Suppressions
 
     RATIONALE:
