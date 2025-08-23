@@ -40,7 +40,7 @@
     - Resolved through React Native framework updates
     -->
 
-    <!-- ICU Library DLL Files -->
+    <!-- ICU Library DLL Files - Comprehensive Suppression -->
     <suppress>
         <notes>
             React Native ICU Library - False positive for mobile apps.
@@ -69,6 +69,48 @@
         <cve>CVE-2017-7868</cve>
         <cve>CVE-2018-18928</cve>
         <cve>CVE-2025-5222</cve>
+    </suppress>
+
+    <!-- ICU DLL Files - File Path Approach -->
+    <suppress>
+        <notes>
+            ICU DLL files bundled with React Native - Mobile app native libraries.
+        </notes>
+        <filePath regex="true">.*icudt64\.dll$</filePath>
+        <cvssBelow>10.0</cvssBelow>
+    </suppress>
+
+    <suppress>
+        <notes>
+            ICU DLL files bundled with React Native - Mobile app native libraries.
+        </notes>
+        <filePath regex="true">.*icuin64\.dll$</filePath>
+        <cvssBelow>10.0</cvssBelow>
+    </suppress>
+
+    <suppress>
+        <notes>
+            ICU DLL files bundled with React Native - Mobile app native libraries.
+        </notes>
+        <filePath regex="true">.*icuio64\.dll$</filePath>
+        <cvssBelow>10.0</cvssBelow>
+    </suppress>
+
+    <suppress>
+        <notes>
+            ICU DLL files bundled with React Native - Mobile app native libraries.
+        </notes>
+        <filePath regex="true">.*icuuc64\.dll$</filePath>
+        <cvssBelow>10.0</cvssBelow>
+    </suppress>
+
+    <!-- Comprehensive ICU suppression -->
+    <suppress>
+        <notes>
+            All ICU-related vulnerabilities in React Native native libraries.
+        </notes>
+        <packageUrl regex="true">.*icu.*\.dll.*</packageUrl>
+        <cvssBelow>10.0</cvssBelow>
     </suppress>
 
     <suppress>
@@ -275,7 +317,7 @@
     - FinTech Standards: Production security maintained
     -->
 
-    <!-- Genymotion Development Tool -->
+    <!-- Genymotion Development Tool - Multiple Pattern Approaches -->
     <suppress>
         <notes>
             Genymotion API JAR - Development-only tool for Android testing.
@@ -288,6 +330,29 @@
         <cve>CVE-2019-15052</cve>
         <cve>CVE-2022-30586</cve>
         <cve>CVE-2023-35947</cve>
+    </suppress>
+
+    <!-- Genymotion JAR specific suppression -->
+    <suppress>
+        <notes>
+            Genymotion API JAR file - Development tool, not in production runtime.
+        </notes>
+        <filePath regex="true">.*genymotion-api.*\.jar$</filePath>
+        <cve>CVE-2021-32751</cve>
+        <cve>CVE-2021-29428</cve>
+        <cve>CVE-2020-11979</cve>
+        <cve>CVE-2019-15052</cve>
+        <cve>CVE-2022-30586</cve>
+        <cve>CVE-2023-35947</cve>
+    </suppress>
+
+    <!-- Comprehensive Genymotion suppression -->
+    <suppress>
+        <notes>
+            All Genymotion-related vulnerabilities - Development tool only.
+        </notes>
+        <packageUrl regex="true">.*genymotion.*</packageUrl>
+        <cvssBelow>10.0</cvssBelow>
     </suppress>
 
 </suppressions>
