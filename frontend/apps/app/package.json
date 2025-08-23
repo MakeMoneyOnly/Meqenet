@@ -11,8 +11,5 @@
     "react-native-svg": "~15.11.2",
     "react-test-renderer": "~18.3.1",
     "twrnc": "4.9.1"
-  },
-  "devDependencies": {
-    "@react-native/gradle-plugin": "0.76.5"
   }
 }

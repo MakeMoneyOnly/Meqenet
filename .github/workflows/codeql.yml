@@ -61,9 +61,18 @@ jobs:
         if: contains(matrix.language, 'java') || contains(matrix.language, 'kotlin')
         working-directory: ./frontend/apps/app
         run: |
+          # Set up proper Node.js environment variables
+          export NODE_ENV=development
+          export ANDROID_HOME=$ANDROID_HOME
+          export PATH=$PATH:$ANDROID_HOME/emulator:$ANDROID_HOME/tools:$ANDROID_HOME/tools/bin:$ANDROID_HOME/platform-tools
+
           # Initialize React Native project properly
           npx react-native start --reset-cache || true &
-          sleep 10
+          sleep 15
+
+          # Generate React Native codegen artifacts
+          npx @react-native-community/cli codegen || true
+
           npx react-native run-android --no-packager || true
           pkill -f "react-native start" || true
           cd android && chmod +x ./gradlew
