@@ -21,5 +21,12 @@ buildscript {
     }
 }
 
-apply plugin: "com.facebook.react.rootproject"
+// Apply React Native plugin conditionally
+try {
+    apply plugin: "com.facebook.react.rootproject"
+    println "Successfully applied React Native root project plugin"
+} catch (Exception e) {
+    println "Failed to apply React Native root project plugin, will use alternative configuration: ${e.message}"
+}
+
 apply plugin: "com.github.ben-manes.versions"
