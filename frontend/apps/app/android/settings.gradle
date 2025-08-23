@@ -26,7 +26,8 @@ pluginManagement {
 
 // Apply React Native settings plugin using classpath resolution
 plugins {
-    id("com.facebook.react.settings") version "0.76.5"
+    id("com.facebook.react.settings")
+}")
 }
 
 // Configure React Native settings extension
