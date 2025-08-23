@@ -559,18 +559,23 @@ jobs:
             ${{ runner.os }}-gradle-
 
       - name: 🚫 Run Android Lint Security Checks
-        working-directory: ./frontend/apps/app/android
+        working-directory: ./frontend/apps/app
         run: |
-          chmod +x ./gradlew
+          # Initialize React Native project properly
+          npx react-native start --reset-cache || true &
+          sleep 10
+          npx react-native run-android --no-packager || true
+          pkill -f "react-native start" || true
+          cd android && chmod +x ./gradlew
           ./gradlew lintDebug --continue --info
           ./gradlew lintRelease --continue --info
 
       - name: 📊 Generate Security-Focused Lint Report
-        working-directory: ./frontend/apps/app/android
+        working-directory: ./frontend/apps/app
         run: |
           # Generate HTML report for security issues
-          ./gradlew lintDebugReport
-          ./gradlew lintReleaseReport
+          cd android && ./gradlew lintDebugReport
+          cd android && ./gradlew lintReleaseReport
 
           # Extract security-related issues
           echo "## 🔒 Android Lint Security Issues" > lint-security-report.md

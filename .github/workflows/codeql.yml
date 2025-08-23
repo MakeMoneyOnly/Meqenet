@@ -57,11 +57,15 @@ jobs:
       # Build Android project for Java/Kotlin analysis
       - name: 🏗️ Build Android Project
         if: contains(matrix.language, 'java') || contains(matrix.language, 'kotlin')
-        working-directory: ./frontend
+        working-directory: ./frontend/apps/app
         run: |
-          cd apps/app && npx react-native start --reset-cache || true
-          cd apps/app/android && chmod +x ./gradlew
-          cd apps/app/android && ./gradlew assembleDebug --no-daemon --parallel --info
+          # Initialize React Native project properly
+          npx react-native start --reset-cache || true &
+          sleep 10
+          npx react-native run-android --no-packager || true
+          pkill -f "react-native start" || true
+          cd android && chmod +x ./gradlew
+          ./gradlew assembleDebug --no-daemon --parallel --info
 
       - uses: github/codeql-action/analyze@v3
         continue-on-error: true # Avoid failure when default setup is enabled in repo settings

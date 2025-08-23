@@ -46,14 +46,14 @@ jobs:
         with:
           version: ${{ env.PNPM_VERSION }}
 
-      - name: 📦 Enable Corepack
-        run: corepack enable
-
-      - name: 🔧 Setup Node.js & pnpm
+      - name: 🔧 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "pnpm"
+
+      - name: 📦 Enable Corepack
+        run: corepack enable
 
       - name: 📚 Install Dependencies
         run: pnpm install --no-frozen-lockfile
