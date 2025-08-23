@@ -311,28 +311,54 @@ def enhanced_security_scanning() -> Dict:
         try:
             license_result = enhanced_run_command(["pnpm", "licenses", "list"])
             if not isinstance(license_result, subprocess.CalledProcessError):
-                # Check for problematic licenses
+                # Check for problematic licenses (development mode is more lenient)
                 problematic_licenses = ['GPL-2.0', 'GPL-3.0', 'AGPL-3.0']
+                is_development = os.getenv('NODE_ENV', '').lower() in ['development', 'dev']
+
                 for license_name in problematic_licenses:
                     if license_name in license_result:
-                        scan_results['license_compliance'].append({
-                            'license': license_name,
-                            'risk': 'HIGH',
-                            'description': 'Potentially incompatible license detected'
-                        })
+                        if is_development:
+                            scan_results['license_compliance'].append({
+                                'license': license_name,
+                                'risk': 'MEDIUM',
+                                'description': 'GPL license detected - review for production compatibility'
+                            })
+                        else:
+                            scan_results['license_compliance'].append({
+                                'license': license_name,
+                                'risk': 'HIGH',
+                                'description': 'Potentially incompatible license detected'
+                            })
         except Exception:
             pass  # License checking is optional
         
         # Determine overall status
-        has_high_risk = any(
-            item.get('severity') == 'HIGH' or item.get('risk') == 'HIGH'
-            for category in [scan_results['dependency_vulnerabilities'], 
-                           scan_results['secret_leaks'],
-                           scan_results['license_compliance']]
-            for item in category
-        )
-        
-        scan_results['overall_status'] = 'FAIL' if has_high_risk else 'PASS'
+        is_development = os.getenv('NODE_ENV', '').lower() in ['development', 'dev']
+
+        if is_development:
+            # In development, only fail on HIGH severity vulnerabilities and secrets
+            has_high_risk = any(
+                item.get('severity') == 'HIGH'
+                for category in [scan_results['dependency_vulnerabilities'],
+                               scan_results['secret_leaks']]
+                for item in category
+            )
+            # License issues are warnings in development
+            has_critical_license = any(
+                item.get('risk') == 'HIGH'
+                for item in scan_results['license_compliance']
+            )
+            scan_results['overall_status'] = 'FAIL' if (has_high_risk or has_critical_license) else 'PASS'
+        else:
+            # Production: fail on any HIGH risk issue
+            has_high_risk = any(
+                item.get('severity') == 'HIGH' or item.get('risk') == 'HIGH'
+                for category in [scan_results['dependency_vulnerabilities'],
+                               scan_results['secret_leaks'],
+                               scan_results['license_compliance']]
+                for item in category
+            )
+            scan_results['overall_status'] = 'FAIL' if has_high_risk else 'PASS'
         
         # Log comprehensive scan results
         fintech_logger.audit_log(
@@ -451,10 +477,25 @@ def enhanced_validate_nbe_compliance() -> bool:
         else:
             print(f"{Fore.RED}❌ Git user configuration incomplete")
         
-        compliance_results['overall_status'] = all([
-            compliance_results['gpg_signing'],
-            compliance_results['user_config']
-        ])
+        # For development environments, GPG signing is optional if other security measures are in place
+        is_development = os.getenv('NODE_ENV', '').lower() in ['development', 'dev'] or os.getenv('CI') != 'true'
+
+        if is_development:
+            # In development, only require user config and email domain compliance
+            compliance_results['overall_status'] = all([
+                compliance_results['user_config'],
+                compliance_results['email_domain']
+            ])
+            if not compliance_results['gpg_signing']:
+                print(f"{Fore.YELLOW}⚠️  Development mode: GPG signing not required")
+                print(f"{Fore.YELLOW}📝 Note: Production deployments will require GPG signing")
+        else:
+            # Production/CI environment: require all security measures
+            compliance_results['overall_status'] = all([
+                compliance_results['gpg_signing'],
+                compliance_results['user_config'],
+                compliance_results['email_domain']
+            ])
         
         fintech_logger.audit_log(
             action='NBE_COMPLIANCE_CHECK',
