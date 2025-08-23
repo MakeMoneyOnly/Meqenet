@@ -756,6 +756,18 @@ class LocalCIValidator:
                 category="monitoring"
             )
         ])
+
+        # NEW: Enterprise Review System (FinTech Compliance)
+        self.checks.extend([
+            ValidationCheck(
+                name="Enterprise Review Compliance Check",
+                description="Validate that all critical enterprise reviews are up to date (FinTech compliance)",
+                command=["python", "scripts/review_reminder.py", "--check-overdue"],
+                timeout=60,
+                critical=True,
+                category="compliance"
+            )
+        ])
     
     async def run_check(self, check: ValidationCheck) -> bool:
         """Run a single validation check"""
