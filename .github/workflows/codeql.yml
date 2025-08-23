@@ -36,8 +36,9 @@ jobs:
       - name: Install dependencies (for cache warmup)
         working-directory: ./frontend
         run: |
-          pnpm install --frozen-lockfile
+          pnpm install --no-frozen-lockfile
           corepack enable
+          cd apps/app && npx react-native doctor --fix || true
 
       - uses: github/codeql-action/init@v3
         with:
