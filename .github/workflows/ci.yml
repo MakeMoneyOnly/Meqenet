@@ -403,6 +403,8 @@ jobs:
         run: |
           pnpm install --no-frozen-lockfile
           corepack enable
+          # Ensure React Native CLI is properly set up
+          npm install -g @react-native-community/cli || true
           cd apps/app && npx react-native doctor --fix || true
           cd apps/app && npx @react-native-community/cli doctor || true
 
@@ -531,6 +533,8 @@ jobs:
         run: |
           pnpm install --no-frozen-lockfile
           corepack enable
+          # Ensure React Native CLI is properly set up
+          npm install -g @react-native-community/cli || true
           cd apps/app && npx react-native doctor --fix || true
           cd apps/app && npx @react-native-community/cli doctor || true
 
