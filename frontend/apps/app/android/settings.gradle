@@ -1,6 +1,33 @@
-pluginManagement { includeBuild("../../../node_modules/@react-native/gradle-plugin") }
-plugins { id("com.facebook.react.settings") }
-extensions.configure(com.facebook.react.ReactSettingsExtension){ ex -> ex.autolinkLibrariesFromCommand() }
+pluginManagement {
+    includeBuild("../../../node_modules/@react-native/gradle-plugin")
+}
+plugins {
+    id("com.facebook.react.settings")
+}
+extensions.configure(com.facebook.react.ReactSettingsExtension){ ex ->
+    ex.autolinkLibrariesFromCommand()
+}
 rootProject.name = 'App'
 include ':app'
-includeBuild('../../../node_modules/@react-native/gradle-plugin')
+
+// Try multiple paths for the React Native gradle plugin
+def pluginPaths = [
+    '../../../node_modules/@react-native/gradle-plugin',
+    '../node_modules/@react-native/gradle-plugin',
+    'node_modules/@react-native/gradle-plugin'
+]
+
+boolean pluginIncluded = false
+for (path in pluginPaths) {
+    def pluginPath = file(path)
+    if (pluginPath.exists()) {
+        println "Including React Native gradle plugin from: ${pluginPath.absolutePath}"
+        includeBuild(pluginPath.absolutePath)
+        pluginIncluded = true
+        break
+    }
+}
+
+if (!pluginIncluded) {
+    println "Warning: Could not find React Native gradle plugin in any expected location"
+}
