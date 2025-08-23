@@ -72,7 +72,7 @@ import { initSentry } from '@frontend/ui';
 // Initialize Sentry first
 initSentry({
   dsn: 'your-sentry-dsn',
-  environment: 'production'
+  environment: 'production',
 });
 
 // Use with HOC
@@ -90,12 +90,12 @@ function App() {
 
 ### ErrorBoundary Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `children` | `ReactNode` | - | The child components to wrap |
-| `fallback` | `ReactNode` | - | Custom fallback UI component |
-| `onError` | `(error, errorInfo) => void` | - | Custom error handler callback |
-| `showErrorDetails` | `boolean` | `false` | Show detailed error information |
+| Prop               | Type                         | Default | Description                     |
+| ------------------ | ---------------------------- | ------- | ------------------------------- |
+| `children`         | `ReactNode`                  | -       | The child components to wrap    |
+| `fallback`         | `ReactNode`                  | -       | Custom fallback UI component    |
+| `onError`          | `(error, errorInfo) => void` | -       | Custom error handler callback   |
+| `showErrorDetails` | `boolean`                    | `false` | Show detailed error information |
 
 ### ErrorBoundary Methods
 
@@ -110,7 +110,7 @@ try {
 } catch (error) {
   safeCaptureException(error, {
     tags: { component: 'RiskyComponent' },
-    extra: { userId: user.id }
+    extra: { userId: user.id },
   });
 }
 ```
@@ -140,12 +140,12 @@ const users = await apiClient.get('/users');
 // POST request with data
 const newUser = await apiClient.post('/users', {
   name: 'John Doe',
-  email: 'john@example.com'
+  email: 'john@example.com',
 });
 
 // PUT request
 await apiClient.put('/users/123', {
-  name: 'Updated Name'
+  name: 'Updated Name',
 });
 
 // DELETE request
@@ -197,21 +197,21 @@ import apiClient from '@frontend/api-client';
 // Custom headers
 const response = await apiClient.get('/protected-endpoint', {
   headers: {
-    'X-Custom-Header': 'custom-value'
-  }
+    'X-Custom-Header': 'custom-value',
+  },
 });
 
 // Timeout override
 const response = await apiClient.post('/slow-endpoint', data, {
-  timeout: 10000 // 10 seconds
+  timeout: 10000, // 10 seconds
 });
 
 // Query parameters
 const response = await apiClient.get('/search', {
   params: {
     q: 'search term',
-    limit: 20
-  }
+    limit: 20,
+  },
 });
 ```
 
@@ -293,9 +293,7 @@ import ErrorBoundary from '@frontend/ui';
 
 function App({ Component, pageProps }) {
   return (
-    <ErrorBoundary
-      showErrorDetails={process.env.NODE_ENV === 'development'}
-    >
+    <ErrorBoundary showErrorDetails={process.env.NODE_ENV === 'development'}>
       <Component {...pageProps} />
     </ErrorBoundary>
   );
@@ -356,7 +354,7 @@ const apiService = {
       }
       throw new ApiError(error.message);
     }
-  }
+  },
 };
 
 // ✅ Good: React hooks with error handling
@@ -403,7 +401,7 @@ const sentryConfig = {
     dsn: 'your-prod-dsn',
     environment: 'production',
     sampleRate: 0.1,
-  }
+  },
 };
 
 initSentry(sentryConfig[process.env.NODE_ENV] || sentryConfig.development);
@@ -462,7 +460,10 @@ export interface User {
 }
 
 export class UserServiceError extends Error {
-  constructor(message: string, public status?: number) {
+  constructor(
+    message: string,
+    public status?: number,
+  ) {
     super(message);
     this.name = 'UserServiceError';
   }
@@ -521,7 +522,7 @@ export function useAsyncError() {
         throw error;
       });
     },
-    [setError]
+    [setError],
   );
 }
 ```
@@ -614,7 +615,7 @@ function App() {
 import axios from 'axios';
 
 const apiClient = axios.create({
-  baseURL: 'https://api.example.com'
+  baseURL: 'https://api.example.com',
 });
 
 // After
@@ -628,17 +629,19 @@ import apiClient from '@frontend/api-client';
 ### Common Issues
 
 1. **Sentry not initialized**
+
    ```tsx
    // Make sure to initialize Sentry before using ErrorBoundary
    import { initSentry } from '@frontend/ui';
 
    initSentry({
      dsn: 'your-dsn-here',
-     environment: process.env.NODE_ENV
+     environment: process.env.NODE_ENV,
    });
    ```
 
 2. **API client not working**
+
    ```tsx
    // Check if API configuration is set
    import { apiConfig } from '@frontend/config';
@@ -690,4 +693,4 @@ When adding new shared components:
 
 ---
 
-*Built with ❤️ by the Meqenet Frontend Team*
+_Built with ❤️ by the Meqenet Frontend Team_

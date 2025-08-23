@@ -244,7 +244,8 @@ jobs:
 
     strategy:
       matrix:
-        test-type: ['sast', 'dependency-check', 'container-scan', 'secrets-scan']
+        test-type:
+          ["sast", "dependency-check", "container-scan", "secrets-scan"]
 
     steps:
       - name: 📥 Checkout Repository
@@ -389,7 +390,7 @@ jobs:
         with:
           api-level: 34
           target: android-34
-          build-tools: '34.0.0'
+          build-tools: "34.0.0"
 
       - name: 📦 Cache Gradle dependencies
         uses: actions/cache@v4
@@ -417,9 +418,9 @@ jobs:
       - name: 🚨 Run OWASP Dependency Check
         uses: dependency-check/Dependency-Check_Action@main
         with:
-          project: 'Meqenet-Android'
-          path: './frontend/apps/app/android'
-          format: 'ALL'
+          project: "Meqenet-Android"
+          path: "./frontend/apps/app/android"
+          format: "ALL"
           args: >
             --enableRetired
             --enableExperimental
@@ -498,7 +499,7 @@ jobs:
         with:
           api-level: 34
           target: android-34
-          build-tools: '34.0.0'
+          build-tools: "34.0.0"
 
       - name: 📦 Cache Gradle dependencies
         uses: actions/cache@v4
