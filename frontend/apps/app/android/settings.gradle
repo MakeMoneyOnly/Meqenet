@@ -1,4 +1,10 @@
 pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+
     def findReactNativeGradlePlugin = {
         def currentDir = new File('.')
 
@@ -42,20 +48,30 @@ pluginManagement {
     def pluginPath = findReactNativeGradlePlugin()
     if (pluginPath) {
         includeBuild(pluginPath)
+    } else {
+        // Add React Native gradle plugin as a dependency for classpath resolution
+        dependencyResolutionManagement {
+            repositories {
+                google()
+                mavenCentral()
+                gradlePluginPortal()
+            }
+        }
+
+        plugins {
+            id 'com.facebook.react.settings' version '0.76.5'
+        }
     }
 }
 
-// Apply React Native settings plugin conditionally
+// Configure React Native settings extension if plugin was applied
 try {
-    plugins {
-        id("com.facebook.react.settings")
-    }
     extensions.configure(com.facebook.react.ReactSettingsExtension){ ex ->
         ex.autolinkLibrariesFromCommand()
     }
-    println "Successfully applied React Native settings plugin"
+    println "Successfully configured React Native settings extension"
 } catch (Exception e) {
-    println "Failed to apply React Native settings plugin via plugin block, will use build.gradle classpath: ${e.message}"
+    println "React Native settings extension not available: ${e.message}"
 }
 
 rootProject.name = 'App'
