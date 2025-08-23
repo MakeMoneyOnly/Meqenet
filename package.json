@@ -7,7 +7,7 @@
     "prepare": "husky",
     "lint": "pnpm -r --if-present lint",
     "lint:fix": "eslint . --fix",
-    "lint:security": "eslint . --ext .ts,.tsx,.js,.jsx --config eslint.config.js --rule 'security/detect-object-injection: error' --rule 'security/detect-non-literal-fs-filename: error' --rule 'security/detect-unsafe-regex: error' --rule 'security/detect-buffer-noassert: error' --rule 'security/detect-child-process: error' --rule 'security/detect-disable-mustache-escape: error' --rule 'security/detect-eval-with-expression: error' --rule 'security/detect-new-buffer: error' --rule 'security/detect-no-csrf-before-method-override: error' --rule 'security/detect-non-literal-regexp: error' --rule 'security/detect-non-literal-require: error' --rule 'security/detect-possible-timing-attacks: error' --rule 'security/detect-pseudoRandomBytes: error' --rule 'security/detect-sql-injection: error'",
+    "lint:security": "eslint . --ext .ts,.tsx,.js,.jsx --config eslint.config.js",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",

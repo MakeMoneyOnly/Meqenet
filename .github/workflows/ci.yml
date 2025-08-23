@@ -265,6 +265,7 @@ jobs:
           cache: "pnpm"
 
       - name: 📦 Install Dependencies
+        working-directory: ./frontend
         run: |
           pnpm install --frozen-lockfile
           corepack enable
@@ -397,6 +398,7 @@ jobs:
           cache: "pnpm"
 
       - name: 📦 Install Dependencies
+        working-directory: ./frontend
         run: |
           pnpm install --frozen-lockfile
           corepack enable
@@ -522,6 +524,7 @@ jobs:
           cache: "pnpm"
 
       - name: 📦 Install Dependencies
+        working-directory: ./frontend
         run: |
           pnpm install --frozen-lockfile
           corepack enable
