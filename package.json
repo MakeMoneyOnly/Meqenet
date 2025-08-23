@@ -236,7 +236,11 @@
     ],
     "ignoredBuiltDependencies": [
       "bufferutil",
+      "detox",
+      "dtrace-provider",
       "esbuild",
+      "oxc-resolver",
+      "sharp",
       "utf-8-validate"
     ]
   }
