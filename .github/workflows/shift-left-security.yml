@@ -91,11 +91,10 @@ jobs:
       - name: 📥 Checkout Repository
         uses: actions/checkout@v5
 
-      - name: 🔧 Setup Environment
+      - name: 🔧 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "pnpm"
 
       - name: 🔧 Setup pnpm
         uses: pnpm/action-setup@v4
@@ -103,9 +102,7 @@ jobs:
           version: 10.14.0
 
       - name: 🔧 Enable Corepack
-        run: |
-          corepack enable
-          corepack prepare pnpm@10.14.0 --activate
+        run: corepack enable
 
       - name: 📦 Install Dependencies
         working-directory: ./frontend
