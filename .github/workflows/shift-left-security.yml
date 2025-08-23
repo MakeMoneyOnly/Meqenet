@@ -49,7 +49,7 @@ jobs:
           echo "🔍 Checking security tool configuration..."
 
           # Check ESLint security configuration
-          if [ -f ".eslintrc.js" ] || [ -f ".eslintrc.json" ]; then
+          if [ -f ".eslintrc.js" ] || [ -f ".eslintrc.json" ] || [ -f "eslint.config.js" ] || [ -f "eslint.config.mjs" ] || [ -f "eslint.config.ts" ]; then
             echo "✅ ESLint configuration found"
           else
             echo "❌ ESLint configuration missing"
@@ -112,7 +112,7 @@ jobs:
         working-directory: ./frontend
         run: |
           echo "🔍 Running ESLint security analysis..."
-          npx eslint . --ext .ts,.tsx,.js,.jsx --config eslint.config.mjs || true
+          pnpm run lint:security || true
 
       - name: 📊 Generate Security Linting Report
         run: |
