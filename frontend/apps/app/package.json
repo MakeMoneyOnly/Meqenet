@@ -3,7 +3,6 @@
   "version": "0.0.1",
   "private": true,
   "dependencies": {
-    "@react-native/gradle-plugin": "0.76.5",
     "@react-native/metro-config": "0.76.5",
     "@testing-library/react-native": "~13.2.2",
     "metro-config": "~0.82.5",
