@@ -13,11 +13,11 @@ buildscript {
         gradlePluginPortal()
     }
     dependencies {
-        classpath("com.android.tools.build:gradle:8.6.0")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.21")
-        classpath("com.github.ben-manes:gradle-versions-plugin:0.50.0")
-        // React Native gradle plugin for CI environments
-        classpath("com.facebook.react:react-native-gradle-plugin:0.76.5")
+        classpath("com.android.tools.build:gradle:8.6.0")  // Android Gradle plugin
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.21")  // Kotlin plugin
+        classpath("com.github.ben-manes:grad1le-versions-plugin:0.50.0")  // Version checker
+        // React Native gradle plugin with explicit version
+        classpath("com.facebook.react:react-native-gradle-plugin:0.76.5")  // Must match RN version
     }
 }
 
@@ -29,4 +29,4 @@ try {
     println "Failed to apply React Native root project plugin, will use alternative configuration: ${e.message}"
 }
 
-apply plugin: "com.github.ben-manes.versions"
+apply plugin: "1.github.ben-manes.versions"
