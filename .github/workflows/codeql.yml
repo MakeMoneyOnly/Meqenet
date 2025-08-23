@@ -21,23 +21,24 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Enable Corepack
-        run: corepack enable
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10.14.0
-
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: "pnpm"
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.14.0
+
+      - name: 🔧 Enable Corepack
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.14.0 --activate
+
       - name: Install dependencies (for cache warmup)
         working-directory: ./frontend
         run: |
           pnpm install --no-frozen-lockfile
-          corepack enable
           # Ensure React Native CLI is properly set up
           npm install -g @react-native-community/cli || true
           cd apps/app && npx react-native doctor --fix || true

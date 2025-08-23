@@ -387,22 +387,26 @@ jobs:
       - name: 📥 Checkout Repository
         uses: actions/checkout@v5
 
-      - name: 🔧 Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10.14.0
-
       - name: 🔧 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "pnpm"
 
+      - name: 🔧 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.14.0
+
+      - name: 🔧 Enable Corepack
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.14.0 --activate
+
       - name: 📦 Install Dependencies
         working-directory: ./frontend
         run: |
           pnpm install --no-frozen-lockfile
-          corepack enable
           # Ensure React Native CLI is properly set up
           npm install -g @react-native-community/cli || true
           cd apps/app && npx react-native doctor --fix || true
@@ -517,22 +521,26 @@ jobs:
       - name: 📥 Checkout Repository
         uses: actions/checkout@v5
 
-      - name: 🔧 Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10.14.0
-
       - name: 🔧 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "pnpm"
 
+      - name: 🔧 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.14.0
+
+      - name: 🔧 Enable Corepack
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.14.0 --activate
+
       - name: 📦 Install Dependencies
         working-directory: ./frontend
         run: |
           pnpm install --no-frozen-lockfile
-          corepack enable
           # Ensure React Native CLI is properly set up
           npm install -g @react-native-community/cli || true
           cd apps/app && npx react-native doctor --fix || true

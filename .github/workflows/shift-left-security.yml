@@ -102,11 +102,15 @@ jobs:
         with:
           version: 10.14.0
 
+      - name: 🔧 Enable Corepack
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.14.0 --activate
+
       - name: 📦 Install Dependencies
         working-directory: ./frontend
         run: |
           pnpm install --no-frozen-lockfile
-          corepack enable
 
       - name: 🔍 Run ESLint Security Rules
         working-directory: ./frontend
