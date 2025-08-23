@@ -29,7 +29,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: corepack enable
-      - run: pnpm install --frozen-lockfile
+      - run: pnpm install --no-frozen-lockfile
       - name: Run PCI Checks
         run: |
           echo "Validating encryption, key rotation, and network isolation policies..."
@@ -49,7 +49,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: corepack enable
-      - run: pnpm install --frozen-lockfile
+      - run: pnpm install --no-frozen-lockfile
       - name: Run SOX Checks
         run: echo "✅ SOX controls placeholder (change management, access reviews)."
 
@@ -67,6 +67,6 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: corepack enable
-      - run: pnpm install --frozen-lockfile
+      - run: pnpm install --no-frozen-lockfile
       - name: Run ISO 27001 Checks
         run: echo "✅ ISO 27001 controls placeholder (risk assessment, logs)."

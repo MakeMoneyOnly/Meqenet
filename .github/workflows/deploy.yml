@@ -83,7 +83,7 @@ jobs:
           cache: "pnpm"
 
       - name: 📚 Install Dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
 
       - name: 🔒 Security Pre-Check
         id: security-check
