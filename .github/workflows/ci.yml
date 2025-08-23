@@ -404,6 +404,7 @@ jobs:
           pnpm install --no-frozen-lockfile
           corepack enable
           cd apps/app && npx react-native doctor --fix || true
+          cd apps/app && npx @react-native-community/cli doctor || true
 
       - name: 🔧 Setup Java
         uses: actions/setup-java@v4
@@ -531,6 +532,7 @@ jobs:
           pnpm install --no-frozen-lockfile
           corepack enable
           cd apps/app && npx react-native doctor --fix || true
+          cd apps/app && npx @react-native-community/cli doctor || true
 
       - name: 🔧 Setup Java
         uses: actions/setup-java@v4
