@@ -3,6 +3,9 @@ pluginManagement {
         google()
         mavenCentral()
         gradlePluginPortal()
+        maven {
+            url = new File(settingsDir, "../../../../node_modules/@react-native/gradle-plugin")
+        }
     }
 
     // For CI environments, rely on classpath resolution instead of includeBuild
