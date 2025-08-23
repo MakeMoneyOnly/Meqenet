@@ -51,7 +51,7 @@ jobs:
       - name: 📦 Install Dependencies
         run: |
           cd frontend
-          pnpm install --frozen-lockfile
+          pnpm install --no-frozen-lockfile
           corepack enable
 
       - name: 🔍 Run PWA Compliance Tests
@@ -145,7 +145,7 @@ ${reportContent}
       - name: 📦 Install Dependencies
         run: |
           cd frontend
-          pnpm install --frozen-lockfile
+          pnpm install --no-frozen-lockfile
           corepack enable
 
       - name: 🏗️ Build Website
