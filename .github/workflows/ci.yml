@@ -420,6 +420,10 @@ jobs:
           api-level: 34
           target: android-34
           build-tools: "34.0.0"
+          # Only install essential components to avoid emulator download issues
+          components: platform-tools
+          # Disable emulator to prevent ZipFile errors
+          emulator: false
 
       - name: 📦 Cache Gradle dependencies
         uses: actions/cache@v4
@@ -438,8 +442,8 @@ jobs:
           # Check for outdated dependencies
           ./gradlew dependencyUpdates --continue
 
-          # Generate dependency report
-          ./gradlew dependencies --configuration=releaseRuntimeClasspath > dependency-report.txt
+          # Generate dependency report using available configuration
+          ./gradlew dependencies --configuration=implementation || ./gradlew dependencies > dependency-report.txt
 
           # Check for known vulnerabilities using Gradle plugin
           ./gradlew dependencyCheckAnalyze --continue || echo "⚠️ Dependency check completed with warnings"
@@ -572,6 +576,10 @@ jobs:
           api-level: 34
           target: android-34
           build-tools: "34.0.0"
+          # Only install essential components to avoid emulator download issues
+          components: platform-tools
+          # Disable emulator to prevent ZipFile errors
+          emulator: false
 
       - name: 📦 Cache Gradle dependencies
         uses: actions/cache@v4
