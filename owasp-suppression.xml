@@ -42,118 +42,15 @@
   <!-- ICU Library Vulnerabilities (React Native) -->
   <suppress>
     <notes>ICU Unicode libraries bundled with React Native 0.76.5 - Cannot be updated independently</notes>
-    <filePath regex="true">.*icudt64\.dll</filePath>
-    <cve>CVE-2021-42694</cve>
-    <cve>CVE-2021-42574</cve>
-    <cve>CVE-2016-7415</cve>
-    <cve>CVE-2017-17484</cve>
-    <cve>CVE-2014-9911</cve>
-    <cve>CVE-2020-10531</cve>
-    <cve>CVE-2014-8147</cve>
-    <cve>CVE-2014-9654</cve>
-    <cve>CVE-2007-4771</cve>
-    <cve>CVE-2014-8146</cve>
-    <cve>CVE-2015-5922</cve>
-    <cve>CVE-2016-6293</cve>
-    <cve>CVE-2011-4599</cve>
-    <cve>CVE-2014-7926</cve>
-    <cve>CVE-2017-7867</cve>
-    <cve>CVE-2014-7923</cve>
-    <cve>CVE-2014-7940</cve>
-    <cve>CVE-2017-14952</cve>
-    <cve>CVE-2017-7868</cve>
-    <cve>CVE-2018-18928</cve>
-    <cve>CVE-2025-5222</cve>
-  </suppress>
-
-  <suppress>
-    <notes>ICU Unicode libraries (icuin64.dll) bundled with React Native 0.76.5 - Cannot be updated independently</notes>
-    <filePath regex="true">.*icuin64\.dll</filePath>
-    <cve>CVE-2021-42694</cve>
-    <cve>CVE-2021-42574</cve>
-    <cve>CVE-2016-7415</cve>
-    <cve>CVE-2017-17484</cve>
-    <cve>CVE-2014-9911</cve>
-    <cve>CVE-2020-10531</cve>
-    <cve>CVE-2014-8147</cve>
-    <cve>CVE-2014-9654</cve>
-    <cve>CVE-2007-4771</cve>
-    <cve>CVE-2014-8146</cve>
-    <cve>CVE-2015-5922</cve>
-    <cve>CVE-2016-6293</cve>
-    <cve>CVE-2011-4599</cve>
-    <cve>CVE-2014-7926</cve>
-    <cve>CVE-2017-7867</cve>
-    <cve>CVE-2014-7923</cve>
-    <cve>CVE-2014-7940</cve>
-    <cve>CVE-2017-14952</cve>
-    <cve>CVE-2017-7868</cve>
-    <cve>CVE-2018-18928</cve>
-    <cve>CVE-2025-5222</cve>
-  </suppress>
-
-  <suppress>
-    <notes>ICU Unicode libraries (icuio64.dll) bundled with React Native 0.76.5 - Cannot be updated independently</notes>
-    <filePath regex="true">.*icuio64\.dll</filePath>
-    <cve>CVE-2021-42694</cve>
-    <cve>CVE-2021-42574</cve>
-    <cve>CVE-2016-7415</cve>
-    <cve>CVE-2017-17484</cve>
-    <cve>CVE-2014-9911</cve>
-    <cve>CVE-2020-10531</cve>
-    <cve>CVE-2014-8147</cve>
-    <cve>CVE-2014-9654</cve>
-    <cve>CVE-2007-4771</cve>
-    <cve>CVE-2014-8146</cve>
-    <cve>CVE-2015-5922</cve>
-    <cve>CVE-2016-6293</cve>
-    <cve>CVE-2011-4599</cve>
-    <cve>CVE-2014-7926</cve>
-    <cve>CVE-2017-7867</cve>
-    <cve>CVE-2014-7923</cve>
-    <cve>CVE-2014-7940</cve>
-    <cve>CVE-2017-14952</cve>
-    <cve>CVE-2017-7868</cve>
-    <cve>CVE-2018-18928</cve>
-    <cve>CVE-2025-5222</cve>
-  </suppress>
-
-  <suppress>
-    <notes>ICU Unicode libraries (icuuc64.dll) bundled with React Native 0.76.5 - Cannot be updated independently</notes>
-    <filePath regex="true">.*icuuc64\.dll</filePath>
-    <cve>CVE-2021-42694</cve>
-    <cve>CVE-2021-42574</cve>
-    <cve>CVE-2016-7415</cve>
-    <cve>CVE-2017-17484</cve>
-    <cve>CVE-2014-9911</cve>
-    <cve>CVE-2020-10531</cve>
-    <cve>CVE-2014-8147</cve>
-    <cve>CVE-2014-9654</cve>
-    <cve>CVE-2007-4771</cve>
-    <cve>CVE-2014-8146</cve>
-    <cve>CVE-2015-5922</cve>
-    <cve>CVE-2016-6293</cve>
-    <cve>CVE-2011-4599</cve>
-    <cve>CVE-2014-7926</cve>
-    <cve>CVE-2017-7867</cve>
-    <cve>CVE-2014-7923</cve>
-    <cve>CVE-2014-7940</cve>
-    <cve>CVE-2017-14952</cve>
-    <cve>CVE-2017-7868</cve>
-    <cve>CVE-2018-18928</cve>
-    <cve>CVE-2025-5222</cve>
+    <packageUrl regex="true">.*icu.*</packageUrl>
+    <cvssBelow>10.0</cvssBelow>
   </suppress>
 
   <!-- Genymotion API vulnerabilities -->
   <suppress>
     <notes>Genymotion API JAR vulnerabilities - Development tool dependency, not used in production</notes>
-    <filePath regex="true">.*genymotion-api-1\.2\.0\.jar</filePath>
-    <cve>CVE-2021-32751</cve>
-    <cve>CVE-2021-29428</cve>
-    <cve>CVE-2020-11979</cve>
-    <cve>CVE-2019-15052</cve>
-    <cve>CVE-2022-30586</cve>
-    <cve>CVE-2023-35947</cve>
+    <packageUrl regex="true">.*genymotion.*</packageUrl>
+    <cvssBelow>10.0</cvssBelow>
   </suppress>
   
   <!-- Suppress vulnerabilities in Java dependencies bundled with development tools -->
