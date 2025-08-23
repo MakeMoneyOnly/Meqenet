@@ -39,6 +39,7 @@ jobs:
           pnpm install --no-frozen-lockfile
           corepack enable
           cd apps/app && npx react-native doctor --fix || true
+          cd apps/app && npx @react-native-community/cli doctor || true
 
       - uses: github/codeql-action/init@v3
         with:
@@ -56,10 +57,11 @@ jobs:
       # Build Android project for Java/Kotlin analysis
       - name: 🏗️ Build Android Project
         if: contains(matrix.language, 'java') || contains(matrix.language, 'kotlin')
-        working-directory: ./frontend/apps/app/android
+        working-directory: ./frontend
         run: |
-          chmod +x ./gradlew
-          ./gradlew assembleDebug --no-daemon --parallel
+          cd apps/app && npx react-native start --reset-cache || true
+          cd apps/app/android && chmod +x ./gradlew
+          cd apps/app/android && ./gradlew assembleDebug --no-daemon --parallel --info
 
       - uses: github/codeql-action/analyze@v3
         continue-on-error: true # Avoid failure when default setup is enabled in repo settings
