@@ -16,7 +16,10 @@ buildscript {
         classpath("com.android.tools.build:gradle:8.6.0")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
         classpath("com.github.ben-manes:gradle-versions-plugin:0.50.0")
+        // React Native gradle plugin as fallback for CI environments
+        classpath("com.facebook.react:react-native-gradle-plugin")
     }
 }
 
+apply plugin: "com.facebook.react.rootproject"
 apply plugin: "com.github.ben-manes.versions"
