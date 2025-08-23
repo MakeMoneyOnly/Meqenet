@@ -5,73 +5,30 @@ pluginManagement {
         gradlePluginPortal()
     }
 
-    def findReactNativeGradlePlugin = {
-        def currentDir = new File('.')
-
-        // Try multiple possible paths for React Native gradle plugin
-        def possiblePaths = [
-            '../../../node_modules/@react-native/gradle-plugin',
-            '../../../../../node_modules/@react-native/gradle-plugin',
-            '../../../../node_modules/@react-native/gradle-plugin',
-            '../../../../../../node_modules/@react-native/gradle-plugin'
-        ]
-
-        for (path in possiblePaths) {
-            def pluginDir = new File(currentDir, path)
-            if (pluginDir.exists() && pluginDir.isDirectory()) {
-                println "Found React Native gradle plugin at: ${pluginDir.absolutePath}"
-                return pluginDir.absolutePath
-            }
-        }
-
-        // Check if we're in a CI environment and try alternative paths
-        if (System.getenv('CI') || System.getenv('GITHUB_ACTIONS')) {
-            // In GitHub Actions, try common CI paths
-            def ciPaths = [
-                '/home/runner/work/${System.getenv("GITHUB_REPOSITORY")?.split("/")?.getAt(1)}/frontend/node_modules/@react-native/gradle-plugin',
-                '/home/runner/node_modules/@react-native/gradle-plugin'
-            ]
-
-            for (path in ciPaths) {
-                def pluginDir = new File(path)
-                if (pluginDir.exists() && pluginDir.isDirectory()) {
-                    println "Found React Native gradle plugin in CI at: ${pluginDir.absolutePath}"
-                    return pluginDir.absolutePath
-                }
-            }
-        }
-
-        println "React Native gradle plugin not found, will use classpath resolution"
-        return null
-    }
-
-    def pluginPath = findReactNativeGradlePlugin()
-    if (pluginPath) {
-        includeBuild(pluginPath)
+    // For CI environments, rely on classpath resolution instead of includeBuild
+    if (System.getenv('CI') || System.getenv('GITHUB_ACTIONS')) {
+        println "CI environment detected - using classpath plugin resolution"
     } else {
-        // Add React Native gradle plugin as a dependency for classpath resolution
-        dependencyResolutionManagement {
-            repositories {
-                google()
-                mavenCentral()
-                gradlePluginPortal()
-            }
-        }
-
-        plugins {
-            id 'com.facebook.react.settings' version '0.76.5'
+        // Try to use includeBuild for local development if the plugin exists
+        def pluginPath = '../../../node_modules/@react-native/gradle-plugin'
+        def pluginDir = new File(new File('.'), pluginPath)
+        if (pluginDir.exists() && pluginDir.isDirectory()) {
+            println "Found React Native gradle plugin locally at: ${pluginDir.absolutePath}"
+            includeBuild(pluginPath)
+        } else {
+            println "React Native gradle plugin not found locally, will use classpath resolution"
         }
     }
 }
 
-// Configure React Native settings extension if plugin was applied
-try {
-    extensions.configure(com.facebook.react.ReactSettingsExtension){ ex ->
-        ex.autolinkLibrariesFromCommand()
-    }
-    println "Successfully configured React Native settings extension"
-} catch (Exception e) {
-    println "React Native settings extension not available: ${e.message}"
+// Apply React Native settings plugin using classpath resolution
+plugins {
+    id("com.facebook.react.settings") version "0.76.5"
+}
+
+// Configure React Native settings extension
+extensions.configure(com.facebook.react.ReactSettingsExtension){ ex ->
+    ex.autolinkLibrariesFromCommand()
 }
 
 rootProject.name = 'App'
