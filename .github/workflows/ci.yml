@@ -46,7 +46,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          
 
       - name: 📦 Enable Corepack
         run: corepack enable
@@ -103,7 +102,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          
 
       - name: 📦 Enable Corepack
         run: corepack enable
@@ -183,7 +181,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          
 
       - name: 📦 Enable Corepack
         run: corepack enable
@@ -262,7 +259,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          
 
       - name: 📦 Install Dependencies
         working-directory: ./frontend
@@ -391,7 +387,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          
 
       - name: 🔧 Setup pnpm
         uses: pnpm/action-setup@v4
@@ -525,7 +520,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          
 
       - name: 🔧 Setup pnpm
         uses: pnpm/action-setup@v4
@@ -545,6 +539,24 @@ jobs:
           npm install -g @react-native-community/cli || true
           cd apps/app && npx react-native doctor --fix || true
           cd apps/app && npx @react-native-community/cli doctor || true
+
+      - name: 🔧 Setup Node.js Environment for React Native
+        working-directory: ./frontend/apps/app
+        run: |
+          # Set up proper Node.js environment variables
+          export NODE_ENV=development
+          export ANDROID_HOME=$ANDROID_HOME
+          export PATH=$PATH:$ANDROID_HOME/emulator:$ANDROID_HOME/tools:$ANDROID_HOME/tools/bin:$ANDROID_HOME/platform-tools
+
+          # Pre-build React Native dependencies
+          npx react-native start --reset-cache || true &
+          sleep 15
+
+          # Generate React Native codegen artifacts
+          npx @react-native-community/cli codegen || true
+
+          # Clean up background process
+          pkill -f "react-native start" || true
 
       - name: 🔧 Setup Java
         uses: actions/setup-java@v4
@@ -781,7 +793,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          
 
       - name: 📦 Enable Corepack
         run: corepack enable
