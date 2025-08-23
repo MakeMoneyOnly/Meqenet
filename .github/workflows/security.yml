@@ -92,6 +92,7 @@ jobs:
           path: "."
           format: "ALL"
           args: >
+            --pnpm
             --enableRetired
             --enableExperimental
             --failOnCVSS 7
