@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [main, develop]
   schedule:
-    - cron: '0 6 * * *'  # Daily security scan
+    - cron: "0 6 * * *" # Daily security scan
 
 env:
   NODE_VERSION: "22"
@@ -97,8 +97,15 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: "pnpm"
 
+      - name: 🔧 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.14.0
+
       - name: 📦 Install Dependencies
-        run: pnpm install --frozen-lockfile
+        run: |
+          pnpm install --frozen-lockfile
+          corepack enable
 
       - name: 🔍 Run ESLint Security Rules
         run: |
@@ -175,8 +182,15 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: "pnpm"
 
+      - name: 🔧 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.14.0
+
       - name: 📦 Install Dependencies
-        run: pnpm install --frozen-lockfile
+        run: |
+          pnpm install --frozen-lockfile
+          corepack enable
 
       - name: 🔍 Run npm Audit
         run: |
@@ -291,41 +305,14 @@ jobs:
 
             mkdir -p docs/Stage\ 2-Development/17-Shift-Left-Security
 
-            cat > docs/Stage\ 2-Development/17-Shift-Left-Security/training-tracking.md << 'EOF'
-# Security Training Tracking
-
-## Training Completion Status
-
-Developer | Secure Coding Fundamentals | Web Security | Mobile Security | API Security | Cryptography | Status
-----------|---------------------------|--------------|-----------------|--------------|--------------|--------
-          |                           |              |                 |              |              |
-
-## Training Schedule
-
-### Monthly Security Training Sessions
-- **Week 1**: Secure Coding Fundamentals
-- **Week 2**: Web Application Security
-- **Week 3**: Mobile Security
-- **Week 4**: API Security & Cryptography
-
-### Quarterly Advanced Topics
-- Threat Modeling
-- Security Testing Techniques
-- Incident Response
-- Security Architecture
-
-## Training Resources
-
-### Online Courses
-- [OWASP Security Training](https://owasp.org/www-project-security-training/)
-- [SANS Secure Coding](https://www.sans.org/cyber-security-courses/secure-coding/)
-- [Coursera Cybersecurity Specialization](https://www.coursera.org/specializations/cyber-security)
-
-### Internal Resources
-- Meqenet Security Guidelines
-- Code Review Security Checklist
-- Security Testing Framework Documentation
-EOF
+            # Create training tracking file with basic template
+            echo "# Security Training Tracking" > docs/Stage\ 2-Development/17-Shift-Left-Security/training-tracking.md
+            echo "" >> docs/Stage\ 2-Development/17-Shift-Left-Security/training-tracking.md
+            echo "## Training Completion Status" >> docs/Stage\ 2-Development/17-Shift-Left-Security/training-tracking.md
+            echo "" >> docs/Stage\ 2-Development/17-Shift-Left-Security/training-tracking.md
+            echo "Developer | Secure Coding Fundamentals | Web Security | Mobile Security | API Security | Cryptography | Status" >> docs/Stage\ 2-Development/17-Shift-Left-Security/training-tracking.md
+            echo "----------|---------------------------|--------------|-----------------|--------------|--------------|--------" >> docs/Stage\ 2-Development/17-Shift-Left-Security/training-tracking.md
+            echo "          |                           |              |                 |              |              |" >> docs/Stage\ 2-Development/17-Shift-Left-Security/training-tracking.md
           fi
 
       - name: 📊 Generate Training Compliance Report
@@ -356,7 +343,12 @@ EOF
     name: 📊 Security Metrics Collection
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    needs: [security-code-analysis, security-dependency-analysis, security-training-compliance]
+    needs:
+      [
+        security-code-analysis,
+        security-dependency-analysis,
+        security-training-compliance,
+      ]
 
     steps:
       - name: 📥 Checkout Repository
@@ -368,8 +360,15 @@ EOF
           node-version: ${{ env.NODE_VERSION }}
           cache: "pnpm"
 
+      - name: 🔧 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.14.0
+
       - name: 📦 Install Dependencies
-        run: pnpm install --frozen-lockfile
+        run: |
+          pnpm install --frozen-lockfile
+          corepack enable
 
       - name: 📊 Collect Security Metrics
         run: |
@@ -451,7 +450,13 @@ EOF
     name: 🏆 Security Assessment Summary
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    needs: [security-code-analysis, security-dependency-analysis, security-training-compliance, security-metrics-collection]
+    needs:
+      [
+        security-code-analysis,
+        security-dependency-analysis,
+        security-training-compliance,
+        security-metrics-collection,
+      ]
 
     steps:
       - name: 📥 Download All Security Reports

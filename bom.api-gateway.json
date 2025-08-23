@@ -1,10 +1,10 @@
 {
   "bomFormat": "CycloneDX",
   "specVersion": "1.5",
-  "serialNumber": "urn:uuid:0f11cc81-d7f4-443d-87d4-c6ccccd4b21d",
+  "serialNumber": "urn:uuid:54bd0f42-bcb5-4173-abe5-99ea22a43b0f",
   "version": 2,
   "metadata": {
-    "timestamp": "2025-08-21T11:05:18Z",
+    "timestamp": "2025-08-23T04:46:39Z",
     "tools": {
       "components": [
         {
@@ -56,7 +56,7 @@
       },
       {
         "name": "cdx:bom:componentSrcFiles",
-        "value": "node_modules\\@angular-devkit\\core\\node_modules\\jsonc-parser\\package.json\\nnode_modules\\@angular-devkit\\core\\node_modules\\rxjs\\ajax\\package.json\\nnode_modules\\@angular-devkit\\core\\node_modules\\rxjs\\fetch\\package.json\\nnode_modules\\@angular-devkit\\core\\node_modules\\rxjs\\operators\\package.json\\nnode_modules\\@angular-devkit\\core\\node_modules\\rxjs\\package.json\\nnode_modules\\@angular-devkit\\core\\node_modules\\rxjs\\testing\\package.json\\nnode_modules\\@angular-devkit\\core\\node_modules\\rxjs\\webSocket\\package.json\\nnode_modules\\@angular-devkit\\core\\package.json\\nnode_modules\\@angular-devkit\\schematics\\node_modules\\jsonc-parser\\package.json\\nnode_modules\\@angular-devkit\\schematics\\node_modules\\rxjs\\ajax\\package.json\\nnode_modules\\@angular-devkit\\schematics\\node_modules\\rxjs\\fetch\\package.json\\nnode_modules\\@angular-devkit\\schematics\\node_modules\\rxjs\\operators\\package.json\\nnode_modules\\@angular-devkit\\schematics\\node_modules\\rxjs\\package.json\\nnode_modules\\@angular-devkit\\schematics\\node_modules\\rxjs\\testing\\package.json\\nnode_modules\\@angular-devkit\\schematics\\node_modules\\rxjs\\webSocket\\package.json\\nnode_modules\\@angular-devkit\\schematics\\package.json\\nnode_modules\\@angular-devkit\\schematics\\tasks\\package.json\\nnode_modules\\@angular-devkit\\schematics\\testing\\package.json\\nnode_modules\\@angular-devkit\\schematics\\tools\\package.json\\nnode_modules\\@nestjs\\schematics\\dist\\lib\\application\\files\\js\\package.json\\nnode_modules\\@nestjs\\schematics\\dist\\lib\\application\\files\\ts\\package.json\\nnode_modules\\@nestjs\\schematics\\package.json\\nnode_modules\\@types\\node\\package.json\\nnode_modules\\@typescript-eslint\\eslint-plugin\\package.json\\nnode_modules\\@typescript-eslint\\parser\\package.json\\nnode_modules\\@typescript-eslint\\project-service\\node_modules\\@typescript-eslint\\types\\package.json\\nnode_modules\\@typescript-eslint\\project-service\\package.json\\nnode_modules\\@typescript-eslint\\scope-manager\\package.json\\nnode_modules\\@typescript-eslint\\type-utils\\package.json\\nnode_modules\\@typescript-eslint\\types\\package.json\\nnode_modules\\@typescript-eslint\\typescript-estree\\node_modules\\@typescript-eslint\\tsconfig-utils\\package.json\\nnode_modules\\@typescript-eslint\\typescript-estree\\package.json\\nnode_modules\\@typescript-eslint\\utils\\package.json\\nnode_modules\\@typescript-eslint\\visitor-keys\\package.json\\nnode_modules\\ajv\\package.json\\nnode_modules\\chokidar\\package.json\\nnode_modules\\eslint-config-prettier\\package.json\\nnode_modules\\helmet\\package.json\\nnode_modules\\ignore\\package.json\\nnode_modules\\magic-string\\package.json\\nnode_modules\\minimatch\\package.json\\nnode_modules\\picomatch\\package.json\\nnode_modules\\readdirp\\node_modules\\picomatch\\package.json\\nnode_modules\\readdirp\\package.json\\nnode_modules\\source-map\\package.json\\nnode_modules\\supertest\\package.json"
+        "value": "node_modules\\@angular-devkit\\core\\node_modules\\jsonc-parser\\package.json\\nnode_modules\\@angular-devkit\\core\\node_modules\\rxjs\\ajax\\package.json\\nnode_modules\\@angular-devkit\\core\\node_modules\\rxjs\\fetch\\package.json\\nnode_modules\\@angular-devkit\\core\\node_modules\\rxjs\\operators\\package.json\\nnode_modules\\@angular-devkit\\core\\node_modules\\rxjs\\package.json\\nnode_modules\\@angular-devkit\\core\\node_modules\\rxjs\\testing\\package.json\\nnode_modules\\@angular-devkit\\core\\node_modules\\rxjs\\webSocket\\package.json\\nnode_modules\\@angular-devkit\\core\\package.json\\nnode_modules\\@angular-devkit\\schematics\\node_modules\\jsonc-parser\\package.json\\nnode_modules\\@angular-devkit\\schematics\\node_modules\\rxjs\\ajax\\package.json\\nnode_modules\\@angular-devkit\\schematics\\node_modules\\rxjs\\fetch\\package.json\\nnode_modules\\@angular-devkit\\schematics\\node_modules\\rxjs\\operators\\package.json\\nnode_modules\\@angular-devkit\\schematics\\node_modules\\rxjs\\package.json\\nnode_modules\\@angular-devkit\\schematics\\node_modules\\rxjs\\testing\\package.json\\nnode_modules\\@angular-devkit\\schematics\\node_modules\\rxjs\\webSocket\\package.json\\nnode_modules\\@angular-devkit\\schematics\\package.json\\nnode_modules\\@angular-devkit\\schematics\\tasks\\package.json\\nnode_modules\\@angular-devkit\\schematics\\testing\\package.json\\nnode_modules\\@angular-devkit\\schematics\\tools\\package.json\\nnode_modules\\@nestjs\\schematics\\dist\\lib\\application\\files\\js\\package.json\\nnode_modules\\@nestjs\\schematics\\dist\\lib\\application\\files\\ts\\package.json\\nnode_modules\\@nestjs\\schematics\\package.json\\nnode_modules\\@types\\node\\package.json\\nnode_modules\\@typescript-eslint\\eslint-plugin\\package.json\\nnode_modules\\@typescript-eslint\\parser\\package.json\\nnode_modules\\@typescript-eslint\\project-service\\node_modules\\@typescript-eslint\\tsconfig-utils\\package.json\\nnode_modules\\@typescript-eslint\\project-service\\node_modules\\@typescript-eslint\\types\\package.json\\nnode_modules\\@typescript-eslint\\project-service\\package.json\\nnode_modules\\@typescript-eslint\\scope-manager\\package.json\\nnode_modules\\@typescript-eslint\\tsconfig-utils\\package.json\\nnode_modules\\@typescript-eslint\\type-utils\\package.json\\nnode_modules\\@typescript-eslint\\types\\package.json\\nnode_modules\\@typescript-eslint\\typescript-estree\\node_modules\\@typescript-eslint\\tsconfig-utils\\package.json\\nnode_modules\\@typescript-eslint\\typescript-estree\\package.json\\nnode_modules\\@typescript-eslint\\utils\\package.json\\nnode_modules\\@typescript-eslint\\visitor-keys\\package.json\\nnode_modules\\ajv\\package.json\\nnode_modules\\chokidar\\package.json\\nnode_modules\\eslint-config-prettier\\package.json\\nnode_modules\\helmet\\package.json\\nnode_modules\\ignore\\package.json\\nnode_modules\\magic-string\\package.json\\nnode_modules\\minimatch\\package.json\\nnode_modules\\picomatch\\package.json\\nnode_modules\\readdirp\\node_modules\\picomatch\\package.json\\nnode_modules\\readdirp\\package.json\\nnode_modules\\source-map\\package.json\\nnode_modules\\supertest\\package.json\\nnode_modules\\undici-types\\package.json"
       },
       {
         "name": "cdx:bom:componentTypes",
@@ -68,11 +68,58 @@
       },
       {
         "name": "cdx:bom:componentSrcFiles",
-        "value": "node_modules\\@angular-devkit\\core\\node_modules\\jsonc-parser\\package.json\\nnode_modules\\@angular-devkit\\core\\node_modules\\rxjs\\ajax\\package.json\\nnode_modules\\@angular-devkit\\core\\node_modules\\rxjs\\fetch\\package.json\\nnode_modules\\@angular-devkit\\core\\node_modules\\rxjs\\operators\\package.json\\nnode_modules\\@angular-devkit\\core\\node_modules\\rxjs\\package.json\\nnode_modules\\@angular-devkit\\core\\node_modules\\rxjs\\testing\\package.json\\nnode_modules\\@angular-devkit\\core\\node_modules\\rxjs\\webSocket\\package.json\\nnode_modules\\@angular-devkit\\core\\package.json\\nnode_modules\\@angular-devkit\\schematics\\node_modules\\jsonc-parser\\package.json\\nnode_modules\\@angular-devkit\\schematics\\node_modules\\rxjs\\ajax\\package.json\\nnode_modules\\@angular-devkit\\schematics\\node_modules\\rxjs\\fetch\\package.json\\nnode_modules\\@angular-devkit\\schematics\\node_modules\\rxjs\\operators\\package.json\\nnode_modules\\@angular-devkit\\schematics\\node_modules\\rxjs\\package.json\\nnode_modules\\@angular-devkit\\schematics\\node_modules\\rxjs\\testing\\package.json\\nnode_modules\\@angular-devkit\\schematics\\node_modules\\rxjs\\webSocket\\package.json\\nnode_modules\\@angular-devkit\\schematics\\package.json\\nnode_modules\\@angular-devkit\\schematics\\tasks\\package.json\\nnode_modules\\@angular-devkit\\schematics\\testing\\package.json\\nnode_modules\\@angular-devkit\\schematics\\tools\\package.json\\nnode_modules\\@nestjs\\schematics\\dist\\lib\\application\\files\\js\\package.json\\nnode_modules\\@nestjs\\schematics\\dist\\lib\\application\\files\\ts\\package.json\\nnode_modules\\@nestjs\\schematics\\package.json\\nnode_modules\\@types\\node\\package.json\\nnode_modules\\@typescript-eslint\\eslint-plugin\\package.json\\nnode_modules\\@typescript-eslint\\parser\\package.json\\nnode_modules\\@typescript-eslint\\project-service\\node_modules\\@typescript-eslint\\types\\package.json\\nnode_modules\\@typescript-eslint\\project-service\\package.json\\nnode_modules\\@typescript-eslint\\scope-manager\\package.json\\nnode_modules\\@typescript-eslint\\type-utils\\package.json\\nnode_modules\\@typescript-eslint\\types\\package.json\\nnode_modules\\@typescript-eslint\\typescript-estree\\node_modules\\@typescript-eslint\\tsconfig-utils\\package.json\\nnode_modules\\@typescript-eslint\\typescript-estree\\package.json\\nnode_modules\\@typescript-eslint\\utils\\package.json\\nnode_modules\\@typescript-eslint\\visitor-keys\\package.json\\nnode_modules\\ajv\\package.json\\nnode_modules\\chokidar\\package.json\\nnode_modules\\eslint-config-prettier\\package.json\\nnode_modules\\helmet\\package.json\\nnode_modules\\ignore\\package.json\\nnode_modules\\magic-string\\package.json\\nnode_modules\\minimatch\\package.json\\nnode_modules\\picomatch\\package.json\\nnode_modules\\readdirp\\node_modules\\picomatch\\package.json\\nnode_modules\\readdirp\\package.json\\nnode_modules\\source-map\\package.json\\nnode_modules\\supertest\\package.json"
+        "value": "node_modules\\@angular-devkit\\core\\node_modules\\jsonc-parser\\package.json\\nnode_modules\\@angular-devkit\\core\\node_modules\\rxjs\\ajax\\package.json\\nnode_modules\\@angular-devkit\\core\\node_modules\\rxjs\\fetch\\package.json\\nnode_modules\\@angular-devkit\\core\\node_modules\\rxjs\\operators\\package.json\\nnode_modules\\@angular-devkit\\core\\node_modules\\rxjs\\package.json\\nnode_modules\\@angular-devkit\\core\\node_modules\\rxjs\\testing\\package.json\\nnode_modules\\@angular-devkit\\core\\node_modules\\rxjs\\webSocket\\package.json\\nnode_modules\\@angular-devkit\\core\\package.json\\nnode_modules\\@angular-devkit\\schematics\\node_modules\\jsonc-parser\\package.json\\nnode_modules\\@angular-devkit\\schematics\\node_modules\\rxjs\\ajax\\package.json\\nnode_modules\\@angular-devkit\\schematics\\node_modules\\rxjs\\fetch\\package.json\\nnode_modules\\@angular-devkit\\schematics\\node_modules\\rxjs\\operators\\package.json\\nnode_modules\\@angular-devkit\\schematics\\node_modules\\rxjs\\package.json\\nnode_modules\\@angular-devkit\\schematics\\node_modules\\rxjs\\testing\\package.json\\nnode_modules\\@angular-devkit\\schematics\\node_modules\\rxjs\\webSocket\\package.json\\nnode_modules\\@angular-devkit\\schematics\\package.json\\nnode_modules\\@angular-devkit\\schematics\\tasks\\package.json\\nnode_modules\\@angular-devkit\\schematics\\testing\\package.json\\nnode_modules\\@angular-devkit\\schematics\\tools\\package.json\\nnode_modules\\@nestjs\\schematics\\dist\\lib\\application\\files\\js\\package.json\\nnode_modules\\@nestjs\\schematics\\dist\\lib\\application\\files\\ts\\package.json\\nnode_modules\\@nestjs\\schematics\\package.json\\nnode_modules\\@types\\node\\package.json\\nnode_modules\\@typescript-eslint\\eslint-plugin\\package.json\\nnode_modules\\@typescript-eslint\\parser\\package.json\\nnode_modules\\@typescript-eslint\\project-service\\node_modules\\@typescript-eslint\\tsconfig-utils\\package.json\\nnode_modules\\@typescript-eslint\\project-service\\node_modules\\@typescript-eslint\\types\\package.json\\nnode_modules\\@typescript-eslint\\project-service\\package.json\\nnode_modules\\@typescript-eslint\\scope-manager\\package.json\\nnode_modules\\@typescript-eslint\\tsconfig-utils\\package.json\\nnode_modules\\@typescript-eslint\\type-utils\\package.json\\nnode_modules\\@typescript-eslint\\types\\package.json\\nnode_modules\\@typescript-eslint\\typescript-estree\\node_modules\\@typescript-eslint\\tsconfig-utils\\package.json\\nnode_modules\\@typescript-eslint\\typescript-estree\\package.json\\nnode_modules\\@typescript-eslint\\utils\\package.json\\nnode_modules\\@typescript-eslint\\visitor-keys\\package.json\\nnode_modules\\ajv\\package.json\\nnode_modules\\chokidar\\package.json\\nnode_modules\\eslint-config-prettier\\package.json\\nnode_modules\\helmet\\package.json\\nnode_modules\\ignore\\package.json\\nnode_modules\\magic-string\\package.json\\nnode_modules\\minimatch\\package.json\\nnode_modules\\picomatch\\package.json\\nnode_modules\\readdirp\\node_modules\\picomatch\\package.json\\nnode_modules\\readdirp\\package.json\\nnode_modules\\source-map\\package.json\\nnode_modules\\supertest\\package.json\\nnode_modules\\undici-types\\package.json"
       }
     ]
   },
   "components": [
+    {
+      "group": "",
+      "name": "undici-types",
+      "version": "7.10.0",
+      "description": "A stand-alone types package for Undici",
+      "scope": "optional",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "url": "https://opensource.org/licenses/MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/undici-types@7.10.0",
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://undici.nodejs.org"
+        },
+        {
+          "type": "vcs",
+          "url": "git+https://github.com/nodejs/undici.git"
+        }
+      ],
+      "type": "library",
+      "bom-ref": "pkg:npm/undici-types@7.10.0",
+      "properties": [
+        {
+          "name": "SrcFile",
+          "value": "node_modules\\undici-types\\package.json"
+        }
+      ],
+      "evidence": {
+        "identity": {
+          "field": "purl",
+          "confidence": 0.7,
+          "methods": [
+            {
+              "technique": "manifest-analysis",
+              "confidence": 0.7,
+              "value": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\backend\\services\\api-gateway\\node_modules\\undici-types\\package.json"
+            }
+          ]
+        }
+      }
+    },
     {
       "author": "TJ Holowaychuk",
       "group": "",
@@ -783,6 +830,10 @@
         {
           "name": "SrcFile",
           "value": "node_modules\\@typescript-eslint\\typescript-estree\\node_modules\\@typescript-eslint\\tsconfig-utils\\package.json"
+        },
+        {
+          "name": "SrcFile",
+          "value": "node_modules\\@typescript-eslint\\tsconfig-utils\\package.json"
         }
       ],
       "evidence": {
@@ -793,7 +844,7 @@
             {
               "technique": "manifest-analysis",
               "confidence": 0.7,
-              "value": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\backend\\services\\api-gateway\\node_modules\\@typescript-eslint\\typescript-estree\\node_modules\\@typescript-eslint\\tsconfig-utils\\package.json"
+              "value": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\backend\\services\\api-gateway\\node_modules\\@typescript-eslint\\tsconfig-utils\\package.json"
             }
           ]
         }
@@ -1036,6 +1087,53 @@
     },
     {
       "group": "@typescript-eslint",
+      "name": "tsconfig-utils",
+      "version": "8.40.0",
+      "description": "Utilities for collecting TSConfigs for linting scenarios.",
+      "scope": "optional",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "url": "https://opensource.org/licenses/MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/%40typescript-eslint/tsconfig-utils@8.40.0",
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://typescript-eslint.io"
+        },
+        {
+          "type": "vcs",
+          "url": "https://github.com/typescript-eslint/typescript-eslint.git"
+        }
+      ],
+      "type": "library",
+      "bom-ref": "pkg:npm/@typescript-eslint/tsconfig-utils@8.40.0",
+      "properties": [
+        {
+          "name": "SrcFile",
+          "value": "node_modules\\@typescript-eslint\\project-service\\node_modules\\@typescript-eslint\\tsconfig-utils\\package.json"
+        }
+      ],
+      "evidence": {
+        "identity": {
+          "field": "purl",
+          "confidence": 0.7,
+          "methods": [
+            {
+              "technique": "manifest-analysis",
+              "confidence": 0.7,
+              "value": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\backend\\services\\api-gateway\\node_modules\\@typescript-eslint\\project-service\\node_modules\\@typescript-eslint\\tsconfig-utils\\package.json"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "group": "@typescript-eslint",
       "name": "parser",
       "version": "8.39.1",
       "description": "An ESLint custom parser which leverages TypeScript ESTree",
@@ -1131,7 +1229,7 @@
     {
       "group": "@types",
       "name": "node",
-      "version": "24.2.1",
+      "version": "24.3.0",
       "description": "TypeScript definitions for node",
       "scope": "optional",
       "licenses": [
@@ -1142,7 +1240,7 @@
           }
         }
       ],
-      "purl": "pkg:npm/%40types/node@24.2.1",
+      "purl": "pkg:npm/%40types/node@24.3.0",
       "externalReferences": [
         {
           "type": "vcs",
@@ -1154,7 +1252,7 @@
         }
       ],
       "type": "library",
-      "bom-ref": "pkg:npm/@types/node@24.2.1",
+      "bom-ref": "pkg:npm/@types/node@24.3.0",
       "properties": [
         {
           "name": "SrcFile",

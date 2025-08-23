@@ -11,7 +11,10 @@
 
 ## Executive Summary
 
-This Security Testing Framework provides a comprehensive approach to security testing for the Meqenet fintech platform. It encompasses automated and manual security testing methodologies, tools, and processes designed to identify and mitigate security vulnerabilities throughout the software development lifecycle.
+This Security Testing Framework provides a comprehensive approach to security testing for the
+Meqenet fintech platform. It encompasses automated and manual security testing methodologies, tools,
+and processes designed to identify and mitigate security vulnerabilities throughout the software
+development lifecycle.
 
 ## 1. Framework Overview
 
@@ -59,6 +62,7 @@ The framework follows a defense-in-depth approach with multiple layers of securi
 ### 2.1 Static Application Security Testing (SAST)
 
 #### CodeQL (Primary SAST Tool)
+
 ```yaml
 # Configuration: .github/codeql/codeql-config.yml
 - Language Support: JavaScript, TypeScript, Java, Kotlin
@@ -68,6 +72,7 @@ The framework follows a defense-in-depth approach with multiple layers of securi
 ```
 
 #### ESLint Security Rules
+
 ```json
 // Configuration: .eslintrc.js
 {
@@ -91,6 +96,7 @@ The framework follows a defense-in-depth approach with multiple layers of securi
 ```
 
 #### Android Lint Security Rules
+
 ```gradle
 // Configuration: android/app/build.gradle
 android {
@@ -114,6 +120,7 @@ android {
 ### 2.2 Software Composition Analysis (SCA)
 
 #### OWASP Dependency Check
+
 ```yaml
 # Configuration: CI/CD Pipeline
 - Tool: OWASP Dependency-Check
@@ -124,6 +131,7 @@ android {
 ```
 
 #### npm Audit
+
 ```json
 // Configuration: package.json
 {
@@ -138,6 +146,7 @@ android {
 ### 2.3 Dynamic Application Security Testing (DAST)
 
 #### OWASP ZAP (Zed Attack Proxy)
+
 ```yaml
 # Configuration: .github/workflows/security.yml
 - Mode: Baseline, Full Scan, API Scan
@@ -148,6 +157,7 @@ android {
 ```
 
 #### Mobile Security Testing
+
 ```yaml
 # Configuration: CI/CD Pipeline
 - Tool: MobSF (Mobile Security Framework)
@@ -159,6 +169,7 @@ android {
 ### 2.4 Runtime Security Testing
 
 #### Runtime Application Self-Protection (RASP)
+
 ```kotlin
 // Example: Kotlin RASP Implementation
 class SecurityMonitor {
@@ -181,14 +192,13 @@ class SecurityMonitor {
 ### 3.1 Testing Phases
 
 #### Phase 1: Unit Security Testing
+
 ```typescript
 // Example: Security Unit Test
 describe('Authentication Security', () => {
   test('should prevent brute force attacks', async () => {
     const attempts = Array(5).fill('wrong-password');
-    const results = await Promise.all(
-      attempts.map(pwd => authService.login('user', pwd))
-    );
+    const results = await Promise.all(attempts.map(pwd => authService.login('user', pwd)));
 
     expect(results.every(r => r.success === false)).toBe(true);
   });
@@ -204,15 +214,20 @@ describe('Authentication Security', () => {
 ```
 
 #### Phase 2: Integration Security Testing
+
 ```typescript
 // Example: API Security Integration Test
 describe('API Security Integration', () => {
   test('should enforce rate limiting', async () => {
-    const requests = Array(100).fill(null).map((_, i) =>
-      axios.get('/api/transactions', {
-        headers: { 'X-API-Key': `key-${i}` }
-      }).catch(e => e.response?.status || 429)
-    );
+    const requests = Array(100)
+      .fill(null)
+      .map((_, i) =>
+        axios
+          .get('/api/transactions', {
+            headers: { 'X-API-Key': `key-${i}` },
+          })
+          .catch(e => e.response?.status || 429)
+      );
 
     const results = await Promise.all(requests);
     const rateLimited = results.filter(status => status === 429);
@@ -223,34 +238,36 @@ describe('API Security Integration', () => {
 ```
 
 #### Phase 3: System Security Testing
+
 ```yaml
 # Example: System Security Test Suite
 testSuites:
-  - name: "Authentication Security"
+  - name: 'Authentication Security'
     tests:
-      - "JWT Token Validation"
-      - "Session Management"
-      - "Biometric Authentication"
-      - "Multi-Factor Authentication"
+      - 'JWT Token Validation'
+      - 'Session Management'
+      - 'Biometric Authentication'
+      - 'Multi-Factor Authentication'
 
-  - name: "Data Security"
+  - name: 'Data Security'
     tests:
-      - "Encryption at Rest"
-      - "Encryption in Transit"
-      - "Secure Storage"
-      - "Data Sanitization"
+      - 'Encryption at Rest'
+      - 'Encryption in Transit'
+      - 'Secure Storage'
+      - 'Data Sanitization'
 
-  - name: "Network Security"
+  - name: 'Network Security'
     tests:
-      - "SSL/TLS Configuration"
-      - "Certificate Pinning"
-      - "API Security"
-      - "Rate Limiting"
+      - 'SSL/TLS Configuration'
+      - 'Certificate Pinning'
+      - 'API Security'
+      - 'Rate Limiting'
 ```
 
 ### 3.2 Automated Security Testing Pipeline
 
 #### GitHub Actions Security Testing Workflow
+
 ```yaml
 name: 🔒 Security Testing Pipeline
 on:
@@ -274,7 +291,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: "pnpm"
+          cache: 'pnpm'
 
       - name: Run SAST Analysis
         if: matrix.test-type == 'sast'
@@ -306,6 +323,7 @@ jobs:
 ### 4.1 Authentication Security Tests
 
 #### Test Case: Authentication Bypass
+
 ```typescript
 // TC-AUTH-001: Authentication Bypass Prevention
 test('should prevent authentication bypass', async () => {
@@ -314,7 +332,7 @@ test('should prevent authentication bypass', async () => {
     { username: 'admin', password: '' },
     { username: '', password: 'password' },
     { username: 'admin', password: 'admin' }, // SQL injection attempt
-    { username: "admin' OR 1=1--", password: 'password' }
+    { username: "admin' OR 1=1--", password: 'password' },
   ];
 
   for (const credentials of testCases) {
@@ -326,6 +344,7 @@ test('should prevent authentication bypass', async () => {
 ```
 
 #### Test Case: Session Security
+
 ```typescript
 // TC-AUTH-002: Session Security Validation
 test('should secure session management', async () => {
@@ -346,13 +365,14 @@ test('should secure session management', async () => {
 ### 4.2 Data Security Tests
 
 #### Test Case: Data Encryption
+
 ```typescript
 // TC-DATA-001: Data Encryption Validation
 test('should encrypt sensitive data', async () => {
   const sensitiveData = {
     cardNumber: '4111111111111111',
     cvv: '123',
-    expiryDate: '12/25'
+    expiryDate: '12/25',
   };
 
   const encrypted = await encryptionService.encrypt(sensitiveData);
@@ -364,6 +384,7 @@ test('should encrypt sensitive data', async () => {
 ```
 
 #### Test Case: SQL Injection Prevention
+
 ```typescript
 // TC-DATA-002: SQL Injection Prevention
 test('should prevent SQL injection', async () => {
@@ -371,7 +392,7 @@ test('should prevent SQL injection', async () => {
     "admin'; DROP TABLE users;--",
     "' OR 1=1--",
     "'; SELECT * FROM users;--",
-    "admin'; UPDATE users SET password='hacked';--"
+    "admin'; UPDATE users SET password='hacked';--",
   ];
 
   for (const input of maliciousInputs) {
@@ -386,6 +407,7 @@ test('should prevent SQL injection', async () => {
 ### 4.3 Network Security Tests
 
 #### Test Case: SSL/TLS Security
+
 ```typescript
 // TC-NET-001: SSL/TLS Security Validation
 test('should enforce secure SSL/TLS configuration', async () => {
@@ -405,6 +427,7 @@ test('should enforce secure SSL/TLS configuration', async () => {
 ## 5. Security Testing Automation Scripts
 
 ### 5.1 SAST Automation Script
+
 ```bash
 #!/bin/bash
 # run-sast.sh - Static Application Security Testing
@@ -436,6 +459,7 @@ echo "✅ SAST Analysis Complete"
 ```
 
 ### 5.2 DAST Automation Script
+
 ```bash
 #!/bin/bash
 # run-dast.sh - Dynamic Application Security Testing
@@ -472,24 +496,28 @@ echo "✅ DAST Analysis Complete"
 ### 6.1 Report Templates
 
 #### Security Test Summary Report
+
 ```markdown
 # Security Testing Summary Report
 
 ## Executive Summary
+
 - **Test Date**: [DATE]
 - **Test Environment**: [ENVIRONMENT]
 - **Overall Risk Level**: [LOW/MEDIUM/HIGH/CRITICAL]
 
 ## Test Results Summary
-| Category | Total Tests | Passed | Failed | Risk Level |
-|----------|-------------|---------|---------|------------|
-| Authentication | 25 | 23 | 2 | Medium |
-| Authorization | 15 | 15 | 0 | Low |
-| Data Protection | 20 | 18 | 2 | Medium |
-| Network Security | 12 | 11 | 1 | Low |
-| Session Management | 8 | 8 | 0 | Low |
+
+| Category           | Total Tests | Passed | Failed | Risk Level |
+| ------------------ | ----------- | ------ | ------ | ---------- |
+| Authentication     | 25          | 23     | 2      | Medium     |
+| Authorization      | 15          | 15     | 0      | Low        |
+| Data Protection    | 20          | 18     | 2      | Medium     |
+| Network Security   | 12          | 11     | 1      | Low        |
+| Session Management | 8           | 8      | 0      | Low        |
 
 ## Critical Findings
+
 1. **High Risk**: [DESCRIPTION]
    - **Impact**: [IMPACT]
    - **Recommendation**: [RECOMMENDATION]
@@ -499,6 +527,7 @@ echo "✅ DAST Analysis Complete"
    - **Recommendation**: [RECOMMENDATION]
 
 ## Compliance Status
+
 - **OWASP Top 10**: ✅ 8/10 Controls Implemented
 - **PCI DSS**: ✅ 12/12 Requirements Met
 - **GDPR**: ✅ 7/7 Data Protection Controls
@@ -571,23 +600,23 @@ class SecurityDashboard extends Component {
 ```yaml
 # Security Gates Configuration
 security-gates:
-  - name: "SAST Quality Gate"
+  - name: 'SAST Quality Gate'
     conditions:
-      - "codeql.results.severity.critical == 0"
-      - "codeql.results.severity.high <= 5"
-      - "eslint.security.errors == 0"
+      - 'codeql.results.severity.critical == 0'
+      - 'codeql.results.severity.high <= 5'
+      - 'eslint.security.errors == 0'
 
-  - name: "Dependency Security Gate"
+  - name: 'Dependency Security Gate'
     conditions:
-      - "dependency-check.cvss.max <= 7.0"
-      - "npm.audit.vulnerabilities.critical == 0"
-      - "npm.audit.vulnerabilities.high <= 3"
+      - 'dependency-check.cvss.max <= 7.0'
+      - 'npm.audit.vulnerabilities.critical == 0'
+      - 'npm.audit.vulnerabilities.high <= 3'
 
-  - name: "Coverage Security Gate"
+  - name: 'Coverage Security Gate'
     conditions:
-      - "security.test.coverage >= 80%"
-      - "sast.coverage >= 90%"
-      - "dast.api.coverage >= 85%"
+      - 'security.test.coverage >= 80%'
+      - 'sast.coverage >= 90%'
+      - 'dast.api.coverage >= 85%'
 ```
 
 ### 8.2 Automated Remediation
@@ -625,18 +654,21 @@ class SecurityRemediationService {
 ## 9. Security Testing Best Practices
 
 ### 9.1 Test Environment Management
+
 1. **Separate Testing Environments**: Never test on production data
 2. **Test Data Management**: Use realistic but anonymized test data
 3. **Environment Isolation**: Isolate security testing from development environments
 4. **Backup and Recovery**: Regular backups before destructive testing
 
 ### 9.2 Team Collaboration
+
 1. **Security Champions**: Identify and train security champions in each team
 2. **Cross-functional Reviews**: Regular security reviews with development teams
 3. **Knowledge Sharing**: Regular security training and awareness sessions
 4. **Incident Response**: Joint incident response planning and execution
 
 ### 9.3 Tool Integration
+
 1. **IDE Integration**: Integrate security tools into development IDEs
 2. **Version Control**: Store security configurations in version control
 3. **Automated Reporting**: Generate automated security reports
@@ -645,18 +677,21 @@ class SecurityRemediationService {
 ## 10. References and Standards
 
 ### 10.1 Security Standards
+
 - **OWASP Testing Guide v4.2**
 - **OWASP Application Security Verification Standard (ASVS)**
 - **NIST SP 800-53 - Security Controls**
 - **ISO/IEC 27001 - Information Security Management**
 
 ### 10.2 Industry Frameworks
+
 - **PCI DSS v4.0 - Payment Card Industry**
 - **NIST Cybersecurity Framework**
 - **ISO 27034 - Application Security**
 - **OWASP SAMM (Software Assurance Maturity Model)**
 
 ### 10.3 Tool References
+
 - **CodeQL Documentation**: https://codeql.github.com/
 - **OWASP ZAP User Guide**: https://www.zaproxy.org/
 - **ESLint Security Rules**: https://github.com/eslint-community/eslint-plugin-security
@@ -667,6 +702,7 @@ class SecurityRemediationService {
 **Approval Status**: ⏳ Pending Security Review Board Approval
 
 **Implementation Status**: In Progress
+
 - [x] Security Testing Framework Document Created
 - [x] Automated Security Testing Pipeline Implemented
 - [ ] Security Test Cases Development (In Progress)

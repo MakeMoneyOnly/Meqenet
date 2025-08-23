@@ -756,19 +756,19 @@ DATABASE_URL=postgresql://username:password@localhost/meqenet_governance
 SMTP_SERVER=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USERNAME=governance@meqenet.et
-SMTP_PASSWORD=your_app_password_here
+SMTP_PASSWORD=${SMTP_PASSWORD:-your_app_password_here}
 
-# Notification Configuration  
-SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK
-TEAMS_WEBHOOK_URL=https://outlook.office.com/webhook/YOUR/TEAMS/WEBHOOK
+# Notification Configuration
+SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL:-https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK}
+TEAMS_WEBHOOK_URL=${TEAMS_WEBHOOK_URL:-https://outlook.office.com/webhook/YOUR/TEAMS/WEBHOOK}
 
 # Ethiopian NBE Configuration
-NBE_API_KEY=your_nbe_api_key_here
-NBE_API_URL=https://api.nbe.gov.et/
+NBE_API_KEY=${NBE_API_KEY:-your_nbe_api_key_here}
+NBE_API_URL=${NBE_API_URL:-https://api.nbe.gov.et/}
 
 # Security Configuration
-ENCRYPTION_KEY=generate_a_secure_key_here
-JWT_SECRET=generate_a_jwt_secret_here
+ENCRYPTION_KEY=${ENCRYPTION_KEY:-generate_a_secure_key_here}
+JWT_SECRET=${JWT_SECRET:-generate_a_jwt_secret_here}
 
 # Feature Flags
 ENABLE_ML_FEATURES=true

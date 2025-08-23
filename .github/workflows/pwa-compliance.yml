@@ -42,13 +42,17 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
-          cache-dependency-path: frontend/package-lock.json
+
+      - name: 🔧 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.14.0
 
       - name: 📦 Install Dependencies
         run: |
           cd frontend
-          npm ci
+          pnpm install --frozen-lockfile
+          corepack enable
 
       - name: 🔍 Run PWA Compliance Tests
         run: |
@@ -132,13 +136,17 @@ ${reportContent}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
-          cache-dependency-path: frontend/package-lock.json
+
+      - name: 🔧 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.14.0
 
       - name: 📦 Install Dependencies
         run: |
           cd frontend
-          npm ci
+          pnpm install --frozen-lockfile
+          corepack enable
 
       - name: 🏗️ Build Website
         run: |

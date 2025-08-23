@@ -63,7 +63,7 @@ services:
     environment:
       - DATABASE_URL=postgresql://meqenet:password@postgres_auth:5432/auth_service_db
       - REDIS_URL=redis://redis:6379
-      - JWT_SECRET=a-very-secret-key-for-local-dev
+      - JWT_SECRET=${JWT_SECRET:-a-very-secret-key-for-local-dev}
       - NODE_ENV=development
       # Prisma engine configuration for reliable downloads
       - PRISMA_ENGINES_MIRROR=https://binaries.prismadb.com

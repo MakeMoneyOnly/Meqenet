@@ -4,12 +4,12 @@
   "private": true,
   "dependencies": {
     "@react-native/metro-config": "0.76.5",
-    "@testing-library/react-native": "13.2.2",
-    "metro-config": "0.82.5",
+    "@testing-library/react-native": "~13.2.2",
+    "metro-config": "~0.82.5",
     "react": "18.3.1",
     "react-native": "0.76.5",
-    "react-native-svg": "15.11.2",
-    "react-test-renderer": "18.3.1",
+    "react-native-svg": "~15.11.2",
+    "react-test-renderer": "~18.3.1",
     "twrnc": "4.9.1"
   }
 }
