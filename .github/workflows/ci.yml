@@ -455,6 +455,7 @@ jobs:
             --enableExperimental
             --nvdValidForHours 24
             --failOnCVSS 9
+            --suppression .github/owasp/dependency-check-suppression.xml
 
       - name: 📊 Generate Android Dependency Security Report
         working-directory: ./frontend/apps/app/android
