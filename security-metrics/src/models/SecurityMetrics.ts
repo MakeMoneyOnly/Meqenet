@@ -291,5 +291,5 @@ export interface SecurityAlert {
   resolvedAt?: Date;
   assignee?: string;
   status: 'open' | 'acknowledged' | 'in_progress' | 'resolved' | 'closed';
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
 }

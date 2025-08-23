@@ -1,10 +1,13 @@
 # 🔒 Meqenet Security Metrics Dashboard
 
-A comprehensive security metrics dashboard and monitoring system for the Meqenet fintech platform. This module provides real-time security posture monitoring, vulnerability tracking, compliance reporting, and automated security alerting.
+A comprehensive security metrics dashboard and monitoring system for the Meqenet fintech platform.
+This module provides real-time security posture monitoring, vulnerability tracking, compliance
+reporting, and automated security alerting.
 
 ## 🚀 Features
 
 ### 📊 Security Metrics Collection
+
 - **Vulnerability Metrics**: Track critical, high, medium, and low-risk vulnerabilities
 - **Test Coverage Metrics**: Monitor SAST, DAST, and security test coverage
 - **Performance Metrics**: Track security overhead and system performance impact
@@ -12,12 +15,14 @@ A comprehensive security metrics dashboard and monitoring system for the Meqenet
 - **Incident Metrics**: Track security incidents and response times
 
 ### 🎯 Security Alerting System
+
 - **Real-time Alerts**: Automated alerts for critical security issues
 - **Customizable Thresholds**: Configurable alert thresholds for different metrics
 - **Multi-channel Notifications**: Email, Slack, Teams, and PagerDuty integration
 - **Alert Management**: Alert acknowledgment, resolution tracking, and history
 
 ### 📈 Dashboard Visualization
+
 - **Interactive Dashboard**: Real-time security metrics visualization
 - **Compliance Status**: Visual compliance status across frameworks
 - **Vulnerability Overview**: Detailed vulnerability breakdown and trends
@@ -25,6 +30,7 @@ A comprehensive security metrics dashboard and monitoring system for the Meqenet
 - **Incident Tracking**: Security incident overview and management
 
 ### 📋 Automated Reporting
+
 - **Daily Reports**: Automated daily security status reports
 - **Weekly Reports**: Comprehensive weekly security analysis
 - **Monthly Reports**: Detailed monthly compliance and security reports
@@ -33,6 +39,7 @@ A comprehensive security metrics dashboard and monitoring system for the Meqenet
 ## 🛠️ Installation
 
 ### Prerequisites
+
 - Node.js 18.0.0 or higher
 - npm 9.0.0 or higher
 - React 18.0.0 or higher
@@ -40,17 +47,20 @@ A comprehensive security metrics dashboard and monitoring system for the Meqenet
 ### Installation Steps
 
 1. **Clone the repository:**
+
    ```bash
    git clone https://github.com/meqenet/security-metrics.git
    cd security-metrics
    ```
 
 2. **Install dependencies:**
+
    ```bash
    npm install
    ```
 
 3. **Build the module:**
+
    ```bash
    npm run build
    ```
@@ -119,7 +129,7 @@ metricsService.clearOldData(90);
 name: 🔒 Security Monitoring
 on:
   schedule:
-    - cron: '0 */6 * * *'  # Every 6 hours
+    - cron: '0 */6 * * *' # Every 6 hours
   push:
     branches: [main, develop]
 
@@ -188,7 +198,7 @@ export const securityConfig = {
     highVulnerabilities: 5,
     scanFailureRate: 10,
     responseTimeDegradation: 20,
-    complianceDrop: 5
+    complianceDrop: 5,
   },
 
   // Notification settings
@@ -196,13 +206,13 @@ export const securityConfig = {
     email: {
       enabled: true,
       smtp: 'smtp.gmail.com',
-      recipients: ['security@meqenet.com']
+      recipients: ['security@meqenet.com'],
     },
     slack: {
       enabled: true,
       webhook: 'https://hooks.slack.com/...',
-      channel: '#security-alerts'
-    }
+      channel: '#security-alerts',
+    },
   },
 
   // Integration settings
@@ -210,16 +220,16 @@ export const securityConfig = {
     jira: {
       enabled: true,
       url: 'https://meqenet.atlassian.net',
-      project: 'SEC'
-    }
+      project: 'SEC',
+    },
   },
 
   // Report settings
   reports: {
     frequency: 'daily',
     format: 'html',
-    retention: 90 // days
-  }
+    retention: 90, // days
+  },
 };
 ```
 
@@ -299,6 +309,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🆘 Support
 
 For support and questions:
+
 - 📧 Email: security@meqenet.com
 - 💬 Slack: #security-metrics
 - 📖 Documentation: [Meqenet Security Docs](https://docs.meqenet.com/security)
@@ -306,6 +317,7 @@ For support and questions:
 ## 🔄 Changelog
 
 ### Version 1.0.0
+
 - Initial release
 - Security metrics collection
 - Dashboard visualization
@@ -316,4 +328,4 @@ For support and questions:
 
 **Built with ❤️ by the Meqenet Security Team**
 
-*Empowering fintech security through comprehensive metrics and monitoring*
+_Empowering fintech security through comprehensive metrics and monitoring_

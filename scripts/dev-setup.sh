@@ -511,34 +511,34 @@ DATABASE_URL="postgresql://meqenet:password@localhost:5432/meqenet_dev"
 REDIS_URL="redis://localhost:6379"
 
 # JWT Configuration
-JWT_SECRET="your-super-secure-jwt-secret-for-development"
-JWT_EXPIRES_IN="24h"
+JWT_SECRET="${JWT_SECRET:-your-super-secure-jwt-secret-for-development}"
+JWT_EXPIRES_IN="${JWT_EXPIRES_IN:-24h}"
 
 # External Services (Development)
-FAYDA_API_URL="https://staging-api.fayda.gov.et"
-FAYDA_API_KEY="your-fayda-development-api-key"
+FAYDA_API_URL="${FAYDA_API_URL:-https://staging-api.fayda.gov.et}"
+FAYDA_API_KEY="${FAYDA_API_KEY:-your-fayda-development-api-key}"
 
-TELEBIRR_API_URL="https://sandbox.telebirr.et"
-TELEBIRR_MERCHANT_ID="your-test-merchant-id"
-TELEBIRR_API_KEY="your-telebirr-development-api-key"
+TELEBIRR_API_URL="${TELEBIRR_API_URL:-https://sandbox.telebirr.et}"
+TELEBIRR_MERCHANT_ID="${TELEBIRR_MERCHANT_ID:-your-test-merchant-id}"
+TELEBIRR_API_KEY="${TELEBIRR_API_KEY:-your-telebirr-development-api-key}"
 
 # AWS Configuration (Local Development)
-AWS_REGION="eu-west-1"
-AWS_ACCESS_KEY_ID="your-aws-access-key"
-AWS_SECRET_ACCESS_KEY="your-aws-secret-key"
+AWS_REGION="${AWS_REGION:-eu-west-1}"
+AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID:-your-aws-access-key}"
+AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY:-your-aws-secret-key}"
 AWS_S3_BUCKET="meqenet-dev-uploads"
 
 # Email Service
-SMTP_HOST="smtp.gmail.com"
-SMTP_PORT="587"
-SMTP_USER="your-dev-email@gmail.com"
-SMTP_PASS="your-app-password"
+SMTP_HOST="${SMTP_HOST:-smtp.gmail.com}"
+SMTP_PORT="${SMTP_PORT:-587}"
+SMTP_USER="${SMTP_USER:-your-dev-email@gmail.com}"
+SMTP_PASS="${SMTP_PASS:-your-app-password}"
 
 # SMS Service
-SMS_PROVIDER="twilio"
-TWILIO_ACCOUNT_SID="your-twilio-account-sid"
-TWILIO_AUTH_TOKEN="your-twilio-auth-token"
-TWILIO_PHONE_NUMBER="+1234567890"
+SMS_PROVIDER="${SMS_PROVIDER:-twilio}"
+TWILIO_ACCOUNT_SID="${TWILIO_ACCOUNT_SID:-your-twilio-account-sid}"
+TWILIO_AUTH_TOKEN="${TWILIO_AUTH_TOKEN:-your-twilio-auth-token}"
+TWILIO_PHONE_NUMBER="${TWILIO_PHONE_NUMBER:-+1234567890}"
 
 # Application Configuration
 NODE_ENV="development"

@@ -11,13 +11,17 @@
 
 ## Executive Summary
 
-This guide provides a comprehensive framework for implementing shift-left security practices at Meqenet. Shift-left security involves integrating security earlier in the software development lifecycle (SDLC), enabling teams to identify and address security issues during the design and development phases rather than after deployment.
+This guide provides a comprehensive framework for implementing shift-left security practices at
+Meqenet. Shift-left security involves integrating security earlier in the software development
+lifecycle (SDLC), enabling teams to identify and address security issues during the design and
+development phases rather than after deployment.
 
 ## 1. Shift-Left Security Overview
 
 ### 1.1 Traditional vs Shift-Left Approach
 
 #### Traditional Security (Right-Shifted)
+
 ```
 ┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐
 │  Plan   │───▶│ Design  │───▶│ Develop │───▶│  Test   │
@@ -31,6 +35,7 @@ This guide provides a comprehensive framework for implementing shift-left securi
 ```
 
 #### Shift-Left Security Approach
+
 ```
 ┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐
 │  Plan   │───▶│ Design  │───▶│ Develop │───▶│  Test   │
@@ -61,6 +66,7 @@ This guide provides a comprehensive framework for implementing shift-left securi
 #### IDE Security Integration
 
 **Visual Studio Code Security Extensions:**
+
 ```json
 // .vscode/extensions.json
 {
@@ -94,6 +100,7 @@ This guide provides a comprehensive framework for implementing shift-left securi
 ```
 
 **IntelliJ IDEA/Android Studio Security Plugins:**
+
 - SonarLint
 - FindBugs
 - SpotBugs
@@ -103,6 +110,7 @@ This guide provides a comprehensive framework for implementing shift-left securi
 #### Pre-commit Hooks Setup
 
 **Husky Configuration:**
+
 ```json
 // .husky/pre-commit
 {
@@ -114,6 +122,7 @@ This guide provides a comprehensive framework for implementing shift-left securi
 ```
 
 **Pre-commit Security Checks:**
+
 ```bash
 #!/bin/bash
 # .husky/pre-commit
@@ -152,6 +161,7 @@ echo "✅ Pre-commit security checks passed"
 #### Security-Focused Development Workflows
 
 **GitHub Actions for Branch Protection:**
+
 ```yaml
 # .github/workflows/branch-protection.yml
 name: 🔒 Branch Protection Security
@@ -188,27 +198,29 @@ jobs:
 #### Automated Security Testing Integration
 
 **Jest Security Test Setup:**
+
 ```typescript
 // jest.security.config.js
 module.exports = {
   displayName: 'Security Tests',
   testMatch: [
     '<rootDir>/src/**/__tests__/**/*.security.test.(ts|tsx|js)',
-    '<rootDir>/src/**/?(*.)+(security).test.(ts|tsx|js)'
+    '<rootDir>/src/**/?(*.)+(security).test.(ts|tsx|js)',
   ],
   setupFilesAfterEnv: ['<rootDir>/tests/setup/security-setup.ts'],
   collectCoverageFrom: [
     'src/**/*.{ts,tsx,js,jsx}',
     '!src/**/*.d.ts',
     '!src/**/__tests__/**',
-    '!src/**/index.ts'
+    '!src/**/index.ts',
   ],
   coverageReporters: ['text', 'lcov', 'html'],
-  coverageDirectory: '<rootDir>/coverage/security'
+  coverageDirectory: '<rootDir>/coverage/security',
 };
 ```
 
 **Security Test Examples:**
+
 ```typescript
 // src/components/Login/__tests__/Login.security.test.ts
 import { render, screen, fireEvent } from '@testing-library/react';
@@ -259,6 +271,7 @@ describe('Login Component Security Tests', () => {
 #### CI/CD Security Gates
 
 **Security Quality Gates:**
+
 ```yaml
 # .github/workflows/security-gates.yml
 name: 🔒 Security Quality Gates
@@ -277,7 +290,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: "pnpm"
+          cache: 'pnpm'
 
       - name: 📦 Install Dependencies
         run: pnpm install --frozen-lockfile
@@ -324,6 +337,7 @@ jobs:
 #### Automated Security Remediation
 
 **Security Issue Auto-Fix:**
+
 ```typescript
 // scripts/security-auto-fix.ts
 import { ESLint } from 'eslint';
@@ -352,9 +366,9 @@ class SecurityAutoFix {
           'security/detect-non-literal-fs-filename': 'warn',
           'security/detect-non-literal-regexp': 'error',
           'security/detect-non-literal-require': 'warn',
-          'security/detect-unsafe-regex': 'error'
-        }
-      }
+          'security/detect-unsafe-regex': 'error',
+        },
+      },
     });
   }
 
@@ -405,9 +419,12 @@ class SecurityAutoFix {
 
 // Usage
 const securityFixer = new SecurityAutoFix();
-securityFixer.scanAndFix('./src').then(() => {
-  console.log('🎉 Security auto-fix completed');
-}).catch(console.error);
+securityFixer
+  .scanAndFix('./src')
+  .then(() => {
+    console.log('🎉 Security auto-fix completed');
+  })
+  .catch(console.error);
 ```
 
 ### 2.4 Phase 4: Security Training and Enablement (Week 7-8)
@@ -415,6 +432,7 @@ securityFixer.scanAndFix('./src').then(() => {
 #### Developer Security Training Program
 
 **Security Training Curriculum:**
+
 ```typescript
 // types/security-training.ts
 export interface SecurityTrainingModule {
@@ -500,6 +518,7 @@ export interface Assessment {
 #### Security Metrics and Monitoring
 
 **Development-Time Security Metrics:**
+
 ```typescript
 // services/SecurityMetricsService.ts
 export class DevelopmentSecurityMetricsService {
@@ -519,7 +538,7 @@ export class DevelopmentSecurityMetricsService {
       codeReviewSecurityFindings: await this.getCodeReviewSecurityFindings(),
 
       // Development environment security
-      devEnvironmentSecurityScore: await this.getDevEnvironmentSecurityScore()
+      devEnvironmentSecurityScore: await this.getDevEnvironmentSecurityScore(),
     };
   }
 
@@ -539,11 +558,12 @@ export class DevelopmentSecurityMetricsService {
 #### Continuous Security Improvement Process
 
 **Security Improvement Workflow:**
+
 ```yaml
 name: 🔄 Security Improvement Process
 on:
   schedule:
-    - cron: '0 9 * * MON'  # Weekly on Monday
+    - cron: '0 9 * * MON' # Weekly on Monday
   workflow_dispatch:
 
 jobs:
@@ -576,11 +596,13 @@ jobs:
 ### 3.1 Development Environment Tools
 
 #### IDE Security Plugins
+
 - **VS Code**: ESLint, Prettier, GitLens, CodeQL Extension
 - **IntelliJ/Android Studio**: SonarLint, FindBugs, SpotBugs
 - **Eclipse**: Eclipse Security Plugin, FindBugs
 
 #### Code Quality Tools
+
 - **ESLint**: JavaScript/TypeScript linting with security rules
 - **Prettier**: Code formatting
 - **Husky**: Git hooks management
@@ -589,12 +611,14 @@ jobs:
 ### 3.2 Security Testing Tools
 
 #### Static Application Security Testing (SAST)
+
 - **CodeQL**: Advanced static analysis
 - **ESLint Security**: JavaScript/TypeScript security linting
 - **SpotBugs**: Java/Kotlin static analysis
 - **SonarQube**: Code quality and security analysis
 
 #### Dynamic Application Security Testing (DAST)
+
 - **OWASP ZAP**: Web application security testing
 - **Burp Suite**: Web vulnerability scanner
 - **Mobile Security Framework (MobSF)**: Mobile app security testing
@@ -602,11 +626,13 @@ jobs:
 ### 3.3 Security Automation Tools
 
 #### CI/CD Integration
+
 - **GitHub Actions**: Automated security workflows
 - **Jenkins**: Security pipeline automation
 - **GitLab CI**: Integrated security testing
 
 #### Security Orchestration
+
 - **DefectDojo**: Security findings management
 - **OWASP Glue**: Security tool integration
 - **ThreadFix**: Vulnerability correlation
@@ -616,64 +642,76 @@ jobs:
 ### 4.1 Development Security Policies
 
 #### Secure Coding Standards
+
 ```markdown
 ## Meqenet Secure Coding Standards
 
 ### 1. Input Validation
+
 - All user inputs must be validated using Zod schemas
 - Implement whitelist validation for all inputs
 - Reject inputs that don't match expected patterns
 
 ### 2. Authentication & Authorization
+
 - Use multi-factor authentication for all administrative functions
 - Implement role-based access control (RBAC)
 - Session timeout must not exceed 30 minutes
 
 ### 3. Data Protection
+
 - Encrypt all sensitive data at rest using AES-256
 - Use TLS 1.3 for all data in transit
 - Implement proper key management procedures
 
 ### 4. Error Handling
+
 - Never expose sensitive information in error messages
 - Log security events for audit purposes
 - Implement proper exception handling
 
 ### 5. Logging & Monitoring
+
 - Log all authentication attempts
 - Monitor for suspicious activities
 - Implement real-time security alerting
 ```
 
 #### Code Review Security Checklist
+
 ```markdown
 ## Security Code Review Checklist
 
 ### Authentication & Authorization
+
 - [ ] Proper authentication mechanisms implemented
 - [ ] Authorization checks in place for all protected resources
 - [ ] No hardcoded credentials or secrets
 - [ ] Secure password policies enforced
 
 ### Input Validation & Sanitization
+
 - [ ] All user inputs validated and sanitized
 - [ ] SQL injection prevention implemented
 - [ ] XSS protection in place
 - [ ] CSRF protection implemented
 
 ### Data Protection
+
 - [ ] Sensitive data encrypted at rest
 - [ ] Secure communication protocols used
 - [ ] Proper session management
 - [ ] Secure cookie configuration
 
 ### Error Handling & Logging
+
 - [ ] No sensitive data in error messages
 - [ ] Proper error handling implemented
 - [ ] Security events logged appropriately
 - [ ] Log injection prevention in place
 
 ### Security Configuration
+
 - [ ] Security headers properly configured
 - [ ] Content Security Policy implemented
 - [ ] CORS configuration secure
@@ -683,6 +721,7 @@ jobs:
 ### 4.2 Security Training Requirements
 
 #### Mandatory Security Training
+
 - **All Developers**: Secure coding fundamentals
 - **Backend Developers**: API security, authentication, authorization
 - **Frontend Developers**: XSS prevention, CSRF protection, secure JavaScript
@@ -690,6 +729,7 @@ jobs:
 - **DevOps Engineers**: Infrastructure security, CI/CD security
 
 #### Training Completion Tracking
+
 ```typescript
 // services/SecurityTrainingService.ts
 export class SecurityTrainingService {
@@ -704,7 +744,7 @@ export class SecurityTrainingService {
       requiredModules: requiredModules.length,
       overdueModules: overdueModules.length,
       complianceStatus: this.calculateComplianceStatus(completedModules, requiredModules),
-      nextDueModules: this.getNextDueModules(userId)
+      nextDueModules: this.getNextDueModules(userId),
     };
   }
 
@@ -727,18 +767,21 @@ export class SecurityTrainingService {
 ### 5.1 Shift-Left Security KPIs
 
 #### Development-Time Metrics
+
 - **Pre-commit Hook Adoption Rate**: Percentage of developers using security pre-commit hooks
 - **IDE Security Plugin Usage**: Percentage of developers with security plugins installed
 - **Security Training Completion**: Percentage of required security training completed
 - **Code Review Security Findings**: Number of security issues found per code review
 
 #### Quality Metrics
+
 - **Security Issues per Sprint**: Number of security issues identified and resolved
 - **Mean Time to Detect (MTTD)**: Average time to detect security vulnerabilities
 - **Mean Time to Remediate (MTTR)**: Average time to fix security vulnerabilities
 - **Security Test Coverage**: Percentage of code covered by security tests
 
 #### Process Metrics
+
 - **Security Gate Pass Rate**: Percentage of pull requests passing security gates
 - **Automated Security Test Success Rate**: Percentage of automated security tests passing
 - **Security Issue Resolution Rate**: Percentage of security issues resolved within SLA
@@ -746,12 +789,14 @@ export class SecurityTrainingService {
 ### 5.2 Success Indicators
 
 #### Leading Indicators
+
 1. **Developer Security Awareness**: Measured by training completion and quiz scores
 2. **Security Tool Adoption**: Measured by IDE plugin usage and pre-commit hook adoption
 3. **Security Code Review Quality**: Measured by security findings per review
 4. **Security Test Coverage**: Measured by automated security test coverage
 
 #### Lagging Indicators
+
 1. **Production Security Incidents**: Number and severity of security incidents
 2. **Time to Detect Vulnerabilities**: Average time from introduction to detection
 3. **Time to Remediate Vulnerabilities**: Average time from detection to resolution
@@ -760,24 +805,28 @@ export class SecurityTrainingService {
 ## 6. Implementation Roadmap
 
 ### 6.1 Phase 1: Foundation (Weeks 1-4)
+
 - [x] IDE security integration setup
 - [x] Pre-commit hooks configuration
 - [x] Initial security training program
 - [x] Basic security quality gates
 
 ### 6.2 Phase 2: Integration (Weeks 5-8)
+
 - [ ] Advanced security automation
 - [ ] Security metrics collection
 - [ ] Security dashboard implementation
 - [ ] Security training expansion
 
 ### 6.3 Phase 3: Optimization (Weeks 9-12)
+
 - [ ] Security process optimization
 - [ ] Advanced security analytics
 - [ ] Security champion program
 - [ ] Continuous improvement process
 
 ### 6.4 Phase 4: Advanced Security (Months 4-6)
+
 - [ ] AI/ML-powered security analysis
 - [ ] Advanced threat modeling
 - [ ] Security chaos engineering
@@ -788,12 +837,14 @@ export class SecurityTrainingService {
 ### 7.1 Risk Assessment
 
 #### High-Risk Areas
+
 1. **Developer Adoption Resistance**: Developers may resist security practices
 2. **Tool Integration Issues**: Security tools may conflict with development workflows
 3. **Training Effectiveness**: Security training may not translate to secure coding
 4. **False Positive Management**: Security tools may generate too many false positives
 
 #### Mitigation Strategies
+
 1. **Change Management**: Implement gradual rollout with developer feedback
 2. **Tool Selection**: Choose tools that integrate well with existing workflows
 3. **Practical Training**: Focus on real-world scenarios and hands-on exercises
@@ -802,12 +853,14 @@ export class SecurityTrainingService {
 ### 7.2 Monitoring and Adjustment
 
 #### Continuous Monitoring
+
 - Track adoption rates and effectiveness metrics
 - Monitor security incident trends
 - Review security tool performance
 - Assess training program effectiveness
 
 #### Adjustment Process
+
 1. **Monthly Review**: Review shift-left security metrics
 2. **Quarterly Assessment**: Comprehensive assessment of security practices
 3. **Annual Audit**: Full security program audit and adjustment
@@ -815,18 +868,21 @@ export class SecurityTrainingService {
 ## 8. References
 
 ### 8.1 Security Standards and Frameworks
+
 - **OWASP Application Security Verification Standard (ASVS)**
 - **NIST Cybersecurity Framework**
 - **ISO/IEC 27034 Application Security**
 - **Microsoft SDL (Security Development Lifecycle)**
 
 ### 8.2 Industry Best Practices
+
 - **Google's Security Development Lifecycle**
 - **Microsoft's Secure Development Lifecycle**
 - **OWASP's Secure Coding Practices**
 - **SANS Institute's Secure Coding Guidelines**
 
 ### 8.3 Tool Documentation
+
 - **GitHub Actions Security**: https://docs.github.com/en/actions/security-guides
 - **ESLint Security Plugin**: https://github.com/eslint-community/eslint-plugin-security
 - **CodeQL Documentation**: https://codeql.github.com/
@@ -837,12 +893,10 @@ export class SecurityTrainingService {
 ### 9.1 Security Tool Configuration Templates
 
 #### ESLint Security Configuration
+
 ```json
 {
-  "extends": [
-    "eslint:recommended",
-    "plugin:security/recommended"
-  ],
+  "extends": ["eslint:recommended", "plugin:security/recommended"],
   "plugins": ["security"],
   "rules": {
     "security/detect-object-injection": "error",
@@ -854,6 +908,7 @@ export class SecurityTrainingService {
 ```
 
 #### Pre-commit Hook Template
+
 ```bash
 #!/bin/bash
 # Pre-commit security checks
@@ -880,6 +935,7 @@ echo "✅ Security checks passed"
 ### 9.2 Security Training Materials
 
 #### Secure Coding Exercise Template
+
 ```typescript
 // Exercise: Secure Input Validation
 // Objective: Implement secure input validation for user registration
@@ -896,7 +952,7 @@ function validateUserRegistration(user: UserRegistration): ValidationResult {
   // Implement validation logic here
   return {
     isValid: false,
-    errors: []
+    errors: [],
   };
 }
 
@@ -914,12 +970,14 @@ function validateUserRegistration(user: UserRegistration): ValidationResult {
 **Implementation Status**: In Progress (Phase 1 Complete, Phase 2 In Progress)
 
 **Next Steps**:
+
 1. Complete Phase 2: Development Environment Security
 2. Begin Phase 3: Security Gates and Automation
 3. Implement security training program
 4. Establish security metrics monitoring
 
 **Contact Information**:
+
 - Security Engineering Team: security-team@meqenet.com
 - Security Training Coordinator: training@meqenet.com
 - Development Team Lead: dev-team@meqenet.com
