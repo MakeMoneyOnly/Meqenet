@@ -340,7 +340,7 @@ jobs:
 
           if [ "${{ matrix.test-type }}" = "sast" ]; then
             echo "### 🔍 SAST Findings" >> security-testing-report.md
-            echo "- ESLint Security Issues: $(pnpm run lint:security 2>&1 | grep -c "error\|warning" || echo "0")" >> security-testing-report.md
+            echo "- ESLint Security Issues: $(cd frontend && npx eslint . --ext .ts,.tsx,.js,.jsx --config eslint.config.mjs 2>&1 | grep -c "error\|warning" || echo "0")" >> security-testing-report.md
             echo "- Potential Secrets Found: $(find . -name "*.ts" -o -name "*.js" | xargs grep -l "password\|secret\|key\|token" | wc -l)" >> security-testing-report.md
           fi
 
