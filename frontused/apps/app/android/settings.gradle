@@ -1,0 +1,44 @@
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+        maven {
+            url = new File(settingsDir, "../../../../node_modules/@react-native/gradle-plugin")
+        }
+    }
+
+    // For CI environments, rely on classpath resolution with version
+    if (System.getenv('CI') || System.getenv('GITHUB_ACTIONS')) {
+        println "CI environment detected - using classpath plugin resolution"
+        plugins {
+            id("com.facebook.react.settings") version "0.76.5"
+        }
+    } else {
+        // Try to use includeBuild for local development if the plugin exists
+        def pluginPath = '../../../node_modules/@react-native/gradle-plugin'
+        def pluginDir = new File(new File('.'), pluginPath)
+        if (pluginDir.exists() && pluginDir.isDirectory()) {
+            println "Found React Native gradle plugin locally at: ${pluginDir.absolutePath}"
+            includeBuild(pluginPath)
+        } else {
+            println "React Native gradle plugin not found locally, will use classpath resolution"
+            plugins {
+                id("com.facebook.react.settings") version "0.76.5"
+            }
+        }
+    }
+}
+
+// Apply React Native settings plugin using classpath resolution
+plugins {
+    id("com.facebook.react.settings") version "0.76.5"
+}
+
+// Configure React Native settings extension
+extensions.configure(com1.facebook.react.ReactSettingsExtension){ ex ->
+    ex.autolinkLibrariesFromCommand()
+}
+
+rootProject.name = 'App'
+include ':app'
