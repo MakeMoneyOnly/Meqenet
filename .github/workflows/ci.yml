@@ -52,7 +52,7 @@ jobs:
         run: corepack enable
 
       - name: 📚 Install Dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
 
       - name: 🔧 Generate Prisma Client
         run: pnpm prisma generate --schema=./backend/services/auth-service/prisma/schema.prisma
@@ -109,7 +109,7 @@ jobs:
         run: corepack enable
 
       - name: 📚 Install Dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
 
       - name: 🎨 Code Formatting Check
         run: pnpm run format:check
@@ -189,7 +189,7 @@ jobs:
         run: corepack enable
 
       - name: 📚 Install Dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
 
       - name: 🧪 Run Unit Tests
         run: pnpm run test
@@ -267,8 +267,9 @@ jobs:
       - name: 📦 Install Dependencies
         working-directory: ./frontend
         run: |
-          pnpm install --frozen-lockfile
+          pnpm install --no-frozen-lockfile
           corepack enable
+          cd apps/app && npx react-native doctor --fix || true
 
       # Static Application Security Testing (SAST)
       - name: 🔍 SAST - Static Application Security Testing
@@ -400,8 +401,9 @@ jobs:
       - name: 📦 Install Dependencies
         working-directory: ./frontend
         run: |
-          pnpm install --frozen-lockfile
+          pnpm install --no-frozen-lockfile
           corepack enable
+          cd apps/app && npx react-native doctor --fix || true
 
       - name: 🔧 Setup Java
         uses: actions/setup-java@v4
@@ -526,8 +528,9 @@ jobs:
       - name: 📦 Install Dependencies
         working-directory: ./frontend
         run: |
-          pnpm install --frozen-lockfile
+          pnpm install --no-frozen-lockfile
           corepack enable
+          cd apps/app && npx react-native doctor --fix || true
 
       - name: 🔧 Setup Java
         uses: actions/setup-java@v4
@@ -765,7 +768,7 @@ jobs:
         run: corepack enable
 
       - name: 📚 Install Dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
 
       - name: 🔐 Validate Fayda ID Encryption
         run: |

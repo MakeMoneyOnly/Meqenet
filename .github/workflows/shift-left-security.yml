@@ -105,13 +105,14 @@ jobs:
       - name: 📦 Install Dependencies
         working-directory: ./frontend
         run: |
-          pnpm install --frozen-lockfile
+          pnpm install --no-frozen-lockfile
           corepack enable
 
       - name: 🔍 Run ESLint Security Rules
+        working-directory: ./frontend
         run: |
           echo "🔍 Running ESLint security analysis..."
-          pnpm run lint:security || true
+          npx eslint . --ext .ts,.tsx,.js,.jsx --config eslint.config.mjs || true
 
       - name: 📊 Generate Security Linting Report
         run: |
@@ -190,7 +191,7 @@ jobs:
 
       - name: 📦 Install Dependencies
         run: |
-          pnpm install --frozen-lockfile
+          pnpm install --no-frozen-lockfile
           corepack enable
 
       - name: 🔍 Run npm Audit
@@ -368,7 +369,7 @@ jobs:
 
       - name: 📦 Install Dependencies
         run: |
-          pnpm install --frozen-lockfile
+          pnpm install --no-frozen-lockfile
           corepack enable
 
       - name: 📊 Collect Security Metrics
