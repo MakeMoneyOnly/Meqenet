@@ -438,11 +438,9 @@ jobs:
           else
             echo "❌ React Native Android files still missing, creating minimal gradle.properties..."
             mkdir -p ../../node_modules/react-native/ReactAndroid
-            cat > ../../node_modules/react-native/ReactAndroid/gradle.properties << 'EOF'
-            # React Native Android Gradle Properties
-            android.useAndroidX=true
-            android.enableJetifier=true
-            EOF
+            echo "# React Native Android Gradle Properties" > ../../node_modules/react-native/ReactAndroid/gradle.properties
+            echo "android.useAndroidX=true" >> ../../node_modules/react-native/ReactAndroid/gradle.properties
+            echo "android.enableJetifier=true" >> ../../node_modules/react-native/ReactAndroid/gradle.properties
             echo "✅ Created minimal React Native Android gradle.properties"
           fi
 
@@ -606,11 +604,9 @@ jobs:
           else
             echo "❌ React Native Android files still missing, creating minimal gradle.properties..."
             mkdir -p ../../node_modules/react-native/ReactAndroid
-            cat > ../../node_modules/react-native/ReactAndroid/gradle.properties << 'EOF'
-            # React Native Android Gradle Properties
-            android.useAndroidX=true
-            android.enableJetifier=true
-            EOF
+            echo "# React Native Android Gradle Properties" > ../../node_modules/react-native/ReactAndroid/gradle.properties
+            echo "android.useAndroidX=true" >> ../../node_modules/react-native/ReactAndroid/gradle.properties
+            echo "android.enableJetifier=true" >> ../../node_modules/react-native/ReactAndroid/gradle.properties
             echo "✅ Created minimal React Native Android gradle.properties"
           fi
 
@@ -766,11 +762,9 @@ jobs:
           else
             echo "❌ React Native Android files still missing, creating minimal gradle.properties..."
             mkdir -p ../../node_modules/react-native/ReactAndroid
-            cat > ../../node_modules/react-native/ReactAndroid/gradle.properties << 'EOF'
-            # React Native Android Gradle Properties
-            android.useAndroidX=true
-            android.enableJetifier=true
-            EOF
+            echo "# React Native Android Gradle Properties" > ../../node_modules/react-native/ReactAndroid/gradle.properties
+            echo "android.useAndroidX=true" >> ../../node_modules/react-native/ReactAndroid/gradle.properties
+            echo "android.enableJetifier=true" >> ../../node_modules/react-native/ReactAndroid/gradle.properties
             echo "✅ Created minimal React Native Android gradle.properties"
           fi
 
