@@ -101,10 +101,15 @@ task cleanAutolinkingPackageList {
 
         // Create a dummy autolinking.json file to prevent autolinking task failures
         def autolinkJson = file("${project.buildDir}/generated/autolinking/autolinking.json")
-        if (!autolinkJson.exists()) {
-            autolinkJson.getParentFile().mkdirs()
-            autolinkJson.text = '{"empty": true}'
-            println "✅ Created dummy autolinking.json to satisfy task requirements"
+        autolinkJson.getParentFile().mkdirs()
+        autolinkJson.text = '{"empty": true}'
+        println "✅ Created dummy autolinking.json at: ${autolinkJson.absolutePath}"
+
+        // Verify the file was created successfully
+        if (autolinkJson.exists()) {
+            println "✅ Verified autolinking.json exists with size: ${autolinkJson.length()} bytes"
+        } else {
+            println "❌ Failed to create autolinking.json!"
         }
     }
 }
