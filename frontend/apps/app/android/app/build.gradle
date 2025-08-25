@@ -79,7 +79,8 @@ react {
     /* Manual dependency configuration instead of autolinking */
     // React Native and related dependencies are declared in the dependencies block
 
-    /* Autolinking configuration */
+    /* Autolinking configuration - Disabled for manual package management */
+    autolinkLibrariesWithApp = false
     // Note: Custom PackageList.java handles package registration manually
 }
 
@@ -98,6 +99,20 @@ task cleanAutolinkingPackageList {
             generatedPackageList.delete()
             println "✅ Deleted conflicting autolinking PackageList.java"
         }
+
+        // Also ensure autolinking.json doesn't exist to prevent autolinking tasks from running
+        def autolinkJson = file("${project.buildDir}/generated/autolinking/autolinking.json")
+        if (autolinkJson.exists()) {
+            autolinkJson.delete()
+            println "✅ Deleted autolinking.json to prevent autolinking task failures"
+        }
+    }
+}
+
+// Ensure cleanAutolinkingPackageList runs before any autolinking tasks
+tasks.whenTaskAdded { task ->
+    if (task.name.contains('Autolinking') || task.name.contains('autolinking')) {
+        task.dependsOn cleanAutolinkingPackageList
     }
 }
 
