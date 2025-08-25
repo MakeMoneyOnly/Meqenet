@@ -88,6 +88,14 @@ react {
  */
 def enableProguardInReleaseBuilds = true
 
+// Create dummy autolinking.json during configuration phase to prevent task failures
+gradle.projectsEvaluated {
+    def autolinkJson = file("${project.buildDir}/generated/autolinking/autolinking.json")
+    autolinkJson.getParentFile().mkdirs()
+    autolinkJson.text = '{"empty": true}'
+    println "✅ Created dummy autolinking.json at: ${autolinkJson.absolutePath}"
+}
+
 /**
  * Task to clean up autolinking generated files that conflict with our custom PackageList
  */
@@ -99,17 +107,12 @@ task cleanAutolinkingPackageList {
             println "✅ Deleted conflicting autolinking PackageList.java"
         }
 
-        // Create a dummy autolinking.json file to prevent autolinking task failures
+        // Ensure autolinking.json exists (should already be created above)
         def autolinkJson = file("${project.buildDir}/generated/autolinking/autolinking.json")
-        autolinkJson.getParentFile().mkdirs()
-        autolinkJson.text = '{"empty": true}'
-        println "✅ Created dummy autolinking.json at: ${autolinkJson.absolutePath}"
-
-        // Verify the file was created successfully
-        if (autolinkJson.exists()) {
-            println "✅ Verified autolinking.json exists with size: ${autolinkJson.length()} bytes"
-        } else {
-            println "❌ Failed to create autolinking.json!"
+        if (!autolinkJson.exists()) {
+            autolinkJson.getParentFile().mkdirs()
+            autolinkJson.text = '{"empty": true}'
+            println "✅ Recreated dummy autolinking.json at: ${autolinkJson.absolutePath}"
         }
     }
 }
