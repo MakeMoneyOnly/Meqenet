@@ -1,0 +1,23 @@
+// Enterprise Repository Configuration
+// Mirrors Maven Central and Google Maven for compliance
+allprojects {
+    repositories {
+        // Primary: Local Nexus/Artifactory (when available)
+        // mavenLocal()
+
+        // Mirror: Aliyun (fast and reliable)
+        maven { url = 'https://maven.aliyun.com/repository/google' }
+        maven { url = 'https://maven.aliyun.com/repository/public' }
+
+        // Standard repositories with fallbacks
+        google()
+        mavenCentral()
+
+        // Additional reliable repositories
+        maven { url = 'https://jitpack.io' }
+        maven { url = 'https://plugins.gradle.org/m2/' }
+
+        // Legacy fallback (remove when possible)
+        // jcenter() // DEPRECATED - causes build failures
+    }
+}

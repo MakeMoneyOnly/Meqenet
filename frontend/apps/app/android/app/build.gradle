@@ -1,6 +1,8 @@
-apply plugin: "com.android.application"
-apply plugin: "org.jetbrains.kotlin.android"
-apply plugin: "com.facebook.react"
+plugins {
+    id "com.android.application"
+    id "org.jetbrains.kotlin.android"
+    id "com.facebook.react"
+}
 
 /**
  * This is the configuration block to customize your React Native Android app.
@@ -50,14 +52,37 @@ react {
     //   The list of flags to pass to the Hermes compiler. By default is "-O", "-output-source-map"
     // hermesFlags = ["-O", "-output-source-map"]
 
-    /* Autolinking */
-    autolinkLibrariesWithApp()
+    /* Manual dependency configuration instead of autolinking */
+    // React Native and related dependencies are declared in the dependencies block
+
+    /* Autolinking configuration */
+    // Note: Custom PackageList.java handles package registration manually
 }
 
 /**
  * Set this to true to Run Proguard on Release builds to minify the Java bytecode.
  */
 def enableProguardInReleaseBuilds = true
+
+/**
+ * Task to clean up autolinking generated files that conflict with our custom PackageList
+ */
+task cleanAutolinkingPackageList {
+    doFirst {
+        def generatedPackageList = file("${project.buildDir}/generated/autolinking/src/main/java/com/facebook/react/PackageList.java")
+        if (generatedPackageList.exists()) {
+            generatedPackageList.delete()
+            println "✅ Deleted conflicting autolinking PackageList.java"
+        }
+    }
+}
+
+// Make sure our cleanup task runs before Java compilation
+tasks.whenTaskAdded { task ->
+    if (task.name.contains('compile') && task.name.contains('Java')) {
+        task.dependsOn cleanAutolinkingPackageList
+    }
+}
 
 /**
  * The preferred build flavor of JavaScriptCore (JSC)
@@ -73,40 +98,40 @@ def enableProguardInReleaseBuilds = true
 def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
 
 android {
-    ndkVersion rootProject.ext.ndkVersion
-    buildToolsVersion rootProject.ext.buildToolsVersion
-    compileSdk rootProject.ext.compileSdkVersion
+    ndkVersion = "29.0.13846066"
+    buildToolsVersion = "36.0.0"
+    compileSdkVersion = 35
 
-    namespace "com.app"
+    namespace = "com.app"
     defaultConfig {
-        applicationId "com.app"
-        minSdkVersion rootProject.ext.minSdkVersion
-        targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        applicationId = "com.app"
+        minSdkVersion = 24
+        targetSdkVersion = 35
+        versionCode = 1
+        versionName = "1.0"
     }
     signingConfigs {
         debug {
-            storeFile file('debug.keystore')
-            storePassword 'android'
-            keyAlias 'androiddebugkey'
-            keyPassword 'android'
+            storeFile = file('debug.keystore')
+            storePassword = 'android'
+            keyAlias = 'androiddebugkey'
+            keyPassword = 'android'
         }
     }
     buildTypes {
         debug {
-            signingConfig signingConfigs.debug
+            signingConfig = signingConfigs.debug
         }
         release {
             // Caution! In production, you need to generate your own keystore file.
             // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
-            minifyEnabled enableProguardInReleaseBuilds
+            signingConfig = signingConfigs.debug
+            minifyEnabled = enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
             // Enable shrinkResources for smaller APK size and better security
-            shrinkResources true
+            shrinkResources = true
             // Enable zipAlign for better performance
-            zipAlignEnabled true
+            zipAlignEnabled = true
         }
     }
 }
@@ -115,7 +140,8 @@ dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
 
-    if (hermesEnabled.toBoolean()) {
+    // Use project property for hermes configuration
+    if (project.hasProperty('hermesEnabled') && project.property('hermesEnabled').toBoolean()) {
         implementation("com.facebook.react:hermes-android")
     } else {
         implementation jscFlavor
