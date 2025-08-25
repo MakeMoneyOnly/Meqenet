@@ -58,7 +58,7 @@ jobs:
       - name: 📚 Install Dependencies
         run: |
           pnpm config set registry https://registry.npmjs.org/
-          pnpm install --no-frozen-lockfile --ignore-scripts
+          pnpm install --no-frozen-lockfile --ignore-scripts --ignore-scripts
 
       - name: 🔧 Generate Prisma Client
         run: pnpm prisma generate --schema=./backend/services/auth-service/prisma/schema.prisma
@@ -118,7 +118,7 @@ jobs:
       - name: 📚 Install Dependencies
         run: |
           pnpm config set registry https://registry.npmjs.org/
-          pnpm install --no-frozen-lockfile --ignore-scripts
+          pnpm install --no-frozen-lockfile --ignore-scripts --ignore-scripts
 
       - name: 🎨 Code Formatting Check
         run: pnpm run format:check
@@ -201,7 +201,7 @@ jobs:
       - name: 📚 Install Dependencies
         run: |
           pnpm config set registry https://registry.npmjs.org/
-          pnpm install --no-frozen-lockfile --ignore-scripts
+          pnpm install --no-frozen-lockfile --ignore-scripts --ignore-scripts
 
       - name: 🔧 Generate Prisma Client for Auth Service
         working-directory: ./backend/services/auth-service
@@ -416,7 +416,7 @@ jobs:
       - name: 📦 Install Dependencies
         run: |
           pnpm config set registry https://registry.npmjs.org/
-          pnpm install --no-frozen-lockfile --ignore-scripts
+          pnpm install --no-frozen-lockfile --ignore-scripts --ignore-scripts
           # Ensure React Native CLI is properly set up
           npm install -g @react-native-community/cli || true
           cd frontend/apps/app && npx react-native doctor --fix || true
@@ -582,7 +582,7 @@ jobs:
       - name: 📦 Install Dependencies
         run: |
           pnpm config set registry https://registry.npmjs.org/
-          pnpm install --no-frozen-lockfile --ignore-scripts
+          pnpm install --no-frozen-lockfile --ignore-scripts --ignore-scripts
           # Ensure React Native CLI is properly set up
           npm install -g @react-native-community/cli || true
           cd frontend/apps/app && npx react-native doctor --fix || true
