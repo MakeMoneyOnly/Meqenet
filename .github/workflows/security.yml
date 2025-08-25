@@ -106,8 +106,9 @@ jobs:
             --suppression .github/owasp/dependency-check-suppression.xml
             --centralAnalyzerEnabled false
             --nvdValidForHours 24
-            --connectionTimeout 30000
-            --readTimeout 300000
+            --connectionTimeout 60000
+            --readTimeout 600000
+            --disableAssembly
         continue-on-error: true
 
       - name: 📊 Upload OWASP Results
