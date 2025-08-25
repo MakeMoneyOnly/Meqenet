@@ -36,11 +36,7 @@ pluginManagement {
     if (rnPluginDir.exists() && rnPluginDir.isDirectory()) {
         def env = System.getenv('CI') || System.getenv('GITHUB_ACTIONS') ? 'CI' : 'local'
         println "Found React Native gradle plugin in ${env} environment: ${rnPluginDir.absolutePath}"
-        includeBuild(rnPluginPath) {
-            dependencySubstitution {
-                substitute module('com.facebook.react:react-native-gradle-plugin') using project(':')
-            }
-        }
+        includeBuild(rnPluginPath)
     } else {
         def env = System.getenv('CI') || System.getenv('GITHUB_ACTIONS') ? 'CI' : 'local'
         println "React Native gradle plugin not found in ${env} environment at: ${rnPluginDir.absolutePath}"
