@@ -27,32 +27,24 @@ pluginManagement {
         id("com.facebook.react") version "0.76.5"
     }
 
-    // For CI environments, use includeBuild for React Native plugin
-    if (System.getenv('CI') || System.getenv('GITHUB_ACTIONS')) {
-        println "CI environment detected - using includeBuild for React Native plugin"
-        // Use includeBuild for React Native gradle plugin in CI
-        def pluginPath = '../../../../node_modules/@react-native/gradle-plugin'
-        def pluginDir = new File(settingsDir, pluginPath)
-        if (pluginDir.exists() && pluginDir.isDirectory()) {
-            println "Found React Native gradle plugin in CI: ${pluginDir.absolutePath}"
-            includeBuild(pluginPath) {
-                dependencySubstitution {
-                    substitute module('com.facebook.react:react-native-gradle-plugin') using project(':')
-                }
+    // React Native gradle plugin resolution for all environments
+    def rnPluginPath = System.getenv('CI') || System.getenv('GITHUB_ACTIONS') ?
+        '../../../../node_modules/@react-native/gradle-plugin' :
+        '../../../node_modules/@react-native/gradle-plugin'
+
+    def rnPluginDir = new File(settingsDir, rnPluginPath)
+    if (rnPluginDir.exists() && rnPluginDir.isDirectory()) {
+        def env = System.getenv('CI') || System.getenv('GITHUB_ACTIONS') ? 'CI' : 'local'
+        println "Found React Native gradle plugin in ${env} environment: ${rnPluginDir.absolutePath}"
+        includeBuild(rnPluginPath) {
+            dependencySubstitution {
+                substitute module('com.facebook.react:react-native-gradle-plugin') using project(':')
             }
-        } else {
-            println "React Native gradle plugin not found in CI at: ${pluginDir.absolutePath}"
         }
     } else {
-        // Try to use includeBuild for local development if the plugin exists
-        def pluginPath = '../../../node_modules/@react-native/gradle-plugin'
-        def pluginDir = new File(settingsDir, pluginPath)
-        if (pluginDir.exists() && pluginDir.isDirectory()) {
-            println "Found React Native gradle plugin locally at: ${pluginDir.absolutePath}"
-            includeBuild(pluginPath)
-        } else {
-            println "React Native gradle plugin not found locally, will use classpath resolution"
-        }
+        def env = System.getenv('CI') || System.getenv('GITHUB_ACTIONS') ? 'CI' : 'local'
+        println "React Native gradle plugin not found in ${env} environment at: ${rnPluginDir.absolutePath}"
+        println "Will attempt to use repository resolution"
     }
 }
 
