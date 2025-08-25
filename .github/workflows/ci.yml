@@ -429,7 +429,7 @@ jobs:
           echo "Checking React Native Android setup..."
           if [ ! -d "../../node_modules/react-native/ReactAndroid" ]; then
             echo "⚠️  React Native Android directory not found, reinstalling React Native..."
-            cd ../../ && pnpm install react-native --ignore-scripts
+            cd ../../ && pnpm install react-native --ignore-scripts -w
           fi
 
           # Verify React Native Android files exist
@@ -597,7 +597,7 @@ jobs:
           echo "Checking React Native Android setup..."
           if [ ! -d "../../node_modules/react-native/ReactAndroid" ]; then
             echo "⚠️  React Native Android directory not found, reinstalling React Native..."
-            cd ../../ && pnpm install react-native --ignore-scripts
+            cd ../../ && pnpm install react-native --ignore-scripts -w
           fi
 
           # Verify React Native Android files exist
@@ -757,7 +757,7 @@ jobs:
           echo "Checking React Native Android setup..."
           if [ ! -d "../../node_modules/react-native/ReactAndroid" ]; then
             echo "⚠️  React Native Android directory not found, reinstalling React Native..."
-            cd ../../ && pnpm install react-native --ignore-scripts
+            cd ../../ && pnpm install react-native --ignore-scripts -w
           fi
 
           # Verify React Native Android files exist
