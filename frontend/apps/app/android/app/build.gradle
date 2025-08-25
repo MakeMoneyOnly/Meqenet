@@ -80,7 +80,6 @@ react {
     // React Native and related dependencies are declared in the dependencies block
 
     /* Autolinking configuration - Disabled for manual package management */
-    autolinkLibrariesWithApp = false
     // Note: Custom PackageList.java handles package registration manually
 }
 
@@ -140,6 +139,8 @@ android {
     ndkVersion = "29.0.13846066"
     buildToolsVersion = "36.0.0"
     compileSdkVersion = 35
+    minSdkVersion = 24
+    targetSdkVersion = 35
 
     namespace = "com.app"
     defaultConfig {
