@@ -22,7 +22,7 @@
       "moderate": 5
     },
     "requiredNodeVersion": ">=22.0.0",
-    "requiredPackageManager": "pnpm@10.14.0"
+    "requiredPackageManager": "pnpm@10.4.1"
   },
   "compliance": true
 }
