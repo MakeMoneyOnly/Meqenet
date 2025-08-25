@@ -1,0 +1,1 @@
+  assetExts: assetExts.filter(ext = !== 'svg'),

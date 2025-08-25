@@ -1,0 +1,18 @@
+// Enterprise Dependency Lock Configuration
+// Ensures reproducible builds for FinTech compliance
+
+allprojects {
+    configurations.all {
+        resolutionStrategy {
+            failOnNonReproducibleResolution = true
+            cacheDynamicVersionsFor = 7, 'days'
+            cacheChangingModulesFor = 0, 'seconds'
+        }
+    }
+}
+
+if (project == rootProject) {
+    dependencyLocking {
+        lockAllConfigurations()
+    }
+}

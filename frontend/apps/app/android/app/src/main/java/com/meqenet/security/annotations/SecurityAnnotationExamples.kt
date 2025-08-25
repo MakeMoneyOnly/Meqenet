@@ -6,7 +6,6 @@ package com.meqenet.security.annotations
  */
 
 import android.content.Context
-import androidx.biometric.BiometricPrompt
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 
@@ -22,8 +21,9 @@ class SecurityAnnotationExamples {
         keySize = 256,
         purpose = "Encrypt user payment data"
     )
-    fun encryptPaymentData(data: ByteArray, key: ByteArray): ByteArray {
-        // Implementation here
+    @Suppress("UNUSED_PARAMETER")
+    fun encryptPaymentData(_data: ByteArray, _key: ByteArray): ByteArray {
+        // Implementation would use data and key parameters
         return ByteArray(0)
     }
 
@@ -31,8 +31,9 @@ class SecurityAnnotationExamples {
         algorithm = "AES-256-GCM",
         purpose = "Decrypt user payment data"
     )
-    fun decryptPaymentData(encryptedData: ByteArray, key: ByteArray): ByteArray {
-        // Implementation here
+    @Suppress("UNUSED_PARAMETER")
+    fun decryptPaymentData(_encryptedData: ByteArray, _key: ByteArray): ByteArray {
+        // Implementation would use encryptedData and key parameters
         return ByteArray(0)
     }
 
@@ -65,14 +66,15 @@ class SecurityAnnotationExamples {
         sensitivity = "high",
         encryption = true
     )
+    @Suppress("UNUSED_PARAMETER")
     fun processTransaction(
         @UserInput(source = "user_form", validation = true, sanitization = true)
-        amount: Double,
+        _amount: Double,
 
         @UserInput(source = "user_form", validation = true, sanitization = true)
-        recipientId: String
+        _recipientId: String
     ) {
-        // Implementation here
+        // Implementation would use amount and recipientId parameters
     }
 
     // Example 3: Network Operations
@@ -82,11 +84,12 @@ class SecurityAnnotationExamples {
         authentication = true
     )
     @RequiresAuthentication(method = "JWT", tokenType = "bearer")
+    @Suppress("UNUSED_PARAMETER")
     fun makeSecureApiCall(
         @UserInput(source = "user_input", validation = true)
-        endpoint: String
+        _endpoint: String
     ) {
-        // Implementation here
+        // Implementation would use endpoint parameter
     }
 
     @SSLConfiguration(
@@ -103,11 +106,12 @@ class SecurityAnnotationExamples {
         encryption = true,
         accessControl = true
     )
+    @Suppress("UNUSED_PARAMETER")
     fun storeSensitiveData(
         @SensitiveData(reason = "User credentials", exposureRisk = "critical")
-        data: String
+        _data: String
     ) {
-        // Implementation here
+        // Implementation would use data parameter
     }
 
     @EncryptedStorageAccess(
@@ -130,8 +134,9 @@ class SecurityAnnotationExamples {
         fallback = true,
         strength = "strong"
     )
-    fun authenticateUser(context: Context): Boolean {
-        // Implementation here
+    @Suppress("UNUSED_PARAMETER")
+    fun authenticateUser(_context: Context): Boolean {
+        // Implementation would use context parameter
         return false
     }
 
@@ -140,11 +145,12 @@ class SecurityAnnotationExamples {
         action = "transfer_money",
         scope = "user"
     )
+    @Suppress("UNUSED_PARAMETER")
     fun authorizeMoneyTransfer(
         @UserInput(source = "user_input", validation = true)
-        amount: Double
+        _amount: Double
     ): Boolean {
-        // Implementation here
+        // Implementation would use amount parameter
         return false
     }
 
@@ -154,11 +160,12 @@ class SecurityAnnotationExamples {
         sanitization = true,
         boundsCheck = true
     )
+    @Suppress("UNUSED_PARAMETER")
     fun validateTransactionAmount(
         @UserInput(source = "user_input", validation = true, sanitization = true)
-        amount: String
+        _amount: String
     ): Double {
-        // Implementation here
+        // Implementation would use amount parameter
         return 0.0
     }
 
@@ -173,14 +180,15 @@ class SecurityAnnotationExamples {
         requirement = "Strong Customer Authentication",
         auditFrequency = "quarterly"
     )
+    @Suppress("UNUSED_PARAMETER")
     fun transferMoney(
         @UserInput(source = "user_form", validation = true)
-        amount: Double,
+        _amount: Double,
 
         @UserInput(source = "user_form", validation = true)
-        recipientId: String
+        _recipientId: String
     ) {
-        // Implementation here
+        // Implementation would use amount and recipientId parameters
     }
 
     // Example 8: Security Testing

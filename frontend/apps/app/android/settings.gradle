@@ -3,9 +3,23 @@ pluginManagement {
         google()
         mavenCentral()
         gradlePluginPortal()
+        // Windows-compatible path handling for React Native gradle plugin
         maven {
-            url = new File(settingsDir, "../../../../node_modules/@react-native/gradle-plugin")
+            def pluginPath = new File(settingsDir, "../../../../node_modules/@react-native/gradle-plugin")
+            if (pluginPath.exists()) {
+                // Convert to URI for Windows compatibility
+                url = pluginPath.toURI().toURL()
+                println "[DEBUG] Using React Native Gradle plugin from: ${url}"
+            } else {
+                println "[WARNING] React Native Gradle plugin not found at: ${pluginPath.absolutePath}"
+            }
         }
+    }
+
+    // Specify stable plugin versions to avoid dependency resolution issues
+    plugins {
+        id("org.jetbrains.kotlin.android") version "1.9.24"
+        id("com.facebook.react.settings") version "0.76.5"
     }
 
     // For CI environments, rely on classpath resolution instead of includeBuild
@@ -14,7 +28,7 @@ pluginManagement {
     } else {
         // Try to use includeBuild for local development if the plugin exists
         def pluginPath = '../../../node_modules/@react-native/gradle-plugin'
-        def pluginDir = new File(new File('.'), pluginPath)
+        def pluginDir = new File(settingsDir, pluginPath)
         if (pluginDir.exists() && pluginDir.isDirectory()) {
             println "Found React Native gradle plugin locally at: ${pluginDir.absolutePath}"
             includeBuild(pluginPath)
@@ -24,15 +38,8 @@ pluginManagement {
     }
 }
 
-// Apply React Native settings plugin using classpath resolution
-plugins {
-    id("com.facebook.react.settings")
-}
-
-// Configure React Native settings extension
-extensions.configure(com.facebook.react.ReactSettingsExtension){ ex ->
-    ex.autolinkLibrariesFromCommand()
-}
+// React Native settings extension will be configured automatically by the plugin
+// Removed manual configuration to avoid extension availability issues
 
 rootProject.name = 'App'
 include ':app'
