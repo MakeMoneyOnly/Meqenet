@@ -325,3 +325,26 @@ fayda-test-data/
 # =============================================================================
 package-lock.json
 yarn.lock
+
+# =============================================================================
+# Development Tools & Downloads (not for version control)
+# =============================================================================
+# JDK downloads
+tools/java/*.zip
+tools/java/*.tar.gz
+tools/java/*.dmg
+# Android SDK downloads
+tools/android/*.zip
+tools/android/*.tar.gz
+# IDE and editor downloads
+tools/ide/*.zip
+tools/ide/*.tar.gz
+tools/ide/*.dmg
+# Any large binary downloads in tools directory
+tools/**/*.zip
+tools/**/*.tar.gz
+tools/**/*.dmg
+tools/**/*.exe
+tools/**/*.msi
+# Large files (>50MB)
+*.zip
