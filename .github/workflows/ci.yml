@@ -422,6 +422,30 @@ jobs:
           cd frontend/apps/app && npx react-native doctor --fix || true
           cd frontend/apps/app && npx @react-native-community/cli doctor || true
 
+      - name: 🔧 Setup React Native for Android
+        working-directory: ./frontend/apps/app
+        run: |
+          # Ensure React Native Android dependencies are available
+          echo "Checking React Native Android setup..."
+          if [ ! -d "../../node_modules/react-native/ReactAndroid" ]; then
+            echo "⚠️  React Native Android directory not found, reinstalling React Native..."
+            cd ../../ && pnpm install react-native --ignore-scripts
+          fi
+
+          # Verify React Native Android files exist
+          if [ -f "../../node_modules/react-native/ReactAndroid/gradle.properties" ]; then
+            echo "✅ React Native Android files found"
+          else
+            echo "❌ React Native Android files still missing, creating minimal gradle.properties..."
+            mkdir -p ../../node_modules/react-native/ReactAndroid
+            cat > ../../node_modules/react-native/ReactAndroid/gradle.properties << 'EOF'
+            # React Native Android Gradle Properties
+            android.useAndroidX=true
+            android.enableJetifier=true
+            EOF
+            echo "✅ Created minimal React Native Android gradle.properties"
+          fi
+
       - name: 🔧 Setup Java
         uses: actions/setup-java@v4
         with:
@@ -566,6 +590,30 @@ jobs:
           cd frontend/apps/app && npx react-native doctor --fix || true
           cd frontend/apps/app && npx @react-native-community/cli doctor || true
 
+      - name: 🔧 Setup React Native for Android
+        working-directory: ./frontend/apps/app
+        run: |
+          # Ensure React Native Android dependencies are available
+          echo "Checking React Native Android setup..."
+          if [ ! -d "../../node_modules/react-native/ReactAndroid" ]; then
+            echo "⚠️  React Native Android directory not found, reinstalling React Native..."
+            cd ../../ && pnpm install react-native --ignore-scripts
+          fi
+
+          # Verify React Native Android files exist
+          if [ -f "../../node_modules/react-native/ReactAndroid/gradle.properties" ]; then
+            echo "✅ React Native Android files found"
+          else
+            echo "❌ React Native Android files still missing, creating minimal gradle.properties..."
+            mkdir -p ../../node_modules/react-native/ReactAndroid
+            cat > ../../node_modules/react-native/ReactAndroid/gradle.properties << 'EOF'
+            # React Native Android Gradle Properties
+            android.useAndroidX=true
+            android.enableJetifier=true
+            EOF
+            echo "✅ Created minimal React Native Android gradle.properties"
+          fi
+
       - name: 🔧 Setup Node.js Environment for React Native
         working-directory: ./frontend/apps/app
         run: |
@@ -701,6 +749,30 @@ jobs:
 
       - name: 📚 Install Dependencies
         run: pnpm install --no-frozen-lockfile
+
+      - name: 🔧 Setup React Native for Android
+        working-directory: ./frontend/apps/app
+        run: |
+          # Ensure React Native Android dependencies are available
+          echo "Checking React Native Android setup..."
+          if [ ! -d "../../node_modules/react-native/ReactAndroid" ]; then
+            echo "⚠️  React Native Android directory not found, reinstalling React Native..."
+            cd ../../ && pnpm install react-native --ignore-scripts
+          fi
+
+          # Verify React Native Android files exist
+          if [ -f "../../node_modules/react-native/ReactAndroid/gradle.properties" ]; then
+            echo "✅ React Native Android files found"
+          else
+            echo "❌ React Native Android files still missing, creating minimal gradle.properties..."
+            mkdir -p ../../node_modules/react-native/ReactAndroid
+            cat > ../../node_modules/react-native/ReactAndroid/gradle.properties << 'EOF'
+            # React Native Android Gradle Properties
+            android.useAndroidX=true
+            android.enableJetifier=true
+            EOF
+            echo "✅ Created minimal React Native Android gradle.properties"
+          fi
 
       - name: 🏗️ Build Android (Java/Kotlin) Project
         working-directory: ./frontend/apps/app/android

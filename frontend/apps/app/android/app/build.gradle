@@ -13,11 +13,35 @@ react {
     //   The root of your project, i.e. where "package.json" lives. Default is '../..'
     // root = file("../../")
     //   The folder where the react-native NPM package is. Default is ../../node_modules/react-native
-    reactNativeDir = file("../../../../node_modules/react-native")
+    // In CI environment, React Native is installed at the frontend root level
+    def rnDir = file("../../../../../node_modules/react-native")
+    if (!rnDir.exists()) {
+        // Fallback to local installation
+        rnDir = file("../../../../node_modules/react-native")
+    }
+    if (!rnDir.exists()) {
+        // Last resort - check if React Native Android files exist
+        def rnAndroidDir = new File(rnDir, "ReactAndroid")
+        if (!rnAndroidDir.exists()) {
+            println "⚠️  WARNING: React Native Android directory not found at: ${rnAndroidDir.absolutePath}"
+            println "⚠️  This may cause build failures. Please ensure React Native is properly installed."
+        }
+    }
+    reactNativeDir = rnDir
+
     //   The folder where the react-native Codegen package is. Default is ../../node_modules/@react-native/codegen
-    codegenDir = file("../../../../node_modules/@react-native/codegen")
+    def codegenDirPath = file("../../../../../node_modules/@react-native/codegen")
+    if (!codegenDirPath.exists()) {
+        codegenDirPath = file("../../../../node_modules/@react-native/codegen")
+    }
+    codegenDir = codegenDirPath
+
     //   The cli.js file which is the React Native CLI entrypoint. Default is ../../node_modules/react-native/cli.js
-    cliFile = file("../../../../node_modules/react-native/cli.js")
+    def cliFilePath = file("../../../../../node_modules/react-native/cli.js")
+    if (!cliFilePath.exists()) {
+        cliFilePath = file("../../../../node_modules/react-native/cli.js")
+    }
+    cliFile = cliFilePath
 
     /* Variants */
     //   The list of variants to that are debuggable. For those we're going to
