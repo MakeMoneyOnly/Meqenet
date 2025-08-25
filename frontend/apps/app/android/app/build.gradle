@@ -99,11 +99,12 @@ task cleanAutolinkingPackageList {
             println "✅ Deleted conflicting autolinking PackageList.java"
         }
 
-        // Also ensure autolinking.json doesn't exist to prevent autolinking tasks from running
+        // Create a dummy autolinking.json file to prevent autolinking task failures
         def autolinkJson = file("${project.buildDir}/generated/autolinking/autolinking.json")
-        if (autolinkJson.exists()) {
-            autolinkJson.delete()
-            println "✅ Deleted autolinking.json to prevent autolinking task failures"
+        if (!autolinkJson.exists()) {
+            autolinkJson.getParentFile().mkdirs()
+            autolinkJson.text = '{"empty": true}'
+            println "✅ Created dummy autolinking.json to satisfy task requirements"
         }
     }
 }
