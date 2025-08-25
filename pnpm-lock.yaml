@@ -622,7 +622,7 @@ importers:
         version: 18.3.1(react@18.3.1)
       react-native:
         specifier: 0.76.5
-        version: 0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.0.0(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5)
+        version: 0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.1.3(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5)
     devDependencies:
       '@babel/core':
         specifier: ^7.26.0
@@ -673,8 +673,8 @@ importers:
         specifier: 21.4.0
         version: 21.4.0(@swc-node/register@1.11.1(@swc/core@1.13.4(@swc/helpers@0.5.17))(@swc/types@0.1.24)(typescript@5.8.3))(@swc/core@1.13.4(@swc/helpers@0.5.17))
       '@react-native-community/cli':
-        specifier: 15.0.0
-        version: 15.0.0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@6.0.5)
+        specifier: 15.1.3
+        version: 15.1.3(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@6.0.5)
       '@react-native-community/cli-platform-android':
         specifier: 15.0.0
         version: 15.0.0
@@ -710,7 +710,7 @@ importers:
         version: 16.1.0(@testing-library/dom@10.4.0)(@types/react-dom@18.3.7(@types/react@18.3.24))(@types/react@18.3.24)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@testing-library/react-native':
         specifier: ~13.2.2
-        version: 13.2.2(jest@30.0.5(@types/node@22.17.2)(babel-plugin-macros@3.1.0)(ts-node@10.9.1(@swc/core@1.13.4(@swc/helpers@0.5.17))(@types/node@22.17.2)(typescript@5.8.3)))(react-native@0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.0.0(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5))(react-test-renderer@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 13.2.2(jest@30.0.5(@types/node@22.17.2)(babel-plugin-macros@3.1.0)(ts-node@10.9.1(@swc/core@1.13.4(@swc/helpers@0.5.17))(@types/node@22.17.2)(typescript@5.8.3)))(react-native@0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.1.3(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5))(react-test-renderer@18.3.1(react@18.3.1))(react@18.3.1)
       '@types/jest':
         specifier: ^30.0.0
         version: 30.0.0
@@ -779,10 +779,10 @@ importers:
         version: 3.6.2
       react-native-svg:
         specifier: ~15.11.2
-        version: 15.11.2(react-native@0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.0.0(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5))(react@18.3.1)
+        version: 15.11.2(react-native@0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.1.3(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5))(react@18.3.1)
       react-native-svg-transformer:
         specifier: ~1.5.1
-        version: 1.5.1(react-native-svg@15.11.2(react-native@0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.0.0(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5))(react@18.3.1))(react-native@0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.0.0(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5))(typescript@5.8.3)
+        version: 1.5.1(react-native-svg@15.11.2(react-native@0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.1.3(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5))(react@18.3.1))(react-native@0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.1.3(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5))(typescript@5.8.3)
       react-native-svg-web:
         specifier: ~1.0.9
         version: 1.0.9(prop-types@15.8.1)(react-native-web@0.20.0(encoding@0.1.13)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
@@ -821,7 +821,7 @@ importers:
         version: 0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(bufferutil@4.0.9)(utf-8-validate@6.0.5)
       '@testing-library/react-native':
         specifier: ~13.2.2
-        version: 13.2.2(jest@30.0.5(@types/node@24.3.0)(ts-node@10.9.2(@swc/core@1.13.4(@swc/helpers@0.5.17))(@types/node@24.3.0)(typescript@5.9.2)))(react-native@0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.0.0(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5))(react-test-renderer@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 13.2.2(jest@30.0.5(@types/node@24.3.0)(ts-node@10.9.2(@swc/core@1.13.4(@swc/helpers@0.5.17))(@types/node@24.3.0)(typescript@5.9.2)))(react-native@0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.1.3(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5))(react-test-renderer@18.3.1(react@18.3.1))(react@18.3.1)
       metro-config:
         specifier: ~0.82.5
         version: 0.82.5(bufferutil@4.0.9)(utf-8-validate@6.0.5)
@@ -830,16 +830,16 @@ importers:
         version: 18.3.1
       react-native:
         specifier: 0.76.5
-        version: 0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.0.0(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5)
+        version: 0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.1.3(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5)
       react-native-svg:
         specifier: ~15.11.2
-        version: 15.11.2(react-native@0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.0.0(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5))(react@18.3.1)
+        version: 15.11.2(react-native@0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.1.3(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5))(react@18.3.1)
       react-test-renderer:
         specifier: ~18.3.1
         version: 18.3.1(react@18.3.1)
       twrnc:
         specifier: 4.9.1
-        version: 4.9.1(react-native@0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.0.0(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5))(ts-node@10.9.2(@swc/core@1.13.4(@swc/helpers@0.5.17))(@types/node@24.3.0)(typescript@5.9.2))
+        version: 4.9.1(react-native@0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.1.3(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5))(ts-node@10.9.2(@swc/core@1.13.4(@swc/helpers@0.5.17))(@types/node@24.3.0)(typescript@5.9.2))
 
   frontend/apps/website:
     dependencies:
@@ -4192,38 +4192,56 @@ packages:
   '@protobufjs/utf8@1.1.0':
     resolution: {integrity: sha512-Vvn3zZrhQZkkBE8LSuW3em98c0FwgO4nxzv6OdSxPKJIEKY2bGbHn+mhGIPerzI4twdxaP8/0+06HBpwf345Lw==}
 
-  '@react-native-community/cli-clean@15.0.0':
-    resolution: {integrity: sha512-ndwVj77eYivHTRmwRBmiAhQq0nC012PDr9cqRQ5QUQl9xr9gXlyO26oWA9jJbXNydXf5DHsVqqDVvh97fERsbg==}
+  '@react-native-community/cli-clean@15.1.3':
+    resolution: {integrity: sha512-3s9NGapIkONFoCUN2s77NYI987GPSCdr74rTf0TWyGIDf4vTYgKoWKKR+Ml3VTa1BCj51r4cYuHEKE1pjUSc0w==}
 
-  '@react-native-community/cli-config@15.0.0':
-    resolution: {integrity: sha512-YwmQ9Q7JerwqYg0kMD+jwPer1x2ajPR7bjxkOzykfLK4AZxEZo+KgpkSTILMvdqW0WyaXwuYFsgtPa/YVaOn0A==}
+  '@react-native-community/cli-config-android@15.1.3':
+    resolution: {integrity: sha512-v9okV/WQfMJEWRddI0S6no2v9Lvk54KgFkw1mvMYhJKVqloCNsIWzoqme0u7zIuYSzwsjXUQXVlGiDzbbwdkBw==}
 
-  '@react-native-community/cli-debugger-ui@15.0.0':
-    resolution: {integrity: sha512-S5A3QZv0ujP/TXZ+1lrlvRfetwuAvrSMJiBEcMh5pzObpr4Ura3naU6bh/ue+QFn9qJtNxoapC2c79B9Ngns/w==}
+  '@react-native-community/cli-config-apple@15.1.3':
+    resolution: {integrity: sha512-Qv6jaEaycv+7s8wR9l9bdpIeSNFCeVANfGCX1x76SgOmGfZNIa7J3l1HaeF/5ktERMYsw/hm4u3rUn4Ks0YV1g==}
 
-  '@react-native-community/cli-doctor@15.0.0':
-    resolution: {integrity: sha512-UEavoARx1VRxZrNiiVWseP/6dBbP/qAJ9q7S4qf7iT6wstssxi+XCBwoONCQp5IIRJ8LAwKkxCksBuhoMDGzQg==}
+  '@react-native-community/cli-config@15.1.3':
+    resolution: {integrity: sha512-fJ9MrWp+/SszEVg5Wja8A57Whl5EfjRCHWFNkvFBtfjVUfi2hWvSTW3VBxzJuCHnPIIwpQafwjEgOrIRUI8y6w==}
+
+  '@react-native-community/cli-debugger-ui@15.1.3':
+    resolution: {integrity: sha512-m+fb9iAUNb9WiDdokCBLh0InJvollcgAM3gLjCT8DGTP6bH/jxtZ3DszzyIRqN9cMamItVrvDM0vkIg48xK7rQ==}
+
+  '@react-native-community/cli-doctor@15.1.3':
+    resolution: {integrity: sha512-WC9rawobuITAtJjyZ68E1M0geRt+b9A2CGB354L/tQp+XMKobGGVI4Y0DsattK83Wdg59GPyldE8C0Wevfgm/A==}
 
   '@react-native-community/cli-platform-android@15.0.0':
     resolution: {integrity: sha512-YQB48ulIdXqe/hEzPmVe5EU13AIQj/PNGZJSqHGoFs4wQYL4jR04iQ7wxIQSuw11TGZO3ne9rG4/rHt+3imE6Q==}
 
+  '@react-native-community/cli-platform-android@15.1.3':
+    resolution: {integrity: sha512-ZwrBK0UK4DRHoQm2v5m8+PlNHBK5gmibBU6rqNFLo4aZJ2Rufalbv3SF+DukgSyoI9/kI8UVrzSNj17e+HhN5A==}
+
   '@react-native-community/cli-platform-apple@15.0.0':
     resolution: {integrity: sha512-DUC4AL3AGNjUDkTrK71fBz2B/aloJm+NHc5deTfEicRvDkyHDM16RqkuFwcvrzaKOtnMDwuDNPM7/PSEp8tbVg==}
+
+  '@react-native-community/cli-platform-apple@15.1.3':
+    resolution: {integrity: sha512-awotqCGVcTdeRmTlE3wlsZgNxZUDGojUhPYOVMKejgdCzNM2bvzF8fqhETH2sc64Hbw/tQJg8pYeD4MZR0bHxw==}
 
   '@react-native-community/cli-platform-ios@15.0.0':
     resolution: {integrity: sha512-2tP9R0tDIEA55ebNoVZFs0fQgz2nrnMy/epmsUrNC2p4+ZmPQEojqjB+OFaZV4Mh0svks+WoPqf9blk39kN7eg==}
 
-  '@react-native-community/cli-server-api@15.0.0':
-    resolution: {integrity: sha512-ypq/5SghbuSaOFVaC+TGAlYCp5hTN0mZ6zBheBzD3OTWXhTu9UCBGCjubmBPLastXr0E6G0djTy4xZ5rwCrHWw==}
+  '@react-native-community/cli-platform-ios@15.1.3':
+    resolution: {integrity: sha512-DxM8GYkqjrlGuuGiGjrcvUmKC2xv9zDzHbsc4+S160Nn0zbF2OH1DhMlnIuUeCmQnAO6QFMqU99O120iEzCAug==}
+
+  '@react-native-community/cli-server-api@15.1.3':
+    resolution: {integrity: sha512-kXZ0evedluLt6flWQiI3JqwnW8rSBspOoQ7JVTQYiG5lDHAeL3Om9PjAyiQBg1EZRMjiWZDV7nDxhR+m+6NX5Q==}
 
   '@react-native-community/cli-tools@15.0.0':
     resolution: {integrity: sha512-JZzHRJs+6F6or3tloXdbo6aSL2ifbvs7WKsEPjVFuXfaKNEzpQAqWAKMDr95VUEovuX942yD/QRLo6S2W5NTrw==}
 
-  '@react-native-community/cli-types@15.0.0':
-    resolution: {integrity: sha512-sn+h6grsNxJFzKfOdzJX0HOIHbDnWiOo75+T4DBBdREfPTrq0Ao6NybxDWeircdMA6ovYrJLmjByls2MuCQMUA==}
+  '@react-native-community/cli-tools@15.1.3':
+    resolution: {integrity: sha512-2RzoUKR+Y03ijBeeSoCSQihyN6dxy3fbHjraO4MheZZUzt/Yd1VMEDd0R5aa6rtiRDoknbHt45RL2GMa8MSaEA==}
 
-  '@react-native-community/cli@15.0.0':
-    resolution: {integrity: sha512-IzDIFCoWZsoOHLSKcd8OX9gAXnbH83vsyBIFaj/X6praDUA4VCnDf41mGGSOT/VEarGlarTa3tvRcqZ8aE5l/A==}
+  '@react-native-community/cli-types@15.1.3':
+    resolution: {integrity: sha512-0ZaM8LMsa7z7swBN+ObL2ysc6aA3AdS698Q6uEukym6RyX1uLbiofUdlvFSMpWSEL3D8f9OTymmL4RkCH8k6dw==}
+
+  '@react-native-community/cli@15.1.3':
+    resolution: {integrity: sha512-+ih/WYUkJsEV2CMAnOHvVoSIz/Ahg5UJk+sqSIOmY79mWAglQzfLP71o7b0neJCnJWLmWiO6G6/S+kmULefD5g==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -17840,16 +17858,30 @@ snapshots:
 
   '@protobufjs/utf8@1.1.0': {}
 
-  '@react-native-community/cli-clean@15.0.0':
+  '@react-native-community/cli-clean@15.1.3':
     dependencies:
-      '@react-native-community/cli-tools': 15.0.0
+      '@react-native-community/cli-tools': 15.1.3
       chalk: 4.1.2
       execa: 5.1.1
       fast-glob: 3.3.3
 
-  '@react-native-community/cli-config@15.0.0(typescript@5.8.3)':
+  '@react-native-community/cli-config-android@15.1.3':
     dependencies:
-      '@react-native-community/cli-tools': 15.0.0
+      '@react-native-community/cli-tools': 15.1.3
+      chalk: 4.1.2
+      fast-glob: 3.3.3
+      fast-xml-parser: 4.5.3
+
+  '@react-native-community/cli-config-apple@15.1.3':
+    dependencies:
+      '@react-native-community/cli-tools': 15.1.3
+      chalk: 4.1.2
+      execa: 5.1.1
+      fast-glob: 3.3.3
+
+  '@react-native-community/cli-config@15.1.3(typescript@5.8.3)':
+    dependencies:
+      '@react-native-community/cli-tools': 15.1.3
       chalk: 4.1.2
       cosmiconfig: 9.0.0(typescript@5.8.3)
       deepmerge: 4.3.1
@@ -17858,19 +17890,19 @@ snapshots:
     transitivePeerDependencies:
       - typescript
 
-  '@react-native-community/cli-debugger-ui@15.0.0':
+  '@react-native-community/cli-debugger-ui@15.1.3':
     dependencies:
       serve-static: 1.16.2
     transitivePeerDependencies:
       - supports-color
 
-  '@react-native-community/cli-doctor@15.0.0(typescript@5.8.3)':
+  '@react-native-community/cli-doctor@15.1.3(typescript@5.8.3)':
     dependencies:
-      '@react-native-community/cli-config': 15.0.0(typescript@5.8.3)
-      '@react-native-community/cli-platform-android': 15.0.0
-      '@react-native-community/cli-platform-apple': 15.0.0
-      '@react-native-community/cli-platform-ios': 15.0.0
-      '@react-native-community/cli-tools': 15.0.0
+      '@react-native-community/cli-config': 15.1.3(typescript@5.8.3)
+      '@react-native-community/cli-platform-android': 15.1.3
+      '@react-native-community/cli-platform-apple': 15.1.3
+      '@react-native-community/cli-platform-ios': 15.1.3
+      '@react-native-community/cli-tools': 15.1.3
       chalk: 4.1.2
       command-exists: 1.2.9
       deepmerge: 4.3.1
@@ -17894,6 +17926,14 @@ snapshots:
       fast-xml-parser: 4.5.3
       logkitty: 0.7.1
 
+  '@react-native-community/cli-platform-android@15.1.3':
+    dependencies:
+      '@react-native-community/cli-config-android': 15.1.3
+      '@react-native-community/cli-tools': 15.1.3
+      chalk: 4.1.2
+      execa: 5.1.1
+      logkitty: 0.7.1
+
   '@react-native-community/cli-platform-apple@15.0.0':
     dependencies:
       '@react-native-community/cli-tools': 15.0.0
@@ -17903,14 +17943,26 @@ snapshots:
       fast-xml-parser: 4.5.3
       ora: 5.4.1
 
+  '@react-native-community/cli-platform-apple@15.1.3':
+    dependencies:
+      '@react-native-community/cli-config-apple': 15.1.3
+      '@react-native-community/cli-tools': 15.1.3
+      chalk: 4.1.2
+      execa: 5.1.1
+      fast-xml-parser: 4.5.3
+
   '@react-native-community/cli-platform-ios@15.0.0':
     dependencies:
       '@react-native-community/cli-platform-apple': 15.0.0
 
-  '@react-native-community/cli-server-api@15.0.0(bufferutil@4.0.9)(utf-8-validate@6.0.5)':
+  '@react-native-community/cli-platform-ios@15.1.3':
     dependencies:
-      '@react-native-community/cli-debugger-ui': 15.0.0
-      '@react-native-community/cli-tools': 15.0.0
+      '@react-native-community/cli-platform-apple': 15.1.3
+
+  '@react-native-community/cli-server-api@15.1.3(bufferutil@4.0.9)(utf-8-validate@6.0.5)':
+    dependencies:
+      '@react-native-community/cli-debugger-ui': 15.1.3
+      '@react-native-community/cli-tools': 15.1.3
       compression: 1.8.1
       connect: 3.7.0
       errorhandler: 1.5.1
@@ -17937,19 +17989,33 @@ snapshots:
       shell-quote: 1.8.3
       sudo-prompt: 9.2.1
 
-  '@react-native-community/cli-types@15.0.0':
+  '@react-native-community/cli-tools@15.1.3':
+    dependencies:
+      appdirsjs: 1.2.7
+      chalk: 4.1.2
+      execa: 5.1.1
+      find-up: 5.0.0
+      mime: 2.6.0
+      open: 6.4.0
+      ora: 5.4.1
+      prompts: 2.4.2
+      semver: 7.7.2
+      shell-quote: 1.8.3
+      sudo-prompt: 9.2.1
+
+  '@react-native-community/cli-types@15.1.3':
     dependencies:
       joi: 17.13.3
 
-  '@react-native-community/cli@15.0.0(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@6.0.5)':
+  '@react-native-community/cli@15.1.3(bufferutil@4.0.9)(typescript@5.8.3)(utf-8-validate@6.0.5)':
     dependencies:
-      '@react-native-community/cli-clean': 15.0.0
-      '@react-native-community/cli-config': 15.0.0(typescript@5.8.3)
-      '@react-native-community/cli-debugger-ui': 15.0.0
-      '@react-native-community/cli-doctor': 15.0.0(typescript@5.8.3)
-      '@react-native-community/cli-server-api': 15.0.0(bufferutil@4.0.9)(utf-8-validate@6.0.5)
-      '@react-native-community/cli-tools': 15.0.0
-      '@react-native-community/cli-types': 15.0.0
+      '@react-native-community/cli-clean': 15.1.3
+      '@react-native-community/cli-config': 15.1.3(typescript@5.8.3)
+      '@react-native-community/cli-debugger-ui': 15.1.3
+      '@react-native-community/cli-doctor': 15.1.3(typescript@5.8.3)
+      '@react-native-community/cli-server-api': 15.1.3(bufferutil@4.0.9)(utf-8-validate@6.0.5)
+      '@react-native-community/cli-tools': 15.1.3
+      '@react-native-community/cli-types': 15.1.3
       chalk: 4.1.2
       commander: 9.5.0
       deepmerge: 4.3.1
@@ -18039,7 +18105,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@react-native/community-cli-plugin@0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.0.0(bufferutil@4.0.9)(utf-8-validate@6.0.5))(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@6.0.5)':
+  '@react-native/community-cli-plugin@0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.1.3(bufferutil@4.0.9)(utf-8-validate@6.0.5))(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@6.0.5)':
     dependencies:
       '@react-native/dev-middleware': 0.76.5(bufferutil@4.0.9)(utf-8-validate@6.0.5)
       '@react-native/metro-babel-transformer': 0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))
@@ -18053,7 +18119,7 @@ snapshots:
       readline: 1.3.0
       semver: 7.7.2
     optionalDependencies:
-      '@react-native-community/cli-server-api': 15.0.0(bufferutil@4.0.9)(utf-8-validate@6.0.5)
+      '@react-native-community/cli-server-api': 15.1.3(bufferutil@4.0.9)(utf-8-validate@6.0.5)
     transitivePeerDependencies:
       - '@babel/core'
       - '@babel/preset-env'
@@ -18113,12 +18179,12 @@ snapshots:
 
   '@react-native/normalize-colors@0.76.5': {}
 
-  '@react-native/virtualized-lists@0.76.5(@types/react@18.3.24)(react-native@0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.0.0(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5))(react@18.3.1)':
+  '@react-native/virtualized-lists@0.76.5(@types/react@18.3.24)(react-native@0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.1.3(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5))(react@18.3.1)':
     dependencies:
       invariant: 2.2.4
       nullthrows: 1.1.1
       react: 18.3.1
-      react-native: 0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.0.0(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5)
+      react-native: 0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.1.3(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5)
     optionalDependencies:
       '@types/react': 18.3.24
 
@@ -18912,25 +18978,25 @@ snapshots:
       lz-string: 1.5.0
       pretty-format: 27.5.1
 
-  '@testing-library/react-native@13.2.2(jest@30.0.5(@types/node@22.17.2)(babel-plugin-macros@3.1.0)(ts-node@10.9.1(@swc/core@1.13.4(@swc/helpers@0.5.17))(@types/node@22.17.2)(typescript@5.8.3)))(react-native@0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.0.0(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5))(react-test-renderer@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@testing-library/react-native@13.2.2(jest@30.0.5(@types/node@22.17.2)(babel-plugin-macros@3.1.0)(ts-node@10.9.1(@swc/core@1.13.4(@swc/helpers@0.5.17))(@types/node@22.17.2)(typescript@5.8.3)))(react-native@0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.1.3(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5))(react-test-renderer@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       chalk: 4.1.2
       jest-matcher-utils: 30.0.5
       pretty-format: 30.0.5
       react: 18.3.1
-      react-native: 0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.0.0(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5)
+      react-native: 0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.1.3(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5)
       react-test-renderer: 18.3.1(react@18.3.1)
       redent: 3.0.0
     optionalDependencies:
       jest: 30.0.5(@types/node@22.17.2)(babel-plugin-macros@3.1.0)(ts-node@10.9.1(@swc/core@1.13.4(@swc/helpers@0.5.17))(@types/node@22.17.2)(typescript@5.8.3))
 
-  '@testing-library/react-native@13.2.2(jest@30.0.5(@types/node@24.3.0)(ts-node@10.9.2(@swc/core@1.13.4(@swc/helpers@0.5.17))(@types/node@24.3.0)(typescript@5.9.2)))(react-native@0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.0.0(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5))(react-test-renderer@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@testing-library/react-native@13.2.2(jest@30.0.5(@types/node@24.3.0)(ts-node@10.9.2(@swc/core@1.13.4(@swc/helpers@0.5.17))(@types/node@24.3.0)(typescript@5.9.2)))(react-native@0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.1.3(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5))(react-test-renderer@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       chalk: 4.1.2
       jest-matcher-utils: 30.0.5
       pretty-format: 30.0.5
       react: 18.3.1
-      react-native: 0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.0.0(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5)
+      react-native: 0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.1.3(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5)
       react-test-renderer: 18.3.1(react@18.3.1)
       redent: 3.0.0
     optionalDependencies:
@@ -26389,14 +26455,14 @@ snapshots:
 
   react-is@18.3.1: {}
 
-  react-native-svg-transformer@1.5.1(react-native-svg@15.11.2(react-native@0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.0.0(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5))(react@18.3.1))(react-native@0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.0.0(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5))(typescript@5.8.3):
+  react-native-svg-transformer@1.5.1(react-native-svg@15.11.2(react-native@0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.1.3(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5))(react@18.3.1))(react-native@0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.1.3(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5))(typescript@5.8.3):
     dependencies:
       '@svgr/core': 8.1.0(typescript@5.8.3)
       '@svgr/plugin-jsx': 8.1.0(@svgr/core@8.1.0(typescript@5.8.3))
       '@svgr/plugin-svgo': 8.1.0(@svgr/core@8.1.0(typescript@5.8.3))(typescript@5.8.3)
       path-dirname: 1.0.2
-      react-native: 0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.0.0(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5)
-      react-native-svg: 15.11.2(react-native@0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.0.0(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5))(react@18.3.1)
+      react-native: 0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.1.3(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5)
+      react-native-svg: 15.11.2(react-native@0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.1.3(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5))(react@18.3.1)
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -26407,12 +26473,12 @@ snapshots:
       react: 18.3.1
       react-native-web: 0.20.0(encoding@0.1.13)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
 
-  react-native-svg@15.11.2(react-native@0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.0.0(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5))(react@18.3.1):
+  react-native-svg@15.11.2(react-native@0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.1.3(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5))(react@18.3.1):
     dependencies:
       css-select: 5.2.2
       css-tree: 1.1.3
       react: 18.3.1
-      react-native: 0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.0.0(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5)
+      react-native: 0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.1.3(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5)
       warn-once: 0.1.1
 
   react-native-web@0.20.0(encoding@0.1.13)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
@@ -26430,16 +26496,16 @@ snapshots:
     transitivePeerDependencies:
       - encoding
 
-  react-native@0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.0.0(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5):
+  react-native@0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.1.3(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5):
     dependencies:
       '@jest/create-cache-key-function': 29.7.0
       '@react-native/assets-registry': 0.76.5
       '@react-native/codegen': 0.76.5(@babel/preset-env@7.28.3(@babel/core@7.28.3))
-      '@react-native/community-cli-plugin': 0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.0.0(bufferutil@4.0.9)(utf-8-validate@6.0.5))(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@6.0.5)
+      '@react-native/community-cli-plugin': 0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.1.3(bufferutil@4.0.9)(utf-8-validate@6.0.5))(bufferutil@4.0.9)(encoding@0.1.13)(utf-8-validate@6.0.5)
       '@react-native/gradle-plugin': 0.76.5
       '@react-native/js-polyfills': 0.76.5
       '@react-native/normalize-colors': 0.76.5
-      '@react-native/virtualized-lists': 0.76.5(@types/react@18.3.24)(react-native@0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.0.0(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5))(react@18.3.1)
+      '@react-native/virtualized-lists': 0.76.5(@types/react@18.3.24)(react-native@0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.1.3(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5))(react@18.3.1)
       abort-controller: 3.0.0
       anser: 1.4.10
       ansi-regex: 5.0.1
@@ -28094,9 +28160,9 @@ snapshots:
 
   tsscmp@1.0.6: {}
 
-  twrnc@4.9.1(react-native@0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.0.0(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5))(ts-node@10.9.2(@swc/core@1.13.4(@swc/helpers@0.5.17))(@types/node@24.3.0)(typescript@5.9.2)):
+  twrnc@4.9.1(react-native@0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.1.3(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5))(ts-node@10.9.2(@swc/core@1.13.4(@swc/helpers@0.5.17))(@types/node@24.3.0)(typescript@5.9.2)):
     dependencies:
-      react-native: 0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.0.0(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5)
+      react-native: 0.76.5(@babel/core@7.28.3)(@babel/preset-env@7.28.3(@babel/core@7.28.3))(@react-native-community/cli-server-api@15.1.3(bufferutil@4.0.9)(utf-8-validate@6.0.5))(@types/react@18.3.24)(bufferutil@4.0.9)(encoding@0.1.13)(react@18.3.1)(utf-8-validate@6.0.5)
       tailwindcss: 3.4.17(ts-node@10.9.2(@swc/core@1.13.4(@swc/helpers@0.5.17))(@types/node@24.3.0)(typescript@5.9.2))
     transitivePeerDependencies:
       - ts-node
