@@ -3,6 +3,9 @@ pluginManagement {
         google()
         mavenCentral()
         gradlePluginPortal()
+        // Enterprise-grade repositories for stable builds
+        maven { url = "https://plugins.gradle.org/m2/" }
+        maven { url = "https://repo1.maven.org/maven2/" }
         // Windows-compatible path handling for React Native gradle plugin
         maven {
             def pluginPath = new File(settingsDir, "../../../../node_modules/@react-native/gradle-plugin")
@@ -20,11 +23,24 @@ pluginManagement {
     plugins {
         id("org.jetbrains.kotlin.android") version "1.9.24"
         id("com.facebook.react.settings") version "0.76.5"
+        // Add explicit React plugin resolution for CI environments
+        id("com.facebook.react") version "0.76.5"
     }
 
-    // For CI environments, rely on classpath resolution instead of includeBuild
+    // For CI environments, use explicit plugin resolution
     if (System.getenv('CI') || System.getenv('GITHUB_ACTIONS')) {
-        println "CI environment detected - using classpath plugin resolution"
+        println "CI environment detected - using explicit plugin resolution"
+        // Ensure React plugin is available via classpath in CI
+        resolutionStrategy {
+            eachPlugin {
+                if (requested.id.namespace == "com.facebook.react") {
+                    def pluginPath = new File(settingsDir, "../../../../node_modules/@react-native/gradle-plugin")
+                    if (pluginPath.exists()) {
+                        useModule("com.facebook.react:react-native-gradle-plugin:0.76.5")
+                    }
+                }
+            }
+        }
     } else {
         // Try to use includeBuild for local development if the plugin exists
         def pluginPath = '../../../node_modules/@react-native/gradle-plugin'
