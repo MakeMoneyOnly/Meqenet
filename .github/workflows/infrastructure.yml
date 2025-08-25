@@ -23,13 +23,20 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          registry-url: "https://registry.npmjs.org"
 
       - uses: pnpm/action-setup@v4
         with:
-          version: 10.14.0
+          version: 10.4.1
+          run_install: false
 
       - name: 🔧 Enable Corepack
         run: corepack enable
+
+      - name: 📚 Install Dependencies
+        run: |
+          pnpm config set registry https://registry.npmjs.org/
+          pnpm install --no-frozen-lockfile --ignore-scripts
 
       - uses: hashicorp/setup-terraform@v3
       - name: Terraform fmt check
