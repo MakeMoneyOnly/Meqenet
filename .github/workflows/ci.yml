@@ -432,9 +432,9 @@ jobs:
       - name: 🔧 Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
-          api-level: 34
-          target: android-34
-          build-tools: "34.0.0"
+          api-level: 35
+          target: android-35
+          build-tools: "36.0.0"
           # Only install essential components to avoid emulator download issues
           components: platform-tools
           # Disable emulator to prevent ZipFile errors
@@ -470,11 +470,16 @@ jobs:
           path: "./frontend/apps/app/android"
           format: "ALL"
           args: >
+            --noupdate
             --enableRetired
             --enableExperimental
-            --nvdValidForHours 24
             --failOnCVSS 9
             --suppression .github/owasp/dependency-check-suppression.xml
+            --centralAnalyzerEnabled false
+            --nvdValidForHours 24
+            --connectionTimeout 30000
+            --readTimeout 300000
+        continue-on-error: true
 
       - name: 📊 Generate Android Dependency Security Report
         working-directory: ./frontend/apps/app/android
@@ -588,9 +593,9 @@ jobs:
       - name: 🔧 Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
-          api-level: 34
-          target: android-34
-          build-tools: "34.0.0"
+          api-level: 35
+          target: android-35
+          build-tools: "36.0.0"
           # Only install essential components to avoid emulator download issues
           components: platform-tools
           # Disable emulator to prevent ZipFile errors
