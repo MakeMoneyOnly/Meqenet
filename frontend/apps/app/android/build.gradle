@@ -24,8 +24,15 @@ buildscript {
         classpath("com.android.tools.build:gradle:8.6.0")  // Android Gradle plugin
         // classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.24")  // Kotlin plugin - commented out for offline build
         // Note: gradle-versions-plugin is now managed via plugins block
-        // React Native gradle plugin - using local plugin resolution
-        // classpath("com.facebook.react:react-native-gradle-plugin:0.76.5")
+        // React Native gradle plugin - ensure availability in CI environments
+        if (System.getenv('CI') || System.getenv('GITHUB_ACTIONS')) {
+            def pluginPath = new File(projectDir, "../../../node_modules/@react-native/gradle-plugin")
+            if (pluginPath.exists()) {
+                classpath("com.facebook.react:react-native-gradle-plugin:0.76.5") {
+                    exclude group: "com.facebook.react", module: "react-native"
+                }
+            }
+        }
     }
 }
 

@@ -203,14 +203,15 @@ jobs:
           pnpm config set registry https://registry.npmjs.org/
           pnpm install --no-frozen-lockfile --ignore-scripts
 
+      - name: 🔧 Generate Prisma Client for Auth Service
+        working-directory: ./backend/services/auth-service
+        run: pnpm db:generate
+
       - name: 🧪 Run Unit Tests
         run: pnpm run test
         env:
           DATABASE_URL: postgresql://test_user:test_password@localhost:5432/meqenet_test
           REDIS_URL: redis://localhost:6379
-      - name: 🔧 Generate Prisma Client
-        run: pnpm prisma generate --schema=./backend/services/auth-service/prisma/schema.prisma
-        if: always()
 
       - name: 🔄 Run Integration Tests
         run: pnpm run test:integration
