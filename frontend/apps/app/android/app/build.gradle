@@ -83,6 +83,10 @@ react {
     // Note: Custom PackageList.java handles package registration manually
 }
 
+tasks.named("generateAutolinkingPackageList") {
+    enabled = false
+}
+
 /**
  * Set this to true to Run Proguard on Release builds to minify the Java bytecode.
  */
@@ -90,40 +94,7 @@ def enableProguardInReleaseBuilds = true
 
 
 
-/**
- * Task to clean up autolinking generated files that conflict with our custom PackageList
- */
-task cleanAutolinkingPackageList {
-    doFirst {
-        def generatedPackageList = file("${project.buildDir}/generated/autolinking/src/main/java/com/facebook/react/PackageList.java")
-        if (generatedPackageList.exists()) {
-            generatedPackageList.delete()
-            println "✅ Deleted conflicting autolinking PackageList.java"
-        }
 
-        // Ensure autolinking.json exists at the root project level
-        def autolinkJson = file("${rootProject.buildDir}/generated/autolinking/autolinking.json")
-        if (!autolinkJson.exists()) {
-            autolinkJson.getParentFile().mkdirs()
-            autolinkJson.text = '{"empty": true}'
-            println "✅ Recreated dummy autolinking.json at: ${autolinkJson.absolutePath}"
-        }
-    }
-}
-
-// Ensure cleanAutolinkingPackageList runs before any autolinking tasks
-tasks.whenTaskAdded { task ->
-    if (task.name.contains('Autolinking') || task.name.contains('autolinking')) {
-        task.dependsOn cleanAutolinkingPackageList
-    }
-}
-
-// Make sure our cleanup task runs before Java compilation
-tasks.whenTaskAdded { task ->
-    if (task.name.contains('compile') && task.name.contains('Java')) {
-        task.dependsOn cleanAutolinkingPackageList
-    }
-}
 
 /**
  * The preferred build flavor of JavaScriptCore (JSC)
