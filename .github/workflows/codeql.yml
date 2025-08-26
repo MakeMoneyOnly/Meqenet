@@ -107,6 +107,27 @@ jobs:
           java-version: "17"
           cache: gradle
 
+      - name: 🔧 Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          api-level: 35
+          target: android-35
+          build-tools: "36.0.0"
+          # Only install essential components to avoid emulator download issues
+          components: platform-tools
+          # Disable emulator to prevent ZipFile errors
+          emulator: false
+
+      - name: 📦 Cache Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
       # Build Android project for Java/Kotlin analysis
       - name: 🏗️ Build Android Project
         if: contains(matrix.language, 'java') || contains(matrix.language, 'kotlin')
@@ -141,14 +162,24 @@ jobs:
 
           cd android && chmod +x ./gradlew
 
-          # Build with comprehensive error handling
+          # Build with error handling but ensure classes are generated
           echo "🏗️ Building Android project..."
-          ./gradlew assembleDebug --no-daemon --parallel --continue --info || {
-            echo "⚠️ Gradle build failed, but continuing with analysis..."
-            echo "This may result in incomplete CodeQL analysis"
-            exit 0
-          }
+          if ./gradlew assembleDebug --no-daemon --parallel --info; then
+            echo "✅ Android build completed successfully"
+          else
+            echo "❌ Gradle build failed - attempting minimal build for analysis..."
+            # Try a minimal build that still generates classes
+            ./gradlew compileDebugKotlin compileDebugJavaWithJavac --no-daemon --info || {
+              echo "❌ Minimal build also failed - CodeQL analysis may be incomplete"
+              echo "Continuing anyway to allow basic analysis..."
+            }
+          fi
 
-          echo "✅ Android build completed successfully"
+          # Verify that build outputs exist for CodeQL
+          if [ -d "app/build/intermediates/javac/debug" ] || [ -d "app/build/tmp/kotlin-classes/debug" ]; then
+            echo "✅ Build outputs found - ready for CodeQL analysis"
+          else
+            echo "⚠️ Build outputs not found - CodeQL analysis may be limited"
+          fi
 
       - uses: github/codeql-action/analyze@v3
