@@ -1,3 +1,0 @@
-[33mdb62c90[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Fix Android Lint Security Analysis workflow failures
-[33m35580bc[m ci: enable pnpm caching
-[33m63d9257[m fix(android): correct hermes command path
