@@ -80,5 +80,3 @@ jobs:
           ./gradlew assembleDebug --no-daemon --parallel --info
 
       - uses: github/codeql-action/analyze@v3
-        continue-on-error: true # Avoid failure when default setup is enabled in repo settings
-
