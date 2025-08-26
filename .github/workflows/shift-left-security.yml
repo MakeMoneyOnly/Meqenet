@@ -133,7 +133,23 @@ jobs:
         run: |
           export PNPM_HOME="$HOME/.local/share/pnpm"
           export PATH="$PNPM_HOME:$PATH"
+
+          # Configure npm registry with retry and auth handling
+          echo "📦 Configuring npm registry..."
           pnpm config set registry https://registry.npmjs.org/
+
+          # Configure retry settings for rate limiting
+          pnpm config set fetch-retry-mintimeout 20000
+          pnpm config set fetch-retry-maxtimeout 120000
+          pnpm config set fetch-timeout 60000
+
+          # Set auth token if available (will be empty if not set)
+          if [ -n "${{ secrets.NPM_TOKEN }}" ]; then
+            pnpm config set //registry.npmjs.org/:_authToken "${{ secrets.NPM_TOKEN }}"
+            echo "✅ NPM authentication configured"
+          else
+            echo "⚠️  No NPM_TOKEN provided, using public registry"
+          fi
 
       - name: 📦 Install Dependencies
         working-directory: ./frontend
