@@ -43,11 +43,21 @@ jobs:
             echo "Attempt $attempt/5 - Installing pnpm..."
 
             # Try primary installation method with better error handling
-            if curl -fsSL --connect-timeout 10 --max-time 30 https://get.pnpm.io/install.sh | sh - && command -v pnpm &> /dev/null; then
-              echo "✅ Primary installation method succeeded"
-              return 0
+            if curl -fsSL --connect-timeout 10 --max-time 30 https://get.pnpm.io/install.sh | sh -; then
+              # Source the updated .bashrc to get the new PATH
+              source ~/.bashrc 2>/dev/null || true
+              # Also set the environment variables manually
+              export PNPM_HOME="$HOME/.local/share/pnpm"
+              export PATH="$PNPM_HOME:$PATH"
+              if command -v pnpm &> /dev/null; then
+                echo "✅ Primary installation method succeeded"
+                return 0
+              else
+                echo "❌ Primary installation method completed but pnpm not found in PATH"
+                return 1
+              fi
             else
-              echo "❌ Primary installation method failed or pnpm not found"
+              echo "❌ Primary installation method failed"
               return 1
             fi
 
@@ -202,11 +212,21 @@ jobs:
             echo "Attempt $attempt/5 - Installing pnpm..."
 
             # Try primary installation method with better error handling
-            if curl -fsSL --connect-timeout 10 --max-time 30 https://get.pnpm.io/install.sh | sh - && command -v pnpm &> /dev/null; then
-              echo "✅ Primary installation method succeeded"
-              return 0
+            if curl -fsSL --connect-timeout 10 --max-time 30 https://get.pnpm.io/install.sh | sh -; then
+              # Source the updated .bashrc to get the new PATH
+              source ~/.bashrc 2>/dev/null || true
+              # Also set the environment variables manually
+              export PNPM_HOME="$HOME/.local/share/pnpm"
+              export PATH="$PNPM_HOME:$PATH"
+              if command -v pnpm &> /dev/null; then
+                echo "✅ Primary installation method succeeded"
+                return 0
+              else
+                echo "❌ Primary installation method completed but pnpm not found in PATH"
+                return 1
+              fi
             else
-              echo "❌ Primary installation method failed or pnpm not found"
+              echo "❌ Primary installation method failed"
               return 1
             fi
 
