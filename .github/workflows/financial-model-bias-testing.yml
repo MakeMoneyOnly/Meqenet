@@ -41,6 +41,13 @@ jobs:
             exit 1
           fi
 
+      - name: 🔧 Setup Node.js with pnpm PATH
+        run: |
+          export PNPM_HOME="$HOME/.local/share/pnpm"
+          export PATH="$PNPM_HOME:$PATH"
+          echo "PNPM_HOME=$PNPM_HOME" >> $GITHUB_ENV
+          echo "PATH=$PATH" >> $GITHUB_ENV
+
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
