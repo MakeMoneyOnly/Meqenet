@@ -46,12 +46,6 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: "https://registry.npmjs.org"
 
-      - name: 🔧 Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-          run_install: false
-
       - name: 📦 Install pnpm (with retry logic)
         run: |
           echo "📦 Installing pnpm with retry logic..."
@@ -123,12 +117,6 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: "https://registry.npmjs.org"
-
-      - name: 🔧 Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-          run_install: false
 
       - name: 📦 Install pnpm (with retry logic)
         run: |
@@ -224,12 +212,6 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           registry-url: "https://registry.npmjs.org"
-
-      - name: 🔧 Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-          run_install: false
 
       - name: 📦 Install pnpm (with retry logic)
         run: |

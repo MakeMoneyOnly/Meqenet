@@ -25,11 +25,6 @@ jobs:
           node-version: 22
           registry-url: "https://registry.npmjs.org"
 
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10.4.1
-          run_install: false
-
       - name: 🔧 Enable Corepack
         run: |
           echo "📦 Installing pnpm with retry logic..."
