@@ -101,8 +101,8 @@ task cleanAutolinkingPackageList {
             println "✅ Deleted conflicting autolinking PackageList.java"
         }
 
-        // Ensure autolinking.json exists (should already be created above)
-        def autolinkJson = file("${project.buildDir}/generated/autolinking/autolinking.json")
+        // Ensure autolinking.json exists at the root project level
+        def autolinkJson = file("${rootProject.buildDir}/generated/autolinking/autolinking.json")
         if (!autolinkJson.exists()) {
             autolinkJson.getParentFile().mkdirs()
             autolinkJson.text = '{"empty": true}'
