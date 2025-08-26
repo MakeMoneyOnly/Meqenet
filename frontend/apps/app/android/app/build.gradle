@@ -89,11 +89,13 @@ react {
 def enableProguardInReleaseBuilds = true
 
 // Create dummy autolinking.json during configuration phase to prevent task failures
-gradle.projectsEvaluated {
-    def autolinkJson = file("${project.buildDir}/generated/autolinking/autolinking.json")
-    autolinkJson.getParentFile().mkdirs()
-    autolinkJson.text = '{"empty": true}'
-    println "✅ Created dummy autolinking.json at: ${autolinkJson.absolutePath}"
+allprojects {
+    afterEvaluate {
+        def autolinkJson = file("${project.buildDir}/generated/autolinking/autolinking.json")
+        autolinkJson.getParentFile().mkdirs()
+        autolinkJson.text = '{"empty": true}'
+        println "✅ Created dummy autolinking.json at: ${autolinkJson.absolutePath}"
+    }
 }
 
 /**
