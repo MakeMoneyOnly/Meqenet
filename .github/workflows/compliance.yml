@@ -27,24 +27,22 @@ jobs:
           cache: pnpm
       - name: 📦 Install pnpm (with retry logic)
         run: |
-          echo "📦 Installing pnpm with retry logic..."
-          for i in {1..3}; do
-            if npm install -g pnpm@${{ env.PNPM_VERSION }}; then
-              echo "✅ pnpm installed successfully on attempt $i"
-              break
-            else
-              echo "❌ pnpm installation failed on attempt $i"
-              if [ $i -eq 3 ]; then
-                echo "🔄 Falling back to direct download..."
-                curl -fsSL https://get.pnpm.io/install.sh | PNPM_VERSION=${{ env.PNPM_VERSION }} sh -
-                break
-              fi
-              sleep 2
-            fi
-          done
+          echo "📦 Installing pnpm..."
+          # Use the official pnpm installation script
+          curl -fsSL https://get.pnpm.io/install.sh | sh -
+
+          # Add pnpm to PATH for the current session
+          export PNPM_HOME="$HOME/.local/share/pnpm"
+          export PATH="$PNPM_HOME:$PATH"
 
           # Verify pnpm installation
-          pnpm --version
+          if command -v pnpm &> /dev/null; then
+            echo "✅ pnpm installed successfully"
+            pnpm --version
+          else
+            echo "❌ pnpm installation failed"
+            exit 1
+          fi
       - run: pnpm install --no-frozen-lockfile
       - name: Run PCI Checks
         run: |
@@ -63,24 +61,22 @@ jobs:
           cache: pnpm
       - name: 📦 Install pnpm (with retry logic)
         run: |
-          echo "📦 Installing pnpm with retry logic..."
-          for i in {1..3}; do
-            if npm install -g pnpm@${{ env.PNPM_VERSION }}; then
-              echo "✅ pnpm installed successfully on attempt $i"
-              break
-            else
-              echo "❌ pnpm installation failed on attempt $i"
-              if [ $i -eq 3 ]; then
-                echo "🔄 Falling back to direct download..."
-                curl -fsSL https://get.pnpm.io/install.sh | PNPM_VERSION=${{ env.PNPM_VERSION }} sh -
-                break
-              fi
-              sleep 2
-            fi
-          done
+          echo "📦 Installing pnpm..."
+          # Use the official pnpm installation script
+          curl -fsSL https://get.pnpm.io/install.sh | sh -
+
+          # Add pnpm to PATH for the current session
+          export PNPM_HOME="$HOME/.local/share/pnpm"
+          export PATH="$PNPM_HOME:$PATH"
 
           # Verify pnpm installation
-          pnpm --version
+          if command -v pnpm &> /dev/null; then
+            echo "✅ pnpm installed successfully"
+            pnpm --version
+          else
+            echo "❌ pnpm installation failed"
+            exit 1
+          fi
       - run: pnpm install --no-frozen-lockfile
       - name: Run SOX Checks
         run: echo "✅ SOX controls placeholder (change management, access reviews)."
@@ -97,24 +93,22 @@ jobs:
           cache: pnpm
       - name: 📦 Install pnpm (with retry logic)
         run: |
-          echo "📦 Installing pnpm with retry logic..."
-          for i in {1..3}; do
-            if npm install -g pnpm@${{ env.PNPM_VERSION }}; then
-              echo "✅ pnpm installed successfully on attempt $i"
-              break
-            else
-              echo "❌ pnpm installation failed on attempt $i"
-              if [ $i -eq 3 ]; then
-                echo "🔄 Falling back to direct download..."
-                curl -fsSL https://get.pnpm.io/install.sh | PNPM_VERSION=${{ env.PNPM_VERSION }} sh -
-                break
-              fi
-              sleep 2
-            fi
-          done
+          echo "📦 Installing pnpm..."
+          # Use the official pnpm installation script
+          curl -fsSL https://get.pnpm.io/install.sh | sh -
+
+          # Add pnpm to PATH for the current session
+          export PNPM_HOME="$HOME/.local/share/pnpm"
+          export PATH="$PNPM_HOME:$PATH"
 
           # Verify pnpm installation
-          pnpm --version
+          if command -v pnpm &> /dev/null; then
+            echo "✅ pnpm installed successfully"
+            pnpm --version
+          else
+            echo "❌ pnpm installation failed"
+            exit 1
+          fi
       - run: pnpm install --no-frozen-lockfile
       - name: Run ISO 27001 Checks
         run: echo "✅ ISO 27001 controls placeholder (risk assessment, logs)."
