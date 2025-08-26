@@ -50,13 +50,6 @@ jobs:
       - name: Set pnpm registry
         run: pnpm config set registry https://registry.npmjs.org/
 
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10.4.1
-          run_install: |
-            - args: [--no-frozen-lockfile, --ignore-scripts]
-              cwd: ./frontend
-
       - name: 📦 Install pnpm (with retry logic)
         run: |
           echo "📦 Installing pnpm with retry logic..."
