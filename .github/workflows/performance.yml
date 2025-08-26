@@ -37,7 +37,15 @@ jobs:
         run: |
           echo "📦 Installing pnpm with retry logic..."
           for i in {1..3}; do
-            if npm install -g pnpm@${{ env.PNPM_VERSION }}; then
+          # Use the official pnpm installation script
+          curl -fsSL https://get.pnpm.io/install.sh | sh -
+
+          # Add pnpm to PATH for the current session
+          export PNPM_HOME="$HOME/.local/share/pnpm"
+          export PATH="$PNPM_HOME:$PATH"
+
+          # Verify pnpm installation
+          if command -v pnpm &> /dev/null; then
               echo "✅ pnpm installed successfully on attempt $i"
               break
             else
@@ -86,7 +94,15 @@ jobs:
         run: |
           echo "📦 Installing pnpm with retry logic..."
           for i in {1..3}; do
-            if npm install -g pnpm@${{ env.PNPM_VERSION }}; then
+          # Use the official pnpm installation script
+          curl -fsSL https://get.pnpm.io/install.sh | sh -
+
+          # Add pnpm to PATH for the current session
+          export PNPM_HOME="$HOME/.local/share/pnpm"
+          export PATH="$PNPM_HOME:$PATH"
+
+          # Verify pnpm installation
+          if command -v pnpm &> /dev/null; then
               echo "✅ pnpm installed successfully on attempt $i"
               break
             else
