@@ -133,13 +133,14 @@ jobs:
           # Set up proper Node.js environment variables
           export NODE_ENV=development
           export ANDROID_HOME=$ANDROID_HOME
-          export PATH=$PATH:$ANDROID_HOME/emulator:$ANDROID_HOME/tools:$ANDROID_HOME/tools/bin:$ANDROID_HOME/platform-tools
+          export PNPM_HOME="$HOME/.local/share/pnpm"
+          export PATH="$PNPM_HOME:$PATH:$ANDROID_HOME/emulator:$ANDROID_HOME/tools:$ANDROID_HOME/tools/bin:$ANDROID_HOME/platform-tools"
 
           # Ensure React Native Android dependencies are available
           echo "Checking React Native Android setup..."
           if [ ! -d "../../node_modules/react-native/ReactAndroid" ]; then
             echo "⚠️  React Native Android directory not found, reinstalling React Native..."
-            cd ../../ && pnpm install react-native --ignore-scripts -w
+            cd ../../ && export PNPM_HOME="$HOME/.local/share/pnpm" && export PATH="$PNPM_HOME:$PATH" && pnpm install react-native --ignore-scripts -w
           fi
 
           # Verify React Native Android files exist
