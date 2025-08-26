@@ -21,11 +21,29 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v5
+      - name: 📦 Install pnpm (with retry logic)
+        run: |
+          echo "📦 Installing pnpm..."
+          # Use the official pnpm installation script
+          curl -fsSL https://get.pnpm.io/install.sh | sh -
+
+          # Add pnpm to PATH for the current session
+          export PNPM_HOME="$HOME/.local/share/pnpm"
+          export PATH="$PNPM_HOME:$PATH"
+
+          # Verify pnpm installation
+          if command -v pnpm &> /dev/null; then
+            echo "✅ pnpm installed successfully"
+            pnpm --version
+          else
+            echo "❌ pnpm installation failed"
+            exit 1
+          fi
+
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
-      - name: 📦 Install pnpm (with retry logic)
         run: |
           echo "📦 Installing pnpm..."
           # Use the official pnpm installation script
@@ -55,11 +73,29 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v5
+      - name: 📦 Install pnpm (with retry logic)
+        run: |
+          echo "📦 Installing pnpm..."
+          # Use the official pnpm installation script
+          curl -fsSL https://get.pnpm.io/install.sh | sh -
+
+          # Add pnpm to PATH for the current session
+          export PNPM_HOME="$HOME/.local/share/pnpm"
+          export PATH="$PNPM_HOME:$PATH"
+
+          # Verify pnpm installation
+          if command -v pnpm &> /dev/null; then
+            echo "✅ pnpm installed successfully"
+            pnpm --version
+          else
+            echo "❌ pnpm installation failed"
+            exit 1
+          fi
+
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
-      - name: 📦 Install pnpm (with retry logic)
         run: |
           echo "📦 Installing pnpm..."
           # Use the official pnpm installation script
@@ -87,11 +123,29 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v5
+      - name: 📦 Install pnpm (with retry logic)
+        run: |
+          echo "📦 Installing pnpm..."
+          # Use the official pnpm installation script
+          curl -fsSL https://get.pnpm.io/install.sh | sh -
+
+          # Add pnpm to PATH for the current session
+          export PNPM_HOME="$HOME/.local/share/pnpm"
+          export PATH="$PNPM_HOME:$PATH"
+
+          # Verify pnpm installation
+          if command -v pnpm &> /dev/null; then
+            echo "✅ pnpm installed successfully"
+            pnpm --version
+          else
+            echo "❌ pnpm installation failed"
+            exit 1
+          fi
+
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
-      - name: 📦 Install pnpm (with retry logic)
         run: |
           echo "📦 Installing pnpm..."
           # Use the official pnpm installation script

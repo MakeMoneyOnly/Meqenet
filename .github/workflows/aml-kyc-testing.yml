@@ -21,11 +21,6 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-
       - name: 📦 Install pnpm
         run: |
           echo "📦 Installing pnpm..."
@@ -44,6 +39,12 @@ jobs:
             echo "❌ pnpm installation failed"
             exit 1
           fi
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
       - run: pnpm install --no-frozen-lockfile
       - name: 🔧 Generate Prisma Client
         run: pnpm prisma generate --schema=./backend/services/auth-service/prisma/schema.prisma
