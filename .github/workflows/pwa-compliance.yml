@@ -48,7 +48,7 @@ jobs:
         run: |
           echo "📦 Installing pnpm..."
           # Use the official pnpm installation script
-          curl -fsSL https://get.pnpm.io/install.sh | sh -
+          curl -fsSL --connect-timeout 10 --max-time 30 https://get.pnpm.io/install.sh | sh -
 
           # Add pnpm to PATH for the current session
           export PNPM_HOME="$HOME/.local/share/pnpm"
@@ -163,7 +163,7 @@ jobs:
               echo "❌ pnpm installation failed on attempt $i"
               if [ $i -eq 3 ]; then
                 echo "🔄 Falling back to direct download..."
-                curl -fsSL https://get.pnpm.io/install.sh | PNPM_VERSION=${{ env.PNPM_VERSION }} sh -
+                curl -fsSL --connect-timeout 10 --max-time 30 https://get.pnpm.io/install.sh | PNPM_VERSION=${{ env.PNPM_VERSION }} sh -
                 break
               fi
               sleep 2
