@@ -46,11 +46,20 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
 
-      - run: pnpm install --no-frozen-lockfile
+      - name: 📚 Install Dependencies
+        run: |
+          export PNPM_HOME="$HOME/.local/share/pnpm"
+          export PATH="$PNPM_HOME:$PATH"
+          pnpm install --no-frozen-lockfile
       - name: 🔧 Generate Prisma Client
-        run: pnpm prisma generate --schema=./backend/services/auth-service/prisma/schema.prisma
+        run: |
+          export PNPM_HOME="$HOME/.local/share/pnpm"
+          export PATH="$PNPM_HOME:$PATH"
+          pnpm prisma generate --schema=./backend/services/auth-service/prisma/schema.prisma
       - name: Run Bias Test Suite
         run: |
+          export PNPM_HOME="$HOME/.local/share/pnpm"
+          export PATH="$PNPM_HOME:$PATH"
           if pnpm exec vitest --version >/dev/null 2>&1; then
             pnpm exec vitest --run -t "(Bias|Fairness|DisparateImpact)"
           else
