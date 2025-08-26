@@ -26,20 +26,22 @@ jobs:
           node-version: 22
           registry-url: "https://registry.npmjs.org"
 
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10.4.1
-          run_install: false
-
       - name: 🔧 Enable Corepack
         run: corepack enable
 
-      - name: Install dependencies (for cache warmup)
+      - name: Set pnpm registry
+        run: pnpm config set registry https://registry.npmjs.org/
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.4.1
+          run_install: |
+            - args: [--no-frozen-lockfile, --ignore-scripts]
+              cwd: ./frontend
+
+      - name: Setup React Native CLI
         working-directory: ./frontend
         run: |
-          pnpm config set registry https://registry.npmjs.org/
-          pnpm install --no-frozen-lockfile --ignore-scripts
-          # Ensure React Native CLI is properly set up
           npm install -g @react-native-community/cli || true
           cd apps/app && npx react-native doctor --fix || true
           cd apps/app && npx @react-native-community/cli doctor || true
