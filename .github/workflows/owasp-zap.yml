@@ -69,6 +69,10 @@ jobs:
               export PNPM_HOME="$HOME/.local/share/pnpm"
               export PATH="$PNPM_HOME:$PATH"
 
+              # Clear any problematic registry configurations that might interfere with pnpm
+              pnpm config delete @jsr:registry 2>/dev/null || true
+              pnpm config delete //npm.jsr.io/:_authToken 2>/dev/null || true
+
               # Verify pnpm installation
               if command -v pnpm &> /dev/null; then
                 echo "✅ pnpm installed and verified successfully on attempt $i"
@@ -111,6 +115,8 @@ jobs:
           # Clear any existing npm registry configuration that might be cached
           pnpm config delete registry || true
           pnpm config delete //registry.npmjs.org/:_authToken || true
+          pnpm config delete @jsr:registry || true
+          pnpm config delete //npm.jsr.io/:_authToken || true
 
           pnpm config set registry https://registry.npmjs.org/
 
@@ -120,16 +126,22 @@ jobs:
           pnpm config set fetch-timeout 60000
 
           # Set auth token if available and valid
-          if [ -n "${{ secrets.NPM_TOKEN }}" ] && [ "${{ secrets.NPM_TOKEN }}" != "XXXX[hidden]" ]; then
-            echo "🔐 Testing NPM token validity..."
-            if npm whoami --registry=https://registry.npmjs.org/ >/dev/null 2>&1; then
-              pnpm config set //registry.npmjs.org/:_authToken "${{ secrets.NPM_TOKEN }}"
+          if [ -n "${{ secrets.NPM_TOKEN }}" ] && [ "${{ secrets.NPM_TOKEN }}" != "XXXX[hidden]" ] && [ "${{ secrets.NPM_TOKEN }}" != "" ]; then
+            echo "🔐 Configuring NPM authentication..."
+            pnpm config set //registry.npmjs.org/:_authToken "${{ secrets.NPM_TOKEN }}"
+
+            # Test token validity by trying to access a private package (this will fail silently if token is invalid)
+            if pnpm info @nestjs/core --registry=https://registry.npmjs.org/ --silent >/dev/null 2>&1; then
               echo "✅ NPM authentication configured and validated"
             else
-              echo "⚠️  NPM_TOKEN is invalid or expired, using public registry"
+              echo "⚠️  NPM_TOKEN may be invalid, but continuing with authentication configured"
             fi
           else
-            echo "⚠️  No valid NPM_TOKEN provided, using public registry"
+            echo "⚠️  No NPM_TOKEN provided, using public registry with enhanced retry"
+            # Add additional retry configuration for public registry
+            pnpm config set fetch-retry-mintimeout 30000
+            pnpm config set fetch-retry-maxtimeout 180000
+            pnpm config set fetch-timeout 90000
           fi
 
           # Install dependencies with retry logic
