@@ -625,6 +625,10 @@ jobs:
           # Generate React Native codegen artifacts
           npx @react-native-community/cli codegen || true
 
+          # Pre-build Android dependencies to avoid hermesc issues
+          cd android && chmod +x ./gradlew
+          ./gradlew assembleDebug --no-daemon --parallel || echo "⚠️ Debug build failed, continuing with analysis..."
+
           # Clean up background process
           pkill -f "react-native start" || true
 
@@ -662,11 +666,18 @@ jobs:
           # Initialize React Native project properly
           npx react-native start --reset-cache || true &
           sleep 10
-          npx react-native run-android --no-packager || true
+
+          # Generate codegen artifacts without device
+          npx @react-native-community/cli codegen || true
+
+          # Clean up background process
           pkill -f "react-native start" || true
+
           cd android && chmod +x ./gradlew
-          ./gradlew lintDebug --continue --info
-          ./gradlew lintRelease --continue --info
+
+          # Run lint checks without requiring device connection
+          ./gradlew lintDebug --continue --info --no-daemon
+          ./gradlew lintRelease --continue --info --no-daemon
 
       - name: 📊 Generate Security-Focused Lint Report
         working-directory: ./frontend/apps/app

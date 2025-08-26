@@ -76,8 +76,9 @@ jobs:
           # Generate React Native codegen artifacts
           npx @react-native-community/cli codegen || true
 
-          npx react-native run-android --no-packager || true
+          # Clean up background process
           pkill -f "react-native start" || true
+
           cd android && chmod +x ./gradlew
           ./gradlew assembleDebug --no-daemon --parallel --info
 
