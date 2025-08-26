@@ -14,6 +14,7 @@ queries:
 # Android-specific security configuration
 paths:
   - frontend/apps/app/android
+  - frontend/apps/app/src
 paths-ignore:
   - "node_modules"
   - "dist"
