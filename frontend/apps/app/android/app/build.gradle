@@ -88,15 +88,7 @@ react {
  */
 def enableProguardInReleaseBuilds = true
 
-// Create dummy autolinking.json during configuration phase to prevent task failures
-allprojects {
-    afterEvaluate {
-        def autolinkJson = file("${project.buildDir}/generated/autolinking/autolinking.json")
-        autolinkJson.getParentFile().mkdirs()
-        autolinkJson.text = '{"empty": true}'
-        println "✅ Created dummy autolinking.json at: ${autolinkJson.absolutePath}"
-    }
-}
+
 
 /**
  * Task to clean up autolinking generated files that conflict with our custom PackageList
