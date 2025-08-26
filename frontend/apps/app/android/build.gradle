@@ -3,6 +3,11 @@
 apply from: 'gradle/enterprise-repositories.gradle'
 // apply from: 'gradle/dependency-locking.gradle' // Temporarily disabled due to syntax error
 
+// Apply versions plugin using modern syntax - must be the first block after buildscript
+plugins {
+    id "com.github.ben-manes.versions" version "0.50.0"
+}
+
 buildscript {
     ext {
         buildToolsVersion = "36.0.0"
@@ -26,11 +31,6 @@ buildscript {
         // Note: gradle-versions-plugin is now managed via plugins block
         // React Native gradle plugin is resolved locally via settings.gradle, not as classpath dependency
     }
-}
-
-// Apply versions plugin using modern syntax - must be the first block after buildscript
-plugins {
-    id "com.github.ben-manes.versions" version "0.50.0"
 }
 
 allprojects {
