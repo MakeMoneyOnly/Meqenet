@@ -723,45 +723,132 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: "https://registry.npmjs.org"
 
-      - name: 🔧 Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-          run_install: false
-
-      - name: 🔧 Enable Corepack
+      - name: 📦 Install pnpm (with enhanced retry logic)
         run: |
-          echo "📦 Installing pnpm with retry logic..."
-          for i in {1..3}; do
-          # Use the official pnpm installation script
-          curl -fsSL --connect-timeout 10 --max-time 30 https://get.pnpm.io/install.sh | sh -
+          echo "📦 Installing pnpm with enhanced retry logic..."
 
-          # Add pnpm to PATH for the current session
-          export PNPM_HOME="$HOME/.local/share/pnpm"
-          export PATH="$PNPM_HOME:$PATH"
+          # Function to install pnpm with better error handling
+          install_pnpm() {
+            local attempt=$1
+            echo "Attempt $attempt/5 - Installing pnpm..."
 
-          # Verify pnpm installation
-          if command -v pnpm &> /dev/null; then
-              echo "✅ pnpm installed successfully on attempt $i"
-              break
-            else
-              echo "❌ pnpm installation failed on attempt $i"
-              if [ $i -eq 3 ]; then
-                echo "🔄 Falling back to direct download..."
-                curl -fsSL --connect-timeout 10 --max-time 30 https://get.pnpm.io/install.sh | PNPM_VERSION=${{ env.PNPM_VERSION }} sh -
-                break
+            # Try primary installation method with shorter timeout
+            if curl -fsSL --connect-timeout 10 --max-time 30 https://get.pnpm.io/install.sh | sh -; then
+              echo "✅ Primary installation method succeeded"
+              return 0
+            fi
+
+            # Try alternative CDN with proper validation
+            echo "🔄 Trying alternative CDN..."
+            if curl -fsSL --connect-timeout 10 --max-time 30 https://raw.githubusercontent.com/pnpm/get-pnpm/main/install.sh | sh -; then
+              if command -v pnpm &> /dev/null; then
+                echo "✅ Alternative CDN installation succeeded"
+                return 0
+              else
+                echo "⚠️  Alternative CDN script ran but pnpm not found"
               fi
-              sleep 2
+            fi
+
+            # Try direct download method
+            echo "🔄 Trying direct download method..."
+            local pnpm_version="${{ env.PNPM_VERSION }}"
+            if [ -z "$pnpm_version" ]; then
+              pnpm_version="10.4.1"
+            fi
+
+            if curl -fsSL --connect-timeout 10 --max-time 30 "https://registry.npmjs.org/pnpm/-/pnpm-${pnpm_version}.tgz" -o pnpm.tgz && \
+               npm install -g pnpm.tgz && \
+               rm pnpm.tgz; then
+              echo "✅ Direct download installation succeeded"
+              return 0
+            fi
+
+            echo "❌ All installation methods failed on attempt $attempt"
+            return 1
+          }
+
+          # Main retry loop
+          for i in {1..5}; do
+            if install_pnpm $i; then
+              # Add pnpm to PATH for the current session
+              export PNPM_HOME="$HOME/.local/share/pnpm"
+              export PATH="$PNPM_HOME:$PATH"
+
+              # Verify pnpm installation
+              if command -v pnpm &> /dev/null; then
+                echo "✅ pnpm installed and verified successfully on attempt $i"
+                pnpm --version
+                break
+              else
+                echo "❌ pnpm command not found after installation on attempt $i"
+                if [ $i -eq 5 ]; then
+                  echo "💥 CRITICAL: pnpm installation failed after all attempts"
+                  exit 1
+                fi
+              fi
+            else
+              if [ $i -eq 5 ]; then
+                echo "💥 CRITICAL: All pnpm installation attempts failed"
+                echo "🔍 Checking network connectivity..."
+                curl -fsSL --connect-timeout 5 --max-time 10 https://www.google.com > /dev/null && echo "✅ Internet connection OK" || echo "❌ No internet connection"
+                echo "🔍 Checking DNS resolution..."
+                nslookup get.pnpm.io || echo "❌ DNS resolution failed"
+                exit 1
+              else
+                echo "⏳ Waiting before retry..."
+                sleep $((i * 3))  # Exponential backoff: 3s, 6s, 9s, 12s
+              fi
             fi
           done
 
-          # Verify pnpm installation
-          pnpm --version
-
-      - name: 📦 Install Dependencies
+      - name: 📚 Install Dependencies
         run: |
+          export PNPM_HOME="$HOME/.local/share/pnpm"
+          export PATH="$PNPM_HOME:$PATH"
+
+          # Configure npm registry with retry and auth handling
+          echo "📦 Configuring npm registry..."
+
+          # Clear any existing npm registry configuration that might be cached
+          pnpm config delete registry || true
+          pnpm config delete //registry.npmjs.org/:_authToken || true
+
           pnpm config set registry https://registry.npmjs.org/
-          pnpm install --no-frozen-lockfile --ignore-scripts
+
+          # Configure retry settings for rate limiting
+          pnpm config set fetch-retry-mintimeout 20000
+          pnpm config set fetch-retry-maxtimeout 120000
+          pnpm config set fetch-timeout 60000
+
+          # Set auth token if available and valid
+          if [ -n "${{ secrets.NPM_TOKEN }}" ] && [ "${{ secrets.NPM_TOKEN }}" != "XXXX[hidden]" ]; then
+            echo "🔐 Testing NPM token validity..."
+            if npm whoami --registry=https://registry.npmjs.org/ >/dev/null 2>&1; then
+              pnpm config set //registry.npmjs.org/:_authToken "${{ secrets.NPM_TOKEN }}"
+              echo "✅ NPM authentication configured and validated"
+            else
+              echo "⚠️  NPM_TOKEN is invalid or expired, using public registry"
+            fi
+          else
+            echo "⚠️  No valid NPM_TOKEN provided, using public registry"
+          fi
+
+          # Install dependencies with retry logic
+          echo "📦 Installing dependencies..."
+          for attempt in {1..3}; do
+            if pnpm install --no-frozen-lockfile --ignore-scripts; then
+              echo "✅ Dependencies installed successfully"
+              break
+            else
+              echo "❌ Installation failed on attempt $attempt"
+              if [ $attempt -eq 3 ]; then
+                echo "💥 CRITICAL: All dependency installation attempts failed"
+                exit 1
+              fi
+              echo "⏳ Waiting before retry..."
+              sleep 5
+            fi
+          done
           # Ensure React Native CLI is properly set up
           npm install -g @react-native-community/cli || true
           cd frontend/apps/app && npx react-native doctor --fix || true
@@ -915,45 +1002,132 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: "https://registry.npmjs.org"
 
-      - name: 🔧 Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-          run_install: false
-
-      - name: 🔧 Enable Corepack
+      - name: 📦 Install pnpm (with enhanced retry logic)
         run: |
-          echo "📦 Installing pnpm with retry logic..."
-          for i in {1..3}; do
-          # Use the official pnpm installation script
-          curl -fsSL --connect-timeout 10 --max-time 30 https://get.pnpm.io/install.sh | sh -
+          echo "📦 Installing pnpm with enhanced retry logic..."
 
-          # Add pnpm to PATH for the current session
-          export PNPM_HOME="$HOME/.local/share/pnpm"
-          export PATH="$PNPM_HOME:$PATH"
+          # Function to install pnpm with better error handling
+          install_pnpm() {
+            local attempt=$1
+            echo "Attempt $attempt/5 - Installing pnpm..."
 
-          # Verify pnpm installation
-          if command -v pnpm &> /dev/null; then
-              echo "✅ pnpm installed successfully on attempt $i"
-              break
-            else
-              echo "❌ pnpm installation failed on attempt $i"
-              if [ $i -eq 3 ]; then
-                echo "🔄 Falling back to direct download..."
-                curl -fsSL --connect-timeout 10 --max-time 30 https://get.pnpm.io/install.sh | PNPM_VERSION=${{ env.PNPM_VERSION }} sh -
-                break
+            # Try primary installation method with shorter timeout
+            if curl -fsSL --connect-timeout 10 --max-time 30 https://get.pnpm.io/install.sh | sh -; then
+              echo "✅ Primary installation method succeeded"
+              return 0
+            fi
+
+            # Try alternative CDN with proper validation
+            echo "🔄 Trying alternative CDN..."
+            if curl -fsSL --connect-timeout 10 --max-time 30 https://raw.githubusercontent.com/pnpm/get-pnpm/main/install.sh | sh -; then
+              if command -v pnpm &> /dev/null; then
+                echo "✅ Alternative CDN installation succeeded"
+                return 0
+              else
+                echo "⚠️  Alternative CDN script ran but pnpm not found"
               fi
-              sleep 2
+            fi
+
+            # Try direct download method
+            echo "🔄 Trying direct download method..."
+            local pnpm_version="${{ env.PNPM_VERSION }}"
+            if [ -z "$pnpm_version" ]; then
+              pnpm_version="10.4.1"
+            fi
+
+            if curl -fsSL --connect-timeout 10 --max-time 30 "https://registry.npmjs.org/pnpm/-/pnpm-${pnpm_version}.tgz" -o pnpm.tgz && \
+               npm install -g pnpm.tgz && \
+               rm pnpm.tgz; then
+              echo "✅ Direct download installation succeeded"
+              return 0
+            fi
+
+            echo "❌ All installation methods failed on attempt $attempt"
+            return 1
+          }
+
+          # Main retry loop
+          for i in {1..5}; do
+            if install_pnpm $i; then
+              # Add pnpm to PATH for the current session
+              export PNPM_HOME="$HOME/.local/share/pnpm"
+              export PATH="$PNPM_HOME:$PATH"
+
+              # Verify pnpm installation
+              if command -v pnpm &> /dev/null; then
+                echo "✅ pnpm installed and verified successfully on attempt $i"
+                pnpm --version
+                break
+              else
+                echo "❌ pnpm command not found after installation on attempt $i"
+                if [ $i -eq 5 ]; then
+                  echo "💥 CRITICAL: pnpm installation failed after all attempts"
+                  exit 1
+                fi
+              fi
+            else
+              if [ $i -eq 5 ]; then
+                echo "💥 CRITICAL: All pnpm installation attempts failed"
+                echo "🔍 Checking network connectivity..."
+                curl -fsSL --connect-timeout 5 --max-time 10 https://www.google.com > /dev/null && echo "✅ Internet connection OK" || echo "❌ No internet connection"
+                echo "🔍 Checking DNS resolution..."
+                nslookup get.pnpm.io || echo "❌ DNS resolution failed"
+                exit 1
+              else
+                echo "⏳ Waiting before retry..."
+                sleep $((i * 3))  # Exponential backoff: 3s, 6s, 9s, 12s
+              fi
             fi
           done
 
-          # Verify pnpm installation
-          pnpm --version
-
-      - name: 📦 Install Dependencies
+      - name: 📚 Install Dependencies
         run: |
+          export PNPM_HOME="$HOME/.local/share/pnpm"
+          export PATH="$PNPM_HOME:$PATH"
+
+          # Configure npm registry with retry and auth handling
+          echo "📦 Configuring npm registry..."
+
+          # Clear any existing npm registry configuration that might be cached
+          pnpm config delete registry || true
+          pnpm config delete //registry.npmjs.org/:_authToken || true
+
           pnpm config set registry https://registry.npmjs.org/
-          pnpm install --no-frozen-lockfile --ignore-scripts
+
+          # Configure retry settings for rate limiting
+          pnpm config set fetch-retry-mintimeout 20000
+          pnpm config set fetch-retry-maxtimeout 120000
+          pnpm config set fetch-timeout 60000
+
+          # Set auth token if available and valid
+          if [ -n "${{ secrets.NPM_TOKEN }}" ] && [ "${{ secrets.NPM_TOKEN }}" != "XXXX[hidden]" ]; then
+            echo "🔐 Testing NPM token validity..."
+            if npm whoami --registry=https://registry.npmjs.org/ >/dev/null 2>&1; then
+              pnpm config set //registry.npmjs.org/:_authToken "${{ secrets.NPM_TOKEN }}"
+              echo "✅ NPM authentication configured and validated"
+            else
+              echo "⚠️  NPM_TOKEN is invalid or expired, using public registry"
+            fi
+          else
+            echo "⚠️  No valid NPM_TOKEN provided, using public registry"
+          fi
+
+          # Install dependencies with retry logic
+          echo "📦 Installing dependencies..."
+          for attempt in {1..3}; do
+            if pnpm install --no-frozen-lockfile --ignore-scripts; then
+              echo "✅ Dependencies installed successfully"
+              break
+            else
+              echo "❌ Installation failed on attempt $attempt"
+              if [ $attempt -eq 3 ]; then
+                echo "💥 CRITICAL: All dependency installation attempts failed"
+                exit 1
+              fi
+              echo "⏳ Waiting before retry..."
+              sleep 5
+            fi
+          done
           # Ensure React Native CLI is properly set up
           npm install -g @react-native-community/cli || true
           cd frontend/apps/app && npx react-native doctor --fix || true
