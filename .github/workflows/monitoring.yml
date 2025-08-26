@@ -31,10 +31,13 @@ jobs:
             local attempt=$1
             echo "Attempt $attempt/5 - Installing pnpm..."
 
-            # Try primary installation method with shorter timeout
-            if curl -fsSL --connect-timeout 10 --max-time 30 https://get.pnpm.io/install.sh | sh -; then
+            # Try primary installation method with better error handling
+            if curl -fsSL --connect-timeout 10 --max-time 30 https://get.pnpm.io/install.sh | sh - && command -v pnpm &> /dev/null; then
               echo "✅ Primary installation method succeeded"
               return 0
+            else
+              echo "❌ Primary installation method failed or pnpm not found"
+              return 1
             fi
 
             # Try alternative CDN with proper validation

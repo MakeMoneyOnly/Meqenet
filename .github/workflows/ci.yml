@@ -529,10 +529,13 @@ jobs:
             local attempt=$1
             echo "Attempt $attempt/5 - Installing pnpm..."
 
-            # Try primary installation method with shorter timeout
-            if curl -fsSL --connect-timeout 10 --max-time 30 https://get.pnpm.io/install.sh | sh -; then
+            # Try primary installation method with better error handling
+            if curl -fsSL --connect-timeout 10 --max-time 30 https://get.pnpm.io/install.sh | sh - && command -v pnpm &> /dev/null; then
               echo "✅ Primary installation method succeeded"
               return 0
+            else
+              echo "❌ Primary installation method failed or pnpm not found"
+              return 1
             fi
 
             # Try alternative CDN
@@ -790,10 +793,13 @@ jobs:
             local attempt=$1
             echo "Attempt $attempt/5 - Installing pnpm..."
 
-            # Try primary installation method with shorter timeout
-            if curl -fsSL --connect-timeout 10 --max-time 30 https://get.pnpm.io/install.sh | sh -; then
+            # Try primary installation method with better error handling
+            if curl -fsSL --connect-timeout 10 --max-time 30 https://get.pnpm.io/install.sh | sh - && command -v pnpm &> /dev/null; then
               echo "✅ Primary installation method succeeded"
               return 0
+            else
+              echo "❌ Primary installation method failed or pnpm not found"
+              return 1
             fi
 
             # Try alternative CDN with proper validation
@@ -1081,10 +1087,13 @@ jobs:
             local attempt=$1
             echo "Attempt $attempt/5 - Installing pnpm..."
 
-            # Try primary installation method with shorter timeout
-            if curl -fsSL --connect-timeout 10 --max-time 30 https://get.pnpm.io/install.sh | sh -; then
+            # Try primary installation method with better error handling
+            if curl -fsSL --connect-timeout 10 --max-time 30 https://get.pnpm.io/install.sh | sh - && command -v pnpm &> /dev/null; then
               echo "✅ Primary installation method succeeded"
               return 0
+            else
+              echo "❌ Primary installation method failed or pnpm not found"
+              return 1
             fi
 
             # Try alternative CDN with proper validation
@@ -1254,7 +1263,25 @@ jobs:
 
           # Pre-build Android dependencies to avoid hermesc issues
           cd android && chmod +x ./gradlew
-          ./gradlew assembleDebug --no-daemon --parallel || echo "⚠️ Debug build failed, continuing with analysis..."
+
+          # Try to install hermesc if needed
+          if [ ! -f "../../node_modules/react-native/sdks/hermesc/linux64-bin/hermesc" ]; then
+            echo "⚠️ hermesc not found, attempting to install..."
+            # Try to install hermes-engine from npm
+            npm install hermes-engine --no-save || echo "⚠️ hermes-engine installation failed"
+          fi
+
+          # Build with fallback for hermesc issues
+          if ./gradlew assembleDebug --no-daemon --parallel; then
+            echo "✅ Debug build completed successfully"
+          else
+            echo "⚠️ Debug build failed, trying without Hermes..."
+            # Try building without Hermes by disabling it in gradle.properties
+            if [ -f "gradle.properties" ]; then
+              echo "hermesEnabled=false" >> gradle.properties
+            fi
+            ./gradlew assembleDebug --no-daemon --parallel || echo "⚠️ Debug build still failed, continuing with analysis..."
+          fi
 
           # Clean up background process
           pkill -f "react-native start" || true
@@ -1382,10 +1409,13 @@ jobs:
             local attempt=$1
             echo "Attempt $attempt/5 - Installing pnpm..."
 
-            # Try primary installation method with shorter timeout
-            if curl -fsSL --connect-timeout 10 --max-time 30 https://get.pnpm.io/install.sh | sh -; then
+            # Try primary installation method with better error handling
+            if curl -fsSL --connect-timeout 10 --max-time 30 https://get.pnpm.io/install.sh | sh - && command -v pnpm &> /dev/null; then
               echo "✅ Primary installation method succeeded"
               return 0
+            else
+              echo "❌ Primary installation method failed or pnpm not found"
+              return 1
             fi
 
             # Try alternative CDN
