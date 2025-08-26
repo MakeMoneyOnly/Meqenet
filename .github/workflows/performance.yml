@@ -67,7 +67,39 @@ jobs:
           export PNPM_HOME="$HOME/.local/share/pnpm"
           export PATH="$PNPM_HOME:$PATH"
           pnpm config set registry https://registry.npmjs.org/
-          pnpm install --no-frozen-lockfile --ignore-scripts
+          # Configure npm registry with retry and auth handling
+          echo "📦 Configuring npm registry..."
+          pnpm config set registry https://registry.npmjs.org/
+
+          # Configure retry settings for rate limiting
+          pnpm config set fetch-retry-mintimeout 20000
+          pnpm config set fetch-retry-maxtimeout 120000
+          pnpm config set fetch-timeout 60000
+
+          # Set auth token if available (will be empty if not set)
+          if [ -n "${{ secrets.NPM_TOKEN }}" ]; then
+            pnpm config set //registry.npmjs.org/:_authToken "${{ secrets.NPM_TOKEN }}"
+            echo "✅ NPM authentication configured"
+          else
+            echo "⚠️  No NPM_TOKEN provided, using public registry"
+          fi
+
+          # Install dependencies with retry logic
+          echo "📦 Installing dependencies..."
+          for attempt in {1..3}; do
+            if pnpm install --no-frozen-lockfile --ignore-scripts; then
+              echo "✅ Dependencies installed successfully"
+              break
+            else
+              echo "❌ Installation failed on attempt $attempt"
+              if [ $attempt -eq 3 ]; then
+                echo "💥 CRITICAL: All dependency installation attempts failed"
+                exit 1
+              fi
+              echo "⏳ Waiting before retry..."
+              sleep 5
+            fi
+          done
 
       - name: 🚀 Run API Performance Tests (k6)
         run: |
@@ -126,7 +158,39 @@ jobs:
           export PNPM_HOME="$HOME/.local/share/pnpm"
           export PATH="$PNPM_HOME:$PATH"
           pnpm config set registry https://registry.npmjs.org/
-          pnpm install --no-frozen-lockfile --ignore-scripts
+          # Configure npm registry with retry and auth handling
+          echo "📦 Configuring npm registry..."
+          pnpm config set registry https://registry.npmjs.org/
+
+          # Configure retry settings for rate limiting
+          pnpm config set fetch-retry-mintimeout 20000
+          pnpm config set fetch-retry-maxtimeout 120000
+          pnpm config set fetch-timeout 60000
+
+          # Set auth token if available (will be empty if not set)
+          if [ -n "${{ secrets.NPM_TOKEN }}" ]; then
+            pnpm config set //registry.npmjs.org/:_authToken "${{ secrets.NPM_TOKEN }}"
+            echo "✅ NPM authentication configured"
+          else
+            echo "⚠️  No NPM_TOKEN provided, using public registry"
+          fi
+
+          # Install dependencies with retry logic
+          echo "📦 Installing dependencies..."
+          for attempt in {1..3}; do
+            if pnpm install --no-frozen-lockfile --ignore-scripts; then
+              echo "✅ Dependencies installed successfully"
+              break
+            else
+              echo "❌ Installation failed on attempt $attempt"
+              if [ $attempt -eq 3 ]; then
+                echo "💥 CRITICAL: All dependency installation attempts failed"
+                exit 1
+              fi
+              echo "⏳ Waiting before retry..."
+              sleep 5
+            fi
+          done
 
       - name: 🚀 Run Mobile Perf Tests (placeholder)
         run: |
