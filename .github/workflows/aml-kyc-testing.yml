@@ -25,7 +25,7 @@ jobs:
         run: |
           echo "📦 Installing pnpm..."
           # Use the official pnpm installation script
-          curl -fsSL https://get.pnpm.io/install.sh | sh -
+          curl -fsSL --connect-timeout 10 --max-time 30 https://get.pnpm.io/install.sh | sh -
 
           # Add pnpm to PATH for the current session
           export PNPM_HOME="$HOME/.local/share/pnpm"
