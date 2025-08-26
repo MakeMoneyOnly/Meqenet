@@ -55,9 +55,6 @@ jobs:
           # Verify pnpm installation
           pnpm --version
 
-      - name: Set pnpm registry
-        run: pnpm config set registry https://registry.npmjs.org/
-
       - name: 📦 Install pnpm (with retry logic)
         run: |
           echo "📦 Installing pnpm with retry logic..."

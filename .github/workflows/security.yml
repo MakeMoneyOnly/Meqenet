@@ -107,6 +107,11 @@ jobs:
 
           # Configure npm registry with retry and auth handling
           echo "📦 Configuring npm registry..."
+
+          # Clear any existing npm registry configuration that might be cached
+          pnpm config delete registry || true
+          pnpm config delete //registry.npmjs.org/:_authToken || true
+
           pnpm config set registry https://registry.npmjs.org/
 
           # Configure retry settings for rate limiting
@@ -114,12 +119,17 @@ jobs:
           pnpm config set fetch-retry-maxtimeout 120000
           pnpm config set fetch-timeout 60000
 
-          # Set auth token if available (will be empty if not set)
-          if [ -n "${{ secrets.NPM_TOKEN }}" ]; then
-            pnpm config set //registry.npmjs.org/:_authToken "${{ secrets.NPM_TOKEN }}"
-            echo "✅ NPM authentication configured"
+          # Set auth token if available and valid
+          if [ -n "${{ secrets.NPM_TOKEN }}" ] && [ "${{ secrets.NPM_TOKEN }}" != "XXXX[hidden]" ]; then
+            echo "🔐 Testing NPM token validity..."
+            if npm whoami --registry=https://registry.npmjs.org/ >/dev/null 2>&1; then
+              pnpm config set //registry.npmjs.org/:_authToken "${{ secrets.NPM_TOKEN }}"
+              echo "✅ NPM authentication configured and validated"
+            else
+              echo "⚠️  NPM_TOKEN is invalid or expired, using public registry"
+            fi
           else
-            echo "⚠️  No NPM_TOKEN provided, using public registry"
+            echo "⚠️  No valid NPM_TOKEN provided, using public registry"
           fi
 
           # Install dependencies with retry logic
