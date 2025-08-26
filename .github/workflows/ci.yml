@@ -77,14 +77,22 @@ jobs:
 
       - name: 📚 Install Dependencies
         run: |
+          export PNPM_HOME="$HOME/.local/share/pnpm"
+          export PATH="$PNPM_HOME:$PATH"
           pnpm config set registry https://registry.npmjs.org/
           pnpm install --no-frozen-lockfile --ignore-scripts
 
       - name: 🔧 Generate Prisma Client
-        run: pnpm prisma generate --schema=./backend/services/auth-service/prisma/schema.prisma || echo "⚠️  Prisma generate failed, continuing with existing client..."
+        run: |
+          export PNPM_HOME="$HOME/.local/share/pnpm"
+          export PATH="$PNPM_HOME:$PATH"
+          pnpm prisma generate --schema=./backend/services/auth-service/prisma/schema.prisma || echo "⚠️  Prisma generate failed, continuing with existing client..."
 
       - name: 🔍 Dependency Vulnerability Scan
-        run: pnpm run security:audit-ci
+        run: |
+          export PNPM_HOME="$HOME/.local/share/pnpm"
+          export PATH="$PNPM_HOME:$PATH"
+          pnpm run security:audit-ci
         continue-on-error: false
 
       - name: 📋 Generate SBOM (Software Bill of Materials)
@@ -157,20 +165,34 @@ jobs:
 
       - name: 📚 Install Dependencies
         run: |
+          export PNPM_HOME="$HOME/.local/share/pnpm"
+          export PATH="$PNPM_HOME:$PATH"
           pnpm config set registry https://registry.npmjs.org/
           pnpm install --no-frozen-lockfile --ignore-scripts --ignore-scripts
 
       - name: 🎨 Code Formatting Check
-        run: pnpm run format:check
+        run: |
+          export PNPM_HOME="$HOME/.local/share/pnpm"
+          export PATH="$PNPM_HOME:$PATH"
+          pnpm run format:check
 
       - name: 🔍 ESLint Analysis
-        run: pnpm run lint
+        run: |
+          export PNPM_HOME="$HOME/.local/share/pnpm"
+          export PATH="$PNPM_HOME:$PATH"
+          pnpm run lint
 
       - name: 🔧 Generate Prisma Client
-        run: pnpm prisma generate --schema=./backend/services/auth-service/prisma/schema.prisma || echo "⚠️  Prisma generate failed, continuing with existing client..."
+        run: |
+          export PNPM_HOME="$HOME/.local/share/pnpm"
+          export PATH="$PNPM_HOME:$PATH"
+          pnpm prisma generate --schema=./backend/services/auth-service/prisma/schema.prisma || echo "⚠️  Prisma generate failed, continuing with existing client..."
 
       - name: 🏗️ TypeScript Compilation Check
-        run: pnpm run build
+        run: |
+          export PNPM_HOME="$HOME/.local/share/pnpm"
+          export PATH="$PNPM_HOME:$PATH"
+          pnpm run build
 
       - name: 📊 Upload Code Quality Results
         uses: actions/upload-artifact@v4
@@ -260,33 +282,50 @@ jobs:
 
       - name: 📚 Install Dependencies
         run: |
+          export PNPM_HOME="$HOME/.local/share/pnpm"
+          export PATH="$PNPM_HOME:$PATH"
           pnpm config set registry https://registry.npmjs.org/
           pnpm install --no-frozen-lockfile --ignore-scripts --ignore-scripts
 
       - name: 🔧 Generate Prisma Client for Auth Service
         working-directory: ./backend/services/auth-service
-        run: pnpm db:generate
+        run: |
+          export PNPM_HOME="$HOME/.local/share/pnpm"
+          export PATH="$PNPM_HOME:$PATH"
+          pnpm db:generate
 
       - name: 🧪 Run Unit Tests
-        run: pnpm run test
+        run: |
+          export PNPM_HOME="$HOME/.local/share/pnpm"
+          export PATH="$PNPM_HOME:$PATH"
+          pnpm run test
         env:
           DATABASE_URL: postgresql://test_user:test_password@localhost:5432/meqenet_test
           REDIS_URL: redis://localhost:6379
 
       - name: 🔄 Run Integration Tests
-        run: pnpm run test:integration
+        run: |
+          export PNPM_HOME="$HOME/.local/share/pnpm"
+          export PATH="$PNPM_HOME:$PATH"
+          pnpm run test:integration
         env:
           DATABASE_URL: postgresql://test_user:test_password@localhost:5432/meqenet_test
           REDIS_URL: redis://localhost:6379
 
       - name: 🌐 Run E2E Tests
-        run: pnpm run test:e2e
+        run: |
+          export PNPM_HOME="$HOME/.local/share/pnpm"
+          export PATH="$PNPM_HOME:$PATH"
+          pnpm run test:e2e
         env:
           DATABASE_URL: postgresql://test_user:test_password@localhost:5432/meqenet_test
           REDIS_URL: redis://localhost:6379
 
       - name: 📊 Generate Coverage Report
-        run: pnpm run test:coverage
+        run: |
+          export PNPM_HOME="$HOME/.local/share/pnpm"
+          export PATH="$PNPM_HOME:$PATH"
+          pnpm run test:coverage
 
       - name: 📈 Upload Coverage to Codecov
         uses: codecov/codecov-action@v5
@@ -540,7 +579,7 @@ jobs:
           echo "Checking React Native Android setup..."
           if [ ! -d "../../node_modules/react-native/ReactAndroid" ]; then
             echo "⚠️  React Native Android directory not found, reinstalling React Native..."
-            cd ../../ && pnpm install react-native --ignore-scripts -w
+            cd ../../ && export PNPM_HOME="$HOME/.local/share/pnpm" && export PATH="$PNPM_HOME:$PATH" && pnpm install react-native --ignore-scripts -w
           fi
 
           # Verify React Native Android files exist
@@ -732,7 +771,7 @@ jobs:
           echo "Checking React Native Android setup..."
           if [ ! -d "../../node_modules/react-native/ReactAndroid" ]; then
             echo "⚠️  React Native Android directory not found, reinstalling React Native..."
-            cd ../../ && pnpm install react-native --ignore-scripts -w
+            cd ../../ && export PNPM_HOME="$HOME/.local/share/pnpm" && export PATH="$PNPM_HOME:$PATH" && pnpm install react-native --ignore-scripts -w
           fi
 
           # Verify React Native Android files exist
@@ -878,11 +917,6 @@ jobs:
           languages: java, kotlin
           config-file: .github/codeql/codeql-config.yml
 
-      - name: 🔧 Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
       - name: 🔧 Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -918,7 +952,10 @@ jobs:
           pnpm --version
 
       - name: 📚 Install Dependencies
-        run: pnpm install --no-frozen-lockfile --ignore-scripts
+        run: |
+          export PNPM_HOME="$HOME/.local/share/pnpm"
+          export PATH="$PNPM_HOME:$PATH"
+          pnpm install --no-frozen-lockfile --ignore-scripts
 
       - name: 🔧 Setup React Native for Android
         working-directory: ./frontend/apps/app
@@ -927,7 +964,7 @@ jobs:
           echo "Checking React Native Android setup..."
           if [ ! -d "../../node_modules/react-native/ReactAndroid" ]; then
             echo "⚠️  React Native Android directory not found, reinstalling React Native..."
-            cd ../../ && pnpm install react-native --ignore-scripts -w
+            cd ../../ && export PNPM_HOME="$HOME/.local/share/pnpm" && export PATH="$PNPM_HOME:$PATH" && pnpm install react-native --ignore-scripts -w
           fi
 
           # Verify React Native Android files exist
@@ -1070,11 +1107,6 @@ jobs:
       - name: 📥 Checkout Repository
         uses: actions/checkout@v5
 
-      - name: 🔧 Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
       - name: 🔧 Setup Node.js & pnpm
         uses: actions/setup-node@v4
         with:
@@ -1110,7 +1142,10 @@ jobs:
           pnpm --version
 
       - name: 📚 Install Dependencies
-        run: pnpm install --no-frozen-lockfile --ignore-scripts
+        run: |
+          export PNPM_HOME="$HOME/.local/share/pnpm"
+          export PATH="$PNPM_HOME:$PATH"
+          pnpm install --no-frozen-lockfile --ignore-scripts
 
       - name: 🔐 Validate Fayda ID Encryption
         run: |
