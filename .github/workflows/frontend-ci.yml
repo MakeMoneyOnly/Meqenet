@@ -31,8 +31,17 @@ jobs:
           run_install: |
             - args: [--frozen-lockfile, --strict-peer-dependencies]
 
+      - name: Enable corepack
+        run: corepack enable
+
       - name: Run lint
         run: cd frontend && pnpm lint:security
 
-      - name: Run tests
-        run: echo "No frontend tests configured yet."
+      - name: Type check (React Native app via Vitest)
+        run: pnpm -C frontend vitest --config apps/app/vitest.config.ts --typecheck --run
+
+      - name: Run unit tests (React Native via Vitest)
+        run: pnpm -C frontend vitest --config apps/app/vitest.config.ts --run
+
+      - name: Validate Mermaid diagrams
+        uses: jgreywolf/docs-mermaid-validate-action@v1

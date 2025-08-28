@@ -31,6 +31,9 @@ jobs:
           run_install: |
             - args: [--frozen-lockfile, --strict-peer-dependencies]
 
+      - name: Enable corepack
+        run: corepack enable
+
       - name: Run lint
         run: pnpm lint
 
@@ -54,3 +57,30 @@ jobs:
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v2
+
+      - name: Validate Mermaid diagrams
+        uses: jgreywolf/docs-mermaid-validate-action@v1
+
+  api-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: ReDocly API Docs
+        uses: redocly/cli-action@v1
+        with:
+          command: "build-docs backend/openapi.yaml"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: api-docs
+          path: redoc-static.html
+
+  e2e-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Run E2E tests
+        run: bash scripts/run-e2e-tests.sh
