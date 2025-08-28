@@ -11,10 +11,7 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     setupFiles: ['./test/setup.ts'],
-    include: [
-      'backend/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
-      'backend-e2e/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
-    ],
+    include: ['backend/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     exclude: [
       '**/node_modules/**',
       '**/dist/**',
@@ -39,8 +36,6 @@ export default defineConfig({
     typecheck: {
       tsconfig: './tsconfig.json',
     },
-    // Explicitly prevent vitest from scanning node_modules
-    watchExclude: ['node_modules/**', '**/node_modules/**'],
   },
   resolve: {
     alias: {

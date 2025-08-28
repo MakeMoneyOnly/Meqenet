@@ -1,0 +1,27 @@
+version: "3.8"
+services:
+  postgres:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: test
+    ports:
+      - "5433:5432"
+    # In a real-world scenario, you would mount a script to initialize the db with encryption extensions like pgcrypto
+  redis:
+    image: redis:7
+    restart: always
+    ports:
+      - "6380:6379"
+  auth-service:
+    build:
+      context: .
+      dockerfile: backend/services/auth-service/Dockerfile
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      DATABASE_URL: postgresql://test:test@postgres:5432/test
+      REDIS_URL: redis://redis:6379

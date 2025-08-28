@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState, JSX } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -51,7 +51,7 @@ function handleNxCloudInfoPress(): void {
   Linking.openURL('https://nx.dev/nx-cloud?utm_source=nx-project');
 }
 
-export const App = (): JSX.Element => {
+export const App = (): React.JSX.Element => {
   const [whatsNextYCoord, setWhatsNextYCoord] = useState<number>(0);
   const scrollViewRef = useRef<null | ScrollView>(null);
 

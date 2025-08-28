@@ -8,6 +8,11 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        brand: {
+          primary: '#16a34a',
+          secondary: '#0f172a',
+          accent: '#facc15',
+        },
         primary: {
           50: '#f0fdf4',
           100: '#dcfce7',
@@ -34,7 +39,7 @@ module.exports = {
         },
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['Poppins', 'Inter', 'system-ui', 'sans-serif'],
         display: ['Lexend', 'system-ui', 'sans-serif'],
       },
       animation: {

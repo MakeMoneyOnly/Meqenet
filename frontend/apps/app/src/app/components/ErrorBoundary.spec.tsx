@@ -9,7 +9,7 @@ import ErrorBoundary from './ErrorBoundary';
 
 describe('ErrorBoundary', () => {
   const silenceReactErrorLogs = (): (() => void) => {
-    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     return () => spy.mockRestore();
   };
 

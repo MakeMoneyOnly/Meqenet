@@ -32,7 +32,20 @@ autonomy with centralized control.
   understand how data flows between services for impact analysis, debugging, and regulatory
   compliance.
 
-## 3. Key Areas to be Defined
+## 3. Data Ownership and Stewardship
+
+Data ownership is a critical component of our data governance framework. Each data domain within the
+Meqenet ecosystem has a designated owner responsible for the data's accuracy, quality, and security.
+
+| Data Domain             | Microservice Owner   | Business Owner            | Description                                                                  |
+| ----------------------- | -------------------- | ------------------------- | ---------------------------------------------------------------------------- |
+| User & Identity         | `auth-service`       | Compliance & Risk Officer | Manages user profiles, authentication, KYC, and credit scoring data.         |
+| Payments & Transactions | `payments-service`   | Head of Finance           | Processes all payment plans, installments, and settlements.                  |
+| Merchant & Marketplace  | `merchant-service`   | Head of Partnerships      | Handles merchant onboarding, product catalogs, and marketplace operations.   |
+| Rewards & Cashback      | `rewards-engine`     | Head of Marketing         | Manages the loyalty program, calculates cashback, and processes redemptions. |
+| Analytics & BI          | `analytics-platform` | Head of Data              | Aggregates data for monitoring, fraud detection, and business intelligence.  |
+
+## 4. Key Areas to be Defined
 
 - Data Classification (Public, Internal, Confidential, PII)
 - Data Ownership and Stewardship (assigning specific owners to each data domain/microservice)

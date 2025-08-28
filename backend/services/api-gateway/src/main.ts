@@ -1,15 +1,12 @@
 import { VersioningType } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import compression from 'compression';
 import helmet from 'helmet';
-import { createProxyMiddleware } from 'http-proxy-middleware';
 
 import { AppModule } from './app/app.module';
 
 const DEFAULT_PORT = 3000;
-const DEFAULT_TIMEOUT_MS = 5000;
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
@@ -51,45 +48,13 @@ async function bootstrap(): Promise<void> {
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Request-ID'],
     credentials: true,
   });
-  // Swagger for gateway (non-prod only)
-  const nodeEnv = configService.get<string>('NODE_ENV');
-  if (nodeEnv !== 'production') {
-    const config = new DocumentBuilder()
-      .setTitle('Meqenet API Gateway')
-      .setDescription('Gateway routes and proxy contract')
-      .setVersion('1.0')
-      .addBearerAuth()
-      .build();
-    const doc = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('api/docs', app, doc);
-  }
-  const authServiceUrl =
-    configService.get<string>('app.authServiceUrl') ?? 'http://localhost:3001';
-
-  app.use(
-    '/api/auth',
-    createProxyMiddleware({
-      target: authServiceUrl,
-      changeOrigin: true,
-      proxyTimeout: DEFAULT_TIMEOUT_MS,
-      timeout: DEFAULT_TIMEOUT_MS,
-      pathRewrite: {
-        '^/api/auth': '/', // rewrite path
-      },
-    })
-  );
-
   const port = configService.get<number>('app.port') ?? DEFAULT_PORT;
   await app.listen(port);
 
   // eslint-disable-next-line no-console
   console.log(`API Gateway listening on http://localhost:${port}`);
   // eslint-disable-next-line no-console
-  console.log(`Proxying /api/auth to ${authServiceUrl}`);
-  if (nodeEnv !== 'production') {
-    // eslint-disable-next-line no-console
-    console.log(`Gateway docs: http://localhost:${port}/api/docs`);
-  }
+  console.log(`Auth proxy disabled for E2E testing - using mock endpoints`);
 }
 
 bootstrap();

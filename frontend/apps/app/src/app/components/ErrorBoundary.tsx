@@ -1,5 +1,5 @@
 import * as Sentry from '@sentry/react-native';
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import React, { Component, ReactNode } from 'react';
 import { View, Text, StyleSheet, Button } from 'react-native';
 
 interface Props {
@@ -11,24 +11,30 @@ interface State {
 }
 
 class ErrorBoundary extends Component<Props, State> {
-  public state: State = {
-    hasError: false,
-  };
+  constructor(props: Props) {
+    super(props);
+    this.state = { hasError: false };
+  }
 
   public static getDerivedStateFromError(_: Error): State {
     return { hasError: true };
   }
 
-  public componentDidCatch(error: Error, _errorInfo: ErrorInfo): void {
+  public override componentDidCatch(
+    error: Error,
+    errorInfo: React.ErrorInfo,
+  ): void {
     // Report to Sentry if initialized
     try {
-      Sentry.captureException(error);
+      Sentry.captureException(error, {
+        extra: { componentStack: errorInfo.componentStack },
+      });
     } catch {
       // no-op: Sentry not initialized or capture failed
     }
   }
 
-  public render(): ReactNode {
+  public override render(): ReactNode {
     if (this.state.hasError) {
       return (
         <View style={styles.container}>
