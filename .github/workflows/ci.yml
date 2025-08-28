@@ -981,6 +981,15 @@ jobs:
             # Clear problematic registry configurations
             pnpm config delete @jsr:registry 2>/dev/null || true
             pnpm config delete //npm.jsr.io/:_authToken 2>/dev/null || true
+
+            # CRITICAL: Ensure PATH is persistent for all subprocesses (auditjs scripts)
+            echo "🔧 Setting up persistent PATH for subprocess scripts..."
+            echo "export PNPM_HOME=\"$HOME/.local/share/pnpm\"" >> $HOME/.bashrc
+            echo "export PATH=\"$PNPM_HOME:\$PATH\"" >> $HOME/.bashrc
+            # Also set for current session and test subprocess access
+            export PNPM_HOME="$HOME/.local/share/pnpm"
+            export PATH="$PNPM_HOME:$PATH"
+            bash -c "which pnpm && pnpm --version" || echo "❌ Subprocess PATH test failed"
           else
             echo "💥 CRITICAL: All pnpm installation methods failed"
             echo "🔍 Network diagnostics:"
