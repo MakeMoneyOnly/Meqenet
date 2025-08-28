@@ -11,6 +11,8 @@ import {
 } from 'react-native';
 import Svg, { G, Path } from 'react-native-svg';
 
+import ErrorBoundary from './components/ErrorBoundary';
+
 function handleDocumentationPress(): void {
   Linking.openURL('https://nx.dev/getting-started/intro?utm_source=nx-project');
 }
@@ -73,7 +75,7 @@ export const App = (): JSX.Element => {
   );
 
   return (
-    <>
+    <ErrorBoundary>
       <StatusBar barStyle="dark-content" />
       <SafeAreaView style={styles.safeArea}>
         <ScrollView
@@ -598,7 +600,7 @@ export const App = (): JSX.Element => {
           </View>
         </ScrollView>
       </SafeAreaView>
-    </>
+    </ErrorBoundary>
   );
 };
 const styles = StyleSheet.create({
