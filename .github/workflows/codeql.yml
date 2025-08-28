@@ -289,10 +289,18 @@ jobs:
           pkill -f "metro" || true
           sleep 3
 
-          # Clean Android build artifacts
+          # Clean Android build artifacts with aggressive cleanup
           cd android
           chmod +x ./gradlew
-          ./gradlew clean --no-daemon || true
+
+          # Aggressive cleanup to prevent hanging
+          ./gradlew --stop || true
+          pkill -f gradle || true
+          rm -rf ~/.gradle/caches || true
+          rm -rf .gradle || true
+          rm -rf build || true
+
+          ./gradlew clean --no-daemon --quiet || true
           cd ..
 
           # Ensure React Native Android dependencies are available
@@ -327,12 +335,12 @@ jobs:
           # Try different build approaches for CodeQL analysis
           echo "🏗️ Building Android project for CodeQL analysis..."
 
-          # First, try to compile just the Java/Kotlin sources without full APK build
-          if ./gradlew compileDebugSources --no-daemon --stacktrace; then
+          # Optimized compilation for CodeQL (CI-friendly)
+          if timeout 240s ./gradlew compileDebugSources --no-daemon --quiet --max-workers=1; then
             echo "✅ Source compilation successful"
-          elif ./gradlew compileDebugKotlin compileDebugJavaWithJavac --no-daemon --stacktrace; then
+          elif timeout 180s ./gradlew compileDebugKotlin compileDebugJavaWithJavac --no-daemon --quiet --max-workers=1; then
             echo "✅ Kotlin/Java compilation successful"
-          elif ./gradlew assembleDebug --no-daemon --stacktrace --continue; then
+          elif timeout 300s ./gradlew assembleDebug --no-daemon --quiet --continue --max-workers=1; then
             echo "✅ Full debug build successful (with warnings)"
           else
             echo "❌ All compilation attempts failed"
@@ -342,15 +350,26 @@ jobs:
           fi
 
           # Verify that build outputs exist for CodeQL
+          echo "📊 CodeQL Build Analysis Summary:"
           if [ -d "app/build/intermediates/javac/debug" ] || [ -d "app/build/tmp/kotlin-classes/debug" ] || [ -d "app/build/intermediates/sources/debug" ]; then
             echo "✅ Build outputs found - ready for CodeQL analysis"
+            echo "📁 Build outputs location:"
+            find app/build -name "*.class" -o -name "*.jar" | head -5 || true
           else
             echo "⚠️ Build outputs not found - CodeQL will analyze source files directly"
             # Ensure source files are available for analysis
             if [ -d "../src" ]; then
               echo "✅ Source files available for CodeQL analysis"
+              echo "📊 Source file count:"
               find ../src -name "*.java" -o -name "*.kt" | wc -l || true
+              echo "📂 Sample source files:"
+              find ../src -name "*.java" -o -name "*.kt" | head -5 || true
+            else
+              echo "❌ No source directory found - limited CodeQL analysis possible"
             fi
           fi
+
+          # Log build duration and status
+          echo "⏱️  CodeQL Android build completed (optimized timeouts: 240s/180s/300s)"
 
       - uses: github/codeql-action/analyze@v3
