@@ -1889,8 +1889,15 @@ jobs:
 
           cd android && chmod +x ./gradlew
 
+          # Clean Gradle cache and wrapper to prevent hanging issues
+          echo "🧹 Cleaning Gradle cache and wrapper..."
+          ./gradlew clean --no-daemon || true
+          ./gradlew --stop || true
+          rm -rf ~/.gradle/caches || true
+          rm -rf .gradle || true
+
           # Run lint checks without requiring device connection (with extended timeout)
-          timeout 900s ./gradlew lintDebug --continue --info --no-daemon || {
+          timeout 1200s ./gradlew lintDebug --continue --info --no-daemon --parallel || {
             echo "⚠️  Lint failed, but continuing with partial results..."
           }
 
