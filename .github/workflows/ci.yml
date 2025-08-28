@@ -1896,8 +1896,14 @@ jobs:
           rm -rf ~/.gradle/caches || true
           rm -rf .gradle || true
 
-          # Run lint checks without requiring device connection (with extended timeout)
-          timeout 1200s ./gradlew lintDebug --continue --info --no-daemon --parallel || {
+          # Ensure Metro bundler is completely stopped before Gradle build
+          echo "🧹 Ensuring Metro bundler is stopped..."
+          pkill -9 -f "react-native start" || true
+          pkill -9 -f "metro" || true
+          sleep 5
+
+          # Run lint checks without requiring device connection (optimized for CI)
+          timeout 600s ./gradlew lintDebug --continue --quiet --no-daemon --max-workers=2 || {
             echo "⚠️  Lint failed, but continuing with partial results..."
           }
 
@@ -1907,12 +1913,25 @@ jobs:
           pkill -f "metro" || true
           pkill -f "gradle" || true
 
-          # Verify build artifacts exist
+          # Verify build artifacts exist and provide summary
+          echo "📊 Android Lint Analysis Summary:"
           if [ -d "android/app/build/reports/lint-results-debug.html" ]; then
             echo "✅ Lint report generated successfully"
+            ls -la android/app/build/reports/lint-results-debug.html
+          elif [ -f "android/app/build/reports/lint-results-debug.xml" ]; then
+            echo "✅ Lint XML report generated successfully"
+            ls -la android/app/build/reports/lint-results-debug.xml
+          elif [ -d "android/app/build/outputs/lint-results-debug.html" ]; then
+            echo "✅ Alternative lint report location found"
+            ls -la android/app/build/outputs/lint-results-debug.html
           else
-            echo "⚠️  Lint report not found, but process completed"
+            echo "⚠️  No lint reports found, but build process completed"
+            # List any available build outputs
+            find android/app/build -name "*lint*" -o -name "*report*" | head -10 || true
           fi
+
+          # Log build duration and status
+          echo "⏱️  Android Lint build completed (timeout: 600s)"
           ./gradlew lintRelease --continue --info --no-daemon
 
       - name: 📊 Generate Security-Focused Lint Report
