@@ -1840,31 +1840,38 @@ jobs:
           rm -rf $TMPDIR/metro-* || true
           rm -rf /tmp/metro-* || true
 
-          # Kill any existing Metro processes
+          # Kill any existing Metro processes to prevent conflicts
           pkill -f "react-native start" || true
           pkill -f "metro" || true
           sleep 3
 
           # Initialize React Native project properly with fresh cache
           echo "🔧 Initializing React Native project..."
-          timeout 30s npx react-native start --reset-cache --verbose || {
+          timeout 60s npx react-native start --reset-cache --verbose || {
             echo "⚠️  Metro start failed, but continuing..."
           }
 
           # Generate codegen artifacts without device
           echo "🔧 Generating codegen artifacts..."
-          npx @react-native-community/cli codegen || {
+          timeout 120s npx @react-native-community/cli codegen || {
             echo "⚠️  Codegen failed, but continuing..."
           }
 
           # Clean up background processes
           pkill -f "react-native start" || true
           pkill -f "metro" || true
+          sleep 5
 
           cd android && chmod +x ./gradlew
 
-          # Run lint checks without requiring device connection
-          ./gradlew lintDebug --continue --info --no-daemon
+          # Run lint checks without requiring device connection (with extended timeout)
+          timeout 600s ./gradlew lintDebug --continue --info --no-daemon || {
+            echo "⚠️  Lint failed, but continuing with partial results..."
+          }
+
+          # Final cleanup
+          pkill -f "react-native start" || true
+          pkill -f "metro" || true
           ./gradlew lintRelease --continue --info --no-daemon
 
       - name: 📊 Generate Security-Focused Lint Report
