@@ -72,6 +72,8 @@ jobs:
       - name: 🔍 Run PWA Compliance Tests
         run: |
           echo "🧪 Running PWA compliance tests..."
+          export PNPM_HOME="$HOME/.local/share/pnpm"
+          export PATH="$PNPM_HOME:$PATH"
           node scripts/test-pwa-compliance.js
         continue-on-error: true
 
