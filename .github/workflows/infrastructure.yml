@@ -153,6 +153,9 @@ jobs:
             pnpm config set fetch-timeout 60000
             pnpm config set network-timeout 300000
 
+            # Enable corepack for proper pnpm version management
+            corepack enable
+
             # Clear problematic registry configurations
             pnpm config delete @jsr:registry 2>/dev/null || true
             pnpm config delete //npm.jsr.io/:_authToken 2>/dev/null || true
