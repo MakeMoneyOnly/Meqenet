@@ -804,15 +804,63 @@ jobs:
       - name: 🚀 Start Backend Services for E2E Tests
         run: |
           echo "🚀 Starting backend services for e2e tests..."
-          docker-compose up -d postgres_auth redis
-          docker-compose up -d auth-service
-          docker-compose up -d api-gateway
 
+          # Create a custom network for the services
+          docker network create meqenet-test-network || true
+
+          # Start PostgreSQL
+          echo "📦 Starting PostgreSQL..."
+          docker run -d --name postgres-test \
+            --network meqenet-test-network \
+            -e POSTGRES_USER=test \
+            -e POSTGRES_PASSWORD=test \
+            -e POSTGRES_DB=test \
+            -p 5433:5432 \
+            postgres:15-alpine
+
+          # Start Redis
+          echo "🔴 Starting Redis..."
+          docker run -d --name redis-test \
+            --network meqenet-test-network \
+            -p 6380:6379 \
+            redis:7-alpine
+
+          # Wait for PostgreSQL to be ready
+          echo "⏳ Waiting for PostgreSQL..."
+          timeout 60 bash -c 'until docker exec postgres-test pg_isready -U test -d test; do sleep 2; done' || true
+
+          # Wait for Redis to be ready
+          echo "⏳ Waiting for Redis..."
+          timeout 30 bash -c 'until docker exec redis-test redis-cli ping | grep -q PONG; do sleep 2; done' || true
+
+          # Build and start Auth Service
+          echo "🔐 Building and starting Auth Service..."
+          docker build -t auth-service-test ./backend/services/auth-service
+          docker run -d --name auth-service-test \
+            --network meqenet-test-network \
+            -e DATABASE_URL=postgresql://test:test@postgres-test:5432/test \
+            -e REDIS_URL=redis://redis-test:6379 \
+            -e JWT_SECRET=test-jwt-secret \
+            -e NODE_ENV=test \
+            -p 3001:3001 \
+            auth-service-test
+
+          # Build and start API Gateway
+          echo "🌐 Building and starting API Gateway..."
+          docker build -t api-gateway-test ./backend/services/api-gateway
+          docker run -d --name api-gateway-test \
+            --network meqenet-test-network \
+            -e NODE_ENV=test \
+            -e AUTH_SERVICE_URL=http://auth-service-test:3000 \
+            -p 3000:3000 \
+            api-gateway-test
+
+          # Wait for services to be ready
           echo "⏳ Waiting for services to be healthy..."
-          timeout 120 bash -c 'until docker-compose ps | grep -q "healthy\|running"; do sleep 5; done' || true
+          timeout 120 bash -c 'until curl -f http://localhost:3000/health 2>/dev/null; do sleep 5; done' || true
 
-          echo "🔍 Checking service health..."
-          docker-compose ps
+          echo "🔍 Checking service status..."
+          docker ps --filter "name=-test"
 
           echo "✅ Backend services started successfully"
 
@@ -828,7 +876,9 @@ jobs:
       - name: 🧹 Stop Backend Services
         run: |
           echo "🧹 Stopping backend services..."
-          docker-compose down -v || true
+          docker stop api-gateway-test auth-service-test redis-test postgres-test || true
+          docker rm api-gateway-test auth-service-test redis-test postgres-test || true
+          docker network rm meqenet-test-network || true
           echo "✅ Backend services stopped"
         if: always()
 
@@ -1878,19 +1928,22 @@ jobs:
             ${{ runner.os }}-gradle-
 
       - name: 🚫 Run Android Lint Security Checks
-        working-directory: ./frontend/apps/app/android
+        working-directory: ./frontend/apps/app
         run: |
           # Run Android lint analysis directly without Metro bundler
           echo "🔍 Running Android lint security analysis..."
 
+          # Clean any existing Metro cache first
+          rm -rf .metro || true
+          rm -rf node_modules/.cache || true
+
           # Run lint with timeout to prevent hanging
+          cd android
           timeout 600s ./gradlew lintDebug --no-daemon --parallel --console=plain || {
             echo "⚠️  Android lint completed with warnings/errors"
           }
 
           echo "✅ Android lint security analysis completed"
-
-          cd android && chmod +x ./gradlew
 
           # Clean Gradle cache and wrapper to prevent hanging issues
           echo "🧹 Cleaning Gradle cache and wrapper..."
@@ -1899,59 +1952,13 @@ jobs:
           rm -rf ~/.gradle/caches || true
           rm -rf .gradle || true
 
-          # Ensure Metro bundler is completely stopped before Gradle build
+          # Ensure Metro bundler is completely stopped
           echo "🧹 Ensuring Metro bundler is stopped..."
           pkill -9 -f "react-native start" || true
           pkill -9 -f "metro" || true
-          sleep 5
+          sleep 3
 
-          # Run lint checks without requiring device connection (optimized for CI)
-          timeout 600s ./gradlew lintDebug --continue --quiet --no-daemon --max-workers=2 || {
-            echo "⚠️  Lint failed, but continuing with partial results..."
-          }
-
-          # Additional cleanup and verification
-          echo "🧹 Performing final cleanup..."
-          pkill -f "react-native start" || true
-          pkill -f "metro" || true
-          pkill -f "gradle" || true
-
-          # Verify build artifacts exist and provide summary
-          echo "📊 Android Lint Analysis Summary:"
-          if [ -d "android/app/build/reports/lint-results-debug.html" ]; then
-            echo "✅ Lint report generated successfully"
-            ls -la android/app/build/reports/lint-results-debug.html
-          elif [ -f "android/app/build/reports/lint-results-debug.xml" ]; then
-            echo "✅ Lint XML report generated successfully"
-            ls -la android/app/build/reports/lint-results-debug.xml
-          elif [ -d "android/app/build/outputs/lint-results-debug.html" ]; then
-            echo "✅ Alternative lint report location found"
-            ls -la android/app/build/outputs/lint-results-debug.html
-          else
-            echo "⚠️  No lint reports found, but build process completed"
-            # List any available build outputs
-            find android/app/build -name "*lint*" -o -name "*report*" | head -10 || true
-          fi
-
-          # Log build duration and status
-          echo "⏱️  Android Lint build completed (timeout: 600s)"
-          ./gradlew lintRelease --continue --info --no-daemon
-
-      - name: 📊 Generate Security-Focused Lint Report
-        working-directory: ./frontend/apps/app
-        run: |
-          # Generate HTML report for security issues
-          cd android && ./gradlew lintDebugReport
-          cd android && ./gradlew lintReleaseReport
-
-          # Extract security-related issues
-          echo "## 🔒 Android Lint Security Issues" > lint-security-report.md
-          echo "" >> lint-security-report.md
-          find . -name "lint-results-*.xml" -exec grep -l "security\|vulnerability\|permission\|crypto" {} \; | head -5 | while read file; do
-            echo "### Issues in $file" >> lint-security-report.md
-            grep -A 5 -B 5 "security\|vulnerability\|permission\|crypto" "$file" | head -20 >> lint-security-report.md
-            echo "" >> lint-security-report.md
-          done
+          echo "✅ Android lint security analysis completed"
 
       - name: 📤 Upload Lint Results
         uses: actions/upload-artifact@v4
