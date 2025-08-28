@@ -35,10 +35,10 @@ const RN_ONLY_PROPS = new Set<string>([
   'onMagicTap',
 ]);
 
-function sanitizeProps<P extends Record<string, any>>(
+function sanitizeProps<P extends Record<string, unknown>>(
   props: P,
-): Record<string, any> {
-  const out: Record<string, any> = {};
+): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
   const propKeys = Object.keys(props);
 
   for (const key of propKeys) {
@@ -50,23 +50,27 @@ function sanitizeProps<P extends Record<string, any>>(
 }
 
 // Basic component factory with ref support and prop filtering
-function createElement<T extends object = any>(
+function createElement<
+  T extends Record<string, unknown> = Record<string, unknown>,
+>(
   tag: keyof JSX.IntrinsicElements,
 ): React.ForwardRefExoticComponent<
   React.PropsWithoutRef<PropsWithChildren<T & { testID?: string }>> &
-    React.RefAttributes<any>
+    React.RefAttributes<unknown>
 > {
   const Component = React.forwardRef<
-    any,
+    unknown,
     PropsWithChildren<T & { testID?: string }>
   >((props, ref) => {
-    const { children, testID, ...rest } = props as any;
+    const { children, testID, ...rest } = props as PropsWithChildren<
+      T & { testID?: string }
+    >;
     const sanitized = sanitizeProps(rest);
     const domProps = {
       ...sanitized,
       ref,
       ...(testID ? { 'data-testid': testID } : {}),
-    } as Record<string, any>;
+    } as Record<string, unknown>;
     return React.createElement(tag, domProps, children);
   });
   Component.displayName = `createElement(${String(tag)})`;
@@ -96,7 +100,7 @@ export const TouchableOpacity = React.forwardRef<
     }
   >
 >((props, ref) => {
-  const { children, onPress, testID, ...rest } = props as any;
+  const { children, onPress, testID, ...rest } = props;
   const sanitized = sanitizeProps(rest);
   return React.createElement(
     'button',
@@ -122,7 +126,7 @@ export const Button = React.forwardRef<
     } & React.ButtonHTMLAttributes<HTMLButtonElement>
   >
 >((props, ref) => {
-  const { children, title, onPress, testID, ...rest } = props as any;
+  const { children, title, onPress, testID, ...rest } = props;
   const sanitized = sanitizeProps(rest);
   const content = children ?? title ?? 'Button';
   return React.createElement(

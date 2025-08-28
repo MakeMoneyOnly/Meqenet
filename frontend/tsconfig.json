@@ -8,6 +8,9 @@
     },
     {
       "path": "./apps/website"
+    },
+    {
+      "path": "./libs/shared-ui"
     }
   ]
 }

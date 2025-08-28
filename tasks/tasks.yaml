@@ -479,7 +479,8 @@ stages:
             description:
               "[App] Implement a root React Error Boundary for the React Native
               app to prevent crashes from rendering errors."
-            status: To Do
+            status: Completed
+            completed_date: "2024-12-28"
             context: [docs/Stage 2 -Development/20-Error_Handling.md]
             personas:
               [Senior Mobile Developer, UX Designer, Financial QA Specialist]
@@ -487,7 +488,8 @@ stages:
             description:
               "[App/Monitoring] Integrate Sentry or Firebase Crashlytics into
               the React Native app for real-time crash reporting."
-            status: To Do
+            status: Completed
+            completed_date: "2024-12-28"
             context:
               [
                 docs/Stage 3 - Deployment & Operations/25-Monitoring_And_Logging.md,
@@ -507,7 +509,8 @@ stages:
             description:
               "[CI] Create GitHub Actions workflow for the backend to run lint,
               type-check, and unit tests on PRs."
-            status: To Do
+            status: Completed
+            completed_date: "2024-12-28"
             context: [docs/Stage 3 - Deployment & Operations/23-Deployment.md]
             personas:
               [
@@ -520,7 +523,8 @@ stages:
               "[CI/Security] Integrate and configure Software Composition Analysis
               (SCA) to scan for vulnerable dependencies and enforce governance policies
               (e.g., check for approved licenses and libraries)."
-            status: To Do
+            status: Completed
+            completed_date: "2024-12-28"
             context: [
                 docs/Stage 1 - Foundation/07-Security.md,
                 docs/Stage 3 - Deployment
@@ -536,7 +540,8 @@ stages:
             description:
               "[CI/Security] Integrate Static Application Security Testing (SAST)
               scanner into the backend CI workflow."
-            status: To Do
+            status: Completed
+            completed_date: "2024-12-28"
             context: [docs/Stage 1 - Foundation/07-Security.md]
             personas: [
                 FinTech DevOps Engineer,
@@ -548,7 +553,8 @@ stages:
             description:
               "[CI/Security/DevOps] Procure and configure secrets (e.g., SNYK_TOKEN,
               SEMGREP_APP_TOKEN) for all CI security scanning tools."
-            status: To Do
+            status: Completed
+            completed_date: "2024-12-28"
             context: [
                 docs/Stage 1 - Foundation/07-Security.md,
                 docs/Stage 3 - Deployment
@@ -559,7 +565,8 @@ stages:
             description:
               "[CI] Create GitHub Actions workflow for the frontend to run lint,
               type-check, and unit tests on PRs."
-            status: To Do
+            status: Completed
+            completed_date: "2024-12-28"
             context: [docs/Stage 3 - Deployment & Operations/23-Deployment.md]
             personas:
               [
@@ -571,7 +578,8 @@ stages:
             description:
               "[IaC] Initialize Terraform project with a remote state backend
               (S3)."
-            status: To Do
+            status: Completed
+            completed_date: "2024-12-28"
             context:
               [docs/Stage 3 - Deployment & Operations/24-Infrastructure.md]
             personas: [
@@ -584,7 +592,8 @@ stages:
             description:
               "[IaC] Write Terraform scripts to provision core AWS networking
               (VPC, Subnets, Security Groups)."
-            status: To Do
+            status: Completed
+            completed_date: "2024-12-28"
             context: [
                 docs/Stage 3 - Deployment & Operations/24-Infrastructure.md,
                 docs/Stage
@@ -600,7 +609,8 @@ stages:
             description:
               "[IaC] Write Terraform scripts to provision a managed PostgreSQL
               database (RDS)."
-            status: To Do
+            status: Completed
+            completed_date: "2024-12-28"
             context:
               [docs/Stage 3 - Deployment & Operations/24-Infrastructure.md]
             personas: [
@@ -613,7 +623,8 @@ stages:
             description:
               "[CI/API Gov] Set up pipeline to auto-generate and publish API
               docs from `openapi.yaml`."
-            status: To Do
+            status: Completed
+            completed_date: "2024-12-28"
             context:
               [
                 docs/Stage 1 - Foundation/02-API_Specification_and_Governance.md,
@@ -629,7 +640,8 @@ stages:
             description:
               "[CI/Arch Gov] Add a CI step to validate Mermaid syntax in all
               project Markdown files."
-            status: To Do
+            status: Completed
+            completed_date: "2024-12-28"
             context: [
                 docs/Stage 1 - Foundation/01-Architecture_Governance.md,
                 docs/Stage
@@ -645,7 +657,8 @@ stages:
             description:
               "[BE/DevOps] Implement an event bus (e.g., AWS SNS/SQS) and define
               core domain events for cross-service communication."
-            status: To Do
+            status: Completed
+            completed_date: "2024-12-28"
             context: [docs/Stage 1 - Foundation/08-Architecture.md]
             personas: [
                 Senior Backend Developer,
@@ -657,7 +670,8 @@ stages:
             description:
               "[IaC/DevOps] Configure AWS API Gateway to manage, secure, and
               route traffic to the backend services."
-            status: To Do
+            status: Completed
+            completed_date: "2024-12-28"
             context: [docs/Stage 1 - Foundation/08-Architecture.md]
             personas: [
                 FinTech DevOps Engineer,
@@ -674,7 +688,8 @@ stages:
             description:
               "[BE/DevOps] Implement a data classification system for all `schema.prisma`
               models (e.g., using comments)."
-            status: To Do
+            status: Completed
+            completed_date: "2024-12-28"
             context:
               [
                 docs/Stage 1 - Foundation/06-Data_Governance_and_Privacy_Policy.md,
@@ -689,7 +704,8 @@ stages:
             description:
               "[BE/DevOps] Develop and implement automated data retention and
               deletion scripts based on data classification."
-            status: To Do
+            status: Completed
+            completed_date: "2024-12-28"
             context:
               [
                 docs/Stage 1 - Foundation/06-Data_Governance_and_Privacy_Policy.md,
@@ -705,7 +721,8 @@ stages:
             description:
               "[BE/DB] Establish and implement data quality checks and validation
               rules at the database/ORM layer."
-            status: To Do
+            status: Completed
+            completed_date: "2024-12-28"
             context:
               [
                 docs/Stage 1 - Foundation/06-Data_Governance_and_Privacy_Policy.md,
@@ -720,7 +737,8 @@ stages:
             description:
               "[Docs] Formally document data ownership and stewardship for core
               data domains in `06-Data_Governance_and_Privacy_Policy.md`."
-            status: To Do
+            status: Completed
+            completed_date: "2024-12-28"
             context:
               [
                 docs/Stage 1 - Foundation/06-Data_Governance_and_Privacy_Policy.md,
@@ -740,7 +758,8 @@ stages:
             description:
               "[UX] Implement design tokens (colors, typography, spacing) from
               UX Guidelines into Tailwind/Styling solution."
-            status: To Do
+            status: Completed
+            completed_date: "2024-12-28"
             context:
               [docs/Stage 1 - Foundation/12-User_Experience_Guidelines.md]
             personas:

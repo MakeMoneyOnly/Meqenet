@@ -88,9 +88,9 @@ model User {
   passwordHash    String   // Argon2 hashed password
   
   // Profile information - CONFIDENTIAL
-  firstName       String?
-  lastName        String?
-  displayName     String?
+  firstName       String?  @db.VarChar(50)
+  lastName        String?  @db.VarChar(50)
+  displayName     String?  @db.VarChar(100)
   phone           String?  @unique // Ethiopian phone format: +251XXXXXXXXX
   phoneVerified   Boolean  @default(false)
   phoneVerifiedAt DateTime?

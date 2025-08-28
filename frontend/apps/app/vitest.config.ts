@@ -7,6 +7,14 @@ export default defineConfig({
   root: __dirname,
   plugins: [react()],
   resolve: {
+    conditions: ['browser', 'module', 'import', 'default'],
+    // Prevent multiple React copies which can cause "Invalid hook call"
+    dedupe: [
+      'react',
+      'react-dom',
+      'react/jsx-runtime',
+      'react/jsx-dev-runtime',
+    ],
     alias: {
       'react-native': resolve(__dirname, './test/mocks/react-native.ts'),
       'react-native-svg': resolve(
@@ -21,7 +29,7 @@ export default defineConfig({
   },
   test: {
     globals: true,
-    environment: 'happy-dom',
+    environment: 'jsdom',
     setupFiles: [resolve(__dirname, './src/test-setup.ts')],
     include: ['src/**/*.{test,spec}.{ts,tsx,js,jsx}'],
     exclude: [
@@ -30,6 +38,22 @@ export default defineConfig({
       '**/.{idea,git,cache,output,temp}/**',
       '**/*.config.*',
     ],
+    deps: {
+      optimizer: {
+        web: {
+          enabled: true,
+          include: [
+            '@testing-library/react',
+            '@testing-library/dom',
+            'react-dom',
+            'react',
+            'react/jsx-runtime',
+            'react/jsx-dev-runtime',
+            'scheduler',
+          ],
+        },
+      },
+    },
     typecheck: {
       tsconfig: resolve(__dirname, './tsconfig.spec.json'),
     },
@@ -39,5 +63,8 @@ export default defineConfig({
       reportsDirectory: resolve(__dirname, '../../coverage/apps/app'),
       exclude: ['**/node_modules/**', '**/*.d.ts', '**/*.config.*'],
     },
+  },
+  esbuild: {
+    target: 'es2020',
   },
 });

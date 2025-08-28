@@ -30,16 +30,36 @@ export default [
     ],
   },
   {
+    plugins: {
+      '@typescript-eslint': tseslint,
+    },
     files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
     rules: {
       // Temporarily disable @nx/enforce-module-boundaries due to compatibility issues
       // '@nx/enforce-module-boundaries': 'off',
-      '@typescript-eslint/no-unused-vars': 'error',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          args: 'all',
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          ignoreRestSiblings: true,
+        },
+      ],
+      '@typescript-eslint/no-empty-function': [
+        'error',
+        {
+          allow: ['constructors'],
+        },
+      ],
       '@typescript-eslint/no-explicit-any': 'warn',
       'prefer-const': 'error',
     },
   },
   {
+    plugins: {
+      '@typescript-eslint': tseslint,
+    },
     files: [
       '**/*.ts',
       '**/*.tsx',
