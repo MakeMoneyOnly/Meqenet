@@ -50,100 +50,34 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: "https://registry.npmjs.org"
 
-      - name: 📦 Install pnpm (with enhanced retry logic)
+      - name: 📦 Install pnpm (with retry logic)
         run: |
-          echo "📦 Installing pnpm with enhanced retry logic..."
+          echo "📦 Installing pnpm with retry logic..."
+          for i in {1..3}; do
+          # Use the official pnpm installation script
+          curl -fsSL --connect-timeout 10 --max-time 30 https://get.pnpm.io/install.sh | sh -
 
-          # Function to install pnpm with better error handling
-          install_pnpm() {
-            local attempt=$1
-            echo "Attempt $attempt/5 - Installing pnpm..."
+          # Add pnpm to PATH for the current session
+          export PNPM_HOME="$HOME/.local/share/pnpm"
+          export PATH="$PNPM_HOME:$PATH"
 
-            # Try primary installation method with better error handling
-            if curl -fsSL --connect-timeout 10 --max-time 30 https://get.pnpm.io/install.sh | sh -; then
-              # Source the updated .bashrc to get the new PATH
-              source ~/.bashrc 2>/dev/null || true
-              # Also set the environment variables manually
-              export PNPM_HOME="$HOME/.local/share/pnpm"
-              export PATH="$PNPM_HOME:$PATH"
-              if command -v pnpm &> /dev/null; then
-                echo "✅ Primary installation method succeeded"
-                return 0
-              else
-                echo "❌ Primary installation method completed but pnpm not found in PATH"
-                return 1
-              fi
+          # Verify pnpm installation
+          if command -v pnpm &> /dev/null; then
+              echo "✅ pnpm installed successfully on attempt $i"
+              break
             else
-              echo "❌ Primary installation method failed"
-              return 1
-            fi
-
-            # Try alternative CDN with proper validation
-            echo "🔄 Trying alternative CDN..."
-            if curl -fsSL --connect-timeout 10 --max-time 30 https://raw.githubusercontent.com/pnpm/get-pnpm/main/install.sh | sh -; then
-              if command -v pnpm &> /dev/null; then
-                echo "✅ Alternative CDN installation succeeded"
-                return 0
-              else
-                echo "⚠️  Alternative CDN script ran but pnpm not found"
-              fi
-            fi
-
-            # Try direct download method
-            echo "🔄 Trying direct download method..."
-            local pnpm_version="${{ env.PNPM_VERSION }}"
-            if [ -z "$pnpm_version" ]; then
-              pnpm_version="10.4.1"
-            fi
-
-            if curl -fsSL --connect-timeout 10 --max-time 30 "https://registry.npmjs.org/pnpm/-/pnpm-${pnpm_version}.tgz" -o pnpm.tgz && \
-               npm install -g pnpm.tgz && \
-               rm pnpm.tgz; then
-              echo "✅ Direct download installation succeeded"
-              return 0
-            fi
-
-            echo "❌ All installation methods failed on attempt $attempt"
-            return 1
-          }
-
-          # Main retry loop
-          for i in {1..5}; do
-            if install_pnpm $i; then
-              # Add pnpm to PATH for the current session
-              export PNPM_HOME="$HOME/.local/share/pnpm"
-              export PATH="$PNPM_HOME:$PATH"
-
-              # Clear any problematic registry configurations that might interfere with pnpm
-              pnpm config delete @jsr:registry 2>/dev/null || true
-              pnpm config delete //npm.jsr.io/:_authToken 2>/dev/null || true
-
-              # Verify pnpm installation
-              if command -v pnpm &> /dev/null; then
-                echo "✅ pnpm installed and verified successfully on attempt $i"
-                pnpm --version
+              echo "❌ pnpm installation failed on attempt $i"
+              if [ $i -eq 3 ]; then
+                echo "🔄 Falling back to direct download..."
+                curl -fsSL --connect-timeout 10 --max-time 30 https://get.pnpm.io/install.sh | PNPM_VERSION=${{ env.PNPM_VERSION }} sh -
                 break
-              else
-                echo "❌ pnpm command not found after installation on attempt $i"
-                if [ $i -eq 5 ]; then
-                  echo "💥 CRITICAL: pnpm installation failed after all attempts"
-                  exit 1
-                fi
               fi
-            else
-              if [ $i -eq 5 ]; then
-                echo "💥 CRITICAL: All pnpm installation attempts failed"
-                echo "🔍 Checking network connectivity..."
-                curl -fsSL --connect-timeout 5 --max-time 10 https://www.google.com > /dev/null && echo "✅ Internet connection OK" || echo "❌ No internet connection"
-                echo "🔍 Checking DNS resolution..."
-                nslookup get.pnpm.io || echo "❌ DNS resolution failed"
-                exit 1
-              else
-                echo "⏳ Waiting before retry..."
-                sleep $((i * 3))  # Exponential backoff: 3s, 6s, 9s, 12s
-              fi
+              sleep 2
             fi
           done
+
+          # Verify pnpm installation
+          pnpm --version
 
       - name: 📚 Install Dependencies
         run: |
@@ -270,106 +204,36 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          registry-url: "https://registry.npmjs.org"
 
-      - name: 📦 Install pnpm (with enhanced retry logic)
+      - name: 📦 Install pnpm (with retry logic)
         run: |
-          echo "📦 Installing pnpm with enhanced retry logic..."
+          echo "📦 Installing pnpm with retry logic..."
+          for i in {1..3}; do
+          # Use the official pnpm installation script
+          curl -fsSL --connect-timeout 10 --max-time 30 https://get.pnpm.io/install.sh | sh -
 
-          # Function to install pnpm with better error handling
-          install_pnpm() {
-            local attempt=$1
-            echo "Attempt $attempt/5 - Installing pnpm..."
+          # Add pnpm to PATH for the current session
+          export PNPM_HOME="$HOME/.local/share/pnpm"
+          export PATH="$PNPM_HOME:$PATH"
 
-            # Try primary installation method with better error handling
-            if curl -fsSL --connect-timeout 10 --max-time 30 https://get.pnpm.io/install.sh | sh -; then
-              # Source the updated .bashrc to get the new PATH
-              source ~/.bashrc 2>/dev/null || true
-              # Also set the environment variables manually
-              export PNPM_HOME="$HOME/.local/share/pnpm"
-              export PATH="$PNPM_HOME:$PATH"
-              if command -v pnpm &> /dev/null; then
-                echo "✅ Primary installation method succeeded"
-                return 0
-              else
-                echo "❌ Primary installation method completed but pnpm not found in PATH"
-                return 1
-              fi
+          # Verify pnpm installation
+          if command -v pnpm &> /dev/null; then
+              echo "✅ pnpm installed successfully on attempt $i"
+              break
             else
-              echo "❌ Primary installation method failed"
-              return 1
-            fi
-
-            # Try alternative CDN with proper validation
-            echo "🔄 Trying alternative CDN..."
-            if curl -fsSL --connect-timeout 10 --max-time 30 https://raw.githubusercontent.com/pnpm/get-pnpm/main/install.sh | sh -; then
-              if command -v pnpm &> /dev/null; then
-                echo "✅ Alternative CDN installation succeeded"
-                return 0
-              else
-                echo "⚠️  Alternative CDN script ran but pnpm not found"
-              fi
-            fi
-
-            # Try direct download method
-            echo "🔄 Trying direct download method..."
-            local pnpm_version="${{ env.PNPM_VERSION }}"
-            if [ -z "$pnpm_version" ]; then
-              pnpm_version="10.4.1"
-            fi
-
-            if curl -fsSL --connect-timeout 10 --max-time 30 "https://registry.npmjs.org/pnpm/-/pnpm-${pnpm_version}.tgz" -o pnpm.tgz && \
-               npm install -g pnpm.tgz && \
-               rm pnpm.tgz; then
-              echo "✅ Direct download installation succeeded"
-              return 0
-            fi
-
-            echo "❌ All installation methods failed on attempt $attempt"
-            return 1
-          }
-
-          # Main retry loop
-          for i in {1..5}; do
-            if install_pnpm $i; then
-              # Add pnpm to PATH for the current session
-              export PNPM_HOME="$HOME/.local/share/pnpm"
-              export PATH="$PNPM_HOME:$PATH"
-
-              # Clear any problematic registry configurations that might interfere with pnpm
-              pnpm config delete @jsr:registry 2>/dev/null || true
-              pnpm config delete //npm.jsr.io/:_authToken 2>/dev/null || true
-
-              # Verify pnpm installation
-              if command -v pnpm &> /dev/null; then
-                echo "✅ pnpm installed and verified successfully on attempt $i"
-                pnpm --version
+              echo "❌ pnpm installation failed on attempt $i"
+              if [ $i -eq 3 ]; then
+                echo "🔄 Falling back to direct download..."
+                curl -fsSL --connect-timeout 10 --max-time 30 https://get.pnpm.io/install.sh | PNPM_VERSION=${{ env.PNPM_VERSION }} sh -
                 break
-              else
-                echo "❌ pnpm command not found after installation on attempt $i"
-                if [ $i -eq 5 ]; then
-                  echo "💥 CRITICAL: pnpm installation failed after all attempts"
-                  exit 1
-                fi
               fi
-            else
-              if [ $i -eq 5 ]; then
-                echo "💥 CRITICAL: All pnpm installation attempts failed"
-                echo "🔍 Checking network connectivity..."
-                curl -fsSL --connect-timeout 5 --max-time 10 https://www.google.com > /dev/null && echo "✅ Internet connection OK" || echo "❌ No internet connection"
-                echo "🔍 Checking DNS resolution..."
-                nslookup get.pnpm.io || echo "❌ DNS resolution failed"
-                exit 1
-              else
-                echo "⏳ Waiting before retry..."
-                sleep $((i * 3))  # Exponential backoff: 3s, 6s, 9s, 12s
-              fi
+              sleep 2
             fi
           done
 
-      - name: 🔧 Setup Node.js & pnpm
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
+          # Verify pnpm installation
+          pnpm --version
 
       - name: 📚 Install Dependencies
         run: |
