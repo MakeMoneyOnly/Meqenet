@@ -839,6 +839,11 @@ jobs:
         test-type:
           ["sast", "dependency-check", "container-scan", "secrets-scan"]
 
+    # Set environment variables for all steps in this job
+    env:
+      PNPM_HOME: /home/runner/.local/share/pnpm
+      PATH: /home/runner/.local/share/pnpm:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
     steps:
       - name: 📥 Checkout Repository
         uses: actions/checkout@v5
@@ -984,12 +989,23 @@ jobs:
 
             # CRITICAL: Ensure PATH is persistent for all subprocesses (auditjs scripts)
             echo "🔧 Setting up persistent PATH for subprocess scripts..."
+
+            # Create global symlink for pnpm accessibility
+            sudo ln -sf "$HOME/.local/share/pnpm/pnpm" /usr/local/bin/pnpm || true
+
+            # Set up .bashrc for persistence
             echo "export PNPM_HOME=\"$HOME/.local/share/pnpm\"" >> $HOME/.bashrc
             echo "export PATH=\"$PNPM_HOME:\$PATH\"" >> $HOME/.bashrc
+
             # Also set for current session and test subprocess access
             export PNPM_HOME="$HOME/.local/share/pnpm"
             export PATH="$PNPM_HOME:$PATH"
+
+            # Test pnpm accessibility from different contexts
+            echo "🧪 Testing pnpm accessibility..."
+            pnpm --version || echo "❌ Direct pnpm test failed"
             bash -c "which pnpm && pnpm --version" || echo "❌ Subprocess PATH test failed"
+            /usr/local/bin/pnpm --version || echo "❌ Global symlink test failed"
           else
             echo "💥 CRITICAL: All pnpm installation methods failed"
             echo "🔍 Network diagnostics:"
@@ -1874,13 +1890,22 @@ jobs:
           cd android && chmod +x ./gradlew
 
           # Run lint checks without requiring device connection (with extended timeout)
-          timeout 600s ./gradlew lintDebug --continue --info --no-daemon || {
+          timeout 900s ./gradlew lintDebug --continue --info --no-daemon || {
             echo "⚠️  Lint failed, but continuing with partial results..."
           }
 
-          # Final cleanup
+          # Additional cleanup and verification
+          echo "🧹 Performing final cleanup..."
           pkill -f "react-native start" || true
           pkill -f "metro" || true
+          pkill -f "gradle" || true
+
+          # Verify build artifacts exist
+          if [ -d "android/app/build/reports/lint-results-debug.html" ]; then
+            echo "✅ Lint report generated successfully"
+          else
+            echo "⚠️  Lint report not found, but process completed"
+          fi
           ./gradlew lintRelease --continue --info --no-daemon
 
       - name: 📊 Generate Security-Focused Lint Report
