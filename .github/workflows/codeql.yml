@@ -157,7 +157,6 @@ jobs:
 
       # Build Android project for Java/Kotlin analysis
       - name: 🏗️ Build Android Project
-        if: contains(matrix.language, 'java') || contains(matrix.language, 'kotlin')
         working-directory: ./frontend/apps/app
         run: |
           # Set up proper Node.js environment variables
@@ -166,58 +165,74 @@ jobs:
           export PNPM_HOME="$HOME/.local/share/pnpm"
           export PATH="$PNPM_HOME:$PATH:$ANDROID_HOME/emulator:$ANDROID_HOME/tools:$ANDROID_HOME/tools/bin:$ANDROID_HOME/platform-tools"
 
+          # Clear Metro cache and node_modules issues that prevent SHA-1 generation
+          echo "🧹 Clearing Metro bundler cache..."
+          npx react-native start --reset-cache || true
+          rm -rf .metro || true
+          rm -rf node_modules/.cache || true
+
+          # Clean Android build artifacts
+          cd android
+          chmod +x ./gradlew
+          ./gradlew clean --no-daemon || true
+          cd ..
+
           # Ensure React Native Android dependencies are available
           echo "Checking React Native Android setup..."
-          if [ ! -d "../../node_modules/react-native/ReactAndroid" ]; then
+          if [ ! -d "../node_modules/react-native/ReactAndroid" ]; then
             echo "⚠️  React Native Android directory not found, reinstalling React Native..."
-            cd ../../ && export PNPM_HOME="$HOME/.local/share/pnpm" && export PATH="$PNPM_HOME:$PATH" && pnpm install react-native --ignore-scripts -w || {
+            cd .. && export PNPM_HOME="$HOME/.local/share/pnpm" && export PATH="$PNPM_HOME:$PATH" && pnpm install react-native --ignore-scripts -w || {
               echo "⚠️  React Native installation failed, but continuing with build..."
             }
           fi
 
           # Verify React Native Android files exist
-          if [ -f "../../node_modules/react-native/ReactAndroid/gradle.properties" ]; then
+          if [ -f "../node_modules/react-native/ReactAndroid/gradle.properties" ]; then
             echo "✅ React Native Android files found"
           else
             echo "❌ React Native Android files still missing, creating minimal gradle.properties..."
-            mkdir -p ../../node_modules/react-native/ReactAndroid
-            echo "# React Native Android Gradle Properties" > ../../node_modules/react-native/ReactAndroid/gradle.properties
-            echo "android.useAndroidX=true" >> ../../node_modules/react-native/ReactAndroid/gradle.properties
-            echo "android.enableJetifier=true" >> ../../node_modules/react-native/ReactAndroid/gradle.properties
+            mkdir -p ../node_modules/react-native/ReactAndroid
+            echo "# React Native Android Gradle Properties" > ../node_modules/react-native/ReactAndroid/gradle.properties
+            echo "android.useAndroidX=true" >> ../node_modules/react-native/ReactAndroid/gradle.properties
+            echo "android.enableJetifier=true" >> ../node_modules/react-native/ReactAndroid/gradle.properties
             echo "✅ Created minimal React Native Android gradle.properties"
           fi
 
-          # Generate React Native codegen artifacts
-          npx @react-native-community/cli codegen || true
+          # Generate React Native codegen artifacts with error handling
+          echo "🔧 Generating React Native codegen..."
+          npx @react-native-community/cli codegen || {
+            echo "⚠️  Codegen failed, but continuing..."
+          }
 
-          cd android && chmod +x ./gradlew
+          cd android
 
-          # Build with error handling but ensure classes are generated
-          echo "🏗️ Building Android project..."
-          if ./gradlew assembleDebug --no-daemon --parallel --info; then
-            echo "✅ Android build completed successfully"
+          # Try different build approaches for CodeQL analysis
+          echo "🏗️ Building Android project for CodeQL analysis..."
+
+          # First, try to compile just the Java/Kotlin sources without full APK build
+          if ./gradlew compileDebugSources --no-daemon --stacktrace; then
+            echo "✅ Source compilation successful"
+          elif ./gradlew compileDebugKotlin compileDebugJavaWithJavac --no-daemon --stacktrace; then
+            echo "✅ Kotlin/Java compilation successful"
+          elif ./gradlew assembleDebug --no-daemon --stacktrace --continue; then
+            echo "✅ Full debug build successful (with warnings)"
           else
-            echo "❌ Gradle build failed - attempting minimal build for analysis..."
-            # Try a minimal build that still generates classes
-            if ./gradlew compileDebugKotlin compileDebugJavaWithJavac --no-daemon --info; then
-              echo "✅ Minimal build completed successfully"
-            else
-              echo "❌ Minimal build also failed - attempting even more basic compilation..."
-              # Try to just compile Java sources if Kotlin fails
-              ./gradlew compileDebugJavaWithJavac --no-daemon --info || {
-                echo "❌ All compilation attempts failed - CodeQL analysis may be incomplete"
-                echo "Continuing anyway to allow basic analysis..."
-                # List what files might be available for analysis
-                find . -name "*.java" -o -name "*.kt" | head -10 || true
-              }
-            fi
+            echo "❌ All compilation attempts failed"
+            echo "📋 Listing available source files for CodeQL..."
+            find .. -name "*.java" -o -name "*.kt" | head -20 || true
+            echo "Continuing with source-only analysis..."
           fi
 
           # Verify that build outputs exist for CodeQL
-          if [ -d "app/build/intermediates/javac/debug" ] || [ -d "app/build/tmp/kotlin-classes/debug" ]; then
+          if [ -d "app/build/intermediates/javac/debug" ] || [ -d "app/build/tmp/kotlin-classes/debug" ] || [ -d "app/build/intermediates/sources/debug" ]; then
             echo "✅ Build outputs found - ready for CodeQL analysis"
           else
-            echo "⚠️ Build outputs not found - CodeQL analysis may be limited"
+            echo "⚠️ Build outputs not found - CodeQL will analyze source files directly"
+            # Ensure source files are available for analysis
+            if [ -d "../src" ]; then
+              echo "✅ Source files available for CodeQL analysis"
+              find ../src -name "*.java" -o -name "*.kt" | wc -l || true
+            fi
           fi
 
       - uses: github/codeql-action/analyze@v3

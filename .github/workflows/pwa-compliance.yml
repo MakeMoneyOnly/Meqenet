@@ -179,7 +179,29 @@ jobs:
           cd frontend
           export PNPM_HOME="$HOME/.local/share/pnpm"
           export PATH="$PNPM_HOME:$PATH"
-          pnpm install --no-frozen-lockfile
+
+          # Clear any existing Metro cache that might cause SHA-1 issues
+          echo "🧹 Clearing Metro bundler cache..."
+          rm -rf apps/app/.metro || true
+          rm -rf node_modules/.cache || true
+          rm -rf apps/app/node_modules/.cache || true
+
+          # Install dependencies with retry logic
+          echo "📦 Installing dependencies..."
+          for attempt in {1..3}; do
+            if pnpm install --no-frozen-lockfile --ignore-scripts; then
+              echo "✅ Dependencies installed successfully"
+              break
+            else
+              echo "❌ Installation failed on attempt $attempt"
+              if [ $attempt -eq 3 ]; then
+                echo "💥 CRITICAL: All dependency installation attempts failed"
+                exit 1
+              fi
+              echo "⏳ Waiting before retry..."
+              sleep 5
+            fi
+          done
 
           # Verify pnpm installation
           pnpm --version

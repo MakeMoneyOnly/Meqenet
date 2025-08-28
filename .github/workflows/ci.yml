@@ -1090,12 +1090,31 @@ jobs:
           export ANDROID_HOME=$ANDROID_HOME
           export PATH=$PATH:$ANDROID_HOME/emulator:$ANDROID_HOME/tools:$ANDROID_HOME/tools/bin:$ANDROID_HOME/platform-tools
 
-          # Pre-build React Native dependencies
-          npx react-native start --reset-cache || true &
-          sleep 15
+          # Clear Metro bundler cache to prevent SHA-1 errors
+          echo "🧹 Clearing Metro bundler cache..."
+          npx react-native start --reset-cache || true
+          rm -rf .metro || true
+          rm -rf node_modules/.cache || true
+          rm -rf ../../node_modules/.cache || true
+
+          # Kill any existing Metro processes
+          pkill -f "react-native start" || true
+          pkill -f "metro" || true
+
+          # Wait for processes to fully terminate
+          sleep 5
+
+          # Pre-build React Native dependencies with proper error handling
+          echo "🔧 Pre-building React Native dependencies..."
+          timeout 60s npx react-native start --reset-cache --verbose || {
+            echo "⚠️  Metro start failed, but continuing..."
+          }
 
           # Generate React Native codegen artifacts
-          npx @react-native-community/cli codegen || true
+          echo "🔧 Generating React Native codegen artifacts..."
+          npx @react-native-community/cli codegen || {
+            echo "⚠️  Codegen failed, but continuing..."
+          }
 
           # Pre-build Android dependencies to avoid hermesc issues
           cd android && chmod +x ./gradlew
@@ -1153,15 +1172,34 @@ jobs:
       - name: 🚫 Run Android Lint Security Checks
         working-directory: ./frontend/apps/app
         run: |
-          # Initialize React Native project properly
-          npx react-native start --reset-cache || true &
-          sleep 10
+          # Clear Metro bundler cache to prevent SHA-1 errors
+          echo "🧹 Clearing Metro bundler cache..."
+          rm -rf .metro || true
+          rm -rf node_modules/.cache || true
+          rm -rf ../../node_modules/.cache || true
+          rm -rf $TMPDIR/metro-* || true
+          rm -rf /tmp/metro-* || true
+
+          # Kill any existing Metro processes
+          pkill -f "react-native start" || true
+          pkill -f "metro" || true
+          sleep 3
+
+          # Initialize React Native project properly with fresh cache
+          echo "🔧 Initializing React Native project..."
+          timeout 30s npx react-native start --reset-cache --verbose || {
+            echo "⚠️  Metro start failed, but continuing..."
+          }
 
           # Generate codegen artifacts without device
-          npx @react-native-community/cli codegen || true
+          echo "🔧 Generating codegen artifacts..."
+          npx @react-native-community/cli codegen || {
+            echo "⚠️  Codegen failed, but continuing..."
+          }
 
-          # Clean up background process
+          # Clean up background processes
           pkill -f "react-native start" || true
+          pkill -f "metro" || true
 
           cd android && chmod +x ./gradlew
 
