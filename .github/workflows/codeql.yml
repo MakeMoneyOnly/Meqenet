@@ -280,6 +280,14 @@ jobs:
           npx react-native start --reset-cache || true
           rm -rf .metro || true
           rm -rf node_modules/.cache || true
+          rm -rf ../../node_modules/.cache || true
+          rm -rf $TMPDIR/metro-* || true
+          rm -rf /tmp/metro-* || true
+
+          # Kill any existing Metro processes to prevent conflicts
+          pkill -f "react-native start" || true
+          pkill -f "metro" || true
+          sleep 3
 
           # Clean Android build artifacts
           cd android
