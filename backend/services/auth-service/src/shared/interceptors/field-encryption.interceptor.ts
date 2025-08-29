@@ -75,11 +75,10 @@ export class FieldEncryptionInterceptor implements NestInterceptor {
         }
       }
 
-      return request;
+      // Request modified in place, no return needed
     } catch (error) {
       this.logger.error('❌ Request decryption failed:', error);
       // Continue with original request if decryption fails
-      return request;
     }
   }
 
@@ -120,7 +119,7 @@ export class FieldEncryptionInterceptor implements NestInterceptor {
       else if (typeof data === 'object') {
         const encryptionResult =
           await this.fieldEncryptionService.encryptForResponse(
-            data,
+            data as Record<string, unknown>,
             sensitiveFields
           );
 
@@ -144,7 +143,8 @@ export class FieldEncryptionInterceptor implements NestInterceptor {
    * Determine which fields should be encrypted based on the endpoint
    */
   private getSensitiveFieldsForEndpoint(request: Request): string[] {
-    const path = request.route?.path ?? request.url ?? '';
+    const path =
+      (request.route as { path?: string })?.path ?? request.url ?? '';
     const method = request.method ?? 'GET';
 
     // Define sensitive fields based on endpoint patterns

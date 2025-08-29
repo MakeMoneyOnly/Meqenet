@@ -75,13 +75,14 @@ export class CredentialRotationService implements OnModuleInit {
       const secrets = await this.secretManagerService.listSecrets();
 
       for (const secret of secrets) {
-        const name = secret.Name ?? '';
+        const secretEntry = secret as { Name?: string; LastChangedDate?: Date }; // AWS SecretListEntry type
+        const name = secretEntry.Name ?? '';
         const metadata: CredentialMetadata = {
           name,
           type: this.determineCredentialType(name),
-          lastRotated: secret.LastChangedDate ?? new Date(),
+          lastRotated: secretEntry.LastChangedDate ?? new Date(),
           nextRotation: this.calculateNextRotation(
-            secret.LastChangedDate ?? new Date(),
+            secretEntry.LastChangedDate ?? new Date(),
             this.getRotationInterval(name)
           ),
           rotationIntervalDays: this.getRotationInterval(name),
