@@ -2187,8 +2187,6 @@ jobs:
           # Skip Gradle build - CodeQL can analyze source code directly
           # The build step was causing dependency resolution issues
           skip-queries: false
-          # Specify source paths for Java/Kotlin analysis
-          source-root: frontend/apps/app/android
 
   # ============================================================================
   # PHASE 4: DOCKER BUILD & SECURITY SCAN
