@@ -1999,8 +1999,8 @@ jobs:
   # ============================================================================
   # PHASE 5: MOBILE CODE ANALYSIS (CODEQL)
   # ============================================================================
-  analyze-java-kotlin:
-    name: 🔒 CodeQL Analysis (Java/Kotlin)
+  analyze-multi-language:
+    name: 🔒 CodeQL Analysis (Multi-Language)
     runs-on: ubuntu-latest
     timeout-minutes: 45
 
@@ -2017,7 +2017,7 @@ jobs:
       - name: 🔧 Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
-          languages: java, kotlin
+          languages: javascript, typescript, java, kotlin
           config-file: .github/codeql/codeql-config.yml
 
       - name: 🔧 Setup Node.js

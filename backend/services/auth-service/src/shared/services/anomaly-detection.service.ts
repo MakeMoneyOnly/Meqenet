@@ -1,7 +1,77 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
-import { SecurityMonitoringService, ThreatIndicator } from './security-monitoring.service';
+import { SecurityMonitoringService } from './security-monitoring.service';
+
+// Constants for magic numbers
+const MILLISECONDS_PER_SECOND = 1000;
+const SECONDS_PER_MINUTE = 60;
+const _MINUTES_PER_HOUR = 60;
+const _HOURS_PER_DAY = 24;
+
+const _ANOMALY_TIME_WINDOW_HOURS = 24;
+const _HIGH_RISK_THRESHOLD = 75;
+const _CRITICAL_RISK_THRESHOLD = 90;
+
+const _STATISTICAL_ANOMALY_MULTIPLIER = 2.0;
+const _BEHAVIORAL_ANOMALY_THRESHOLD = 0.8;
+const _SEQUENTIAL_PATTERN_LENGTH = 5;
+
+const _IP_VELOCITY_TIME_WINDOW_MINUTES = 15;
+const _DEVICE_VELOCITY_TIME_WINDOW_MINUTES = 30;
+const _LOCATION_CHANGE_TIME_WINDOW_MINUTES = 60;
+
+const _MAX_SEQUENCE_LENGTH = 10;
+const _MIN_SEQUENCE_LENGTH = 3;
+const _SEQUENCE_MULTIPLIER = 2;
+
+const _TIME_WINDOW_MULTIPLIER = 2.0;
+const _LOCATION_DISTANCE_THRESHOLD = 126; // km
+const _TIME_ZONE_DIFFERENCE_HOURS = 128; // hours difference threshold
+
+const _ANOMALY_SCORE_MULTIPLIER = 20;
+const _MAX_ANOMALY_SCORE = 100;
+
+// Simulation constants
+const MAX_SIMULATED_REQUESTS = 20;
+
+// Anomaly confidence constants
+const MAX_ANOMALY_CONFIDENCE = 0.9;
+const ANOMALY_CONFIDENCE_DIVISOR = 5;
+
+// Risk scoring constants
+const MAX_REQUEST_RATE_RISK_SCORE = 30;
+const REQUEST_RATE_RISK_MULTIPLIER = 10;
+
+// Anomaly action risk scores
+const BLOCK_ACTION_RISK_SCORE = 40;
+const ALERT_ACTION_RISK_SCORE = 25;
+const INVESTIGATE_ACTION_RISK_SCORE = 20;
+const MONITOR_ACTION_RISK_SCORE = 10;
+
+// Session and profile constants
+const DEFAULT_REQUESTS_PER_HOUR = 10;
+const DEFAULT_SESSION_DURATION_MINUTES = 30;
+const BUSINESS_HOURS_START = 9;
+const BUSINESS_HOURS_END = 17;
+
+// Profile limits
+const MAX_COMMON_ENDPOINTS = 10;
+const MAX_COMMON_ENDPOINTS_SLICE = -10;
+
+// High risk user thresholds
+const HIGH_RISK_TRUST_SCORE_THRESHOLD = 30;
+const HIGH_RISK_ANOMALY_COUNT_THRESHOLD = 5;
+
+// IP address range constants
+const IP_CLASS_A_MIN = 1;
+const IP_CLASS_A_MAX = 126;
+const IP_CLASS_B_MIN = 128;
+const IP_CLASS_B_MAX = 191;
+
+// Trust and anomaly constants
+const NEUTRAL_TRUST_SCORE = 50;
+const INITIAL_ANOMALY_COUNT = 0;
 
 export interface UserBehaviorProfile {
   userId: string;
@@ -56,15 +126,15 @@ export class AnomalyDetectionService {
   // Anomaly detection thresholds
   private readonly thresholds = {
     requestRateMultiplier: 3.0, // 3x normal rate
-    unusualHourThreshold: 0.7,  // 70% confidence for unusual hours
-    newLocationThreshold: 0.8,   // 80% confidence for new locations
-    newDeviceThreshold: 0.6,     // 60% confidence for new devices
-    riskScoreThreshold: 75,      // Risk score above 75 triggers alerts
+    unusualHourThreshold: 0.7, // 70% confidence for unusual hours
+    newLocationThreshold: 0.8, // 80% confidence for new locations
+    newDeviceThreshold: 0.6, // 60% confidence for new devices
+    riskScoreThreshold: 75, // Risk score above 75 triggers alerts
   };
 
   constructor(
     private configService: ConfigService,
-    private securityMonitoringService: SecurityMonitoringService,
+    private securityMonitoringService: SecurityMonitoringService
   ) {}
 
   /**
@@ -89,7 +159,10 @@ export class AnomalyDetectionService {
     }
 
     // Analyze current behavior against profile
-    const analysis = await this.performBehaviorAnalysis(profile, currentActivity);
+    const analysis = await this.performBehaviorAnalysis(
+      profile,
+      currentActivity
+    );
 
     // Update user profile with new activity
     this.updateUserProfile(profile, currentActivity);
@@ -125,7 +198,9 @@ export class AnomalyDetectionService {
         currentEndpoint: currentActivity.endpoint,
         currentTime: currentActivity.timestamp.getHours(),
         currentLocation: this.extractLocationFromIP(currentActivity.ipAddress),
-        currentDevice: this.extractDeviceFromUserAgent(currentActivity.userAgent),
+        currentDevice: this.extractDeviceFromUserAgent(
+          currentActivity.userAgent
+        ),
       },
       deviations: analysis.deviations,
       riskScore,
@@ -139,15 +214,21 @@ export class AnomalyDetectionService {
   private createInitialProfile(userId: string): UserBehaviorProfile {
     return {
       userId,
-      averageRequestsPerHour: 10, // Default baseline
-      averageSessionDuration: 30 * 60 * 1000, // 30 minutes
+      averageRequestsPerHour: DEFAULT_REQUESTS_PER_HOUR, // Default baseline
+      averageSessionDuration:
+        DEFAULT_SESSION_DURATION_MINUTES *
+        SECONDS_PER_MINUTE *
+        MILLISECONDS_PER_SECOND, // 30 minutes
       commonEndpoints: ['/auth/login', '/auth/refresh'],
-      commonTimeWindows: [9, 10, 11, 12, 13, 14, 15, 16, 17], // Business hours
+      commonTimeWindows: Array.from(
+        { length: BUSINESS_HOURS_END - BUSINESS_HOURS_START + 1 },
+        (_, i) => BUSINESS_HOURS_START + i
+      ), // Business hours
       geolocations: [],
       devices: [],
       lastActivity: new Date(),
-      trustScore: 50, // Neutral starting score
-      anomalyCount: 0,
+      trustScore: NEUTRAL_TRUST_SCORE, // Neutral starting score
+      anomalyCount: INITIAL_ANOMALY_COUNT,
     };
   }
 
@@ -179,7 +260,9 @@ export class AnomalyDetectionService {
 
     return {
       deviations: {
-        requestRateDeviation: await this.calculateRequestRateDeviation(profile.userId),
+        requestRateDeviation: await this.calculateRequestRateDeviation(
+          profile.userId
+        ),
         timeWindowDeviation: !profile.commonTimeWindows.includes(currentHour),
         locationDeviation: !profile.geolocations.includes(currentLocation),
         deviceDeviation: !profile.devices.includes(currentDevice),
@@ -194,7 +277,7 @@ export class AnomalyDetectionService {
   private async calculateRequestRateDeviation(userId: string): Promise<number> {
     // This would typically query recent request logs
     // For now, return a simulated value
-    const recentRequests = Math.floor(Math.random() * 20); // 0-20 requests in last hour
+    const recentRequests = Math.floor(Math.random() * MAX_SIMULATED_REQUESTS); // 0-20 requests in last hour
     const profile = this.userProfiles.get(userId);
 
     if (!profile) return 1.0; // Normal
@@ -218,10 +301,16 @@ export class AnomalyDetectionService {
     const anomalies: AnomalyDetectionResult[] = [];
 
     // High request rate anomaly
-    if (analysis.deviations.requestRateDeviation > this.thresholds.requestRateMultiplier) {
+    if (
+      analysis.deviations.requestRateDeviation >
+      this.thresholds.requestRateMultiplier
+    ) {
       anomalies.push({
         isAnomaly: true,
-        confidence: Math.min(0.9, analysis.deviations.requestRateDeviation / 5),
+        confidence: Math.min(
+          MAX_ANOMALY_CONFIDENCE,
+          analysis.deviations.requestRateDeviation / ANOMALY_CONFIDENCE_DIVISOR
+        ),
         anomalyType: 'high_request_rate',
         description: `Request rate is ${(analysis.deviations.requestRateDeviation * 100).toFixed(0)}% above normal`,
         recommendedAction: 'alert',
@@ -302,7 +391,11 @@ export class AnomalyDetectionService {
 
     // Base risk from request rate
     if (analysis.deviations.requestRateDeviation > 1) {
-      riskScore += Math.min(30, (analysis.deviations.requestRateDeviation - 1) * 10);
+      riskScore += Math.min(
+        MAX_REQUEST_RATE_RISK_SCORE,
+        (analysis.deviations.requestRateDeviation - 1) *
+          REQUEST_RATE_RISK_MULTIPLIER
+      );
     }
 
     // Additional risk from anomalies
@@ -310,16 +403,16 @@ export class AnomalyDetectionService {
       if (anomaly.isAnomaly) {
         switch (anomaly.recommendedAction) {
           case 'block':
-            riskScore += 40;
+            riskScore += BLOCK_ACTION_RISK_SCORE;
             break;
           case 'alert':
-            riskScore += 25;
+            riskScore += ALERT_ACTION_RISK_SCORE;
             break;
           case 'investigate':
-            riskScore += 20;
+            riskScore += INVESTIGATE_ACTION_RISK_SCORE;
             break;
           case 'monitor':
-            riskScore += 10;
+            riskScore += MONITOR_ACTION_RISK_SCORE;
             break;
         }
       }
@@ -348,8 +441,10 @@ export class AnomalyDetectionService {
     if (!profile.commonEndpoints.includes(activity.endpoint)) {
       profile.commonEndpoints.push(activity.endpoint);
       // Keep only top 10 most common
-      if (profile.commonEndpoints.length > 10) {
-        profile.commonEndpoints = profile.commonEndpoints.slice(-10);
+      if (profile.commonEndpoints.length > MAX_COMMON_ENDPOINTS) {
+        profile.commonEndpoints = profile.commonEndpoints.slice(
+          MAX_COMMON_ENDPOINTS_SLICE
+        );
       }
     }
 
@@ -386,9 +481,9 @@ export class AnomalyDetectionService {
     const ipParts = ipAddress.split('.');
     const firstOctet = parseInt(ipParts[0]);
 
-    if (firstOctet >= 1 && firstOctet <= 126) {
+    if (firstOctet >= IP_CLASS_A_MIN && firstOctet <= IP_CLASS_A_MAX) {
       return 'us-east';
-    } else if (firstOctet >= 128 && firstOctet <= 191) {
+    } else if (firstOctet >= IP_CLASS_B_MIN && firstOctet <= IP_CLASS_B_MAX) {
       return 'us-west';
     } else {
       return 'unknown';
@@ -403,7 +498,11 @@ export class AnomalyDetectionService {
 
     const ua = userAgent.toLowerCase();
 
-    if (ua.includes('mobile') || ua.includes('android') || ua.includes('iphone')) {
+    if (
+      ua.includes('mobile') ||
+      ua.includes('android') ||
+      ua.includes('iphone')
+    ) {
       return 'mobile';
     } else if (ua.includes('tablet') || ua.includes('ipad')) {
       return 'tablet';
@@ -422,7 +521,7 @@ export class AnomalyDetectionService {
    * Get user behavior profile
    */
   getUserProfile(userId: string): UserBehaviorProfile | null {
-    return this.userProfiles.get(userId) || null;
+    return this.userProfiles.get(userId) ?? null;
   }
 
   /**
@@ -449,7 +548,11 @@ export class AnomalyDetectionService {
    */
   getHighRiskUsers(): UserBehaviorProfile[] {
     return Array.from(this.userProfiles.values())
-      .filter(profile => profile.trustScore < 30 || profile.anomalyCount > 5)
+      .filter(
+        profile =>
+          profile.trustScore < HIGH_RISK_TRUST_SCORE_THRESHOLD ||
+          profile.anomalyCount > HIGH_RISK_ANOMALY_COUNT_THRESHOLD
+      )
       .sort((a, b) => a.trustScore - b.trustScore);
   }
 }

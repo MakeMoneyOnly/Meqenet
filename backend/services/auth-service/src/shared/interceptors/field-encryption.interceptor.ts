@@ -14,16 +14,21 @@ import { FieldEncryptionService } from '../services/field-encryption.service';
 export class FieldEncryptionInterceptor implements NestInterceptor {
   private readonly logger = new Logger(FieldEncryptionInterceptor.name);
 
-  constructor(private readonly fieldEncryptionService: FieldEncryptionService) {}
+  constructor(
+    private readonly fieldEncryptionService: FieldEncryptionService
+  ) {}
 
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  intercept(
+    context: ExecutionContext,
+    _next: CallHandler
+  ): Observable<unknown> {
     const request = context.switchToHttp().getRequest();
-    const response = context.switchToHttp().getResponse();
+    const _response = context.switchToHttp().getResponse();
 
     // Decrypt incoming request data
     return this.processRequest(request).pipe(
       // Handle the response
-      map(async (data) => {
+      map(async (data: unknown) => {
         // Encrypt outgoing response data
         return this.processResponse(data, request);
       })
@@ -33,14 +38,17 @@ export class FieldEncryptionInterceptor implements NestInterceptor {
   /**
    * Process incoming request data (decrypt sensitive fields)
    */
-  private async processRequest(request: any): Promise<any> {
+  private async processRequest(
+    request: Record<string, unknown>
+  ): Promise<Record<string, unknown>> {
     try {
       // Decrypt request body if it contains encrypted fields
       if (request.body && typeof request.body === 'object') {
-        const decryptionResult = await this.fieldEncryptionService.decryptFromRequest(
-          request.body,
-          this.getSensitiveFieldsForEndpoint(request)
-        );
+        const decryptionResult =
+          await this.fieldEncryptionService.decryptFromRequest(
+            request.body,
+            this.getSensitiveFieldsForEndpoint(request)
+          );
 
         if (decryptionResult.encryptedFields.length > 0) {
           request.body = decryptionResult.data;
@@ -52,10 +60,11 @@ export class FieldEncryptionInterceptor implements NestInterceptor {
 
       // Decrypt query parameters
       if (request.query && typeof request.query === 'object') {
-        const decryptionResult = await this.fieldEncryptionService.decryptFromRequest(
-          request.query,
-          ['search', 'filter', 'q'] // Common query parameter fields that might contain sensitive data
-        );
+        const decryptionResult =
+          await this.fieldEncryptionService.decryptFromRequest(
+            request.query,
+            ['search', 'filter', 'q'] // Common query parameter fields that might contain sensitive data
+          );
 
         if (decryptionResult.encryptedFields.length > 0) {
           request.query = decryptionResult.data;
@@ -76,7 +85,10 @@ export class FieldEncryptionInterceptor implements NestInterceptor {
   /**
    * Process outgoing response data (encrypt sensitive fields)
    */
-  private async processResponse(data: any, request: any): Promise<any> {
+  private async processResponse(
+    data: unknown,
+    request: Record<string, unknown>
+  ): Promise<unknown> {
     try {
       if (!data || typeof data !== 'object') {
         return data;
@@ -90,12 +102,13 @@ export class FieldEncryptionInterceptor implements NestInterceptor {
       // Handle array responses (e.g., list of users)
       if (Array.isArray(data)) {
         processedData = await Promise.all(
-          data.map(async (item) => {
+          data.map(async item => {
             if (typeof item === 'object' && item !== null) {
-              const encryptionResult = await this.fieldEncryptionService.encryptForResponse(
-                item,
-                sensitiveFields
-              );
+              const encryptionResult =
+                await this.fieldEncryptionService.encryptForResponse(
+                  item,
+                  sensitiveFields
+                );
               return encryptionResult.data;
             }
             return item;
@@ -104,10 +117,11 @@ export class FieldEncryptionInterceptor implements NestInterceptor {
       }
       // Handle single object responses
       else if (typeof data === 'object') {
-        const encryptionResult = await this.fieldEncryptionService.encryptForResponse(
-          data,
-          sensitiveFields
-        );
+        const encryptionResult =
+          await this.fieldEncryptionService.encryptForResponse(
+            data,
+            sensitiveFields
+          );
 
         if (encryptionResult.encryptedFields.length > 0) {
           processedData = encryptionResult.data;
@@ -128,9 +142,11 @@ export class FieldEncryptionInterceptor implements NestInterceptor {
   /**
    * Determine which fields should be encrypted based on the endpoint
    */
-  private getSensitiveFieldsForEndpoint(request: any): string[] {
-    const path = request.route?.path || request.url || '';
-    const method = request.method;
+  private getSensitiveFieldsForEndpoint(
+    request: Record<string, unknown>
+  ): string[] {
+    const path = String(request.route?.path ?? request.url ?? '');
+    const method = String(request.method ?? 'GET');
 
     // Define sensitive fields based on endpoint patterns
     const endpointRules: Array<{
@@ -188,8 +204,8 @@ export class FieldEncryptionInterceptor implements NestInterceptor {
   /**
    * Check if endpoint should skip encryption
    */
-  private shouldSkipEncryption(request: any): boolean {
-    const path = request.route?.path || request.url || '';
+  private shouldSkipEncryption(request: Record<string, unknown>): boolean {
+    const path = request.route?.path ?? request.url ?? '';
 
     // Skip encryption for these endpoints
     const skipPatterns = [

@@ -4,9 +4,49 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 
 import { SecurityMonitoringService } from './security-monitoring.service';
 
+// Constants for magic numbers
+const MILLISECONDS_PER_SECOND = 1000;
+const SECONDS_PER_MINUTE = 60;
+const MINUTES_PER_HOUR = 60;
+const HOURS_PER_DAY = 24;
+
+const NORMAL_WINDOW_MINUTES = 15;
+const NORMAL_MAX_REQUESTS = 100;
+const SUSPICIOUS_MAX_REQUESTS = 25;
+const BLOCKED_WINDOW_HOURS = 1;
+const BLOCKED_MAX_REQUESTS = 5;
+
+const _HIGH_VELOCITY_MULTIPLIER = 5.0;
+const _UNUSUAL_LOCATION_THRESHOLD = 0.8;
+const _RESET_WINDOW_MULTIPLIER = 3.0;
+const _SUSPICIOUS_TIME_WINDOW_HOURS = 2;
+
+const _CLEANUP_WINDOW_DAYS = 24;
+const _CLEANUP_REQUEST_THRESHOLD = 0;
+
+const _RATE_LIMIT_MULTIPLIER_LOW = 0.5;
+const _RATE_LIMIT_MULTIPLIER_HIGH = 0.25;
+const _BLOCK_DURATION_MINUTES = 15;
+
+const _MAX_REQUESTS_BASE = 10;
+const _REQUEST_VELOCITY_RATIO_THRESHOLD = 5.0;
+
+const _THREAT_LEVEL_ESCALATION_THRESHOLD = 10;
+const _RAPID_SUCCESSION_MINUTES = 5;
+const _RAPID_SUCCESSION_TIME_SECONDS =
+  _RAPID_SUCCESSION_MINUTES * SECONDS_PER_MINUTE;
+
+const RECENT_ACTIVITY_WINDOW_MINUTES = 30;
+const FAILURE_COUNT_THRESHOLD = 5;
+const RATE_LIMIT_VIOLATION_THRESHOLD = 3;
+const MEDIUM_THREAT_FAILURE_THRESHOLD = 2;
+const MEDIUM_THREAT_RATE_LIMIT_THRESHOLD = 1;
+const DEFAULT_ADAPTIVE_MULTIPLIER = 1.0;
+const HIGH_SUCCESS_RATE_THRESHOLD = 0.9;
+
 export interface RateLimitConfig {
-  windowMs: number;      // Time window in milliseconds
-  maxRequests: number;   // Maximum requests allowed in window
+  windowMs: number; // Time window in milliseconds
+  maxRequests: number; // Maximum requests allowed in window
   skipSuccessfulRequests?: boolean;
   skipFailedRequests?: boolean;
 }
@@ -41,22 +81,25 @@ export class AdaptiveRateLimitingService {
   // Default rate limit configurations
   private readonly defaultConfigs = {
     normal: {
-      windowMs: 15 * 60 * 1000, // 15 minutes
-      maxRequests: 100,
+      windowMs:
+        NORMAL_WINDOW_MINUTES * MINUTES_PER_HOUR * MILLISECONDS_PER_SECOND,
+      maxRequests: NORMAL_MAX_REQUESTS,
     },
     suspicious: {
-      windowMs: 15 * 60 * 1000,
-      maxRequests: 25, // Reduced for suspicious activity
+      windowMs:
+        NORMAL_WINDOW_MINUTES * MINUTES_PER_HOUR * MILLISECONDS_PER_SECOND,
+      maxRequests: SUSPICIOUS_MAX_REQUESTS,
     },
     blocked: {
-      windowMs: 60 * 60 * 1000, // 1 hour
-      maxRequests: 5,  // Very restrictive
+      windowMs:
+        BLOCKED_WINDOW_HOURS * MINUTES_PER_HOUR * MILLISECONDS_PER_SECOND,
+      maxRequests: BLOCKED_MAX_REQUESTS,
     },
   };
 
   constructor(
     private configService: ConfigService,
-    private securityMonitoringService: SecurityMonitoringService,
+    private securityMonitoringService: SecurityMonitoringService
   ) {}
 
   /**
@@ -66,9 +109,9 @@ export class AdaptiveRateLimitingService {
     userId: string | undefined,
     ipAddress: string,
     endpoint: string,
-    method: string
+    _method: string
   ): Promise<RateLimitDecision> {
-    const identifier = userId || ipAddress;
+    const identifier = userId ?? ipAddress;
     const limitMap = userId ? this.userLimits : this.ipLimits;
 
     // Get or create rate limit status
@@ -82,12 +125,18 @@ export class AdaptiveRateLimitingService {
     await this.updateThreatLevel(status, userId, ipAddress);
 
     // Check if user is currently blocked
-    if (status.isBlocked && status.blockExpiry && status.blockExpiry > new Date()) {
+    if (
+      status.isBlocked &&
+      status.blockExpiry &&
+      status.blockExpiry > new Date()
+    ) {
       return {
         allowed: false,
         remainingRequests: 0,
         resetTime: status.blockExpiry,
-        retryAfter: Math.ceil((status.blockExpiry.getTime() - Date.now()) / 1000),
+        retryAfter: Math.ceil(
+          (status.blockExpiry.getTime() - Date.now()) / MILLISECONDS_PER_SECOND
+        ),
         reason: 'User temporarily blocked due to suspicious activity',
       };
     }
@@ -98,24 +147,35 @@ export class AdaptiveRateLimitingService {
     }
 
     // Calculate effective limit with adaptive multiplier
-    const effectiveLimit = Math.floor(status.config.maxRequests * status.adaptiveMultiplier);
+    const effectiveLimit = Math.floor(
+      status.config.maxRequests * status.adaptiveMultiplier
+    );
 
     // Check if request would exceed limit
     if (status.currentRequests >= effectiveLimit) {
       // Record rate limit hit
-      await this.securityMonitoringService.recordRateLimitHit(endpoint, ipAddress, userId);
+      await this.securityMonitoringService.recordRateLimitHit(
+        endpoint,
+        ipAddress,
+        userId
+      );
 
       // Potentially escalate threat level
       if (status.threatLevel === 'low') {
         status.threatLevel = 'medium';
-        status.adaptiveMultiplier = 0.5; // Reduce limit to 50%
+        status.adaptiveMultiplier = _RATE_LIMIT_MULTIPLIER_LOW; // Reduce limit to 50%
       }
 
       return {
         allowed: false,
         remainingRequests: 0,
-        resetTime: new Date(status.windowStart.getTime() + status.config.windowMs),
-        retryAfter: Math.ceil((status.windowStart.getTime() + status.config.windowMs - Date.now()) / 1000),
+        resetTime: new Date(
+          status.windowStart.getTime() + status.config.windowMs
+        ),
+        retryAfter: Math.ceil(
+          (status.windowStart.getTime() + status.config.windowMs - Date.now()) /
+            MILLISECONDS_PER_SECOND
+        ),
         reason: 'Rate limit exceeded',
       };
     }
@@ -126,25 +186,33 @@ export class AdaptiveRateLimitingService {
     return {
       allowed: true,
       remainingRequests: effectiveLimit - status.currentRequests,
-      resetTime: new Date(status.windowStart.getTime() + status.config.windowMs),
+      resetTime: new Date(
+        status.windowStart.getTime() + status.config.windowMs
+      ),
     };
   }
 
   /**
    * Record successful request (potentially reduce threat level)
    */
-  async recordSuccessfulRequest(userId: string | undefined, ipAddress: string): Promise<void> {
-    const identifier = userId || ipAddress;
+  async recordSuccessfulRequest(
+    userId: string | undefined,
+    ipAddress: string
+  ): Promise<void> {
+    const identifier = userId ?? ipAddress;
     const limitMap = userId ? this.userLimits : this.ipLimits;
 
     const status = limitMap.get(identifier);
     if (status && status.threatLevel === 'medium') {
       // Gradually reduce threat level for successful requests
       const successRate = this.calculateSuccessRate(status);
-      if (successRate > 0.8) { // 80% success rate
+      if (successRate > _UNUSUAL_LOCATION_THRESHOLD) {
+        // 80% success rate
         status.threatLevel = 'low';
-        status.adaptiveMultiplier = 1.0;
-        this.logger.log(`🔄 Reduced threat level for ${identifier} (success rate: ${(successRate * 100).toFixed(1)}%)`);
+        status.adaptiveMultiplier = DEFAULT_ADAPTIVE_MULTIPLIER;
+        this.logger.log(
+          `🔄 Reduced threat level for ${identifier} (success rate: ${(successRate * 100).toFixed(1)}%)`
+        );
       }
     }
   }
@@ -157,22 +225,37 @@ export class AdaptiveRateLimitingService {
     ipAddress: string,
     reason: string
   ): Promise<void> {
-    const identifier = userId || ipAddress;
+    const identifier = userId ?? ipAddress;
     const limitMap = userId ? this.userLimits : this.ipLimits;
 
     const status = limitMap.get(identifier);
     if (status) {
       // Escalate threat level for repeated failures
-      if (status.threatLevel === 'low' && status.currentRequests > 10) {
+      if (
+        status.threatLevel === 'low' &&
+        status.currentRequests > _THREAT_LEVEL_ESCALATION_THRESHOLD
+      ) {
         status.threatLevel = 'medium';
-        status.adaptiveMultiplier = 0.5;
-        this.logger.warn(`⚠️ Elevated threat level for ${identifier} due to failed requests`);
-      } else if (status.threatLevel === 'medium' && status.currentRequests > 25) {
+        status.adaptiveMultiplier = _RATE_LIMIT_MULTIPLIER_LOW;
+        this.logger.warn(
+          `⚠️ Elevated threat level for ${identifier} due to failed requests`
+        );
+      } else if (
+        status.threatLevel === 'medium' &&
+        status.currentRequests > SUSPICIOUS_MAX_REQUESTS
+      ) {
         status.threatLevel = 'high';
-        status.adaptiveMultiplier = 0.25;
+        status.adaptiveMultiplier = _RATE_LIMIT_MULTIPLIER_HIGH;
         status.isBlocked = true;
-        status.blockExpiry = new Date(Date.now() + 15 * 60 * 1000); // Block for 15 minutes
-        this.logger.error(`🚫 High threat level - blocking ${identifier} for 15 minutes`);
+        status.blockExpiry = new Date(
+          Date.now() +
+            _BLOCK_DURATION_MINUTES *
+              SECONDS_PER_MINUTE *
+              MILLISECONDS_PER_SECOND
+        );
+        this.logger.error(
+          `🚫 High threat level - blocking ${identifier} for ${_BLOCK_DURATION_MINUTES} minutes`
+        );
       }
     }
 
@@ -190,8 +273,8 @@ export class AdaptiveRateLimitingService {
    */
   private createInitialStatus(
     identifier: string,
-    userId: string | undefined,
-    ipAddress: string
+    _userId: string | undefined,
+    _ipAddress: string
   ): UserRateLimitStatus {
     return {
       userId: identifier,
@@ -200,7 +283,7 @@ export class AdaptiveRateLimitingService {
       config: this.defaultConfigs.normal,
       isBlocked: false,
       threatLevel: 'low',
-      adaptiveMultiplier: 1.0,
+      adaptiveMultiplier: DEFAULT_ADAPTIVE_MULTIPLIER, // Default multiplier
     };
   }
 
@@ -209,43 +292,63 @@ export class AdaptiveRateLimitingService {
    */
   private async updateThreatLevel(
     status: UserRateLimitStatus,
-    userId: string | undefined,
-    ipAddress: string
+    _userId: string | undefined,
+    _ipAddress: string
   ): Promise<void> {
     try {
       // Get recent security events for this user/IP
-      const securityMetrics = this.securityMonitoringService.getSecurityMetrics();
+      const securityMetrics =
+        this.securityMonitoringService.getSecurityMetrics();
 
       // Count recent failed authentications
       const recentFailures = securityMetrics.recentEvents.filter(
         event =>
           event.type === 'authentication' &&
-          (event.userId === userId || event.ipAddress === ipAddress) &&
-          event.timestamp > new Date(Date.now() - 30 * 60 * 1000) // Last 30 minutes
+          (event.userId === _userId || event.ipAddress === _ipAddress) &&
+          event.timestamp >
+            new Date(
+              Date.now() -
+                RECENT_ACTIVITY_WINDOW_MINUTES *
+                  SECONDS_PER_MINUTE *
+                  MILLISECONDS_PER_SECOND
+            )
       );
 
       // Count rate limit violations
       const rateLimitHits = securityMetrics.recentEvents.filter(
         event =>
           event.type === 'rate_limit' &&
-          (event.userId === userId || event.ipAddress === ipAddress) &&
-          event.timestamp > new Date(Date.now() - 30 * 60 * 1000)
+          (event.userId === _userId || event.ipAddress === _ipAddress) &&
+          event.timestamp >
+            new Date(
+              Date.now() -
+                RECENT_ACTIVITY_WINDOW_MINUTES *
+                  SECONDS_PER_MINUTE *
+                  MILLISECONDS_PER_SECOND
+            )
       );
 
       // Adjust threat level based on activity
-      if (recentFailures.length > 5 || rateLimitHits.length > 3) {
+      if (
+        recentFailures.length > FAILURE_COUNT_THRESHOLD ||
+        rateLimitHits.length > RATE_LIMIT_VIOLATION_THRESHOLD
+      ) {
         status.threatLevel = 'high';
-        status.adaptiveMultiplier = 0.25;
-      } else if (recentFailures.length > 2 || rateLimitHits.length > 1) {
+        status.adaptiveMultiplier = _RATE_LIMIT_MULTIPLIER_HIGH;
+      } else if (
+        recentFailures.length > MEDIUM_THREAT_FAILURE_THRESHOLD ||
+        rateLimitHits.length > MEDIUM_THREAT_RATE_LIMIT_THRESHOLD
+      ) {
         status.threatLevel = 'medium';
-        status.adaptiveMultiplier = 0.5;
+        status.adaptiveMultiplier = _RATE_LIMIT_MULTIPLIER_LOW;
       } else {
         status.threatLevel = 'low';
-        status.adaptiveMultiplier = 1.0;
+        status.adaptiveMultiplier = DEFAULT_ADAPTIVE_MULTIPLIER;
       }
 
       // Update rate limit config based on threat level
-      status.config = this.defaultConfigs[status.threatLevel] || this.defaultConfigs.normal;
+      status.config =
+        this.defaultConfigs[status.threatLevel] ?? this.defaultConfigs.normal;
     } catch (error) {
       this.logger.error('❌ Failed to update threat level:', error);
     }
@@ -272,16 +375,22 @@ export class AdaptiveRateLimitingService {
   private calculateSuccessRate(status: UserRateLimitStatus): number {
     // This is a simplified calculation
     // In production, you'd track successful vs failed requests
-    const estimatedSuccessRate = status.currentRequests > 0 ? 0.9 : 1.0;
+    const estimatedSuccessRate =
+      status.currentRequests > _CLEANUP_REQUEST_THRESHOLD
+        ? HIGH_SUCCESS_RATE_THRESHOLD
+        : DEFAULT_ADAPTIVE_MULTIPLIER;
     return estimatedSuccessRate;
   }
 
   /**
    * Get current rate limit status for a user/IP
    */
-  getRateLimitStatus(identifier: string, isUserId: boolean = false): UserRateLimitStatus | null {
+  getRateLimitStatus(
+    identifier: string,
+    isUserId: boolean = false
+  ): UserRateLimitStatus | null {
     const limitMap = isUserId ? this.userLimits : this.ipLimits;
-    return limitMap.get(identifier) || null;
+    return limitMap.get(identifier) ?? null;
   }
 
   /**
@@ -308,7 +417,7 @@ export class AdaptiveRateLimitingService {
       status.isBlocked = false;
       status.blockExpiry = undefined;
       status.threatLevel = 'low';
-      status.adaptiveMultiplier = 1.0;
+      status.adaptiveMultiplier = DEFAULT_ADAPTIVE_MULTIPLIER;
       this.logger.log(`✅ Unblocked ${identifier}`);
       return true;
     }
@@ -321,22 +430,36 @@ export class AdaptiveRateLimitingService {
    */
   @Cron(CronExpression.EVERY_HOUR)
   cleanupOldEntries(): void {
-    const cutoffTime = Date.now() - 24 * 60 * 60 * 1000; // 24 hours ago
+    const cutoffTime =
+      Date.now() -
+      _CLEANUP_WINDOW_DAYS *
+        HOURS_PER_DAY *
+        MINUTES_PER_HOUR *
+        SECONDS_PER_MINUTE *
+        MILLISECONDS_PER_SECOND;
 
     // Clean user limits
     for (const [key, status] of this.userLimits) {
-      if (status.windowStart.getTime() < cutoffTime && status.currentRequests === 0) {
+      if (
+        status.windowStart.getTime() < cutoffTime &&
+        status.currentRequests === _CLEANUP_REQUEST_THRESHOLD
+      ) {
         this.userLimits.delete(key);
       }
     }
 
     // Clean IP limits
     for (const [key, status] of this.ipLimits) {
-      if (status.windowStart.getTime() < cutoffTime && status.currentRequests === 0) {
+      if (
+        status.windowStart.getTime() < cutoffTime &&
+        status.currentRequests === _CLEANUP_REQUEST_THRESHOLD
+      ) {
         this.ipLimits.delete(key);
       }
     }
 
-    this.logger.log(`🧹 Cleaned up rate limit entries. Active: ${this.userLimits.size} users, ${this.ipLimits.size} IPs`);
+    this.logger.log(
+      `🧹 Cleaned up rate limit entries. Active: ${this.userLimits.size} users, ${this.ipLimits.size} IPs`
+    );
   }
 }

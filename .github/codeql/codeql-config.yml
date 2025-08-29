@@ -7,14 +7,24 @@ name: "Meqenet CodeQL Configuration"
 # Global settings
 disable-default-queries: false
 queries:
-  # Java/Kotlin (Android) Security Queries
+  # TypeScript/JavaScript Security Queries (Primary)
+  - uses: security-and-quality
+  - uses: security-extended
+  # Java/Kotlin (Android) Security Queries (Conditional)
   - uses: security-and-quality
   - uses: security-extended
 
-# Android-specific security configuration
+# Multi-language security configuration
 paths:
-  - frontend/apps/app/android
+  # Backend TypeScript services
+  - backend/services/auth-service/src
+  - backend/services/api-gateway/src
+  - backend/src
+  # Frontend TypeScript/React
   - frontend/apps/app/src
+  - frontend/apps/website/src
+  # Android (if present)
+  - frontend/apps/app/android
 paths-ignore:
   - "node_modules"
   - "dist"
@@ -66,6 +76,41 @@ kotlin:
     - "kotlin/android/dangerous-permissions"
     - "kotlin/android/exposed-intent"
 
+# TypeScript/JavaScript Security Configuration
+javascript:
+  # Web application security
+  - "js/webview-javascript-enabled"
+  - "js/cleartext-storage"
+  - "js/insecure-random"
+  - "js/insecure-crypto-algorithm"
+  - "js/sql-injection"
+  - "js/xss"
+  - "js/command-injection"
+  - "js/path-injection"
+  - "js/hardcoded-credentials"
+  - "js/cleartext-transmission"
+  - "js/insecure-temporary-file"
+  - "js/overly-permissive-file-permissions"
+  - "js/dangerous-permissions"
+  - "js/improper-code-sanitization"
+
+typescript:
+  # Same JavaScript security rules apply to TypeScript
+  - "js/webview-javascript-enabled"
+  - "js/cleartext-storage"
+  - "js/insecure-random"
+  - "js/insecure-crypto-algorithm"
+  - "js/sql-injection"
+  - "js/xss"
+  - "js/command-injection"
+  - "js/path-injection"
+  - "js/hardcoded-credentials"
+  - "js/cleartext-transmission"
+  - "js/insecure-temporary-file"
+  - "js/overly-permissive-file-permissions"
+  - "js/dangerous-permissions"
+  - "js/improper-code-sanitization"
+
 # Severity thresholds for fintech compliance
 severity:
   critical: ["sql-injection", "hardcoded-credentials", "insecure-crypto"]
@@ -90,9 +135,20 @@ exclude:
     - "**/test*/**"
     - "**/*Test.*"
     - "**/*Tests.*"
+    - "**/*.spec.*"
+    - "**/*.test.*"
+    - "**/node_modules/**"
+    - "**/dist/**"
+    - "**/build/**"
+    - "**/coverage/**"
+    - "**/.nx/**"
+    - "**/.git/**"
+    - "**/logs/**"
   queries:
     - "java/android/cleartext-traffic" # Exclude if using local development servers
     - "kotlin/android/cleartext-traffic" # Exclude if using local development servers
+    - "js/cleartext-transmission" # May be needed for local development
+    - "js/insecure-random" # May be acceptable for non-cryptographic purposes
 
 # Performance optimization
 threads: 2

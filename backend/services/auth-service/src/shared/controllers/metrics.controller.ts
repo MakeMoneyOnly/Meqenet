@@ -9,7 +9,7 @@ export class MetricsController {
   private readonly logger = new Logger(MetricsController.name);
 
   constructor(
-    private readonly securityMonitoringService: SecurityMonitoringService,
+    private readonly securityMonitoringService: SecurityMonitoringService
   ) {}
 
   @Get()
@@ -23,7 +23,8 @@ export class MetricsController {
     description: 'Metrics retrieved successfully',
     content: {
       'text/plain': {
-        example: '# HELP meqenet_security_events_total Total number of security events\n# TYPE meqenet_security_events_total counter\nmeqenet_security_events_total{type="authentication",severity="medium",service="auth-service"} 5\n',
+        example:
+          '# HELP meqenet_security_events_total Total number of security events\n# TYPE meqenet_security_events_total counter\nmeqenet_security_events_total{type="authentication",severity="medium",service="auth-service"} 5\n',
       },
     },
   })
@@ -42,7 +43,8 @@ export class MetricsController {
   @Header('Content-Type', 'application/json')
   @ApiOperation({
     summary: 'Get security monitoring dashboard data',
-    description: 'Returns security metrics and events for dashboard visualization',
+    description:
+      'Returns security metrics and events for dashboard visualization',
   })
   @ApiResponse({
     status: 200,
@@ -75,7 +77,9 @@ export class MetricsController {
       },
     },
   })
-  async getSecurityDashboard(): Promise<ReturnType<SecurityMonitoringService['getSecurityMetrics']>> {
+  async getSecurityDashboard(): Promise<
+    ReturnType<SecurityMonitoringService['getSecurityMetrics']>
+  > {
     try {
       this.logger.log('📈 Security dashboard data requested');
       const metrics = this.securityMonitoringService.getSecurityMetrics();

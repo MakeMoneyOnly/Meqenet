@@ -1,9 +1,70 @@
-import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnModuleInit,
+  OnModuleDestroy,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { register, collectDefaultMetrics, Counter, Gauge, Histogram } from 'prom-client';
+import {
+  register,
+  collectDefaultMetrics,
+  Counter,
+  Gauge,
+  Histogram,
+} from 'prom-client';
+
+// Constants for magic numbers
+const MILLISECONDS_PER_SECOND = 1000;
+const SECONDS_PER_MINUTE = 60;
+const MINUTES_PER_HOUR = 60;
+const HOURS_PER_DAY = 24;
+
+// Histogram bucket constants for response times
+const RESPONSE_TIME_BUCKET_1 = 0.1; // 100ms
+const RESPONSE_TIME_BUCKET_2 = 0.5; // 500ms
+const RESPONSE_TIME_BUCKET_3 = 1.0; // 1s
+const RESPONSE_TIME_BUCKET_4 = 2.0; // 2s
+const RESPONSE_TIME_BUCKET_5 = 5.0; // 5s
+const RESPONSE_TIME_BUCKET_6 = 10.0; // 10s
+
+// Alert threshold constants
+const _ALERT_THRESHOLD_LOW = 0.1;
+const _ALERT_THRESHOLD_MEDIUM = 0.5;
+const _ALERT_THRESHOLD_HIGH = 2.0;
+const _ALERT_THRESHOLD_CRITICAL = 5.0;
+const _ALERT_THRESHOLD_MAX = 10.0;
+
+const _MONITORING_WINDOW_MINUTES = 15;
+const _MONITORING_WINDOW_HOURS = 24;
+const _MONITORING_WINDOW_DAYS = 7;
+
+const _BASE_SUCCESS_RATE = 0.8;
+const _MEDIUM_SUCCESS_RATE = 0.6;
+
+const _RISK_SCORE_INCREMENT = 50;
+const _RISK_SCORE_DECREMENT = -50;
+
+const CLEANUP_WINDOW_HOURS = 24;
+
+// Event and indicator limits
+const MAX_EVENTS_HISTORY = 1000;
+const MAX_INDICATORS_PER_USER = 50;
+const MAX_INDICATORS_SLICE = -50;
+const MAX_RECENT_EVENTS = 50;
+
+// Time window constants
+const BRUTE_FORCE_WINDOW_MINUTES = 15;
+const CLEANUP_WINDOW_DAYS = 7;
 
 export interface SecurityEvent {
-  type: 'authentication' | 'authorization' | 'rate_limit' | 'threat_detection' | 'anomaly' | 'encryption' | 'decryption';
+  type:
+    | 'authentication'
+    | 'authorization'
+    | 'rate_limit'
+    | 'threat_detection'
+    | 'anomaly'
+    | 'encryption'
+    | 'decryption';
   severity: 'low' | 'medium' | 'high' | 'critical';
   userId?: string;
   ipAddress?: string;
@@ -15,7 +76,12 @@ export interface SecurityEvent {
 }
 
 export interface ThreatIndicator {
-  type: 'brute_force' | 'unusual_pattern' | 'suspicious_location' | 'device_anomaly' | 'behavioral_anomaly';
+  type:
+    | 'brute_force'
+    | 'unusual_pattern'
+    | 'suspicious_location'
+    | 'device_anomaly'
+    | 'behavioral_anomaly';
   confidence: number; // 0-1 scale
   userId: string;
   indicators: string[];
@@ -23,7 +89,9 @@ export interface ThreatIndicator {
 }
 
 @Injectable()
-export class SecurityMonitoringService implements OnModuleInit, OnModuleDestroy {
+export class SecurityMonitoringService
+  implements OnModuleInit, OnModuleDestroy
+{
   private readonly logger = new Logger(SecurityMonitoringService.name);
 
   // Prometheus metrics
@@ -40,16 +108,18 @@ export class SecurityMonitoringService implements OnModuleInit, OnModuleDestroy 
 
   constructor(private configService: ConfigService) {}
 
-  async onModuleInit() {
+  async onModuleInit(): Promise<void> {
     this.initializeMetrics();
-    this.logger.log('✅ Security Monitoring Service initialized with Prometheus metrics');
+    this.logger.log(
+      '✅ Security Monitoring Service initialized with Prometheus metrics'
+    );
   }
 
-  async onModuleDestroy() {
+  async onModuleDestroy(): Promise<void> {
     // Cleanup if needed
   }
 
-  private initializeMetrics() {
+  private initializeMetrics(): void {
     // Enable default Node.js metrics
     collectDefaultMetrics({ prefix: 'meqenet_' });
 
@@ -72,7 +142,14 @@ export class SecurityMonitoringService implements OnModuleInit, OnModuleDestroy 
       name: 'meqenet_security_response_time_seconds',
       help: 'Security operation response times',
       labelNames: ['operation', 'status'],
-      buckets: [0.1, 0.5, 1, 2, 5, 10],
+      buckets: [
+        RESPONSE_TIME_BUCKET_1,
+        RESPONSE_TIME_BUCKET_2,
+        RESPONSE_TIME_BUCKET_3,
+        RESPONSE_TIME_BUCKET_4,
+        RESPONSE_TIME_BUCKET_5,
+        RESPONSE_TIME_BUCKET_6,
+      ],
     });
 
     // Failed Authentications Counter
@@ -109,7 +186,9 @@ export class SecurityMonitoringService implements OnModuleInit, OnModuleDestroy 
   /**
    * Record a security event
    */
-  async recordSecurityEvent(event: Omit<SecurityEvent, 'timestamp'>): Promise<void> {
+  async recordSecurityEvent(
+    event: Omit<SecurityEvent, 'timestamp'>
+  ): Promise<void> {
     const fullEvent: SecurityEvent = {
       ...event,
       timestamp: new Date(),
@@ -118,9 +197,9 @@ export class SecurityMonitoringService implements OnModuleInit, OnModuleDestroy 
     // Store event for analysis
     this.securityEvents.push(fullEvent);
 
-    // Keep only last 1000 events to prevent memory issues
-    if (this.securityEvents.length > 1000) {
-      this.securityEvents = this.securityEvents.slice(-1000);
+    // Keep only last events to prevent memory issues
+    if (this.securityEvents.length > MAX_EVENTS_HISTORY) {
+      this.securityEvents = this.securityEvents.slice(MAX_INDICATORS_SLICE);
     }
 
     // Update Prometheus metrics
@@ -181,7 +260,7 @@ export class SecurityMonitoringService implements OnModuleInit, OnModuleDestroy 
     userId?: string
   ): Promise<void> {
     this.rateLimitHitsCounter
-      .labels(endpoint, ipAddress, userId || 'anonymous')
+      .labels(endpoint, ipAddress, userId ?? 'anonymous')
       .inc();
 
     await this.recordSecurityEvent({
@@ -203,14 +282,12 @@ export class SecurityMonitoringService implements OnModuleInit, OnModuleDestroy 
     algorithm: string = 'AES-256-GCM',
     duration?: number
   ): Promise<void> {
-    this.encryptionOperationsCounter
-      .labels(operation, status, algorithm)
-      .inc();
+    this.encryptionOperationsCounter.labels(operation, status, algorithm).inc();
 
     if (duration !== undefined) {
       this.responseTimeHistogram
         .labels(`encryption_${operation}`, status)
-        .observe(duration / 1000); // Convert to seconds
+        .observe(duration / MILLISECONDS_PER_SECOND); // Convert to seconds
     }
 
     if (status === 'failure') {
@@ -248,22 +325,35 @@ export class SecurityMonitoringService implements OnModuleInit, OnModuleDestroy 
     if (!this.threatIndicators.has(userId)) {
       this.threatIndicators.set(userId, []);
     }
-    this.threatIndicators.get(userId)!.push(threatIndicator);
+    const userIndicators = this.threatIndicators.get(userId);
+    if (!userIndicators) {
+      throw new Error(`Failed to get threat indicators for userId: ${userId}`);
+    }
+    userIndicators.push(threatIndicator);
 
     // Keep only last 50 indicators per user
-    const userIndicators = this.threatIndicators.get(userId)!;
-    if (userIndicators.length > 50) {
-      this.threatIndicators.set(userId, userIndicators.slice(-50));
+    if (userIndicators.length > MAX_INDICATORS_PER_USER) {
+      this.threatIndicators.set(
+        userId,
+        userIndicators.slice(MAX_INDICATORS_SLICE)
+      );
     }
 
     // Update active threats gauge
     this.activeThreatsGauge
-      .labels(type, confidence > 0.8 ? 'high' : confidence > 0.6 ? 'medium' : 'low')
+      .labels(
+        type,
+        confidence > _BASE_SUCCESS_RATE
+          ? 'high'
+          : confidence > _MEDIUM_SUCCESS_RATE
+            ? 'medium'
+            : 'low'
+      )
       .inc();
 
     await this.recordSecurityEvent({
       type: 'anomaly',
-      severity: confidence > 0.8 ? 'high' : 'medium',
+      severity: confidence > _BASE_SUCCESS_RATE ? 'high' : 'medium',
       userId,
       description: `Anomaly detected: ${type} (confidence: ${(confidence * 100).toFixed(1)}%)`,
       metadata: { indicators, confidence },
@@ -273,15 +363,25 @@ export class SecurityMonitoringService implements OnModuleInit, OnModuleDestroy 
   /**
    * Detect potential brute force attacks
    */
-  private async detectBruteForce(ipAddress: string, userId?: string): Promise<void> {
+  private async detectBruteForce(
+    ipAddress: string,
+    userId?: string
+  ): Promise<void> {
     const recentFailures = this.securityEvents.filter(
       event =>
         event.type === 'authentication' &&
         event.ipAddress === ipAddress &&
-        event.timestamp > new Date(Date.now() - 15 * 60 * 1000) // Last 15 minutes
+        event.timestamp >
+          new Date(
+            Date.now() -
+              BRUTE_FORCE_WINDOW_MINUTES *
+                SECONDS_PER_MINUTE *
+                MILLISECONDS_PER_SECOND
+          )
     );
 
-    if (recentFailures.length >= 5) {
+    const BRUTE_FORCE_THRESHOLD = 5;
+    if (recentFailures.length >= BRUTE_FORCE_THRESHOLD) {
       await this.recordSecurityEvent({
         type: 'threat_detection',
         severity: 'high',
@@ -290,7 +390,7 @@ export class SecurityMonitoringService implements OnModuleInit, OnModuleDestroy 
         description: `Potential brute force attack detected: ${recentFailures.length} failed attempts`,
         metadata: {
           failureCount: recentFailures.length,
-          timeWindow: '15 minutes'
+          timeWindow: '15 minutes',
         },
       });
     }
@@ -339,19 +439,28 @@ export class SecurityMonitoringService implements OnModuleInit, OnModuleDestroy 
 
     // Calculate metrics from recent events
     const recentEvents = this.securityEvents.filter(
-      event => event.timestamp > new Date(Date.now() - 24 * 60 * 60 * 1000) // Last 24 hours
+      event =>
+        event.timestamp >
+        new Date(
+          Date.now() -
+            CLEANUP_WINDOW_HOURS *
+              MINUTES_PER_HOUR *
+              SECONDS_PER_MINUTE *
+              MILLISECONDS_PER_SECOND
+        )
     );
 
     recentEvents.forEach(event => {
       eventsByType[event.type] = (eventsByType[event.type] || 0) + 1;
-      eventsBySeverity[event.severity] = (eventsBySeverity[event.severity] || 0) + 1;
+      eventsBySeverity[event.severity] =
+        (eventsBySeverity[event.severity] || 0) + 1;
     });
 
     return {
       eventsByType,
       eventsBySeverity,
       activeThreats: Array.from(this.threatIndicators.values()).flat().length,
-      recentEvents: recentEvents.slice(-50), // Last 50 events
+      recentEvents: recentEvents.slice(-MAX_RECENT_EVENTS), // Last events
       threatIndicators: Object.fromEntries(this.threatIndicators),
     };
   }
@@ -367,7 +476,14 @@ export class SecurityMonitoringService implements OnModuleInit, OnModuleDestroy 
    * Clean up old data to prevent memory leaks
    */
   cleanupOldData(): void {
-    const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const oneWeekAgo = new Date(
+      Date.now() -
+        CLEANUP_WINDOW_DAYS *
+          HOURS_PER_DAY *
+          MINUTES_PER_HOUR *
+          SECONDS_PER_MINUTE *
+          MILLISECONDS_PER_SECOND
+    );
 
     // Clean old security events
     this.securityEvents = this.securityEvents.filter(
