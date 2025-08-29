@@ -1,7 +1,19 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 
 import { SecurityConfigService } from './config/security.config';
+import { AIFraudDetectionController } from './controllers/ai-fraud-detection.controller';
+import { CredentialManagementController } from './controllers/credential-management.controller';
+import { JWKSController } from './controllers/jwks.controller';
+import { MetricsController } from './controllers/metrics.controller';
+import { AdaptiveRateLimitingService } from './services/adaptive-rate-limiting.service';
+import { AIFraudDetectionService } from './services/ai-fraud-detection.service';
+import { AnomalyDetectionService } from './services/anomaly-detection.service';
+import { CredentialRotationService } from './services/credential-rotation.service';
+import { FieldEncryptionService } from './services/field-encryption.service';
+import { SecretManagerService } from './services/secret-manager.service';
+import { SecurityMonitoringService } from './services/security-monitoring.service';
 import { FaydaEncryptionUtil } from './utils/fayda-encryption.util';
 
 /**
@@ -11,8 +23,37 @@ import { FaydaEncryptionUtil } from './utils/fayda-encryption.util';
  * that are shared across the authentication service.
  */
 @Module({
-  imports: [ConfigModule],
-  providers: [SecurityConfigService, FaydaEncryptionUtil],
-  exports: [SecurityConfigService, FaydaEncryptionUtil],
+  imports: [
+    ConfigModule,
+    ScheduleModule.forRoot(), // For scheduled credential rotation
+  ],
+  controllers: [
+    AIFraudDetectionController,
+    JWKSController,
+    CredentialManagementController,
+    MetricsController,
+  ],
+  providers: [
+    SecurityConfigService,
+    FaydaEncryptionUtil,
+    SecretManagerService,
+    CredentialRotationService,
+    SecurityMonitoringService,
+    AdaptiveRateLimitingService,
+    AnomalyDetectionService,
+    FieldEncryptionService,
+    AIFraudDetectionService,
+  ],
+  exports: [
+    SecurityConfigService,
+    FaydaEncryptionUtil,
+    SecretManagerService,
+    CredentialRotationService,
+    SecurityMonitoringService,
+    AdaptiveRateLimitingService,
+    AnomalyDetectionService,
+    FieldEncryptionService,
+    AIFraudDetectionService,
+  ],
 })
 export class SharedModule {}

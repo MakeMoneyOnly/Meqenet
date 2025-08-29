@@ -134,7 +134,7 @@ This service includes built-in observability features:
 - **Metrics**: Prometheus metrics exposed at `/metrics`
 - **Health Checks**: Terminus health checks at `/health`
 - **Distributed Tracing**: OpenTelemetry integration
-- **Structured Logging**: Winston with correlation IDs
+- **Structured Logging**: Pino with correlation IDs
 
 ### Metrics Available
 

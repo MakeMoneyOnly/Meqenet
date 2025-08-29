@@ -269,6 +269,18 @@ jobs:
           # Check for proper permissions in AndroidManifest.xml
           grep -n "android.permission" frontend/apps/app/android/app/src/main/AndroidManifest.xml || echo "No dangerous permissions found"
 
+      - name: 🔍 Semgrep Security Analysis
+        uses: semgrep/semgrep-action@v1
+        with:
+          config: >-
+            p/ci
+            p/security-audit
+            p/secrets
+            p/supply-chain
+          generateSarif: 1
+          sarifOutput: semgrep-results.sarif
+          output: semgrep-results.json
+
       - name: 🚨 Upload Security Results
         uses: actions/upload-artifact@v4
         if: always()
@@ -277,6 +289,8 @@ jobs:
           path: |
             bom.json
             audit-results.json
+            semgrep-results.sarif
+            semgrep-results.json
           retention-days: 30
 
   # ============================================================================

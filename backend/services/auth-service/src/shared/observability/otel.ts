@@ -17,14 +17,15 @@ export function initializeOpenTelemetry(config?: OpenTelemetryConfig): void {
     // Use provided config or defaults (no direct environment variable access)
     const nodeEnv = config?.nodeEnv ?? 'development';
     const serviceName = config?.serviceName ?? 'auth-service';
+    const _jaegerEndpoint =
+      config?.jaegerEndpoint ?? 'http://localhost:14268/api/traces';
 
     // Be quiet in prod; verbose in non-prod
     const level =
       nodeEnv === 'production' ? DiagLogLevel.ERROR : DiagLogLevel.INFO;
     diag.setLogger(new DiagConsoleLogger(), level);
 
-    // Initialize SDK with basic configuration
-    // In production, configure proper exporters via env vars
+    // Initialize SDK with basic configuration (simplified to avoid version conflicts)
     sdk = new NodeSDK({
       instrumentations: [getNodeAutoInstrumentations()],
       serviceName,
@@ -32,7 +33,7 @@ export function initializeOpenTelemetry(config?: OpenTelemetryConfig): void {
 
     void sdk.start();
   } catch {
-    // Do not fail service due to APM init
+    // Ignore OpenTelemetry initialization errors to avoid service startup failures
   }
 }
 
