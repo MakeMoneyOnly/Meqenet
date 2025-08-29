@@ -51,8 +51,8 @@ COPY . .
 # Ensure node_modules are properly linked and build the application
 RUN echo "Ensuring dependencies are available..." && \
     ls -la node_modules/.bin/ | head -10 && \
-    echo "Building api-gateway with nx..." && \
-    ./node_modules/.bin/nx build api-gateway
+    echo "Building api-gateway with nx (excluding frontend)..." && \
+    ./node_modules/.bin/nx build api-gateway --exclude=frontend
 # Use pnpm's deploy command to create a pruned production-ready deployment folder.
 # This is more efficient and reliable than running 'pnpm install --prod' in the final stage.
 RUN pnpm deploy --filter=@meqenet/api-gateway ./deploy --legacy
