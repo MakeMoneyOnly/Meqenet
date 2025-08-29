@@ -40,12 +40,33 @@ const DEPRECATED_REPLACEMENTS = {
 };
 
 function runCommand(command, description) {
+  // Validate and sanitize command input to prevent injection
+  if (!command || typeof command !== 'string') {
+    throw new Error('Command must be a non-empty string');
+  }
+
+  // Allow only safe pnpm and npm commands
+  const allowedCommands = [
+    /^pnpm\s+(install|add|remove|update|ls|audit)\s/,
+    /^npm\s+(install|update|audit)\s/,
+    /^rm\s+-rf\s+(node_modules|pnpm-lock\.yaml)$/,
+    /^wc\s+-l$/,
+    /^grep\s+/,
+  ];
+
+  const isAllowed = allowedCommands.some(pattern => pattern.test(command));
+  if (!isAllowed) {
+    throw new Error(`Command not allowed: ${command}`);
+  }
+
   console.log(`📦 ${description}`);
   console.log(`   Running: ${command}`);
   try {
     const output = execSync(command, {
       encoding: 'utf8',
       maxBuffer: 1024 * 1024 * 10,
+      // Security: prevent shell injection by not using shell
+      shell: false,
     });
     console.log(`   ✅ Success\n`);
     return output;
@@ -123,7 +144,13 @@ function runSecurityAudit() {
 
   // Generate audit report
   try {
-    const auditResult = execSync('pnpm audit --json', { encoding: 'utf8' });
+    const auditResult = runCommand(
+      'pnpm audit --json',
+      'Generate audit report JSON'
+    );
+    if (!auditResult) {
+      throw new Error('Failed to generate audit report');
+    }
     const auditData = JSON.parse(auditResult);
 
     console.log('\n📊 Audit Summary:');

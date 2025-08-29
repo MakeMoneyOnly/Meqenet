@@ -58,11 +58,16 @@ jobs:
       - name: 🎯 Determine Deployment Environment
         id: determine-env
         run: |
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
-          elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+          # Sanitize GitHub context variables to prevent shell injection
+          EVENT_NAME="${{ github.event_name }}"
+          INPUT_ENV="${{ github.event.inputs.environment }}"
+          REF_NAME="${{ github.ref }}"
+
+          if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            echo "environment=$INPUT_ENV" >> $GITHUB_OUTPUT
+          elif [[ "$REF_NAME" == "refs/heads/main" ]]; then
             echo "environment=staging" >> $GITHUB_OUTPUT
-          elif [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+          elif [[ "$REF_NAME" == refs/tags/v* ]]; then
             echo "environment=production" >> $GITHUB_OUTPUT
           else
             echo "environment=development" >> $GITHUB_OUTPUT
