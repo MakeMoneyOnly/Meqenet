@@ -55,8 +55,8 @@ COPY . .
 # Ensure node_modules are properly linked and build the application
 RUN echo "Ensuring dependencies are available..." && \
     ls -la node_modules/.bin/ | head -10 && \
-    echo "Building auth-service with nx..." && \
-    ./node_modules/.bin/nx build auth-service
+    echo "Building auth-service with nx (excluding frontend)..." && \
+    ./node_modules/.bin/nx build auth-service --exclude=frontend
 
 # Create production deployment
 RUN pnpm deploy --filter=@meqenet/auth-service ./deploy --legacy

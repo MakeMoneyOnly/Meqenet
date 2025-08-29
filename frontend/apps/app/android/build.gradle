@@ -1,3 +1,8 @@
+// Apply versions plugin using modern syntax - must be the first block
+plugins {
+    id "com.github.ben-manes.versions" version "0.50.0"
+}
+
 buildscript {
     ext {
         buildToolsVersion = "36.0.0"
@@ -26,11 +31,6 @@ buildscript {
 // Enterprise Configuration Includes
 // Added for FinTech compliance and offline builds
 apply from: 'gradle/enterprise-repositories.gradle'
-
-// Apply versions plugin using modern syntax - must be after repository configuration
-plugins {
-    id "com.github.ben-manes.versions" version "0.50.0"
-}
 // apply from: 'gradle/dependency-locking.gradle' // Temporarily disabled due to syntax error
 
 allprojects {
