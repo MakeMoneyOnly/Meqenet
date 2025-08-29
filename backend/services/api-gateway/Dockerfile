@@ -53,7 +53,7 @@ RUN echo "Ensuring dependencies are available..." && \
     ls -la node_modules/.bin/ | head -10 && \
     echo "Building api-gateway with tsc..." && \
     cd backend/services/api-gateway && \
-    ../../node_modules/.bin/tsc --project tsconfig.json --outDir dist
+    npx tsc --project tsconfig.json --outDir dist
 # Use pnpm's deploy command to create a pruned production-ready deployment folder.
 # This is more efficient and reliable than running 'pnpm install --prod' in the final stage.
 RUN pnpm deploy --filter=@meqenet/api-gateway ./deploy --legacy
