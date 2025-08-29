@@ -135,7 +135,11 @@ export class PrismaService
     (
       this.$on as (
         event: 'query',
-        listener: (e: { query: string; duration: number }) => void
+        listener: (e: {
+          query: string;
+          duration: number;
+          params?: string;
+        }) => void
       ) => void
     )('query', event => {
       // Security: Use ConfigService for environment variable access
