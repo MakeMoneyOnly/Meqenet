@@ -62,7 +62,7 @@ export interface FieldEncryptionResult<T = Record<string, unknown>> {
 export class FieldEncryptionService {
   private readonly logger = new Logger(FieldEncryptionService.name);
   private readonly algorithm = 'aes-256-gcm';
-  private encryptionKey: Buffer;
+  private encryptionKey!: Buffer;
   private readonly sensitiveFields = [
     'password',
     'ssn',
