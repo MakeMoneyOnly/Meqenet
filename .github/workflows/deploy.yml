@@ -57,12 +57,12 @@ jobs:
 
       - name: 🎯 Determine Deployment Environment
         id: determine-env
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_ENV: ${{ github.event.inputs.environment }}
+          REF_NAME: ${{ github.ref }}
         run: |
-          # Sanitize GitHub context variables to prevent shell injection
-          EVENT_NAME="${{ github.event_name }}"
-          INPUT_ENV="${{ github.event.inputs.environment }}"
-          REF_NAME="${{ github.ref }}"
-
+          # Use environment variables to avoid shell injection
           if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
             echo "environment=$INPUT_ENV" >> $GITHUB_OUTPUT
           elif [[ "$REF_NAME" == "refs/heads/main" ]]; then
@@ -347,6 +347,9 @@ jobs:
           aws eks update-kubeconfig --name meqenet-staging-cluster --region us-east-1
 
       - name: 🚀 Deploy to Staging
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_SHA: ${{ github.sha }}
         run: |
           echo "🚀 Deploying Meqenet to staging environment..."
 
@@ -354,8 +357,8 @@ jobs:
           kubectl apply -f k8s/staging/
 
           # Update deployment images
-          kubectl set image deployment/auth-service auth-service=ghcr.io/${{ github.repository }}/auth-service:${{ github.sha }} -n meqenet-staging
-          kubectl set image deployment/api-gateway api-gateway=ghcr.io/${{ github.repository }}/api-gateway:${{ github.sha }} -n meqenet-staging
+          kubectl set image deployment/auth-service auth-service=ghcr.io/$GITHUB_REPOSITORY/auth-service:$GITHUB_SHA -n meqenet-staging
+          kubectl set image deployment/api-gateway api-gateway=ghcr.io/$GITHUB_REPOSITORY/api-gateway:$GITHUB_SHA -n meqenet-staging
 
           # Wait for rollout to complete
           kubectl rollout status deployment/auth-service -n meqenet-staging --timeout=300s
@@ -463,6 +466,9 @@ jobs:
           echo "✅ Pre-production validation completed"
 
       - name: 🚀 Blue-Green Deployment to Production
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_SHA: ${{ github.sha }}
         run: |
           echo "🚀 Executing blue-green deployment to production..."
 
@@ -470,8 +476,8 @@ jobs:
           kubectl apply -f k8s/production/green/
 
           # Update green deployment images
-          kubectl set image deployment/auth-service-green auth-service=ghcr.io/${{ github.repository }}/auth-service:${{ github.sha }} -n meqenet-production
-          kubectl set image deployment/api-gateway-green api-gateway=ghcr.io/${{ github.repository }}/api-gateway:${{ github.sha }} -n meqenet-production
+          kubectl set image deployment/auth-service-green auth-service=ghcr.io/$GITHUB_REPOSITORY/auth-service:$GITHUB_SHA -n meqenet-production
+          kubectl set image deployment/api-gateway-green api-gateway=ghcr.io/$GITHUB_REPOSITORY/api-gateway:$GITHUB_SHA -n meqenet-production
 
           # Wait for green deployment to be ready
           kubectl rollout status deployment/auth-service-green -n meqenet-production --timeout=600s
@@ -552,18 +558,22 @@ jobs:
           echo "💰 Financial transaction monitoring enabled"
 
       - name: 📧 Send Deployment Notification
+        env:
+          DEPLOY_ENV: ${{ needs.pre-deployment-validation.outputs.deploy-environment }}
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_REF_NAME: ${{ github.ref_name }}
         run: |
           echo "📧 Sending deployment notification..."
 
           # Deployment success notification
-          cat > deployment-summary.md << 'EOF'
+          cat > deployment-summary.md << EOF
           # 🚀 Meqenet Deployment Summary
 
           ## ✅ Deployment Successful
 
-          **Environment:** ${{ needs.pre-deployment-validation.outputs.deploy-environment }}
-          **Commit:** ${{ github.sha }}
-          **Branch:** ${{ github.ref_name }}
+          **Environment:** $DEPLOY_ENV
+          **Commit:** $GITHUB_SHA
+          **Branch:** $GITHUB_REF_NAME
           **Deployed Services:** auth-service, api-gateway
 
           ## 🔒 Security Validation
@@ -599,6 +609,14 @@ jobs:
 
     steps:
       - name: 📋 Generate Deployment Summary
+        env:
+          PRE_DEPLOY_RESULT: ${{ needs.pre-deployment-validation.result }}
+          BUILD_RESULT: ${{ needs.build-and-package.result }}
+          STAGING_RESULT: ${{ needs.deploy-staging.result }}
+          PROD_RESULT: ${{ needs.deploy-production.result }}
+          MONITORING_RESULT: ${{ needs.post-deployment-monitoring.result }}
+          DEPLOY_ENV: ${{ needs.pre-deployment-validation.outputs.deploy-environment }}
+          GITHUB_SHA: ${{ github.sha }}
         run: |
           echo "# 🚀 Meqenet Deployment Pipeline Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
@@ -606,11 +624,11 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Stage | Status | Environment |" >> $GITHUB_STEP_SUMMARY
           echo "|-------|--------|-------------|" >> $GITHUB_STEP_SUMMARY
-          echo "| 🔍 Pre-Deployment Validation | ${{ needs.pre-deployment-validation.result }} | All |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🏗️ Build & Package | ${{ needs.build-and-package.result }} | All |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🎭 Staging Deployment | ${{ needs.deploy-staging.result }} | Staging |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🌟 Production Deployment | ${{ needs.deploy-production.result }} | Production |" >> $GITHUB_STEP_SUMMARY
-          echo "| 📊 Post-Deployment Monitoring | ${{ needs.post-deployment-monitoring.result }} | All |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🔍 Pre-Deployment Validation | $PRE_DEPLOY_RESULT | All |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🏗️ Build & Package | $BUILD_RESULT | All |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🎭 Staging Deployment | $STAGING_RESULT | Staging |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🌟 Production Deployment | $PROD_RESULT | Production |" >> $GITHUB_STEP_SUMMARY
+          echo "| 📊 Post-Deployment Monitoring | $MONITORING_RESULT | All |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "## 🔒 Security & Compliance" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ Ethiopian NBE regulatory compliance validated" >> $GITHUB_STEP_SUMMARY
@@ -618,6 +636,6 @@ jobs:
           echo "- ✅ Financial transaction security verified" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ Container images signed and verified" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Target Environment:** ${{ needs.pre-deployment-validation.outputs.deploy-environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Target Environment:** $DEPLOY_ENV" >> $GITHUB_STEP_SUMMARY
           echo "**Deployment Time:** $(date)" >> $GITHUB_STEP_SUMMARY
-          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** $GITHUB_SHA" >> $GITHUB_STEP_SUMMARY
