@@ -5,7 +5,7 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import compression from 'compression';
 import helmet from 'helmet';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { PinoLogger } from 'nestjs-pino';
 
 import { AppModule } from './app/app.module';
 import { initializeOpenTelemetry } from './shared/observability/otel';
@@ -25,7 +25,7 @@ async function bootstrap(): Promise<void> {
     });
 
     const configService = app.get(ConfigService);
-    app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
+    app.useLogger(app.get(PinoLogger));
 
     // Initialize OpenTelemetry with centralized config (non-blocking). Fulfills APM instrumentation requirement.
     initializeOpenTelemetry({

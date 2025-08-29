@@ -6,16 +6,17 @@ import { APP_GUARD, APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 // import { ClientsModule, Transport, GrpcOptions } from '@nestjs/microservices';
 import { TerminusModule } from '@nestjs/terminus';
-import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
-import { WinstonModule } from 'nest-winston';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { I18nModule, QueryResolver, AcceptLanguageResolver } from 'nestjs-i18n';
+import { LoggerModule } from 'nestjs-pino';
 
 import { AuthModule } from '../features/auth/auth.module';
 import { DatabaseModule } from '../infrastructure/database/database.module';
 import { MessagingModule } from '../infrastructure/messaging/messaging.module';
+import { pinoConfig } from '../shared/config/pino.config';
 import { throttlerConfig } from '../shared/config/throttler.config';
-import { winstonConfig } from '../shared/config/winston.config';
 import { GlobalExceptionFilter } from '../shared/filters/global-exception.filter';
+import { AdaptiveRateLimitGuard } from '../shared/guards/adaptive-rate-limit.guard';
 import { JwtAuthGuard } from '../shared/guards/jwt-auth.guard';
 import { HealthModule } from '../shared/health/health.module';
 import { LoggingInterceptor } from '../shared/interceptors/logging.interceptor';
@@ -38,7 +39,7 @@ import { AppService } from './app.service';
     ThrottlerModule.forRootAsync(throttlerConfig),
 
     // Logging
-    WinstonModule.forRootAsync(winstonConfig),
+    LoggerModule.forRootAsync(pinoConfig),
 
     // Health checks
     TerminusModule,
@@ -81,7 +82,7 @@ import { AppService } from './app.service';
     // Global guards
     {
       provide: APP_GUARD,
-      useClass: ThrottlerGuard,
+      useClass: AdaptiveRateLimitGuard,
     },
     {
       provide: APP_GUARD,
