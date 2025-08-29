@@ -204,7 +204,8 @@ export class FieldEncryptionInterceptor implements NestInterceptor {
    * Check if endpoint should skip encryption
    */
   private shouldSkipEncryption(request: Record<string, unknown>): boolean {
-    const path = request.route?.path ?? request.url ?? '';
+    const path =
+      (request.route as { path?: string })?.path ?? request.url ?? '';
 
     // Skip encryption for these endpoints
     const skipPatterns = [
@@ -215,6 +216,6 @@ export class FieldEncryptionInterceptor implements NestInterceptor {
       /\/credentials/,
     ];
 
-    return skipPatterns.some(pattern => pattern.test(path));
+    return skipPatterns.some(pattern => pattern.test(path || ''));
   }
 }

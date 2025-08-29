@@ -95,13 +95,13 @@ export class SecurityMonitoringService
   private readonly logger = new Logger(SecurityMonitoringService.name);
 
   // Prometheus metrics
-  private securityEventsCounter: Counter<string>;
-  private activeThreatsGauge: Gauge<string>;
-  private responseTimeHistogram: Histogram<string>;
-  private failedAuthenticationsCounter: Counter<string>;
-  private rateLimitHitsCounter: Counter<string>;
-  private encryptionOperationsCounter: Counter<string>;
-  private anomalyDetectionCounter: Counter<string>;
+  private securityEventsCounter!: Counter<string>;
+  private activeThreatsGauge!: Gauge<string>;
+  private responseTimeHistogram!: Histogram<string>;
+  private failedAuthenticationsCounter!: Counter<string>;
+  private rateLimitHitsCounter!: Counter<string>;
+  private encryptionOperationsCounter!: Counter<string>;
+  private anomalyDetectionCounter!: Counter<string>;
 
   private threatIndicators: Map<string, ThreatIndicator[]> = new Map();
   private securityEvents: SecurityEvent[] = [];

@@ -38,9 +38,9 @@ export interface JWKSResponse {
 @Injectable()
 export class SecretManagerService implements OnModuleInit {
   private readonly logger = new Logger(SecretManagerService.name);
-  private secretsManagerClient: SecretsManagerClient;
-  private kmsClient: KMSClient;
-  private currentJwtKeys: {
+  private secretsManagerClient!: SecretsManagerClient;
+  private kmsClient!: KMSClient;
+  private currentJwtKeys!: {
     privateKey: string;
     publicKey: string;
     kid: string;
@@ -286,7 +286,9 @@ export class SecretManagerService implements OnModuleInit {
       });
 
       const response = await this.kmsClient.send(command);
-      return response.CiphertextBlob?.toString('base64') ?? '';
+      return response.CiphertextBlob
+        ? Buffer.from(response.CiphertextBlob).toString('base64')
+        : '';
     } catch (error) {
       this.logger.error('❌ Failed to encrypt data:', error);
       throw error;
@@ -443,7 +445,13 @@ export class SecretManagerService implements OnModuleInit {
       });
 
       const response = await this.secretsManagerClient.send(command);
-      return response.SecretList ?? [];
+      return (response.SecretList ?? []).map(secret => ({
+        name: secret.Name,
+        arn: secret.ARN,
+        createdDate: secret.CreatedDate,
+        lastChangedDate: secret.LastChangedDate,
+        ...secret,
+      }));
     } catch (error) {
       this.logger.error('❌ Failed to list secrets:', error);
       throw error;

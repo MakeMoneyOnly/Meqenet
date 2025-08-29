@@ -259,7 +259,9 @@ export class FieldEncryptionService {
       encrypted += cipher.final('hex');
 
       // Get auth tag for GCM mode
-      const authTag = cipher.getAuthTag();
+      const authTag = (
+        cipher as unknown as { getAuthTag(): Buffer }
+      ).getAuthTag();
 
       // Return encrypted data with auth tag
       return JSON.stringify({
@@ -292,7 +294,9 @@ export class FieldEncryptionService {
 
       // Set auth tag for GCM mode
       if (encryptedData.authTag) {
-        decipher.setAuthTag(Buffer.from(encryptedData.authTag, 'hex'));
+        (
+          decipher as unknown as { setAuthTag(authTag: Buffer): void }
+        ).setAuthTag(Buffer.from(encryptedData.authTag, 'hex'));
       }
 
       let decrypted = decipher.update(encryptedData.data, 'hex', 'utf8');
