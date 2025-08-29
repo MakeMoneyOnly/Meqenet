@@ -80,15 +80,30 @@ export class AdaptiveRateLimitingService {
 
   // Default rate limit configurations
   private readonly defaultConfigs = {
+    low: {
+      windowMs:
+        NORMAL_WINDOW_MINUTES * MINUTES_PER_HOUR * MILLISECONDS_PER_SECOND,
+      maxRequests: NORMAL_MAX_REQUESTS,
+    },
     normal: {
       windowMs:
         NORMAL_WINDOW_MINUTES * MINUTES_PER_HOUR * MILLISECONDS_PER_SECOND,
       maxRequests: NORMAL_MAX_REQUESTS,
     },
+    medium: {
+      windowMs:
+        NORMAL_WINDOW_MINUTES * MINUTES_PER_HOUR * MILLISECONDS_PER_SECOND,
+      maxRequests: SUSPICIOUS_MAX_REQUESTS,
+    },
     suspicious: {
       windowMs:
         NORMAL_WINDOW_MINUTES * MINUTES_PER_HOUR * MILLISECONDS_PER_SECOND,
       maxRequests: SUSPICIOUS_MAX_REQUESTS,
+    },
+    high: {
+      windowMs:
+        BLOCKED_WINDOW_HOURS * MINUTES_PER_HOUR * MILLISECONDS_PER_SECOND,
+      maxRequests: BLOCKED_MAX_REQUESTS,
     },
     blocked: {
       windowMs:

@@ -5,6 +5,7 @@ import {
   CallHandler,
   Logger,
 } from '@nestjs/common';
+import { Request } from 'express';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
@@ -18,16 +19,18 @@ export class FieldEncryptionInterceptor implements NestInterceptor {
     private readonly fieldEncryptionService: FieldEncryptionService
   ) {}
 
-  intercept(
+  async intercept(
     context: ExecutionContext,
-    _next: CallHandler
-  ): Observable<unknown> {
+    next: CallHandler
+  ): Promise<Observable<unknown>> {
     const request = context.switchToHttp().getRequest();
     const _response = context.switchToHttp().getResponse();
 
     // Decrypt incoming request data
-    return this.processRequest(request).pipe(
-      // Handle the response
+    await this.processRequest(request);
+
+    // Continue with the request pipeline
+    return next.handle().pipe(
       map(async (data: unknown) => {
         // Encrypt outgoing response data
         return this.processResponse(data, request);
@@ -38,9 +41,7 @@ export class FieldEncryptionInterceptor implements NestInterceptor {
   /**
    * Process incoming request data (decrypt sensitive fields)
    */
-  private async processRequest(
-    request: Record<string, unknown>
-  ): Promise<Record<string, unknown>> {
+  private async processRequest(request: Request): Promise<void> {
     try {
       // Decrypt request body if it contains encrypted fields
       if (request.body && typeof request.body === 'object') {
@@ -87,7 +88,7 @@ export class FieldEncryptionInterceptor implements NestInterceptor {
    */
   private async processResponse(
     data: unknown,
-    request: Record<string, unknown>
+    request: Request
   ): Promise<unknown> {
     try {
       if (!data || typeof data !== 'object') {
@@ -142,11 +143,9 @@ export class FieldEncryptionInterceptor implements NestInterceptor {
   /**
    * Determine which fields should be encrypted based on the endpoint
    */
-  private getSensitiveFieldsForEndpoint(
-    request: Record<string, unknown>
-  ): string[] {
-    const path = String(request.route?.path ?? request.url ?? '');
-    const method = String(request.method ?? 'GET');
+  private getSensitiveFieldsForEndpoint(request: Request): string[] {
+    const path = request.route?.path ?? request.url ?? '';
+    const method = request.method ?? 'GET';
 
     // Define sensitive fields based on endpoint patterns
     const endpointRules: Array<{
