@@ -1,6 +1,5 @@
 import nx from '@nx/eslint-plugin';
 import security from 'eslint-plugin-security';
-import tseslint from '@typescript-eslint/eslint-plugin';
 import tsparser from '@typescript-eslint/parser';
 
 export default [
@@ -30,9 +29,6 @@ export default [
     ],
   },
   {
-    plugins: {
-      '@typescript-eslint': tseslint,
-    },
     files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
     rules: {
       // Temporarily disable @nx/enforce-module-boundaries due to compatibility issues
@@ -57,9 +53,6 @@ export default [
     },
   },
   {
-    plugins: {
-      '@typescript-eslint': tseslint,
-    },
     files: [
       '**/*.ts',
       '**/*.tsx',

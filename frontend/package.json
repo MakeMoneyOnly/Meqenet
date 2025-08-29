@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
+    "lint": "eslint . --ext .ts,.tsx,.js,.jsx --config eslint.config.mjs",
     "lint:security": "eslint . --ext .ts,.tsx,.js,.jsx --config eslint.config.mjs",
     "test": "vitest --config apps/app/vitest.config.ts --run",
     "typecheck": "vitest --config apps/app/vitest.config.ts --typecheck --run"
