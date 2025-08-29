@@ -57,7 +57,7 @@ RUN echo "Ensuring dependencies are available..." && \
     ls -la node_modules/.bin/ | head -10 && \
     echo "Building auth-service with tsc..." && \
     cd backend/services/auth-service && \
-    ../../node_modules/.bin/tsc --project tsconfig.json --outDir dist
+    npx tsc --project tsconfig.json --outDir dist
 
 # Create production deployment
 RUN pnpm deploy --filter=@meqenet/auth-service ./deploy --legacy
