@@ -156,8 +156,8 @@ export class AppController {
 
   @Options()
   handleOptions(
-    @Headers('origin') origin?: string,
-    @Res() res: Response
+    @Res() res: Response,
+    @Headers('origin') origin?: string
   ): void {
     const allowedOrigins = [
       'https://meqenet.et',
@@ -185,8 +185,8 @@ export class AppController {
 
   @Options('/auth/*')
   handleAuthOptions(
-    @Headers('origin') origin?: string,
-    @Res() res: Response
+    @Res() res: Response,
+    @Headers('origin') origin?: string
   ): void {
     const allowedOrigins = [
       'https://meqenet.et',
