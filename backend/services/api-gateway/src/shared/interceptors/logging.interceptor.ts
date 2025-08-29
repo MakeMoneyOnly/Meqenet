@@ -35,7 +35,7 @@ export class LoggingInterceptor implements NestInterceptor {
     const { method, url, body, headers } = request;
     const user = headers['user-agent'] ?? 'Unknown';
 
-    this.logger.log(
+    this.logger.info(
       `[${correlationId}] ==> ${method} ${url} | User: ${user} | Body: ${JSON.stringify(sanitizeObject(body))}`
     );
 
@@ -45,7 +45,7 @@ export class LoggingInterceptor implements NestInterceptor {
     const now = Date.now();
     return next.handle().pipe(
       tap(data => {
-        this.logger.log(
+        this.logger.info(
           `[${correlationId}] <== ${method} ${url} | Status: ${response.statusCode} | Duration: ${Date.now() - now}ms | Response: ${JSON.stringify(sanitizeObject(data))}`
         );
       })
