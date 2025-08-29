@@ -1,7 +1,21 @@
 import { Controller, Post, Body, Get, Param, Logger } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
-import { AIFraudDetectionService, TransactionData, FraudScore } from '../services/ai-fraud-detection.service';
+import {
+  AIFraudDetectionService,
+  TransactionData,
+  FraudScore,
+} from '../services/ai-fraud-detection.service';
+
+// Constants for magic numbers
+const MILLISECONDS_PER_SECOND = 1000;
+const SECONDS_PER_MINUTE = 60;
+const MINUTES_PER_HOUR = 60;
+
+const SUSPICIOUS_TIME_WINDOW_HOURS = 2;
+const HIGH_RISK_AMOUNT_1 = 10000;
+const HIGH_RISK_AMOUNT_2 = 50000;
+const HIGH_RISK_AMOUNT_3 = 100000;
 
 @ApiTags('AI Fraud Detection')
 @Controller('ai/fraud-detection')
@@ -9,7 +23,7 @@ export class AIFraudDetectionController {
   private readonly logger = new Logger(AIFraudDetectionController.name);
 
   constructor(
-    private readonly aiFraudDetectionService: AIFraudDetectionService,
+    private readonly aiFraudDetectionService: AIFraudDetectionService
   ) {}
 
   @Post('analyze')
@@ -24,18 +38,32 @@ export class AIFraudDetectionController {
       type: 'object',
       properties: {
         overall: { type: 'number', description: 'Overall fraud score (0-100)' },
-        riskLevel: { type: 'string', enum: ['low', 'medium', 'high', 'critical'] },
-        recommendedAction: { type: 'string', enum: ['approve', 'review', 'block', 'investigate'] },
+        riskLevel: {
+          type: 'string',
+          enum: ['low', 'medium', 'high', 'critical'],
+        },
+        recommendedAction: {
+          type: 'string',
+          enum: ['approve', 'review', 'block', 'investigate'],
+        },
         reasons: { type: 'array', items: { type: 'string' } },
-        confidence: { type: 'number', description: 'Confidence in analysis (0-1)' },
+        confidence: {
+          type: 'number',
+          description: 'Confidence in analysis (0-1)',
+        },
       },
     },
   })
-  async analyzeTransaction(@Body() transactionData: TransactionData): Promise<FraudScore> {
+  async analyzeTransaction(
+    @Body() transactionData: TransactionData
+  ): Promise<FraudScore> {
     try {
-      this.logger.log(`🧠 Analyzing transaction for user: ${transactionData.userId}`);
+      this.logger.log(
+        `🧠 Analyzing transaction for user: ${transactionData.userId}`
+      );
 
-      const fraudScore = await this.aiFraudDetectionService.analyzeTransaction(transactionData);
+      const fraudScore =
+        await this.aiFraudDetectionService.analyzeTransaction(transactionData);
 
       this.logger.log(
         `✅ Fraud analysis completed: ${fraudScore.overall} (${fraudScore.riskLevel}) - ${fraudScore.recommendedAction}`
@@ -51,7 +79,8 @@ export class AIFraudDetectionController {
   @Get('stats')
   @ApiOperation({
     summary: 'Get fraud detection statistics',
-    description: 'Returns comprehensive statistics about fraud detection performance',
+    description:
+      'Returns comprehensive statistics about fraud detection performance',
   })
   @ApiResponse({
     status: 200,
@@ -67,7 +96,9 @@ export class AIFraudDetectionController {
       },
     },
   })
-  async getFraudDetectionStats() {
+  async getFraudDetectionStats(): Promise<
+    ReturnType<AIFraudDetectionService['getFraudDetectionStats']>
+  > {
     try {
       this.logger.log('📊 Retrieving fraud detection statistics');
 
@@ -95,7 +126,12 @@ export class AIFraudDetectionController {
     status: 404,
     description: 'User profile not found',
   })
-  async getUserFraudProfile(@Param('userId') userId: string) {
+  async getUserFraudProfile(
+    @Param('userId') userId: string
+  ): Promise<
+    | ReturnType<AIFraudDetectionService['getUserFraudProfile']>
+    | { error: string; message: string }
+  > {
     try {
       this.logger.log(`👤 Retrieving fraud profile for user: ${userId}`);
 
@@ -112,7 +148,10 @@ export class AIFraudDetectionController {
 
       return profile;
     } catch (error) {
-      this.logger.error(`❌ Failed to retrieve fraud profile for user ${userId}:`, error);
+      this.logger.error(
+        `❌ Failed to retrieve fraud profile for user ${userId}:`,
+        error
+      );
       throw error;
     }
   }
@@ -120,7 +159,8 @@ export class AIFraudDetectionController {
   @Post('users/:userId/reset-profile')
   @ApiOperation({
     summary: 'Reset user fraud profile',
-    description: 'Resets the fraud detection profile for a user (admin function)',
+    description:
+      'Resets the fraud detection profile for a user (admin function)',
   })
   @ApiResponse({
     status: 200,
@@ -130,11 +170,14 @@ export class AIFraudDetectionController {
     status: 404,
     description: 'User profile not found',
   })
-  async resetUserFraudProfile(@Param('userId') userId: string) {
+  async resetUserFraudProfile(
+    @Param('userId') userId: string
+  ): Promise<{ success: boolean; message: string }> {
     try {
       this.logger.log(`🔄 Resetting fraud profile for user: ${userId}`);
 
-      const success = this.aiFraudDetectionService.resetUserFraudProfile(userId);
+      const success =
+        this.aiFraudDetectionService.resetUserFraudProfile(userId);
 
       if (!success) {
         return {
@@ -150,7 +193,10 @@ export class AIFraudDetectionController {
         message: 'User fraud profile has been reset',
       };
     } catch (error) {
-      this.logger.error(`❌ Failed to reset fraud profile for user ${userId}:`, error);
+      this.logger.error(
+        `❌ Failed to reset fraud profile for user ${userId}:`,
+        error
+      );
       throw error;
     }
   }
@@ -158,13 +204,18 @@ export class AIFraudDetectionController {
   @Get('risk-thresholds')
   @ApiOperation({
     summary: 'Get current risk thresholds',
-    description: 'Returns the current fraud detection risk thresholds and configuration',
+    description:
+      'Returns the current fraud detection risk thresholds and configuration',
   })
   @ApiResponse({
     status: 200,
     description: 'Risk thresholds retrieved successfully',
   })
-  async getRiskThresholds() {
+  async getRiskThresholds(): Promise<{
+    thresholds: Record<string, unknown>;
+    description: string;
+    lastUpdated: string;
+  }> {
     try {
       // In a real implementation, these would come from the service
       const thresholds = {
@@ -173,15 +224,24 @@ export class AIFraudDetectionController {
         unusualAmountMultiplier: 3.0,
         unusualLocationThreshold: 0.8,
         highVelocityMultiplier: 5.0,
-        suspiciousTimeWindowMs: 2 * 60 * 60 * 1000, // 2 hours
+        suspiciousTimeWindowMs:
+          SUSPICIOUS_TIME_WINDOW_HOURS *
+          MINUTES_PER_HOUR *
+          SECONDS_PER_MINUTE *
+          MILLISECONDS_PER_SECOND,
         highRiskCountries: ['North Korea', 'Iran', 'Syria', 'Cuba'],
         suspiciousMerchantCategories: ['crypto', 'gambling', 'darkweb'],
-        highRiskAmounts: [10000, 50000, 100000],
+        highRiskAmounts: [
+          HIGH_RISK_AMOUNT_1,
+          HIGH_RISK_AMOUNT_2,
+          HIGH_RISK_AMOUNT_3,
+        ],
       };
 
       return {
         thresholds,
-        description: 'Current fraud detection risk thresholds and configuration',
+        description:
+          'Current fraud detection risk thresholds and configuration',
         lastUpdated: new Date().toISOString(),
       };
     } catch (error) {
@@ -193,13 +253,24 @@ export class AIFraudDetectionController {
   @Post('test-fraud-patterns')
   @ApiOperation({
     summary: 'Test fraud detection with sample patterns',
-    description: 'Allows testing of fraud detection with predefined suspicious patterns',
+    description:
+      'Allows testing of fraud detection with predefined suspicious patterns',
   })
   @ApiResponse({
     status: 200,
     description: 'Fraud pattern test completed',
   })
-  async testFraudPatterns() {
+  async testFraudPatterns(): Promise<{
+    testResults: Array<{
+      testCase: Partial<TransactionData>;
+      fraudScore: FraudScore;
+    }>;
+    summary: {
+      totalTests: number;
+      highRiskDetected: number;
+      blockedTransactions: number;
+    };
+  }> {
     try {
       this.logger.log('🧪 Testing fraud detection patterns');
 
@@ -231,7 +302,8 @@ export class AIFraudDetectionController {
       const results = [];
 
       for (const testCase of testCases) {
-        const fraudScore = await this.aiFraudDetectionService.analyzeTransaction(testCase);
+        const fraudScore =
+          await this.aiFraudDetectionService.analyzeTransaction(testCase);
         results.push({
           testCase: {
             userId: testCase.userId,
@@ -249,8 +321,14 @@ export class AIFraudDetectionController {
         testResults: results,
         summary: {
           totalTests: results.length,
-          highRiskDetected: results.filter(r => r.fraudScore.riskLevel === 'high' || r.fraudScore.riskLevel === 'critical').length,
-          blockedTransactions: results.filter(r => r.fraudScore.recommendedAction === 'block').length,
+          highRiskDetected: results.filter(
+            r =>
+              r.fraudScore.riskLevel === 'high' ||
+              r.fraudScore.riskLevel === 'critical'
+          ).length,
+          blockedTransactions: results.filter(
+            r => r.fraudScore.recommendedAction === 'block'
+          ).length,
         },
       };
     } catch (error) {

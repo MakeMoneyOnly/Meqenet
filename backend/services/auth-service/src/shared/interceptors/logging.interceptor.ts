@@ -13,6 +13,13 @@ import { AnomalyDetectionService } from '../services/anomaly-detection.service';
 import { SecurityMonitoringService } from '../services/security-monitoring.service';
 import { sanitizeObject } from '../utils/logging-sanitizer.util';
 
+// Constants for magic numbers
+const HTTP_CLIENT_ERROR_MIN = 400;
+const HTTP_SERVER_ERROR_MIN = 500;
+const ANOMALY_RISK_THRESHOLD = 75;
+const _MAX_SEQUENCE_LENGTH = 10;
+const MIN_USER_AGENT_LENGTH = 10;
+
 /**
  * Logging Interceptor
  *
@@ -25,7 +32,7 @@ export class LoggingInterceptor implements NestInterceptor {
   constructor(
     private readonly logger: PinoLogger,
     private readonly securityMonitoringService: SecurityMonitoringService,
-    private readonly anomalyDetectionService: AnomalyDetectionService,
+    private readonly anomalyDetectionService: AnomalyDetectionService
   ) {
     this.logger.setContext(LoggingInterceptor.name);
   }
@@ -65,13 +72,14 @@ export class LoggingInterceptor implements NestInterceptor {
         );
 
         // Record security monitoring for suspicious activities
-        if (response.statusCode >= 400) {
+        if (response.statusCode >= HTTP_CLIENT_ERROR_MIN) {
           await this.securityMonitoringService.recordSecurityEvent({
             type: 'authorization',
-            severity: response.statusCode >= 500 ? 'high' : 'medium',
+            severity:
+              response.statusCode >= HTTP_SERVER_ERROR_MIN ? 'high' : 'medium',
             userId: request.user?.id,
-            ipAddress: request.ip || request.connection?.remoteAddress,
-            userAgent: request.get('User-Agent'),
+            ipAddress: request.ip ?? request.connection?.remoteAddress,
+            userAgent: request.get?.('User-Agent') ?? 'Unknown',
             correlationId,
             description: `HTTP ${response.statusCode} response for ${method} ${url}`,
             metadata: {
@@ -79,18 +87,18 @@ export class LoggingInterceptor implements NestInterceptor {
               method,
               url,
               duration,
-              userAgent: request.get('User-Agent'),
+              userAgent: request.get?.('User-Agent') ?? 'Unknown',
             },
           });
         }
 
         // Monitor for potential attacks (suspicious patterns)
-        const userAgent = request.get('User-Agent') || '';
+        const userAgent = request.get?.('User-Agent') ?? 'Unknown';
         if (this.isSuspiciousUserAgent(userAgent)) {
           await this.securityMonitoringService.recordSecurityEvent({
             type: 'threat_detection',
             severity: 'medium',
-            ipAddress: request.ip || request.connection?.remoteAddress,
+            ipAddress: request.ip ?? request.connection?.remoteAddress,
             userAgent,
             correlationId,
             description: 'Suspicious user agent detected',
@@ -101,20 +109,22 @@ export class LoggingInterceptor implements NestInterceptor {
         // Perform anomaly detection for authenticated users
         if (request.user?.id) {
           try {
-            const anomalyResult = await this.anomalyDetectionService.analyzeBehavior(
-              request.user.id,
-              {
-                endpoint: request.route?.path || request.url,
-                method: request.method,
-                ipAddress: request.ip || request.connection?.remoteAddress || '',
-                userAgent,
-                timestamp: new Date(),
-                sessionStart: request.session?.startTime,
-              }
-            );
+            const anomalyResult =
+              await this.anomalyDetectionService.analyzeBehavior(
+                request.user.id,
+                {
+                  endpoint: request.route?.path ?? request.url,
+                  method: request.method ?? 'GET',
+                  ipAddress:
+                    request.ip ?? request.connection?.remoteAddress ?? '',
+                  userAgent,
+                  timestamp: new Date(),
+                  sessionStart: request.session?.startTime,
+                }
+              );
 
             // Log high-risk anomalies
-            if (anomalyResult.riskScore > 75) {
+            if (anomalyResult.riskScore > ANOMALY_RISK_THRESHOLD) {
               this.logger.warn(
                 `🚨 High-risk behavior detected for user ${request.user.id}: Risk Score ${anomalyResult.riskScore}`,
                 {
@@ -142,30 +152,30 @@ export class LoggingInterceptor implements NestInterceptor {
     if (!userAgent) return false;
 
     const suspiciousPatterns = [
-      /sqlmap/i,           // SQL injection tools
-      /nmap/i,             // Network scanning tools
-      /nikto/i,            // Web server scanner
-      /dirbuster/i,        // Directory busting tools
-      /burpsuite/i,        // Web vulnerability scanner
-      /owasp/i,            // OWASP testing tools
-      /acunetix/i,         // Web vulnerability scanner
-      /qualysguard/i,      // Vulnerability scanner
-      /rapid7/i,           // Vulnerability assessment
-      /nessus/i,           // Vulnerability scanner
-      /metasploit/i,       // Penetration testing framework
-      /wpscan/i,           // WordPress vulnerability scanner
-      /joomlavs/i,         // Joomla vulnerability scanner
-      /drupal/i,           // Could be legitimate or scanning
-      /python-requests/i,  // Automated tools
-      /gobuster/i,         // Directory busting tool
-      /dirb/i,             // Web content scanner
-      /gospider/i,         // Web spider
-      /nuclei/i,           // Vulnerability scanner
-      /xsser/i,            // XSS testing tool
+      /sqlmap/i, // SQL injection tools
+      /nmap/i, // Network scanning tools
+      /nikto/i, // Web server scanner
+      /dirbuster/i, // Directory busting tools
+      /burpsuite/i, // Web vulnerability scanner
+      /owasp/i, // OWASP testing tools
+      /acunetix/i, // Web vulnerability scanner
+      /qualysguard/i, // Vulnerability scanner
+      /rapid7/i, // Vulnerability assessment
+      /nessus/i, // Vulnerability scanner
+      /metasploit/i, // Penetration testing framework
+      /wpscan/i, // WordPress vulnerability scanner
+      /joomlavs/i, // Joomla vulnerability scanner
+      /drupal/i, // Could be legitimate or scanning
+      /python-requests/i, // Automated tools
+      /gobuster/i, // Directory busting tool
+      /dirb/i, // Web content scanner
+      /gospider/i, // Web spider
+      /nuclei/i, // Vulnerability scanner
+      /xsser/i, // XSS testing tool
     ];
 
     // Check for empty or very short user agents (often bots)
-    if (userAgent.length < 10) return true;
+    if (userAgent.length < MIN_USER_AGENT_LENGTH) return true;
 
     // Check for suspicious patterns
     return suspiciousPatterns.some(pattern => pattern.test(userAgent));
