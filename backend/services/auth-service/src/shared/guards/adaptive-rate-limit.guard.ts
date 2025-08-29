@@ -4,8 +4,9 @@ import {
   HttpException,
   HttpStatus,
   Logger,
+  CanActivate,
 } from '@nestjs/common';
-import { ThrottlerGuard } from '@nestjs/throttler';
+import { Request } from 'express';
 
 import { AdaptiveRateLimitingService } from '../services/adaptive-rate-limiting.service';
 
@@ -14,14 +15,12 @@ const MILLISECONDS_PER_SECOND = 1000;
 const DEFAULT_RATE_LIMIT = 100;
 
 @Injectable()
-export class AdaptiveRateLimitGuard extends ThrottlerGuard {
+export class AdaptiveRateLimitGuard implements CanActivate {
   private readonly logger = new Logger(AdaptiveRateLimitGuard.name);
 
   constructor(
     private adaptiveRateLimitingService: AdaptiveRateLimitingService
-  ) {
-    super();
-  }
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
@@ -111,43 +110,29 @@ export class AdaptiveRateLimitGuard extends ThrottlerGuard {
   /**
    * Extract client IP address from request
    */
-  private getClientIp(request: Record<string, unknown>): string {
+  private getClientIp(request: Request): string {
     // Check various headers for IP address
-    const forwarded = (request as Record<string, unknown>).get?.(
-      'X-Forwarded-For' as string
-    );
+    const forwarded = request.get('X-Forwarded-For');
     if (forwarded) {
       // Take the first IP if multiple are present
-      return String(forwarded).split(',')[0].trim();
+      return forwarded.split(',')[0].trim();
     }
 
-    const realIp = (request as Record<string, unknown>).get?.(
-      'X-Real-IP' as string
-    );
+    const realIp = request.get('X-Real-IP');
     if (realIp) {
-      return String(realIp);
+      return realIp;
     }
 
-    const cfConnectingIp = (request as Record<string, unknown>).get?.(
-      'CF-Connecting-IP' as string
-    );
+    const cfConnectingIp = request.get('CF-Connecting-IP');
     if (cfConnectingIp) {
-      return String(cfConnectingIp);
+      return cfConnectingIp;
     }
 
     // Fall back to connection remote address
     return (
-      String((request as Record<string, unknown>).ip ?? '') ||
-      String(
-        (request as Record<string, unknown>).connection?.remoteAddress ?? ''
-      ) ||
-      String(
-        (request as Record<string, unknown>).socket?.remoteAddress ?? ''
-      ) ||
-      String(
-        (request as Record<string, unknown>).connection?.socket
-          ?.remoteAddress ?? ''
-      ) ||
+      request.ip ??
+      request.connection?.remoteAddress ??
+      request.socket?.remoteAddress ??
       'unknown'
     );
   }

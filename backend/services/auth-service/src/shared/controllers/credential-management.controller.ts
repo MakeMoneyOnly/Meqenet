@@ -276,7 +276,7 @@ export class CredentialManagementController {
       this.logger.log('✅ AWS Secrets Manager connection test successful');
 
       return response;
-    } catch (error) {
+    } catch (error: unknown) {
       this.logger.error(
         '❌ AWS Secrets Manager connection test failed:',
         error
@@ -285,7 +285,7 @@ export class CredentialManagementController {
       return {
         status: 'failed',
         message: 'Failed to connect to AWS Secrets Manager',
-        error: error.message,
+        error: error instanceof Error ? error.message : 'Unknown error',
         timestamp: new Date().toISOString(),
       };
     }
