@@ -50,7 +50,7 @@ export class PrismaService
     const isProduction = configService.get<string>('NODE_ENV') === 'production';
 
     // Using controlled access pattern for fintech compliance
-    const logLevels: Prisma.LogLevel[] = isProduction
+    const logLevels: ('error' | 'warn' | 'info' | 'query')[] = isProduction
       ? ['error', 'warn']
       : ['error', 'warn', 'info', 'query'];
 
@@ -135,7 +135,7 @@ export class PrismaService
     (
       this.$on as (
         event: 'query',
-        listener: (e: Prisma.QueryEvent) => void
+        listener: (e: { query: string; duration: number }) => void
       ) => void
     )('query', event => {
       // Security: Use ConfigService for environment variable access
@@ -159,7 +159,11 @@ export class PrismaService
     (
       this.$on as (
         event: 'error',
-        listener: (e: Prisma.LogEvent) => void
+        listener: (e: {
+          message: string;
+          target?: string;
+          timestamp?: Date;
+        }) => void
       ) => void
     )('error', event => {
       this.logger.error(`Database error: ${event.message}`, {
@@ -172,7 +176,11 @@ export class PrismaService
     (
       this.$on as (
         event: 'warn',
-        listener: (e: Prisma.LogEvent) => void
+        listener: (e: {
+          message: string;
+          target?: string;
+          timestamp?: Date;
+        }) => void
       ) => void
     )('warn', event => {
       this.logger.warn(`Database warning: ${event.message}`, {
@@ -185,7 +193,11 @@ export class PrismaService
     (
       this.$on as (
         event: 'info',
-        listener: (e: Prisma.LogEvent) => void
+        listener: (e: {
+          message: string;
+          target?: string;
+          timestamp?: Date;
+        }) => void
       ) => void
     )('info', event => {
       this.logger.log(`Database info: ${event.message}`, {

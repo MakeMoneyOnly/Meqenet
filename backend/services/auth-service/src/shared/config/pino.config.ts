@@ -23,7 +23,11 @@ export const pinoConfig = {
           },
         },
         serializers: {
-          req: req => ({
+          req: (req: {
+            method: string;
+            url: string;
+            headers: Record<string, string | string[] | undefined>;
+          }) => ({
             method: req.method,
             url: req.url,
             headers: {
@@ -35,7 +39,10 @@ export const pinoConfig = {
                 : undefined,
             },
           }),
-          res: res => ({
+          res: (res: {
+            statusCode: number;
+            headers?: Record<string, string | string[] | undefined>;
+          }) => ({
             statusCode: res.statusCode,
             headers: {
               'x-request-id':
@@ -43,7 +50,10 @@ export const pinoConfig = {
             },
           }),
         },
-        customProps: (_req, _res): { correlationId: string } => {
+        customProps: (
+          _req: unknown,
+          _res: unknown
+        ): { correlationId: string } => {
           return {
             correlationId: 'unknown',
           };

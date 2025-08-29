@@ -2,15 +2,12 @@
 name: "Meqenet CodeQL Configuration"
 
 # CodeQL configuration for fintech-grade security analysis
-# Enables comprehensive security scanning for Node.js, Java, and Kotlin code
+# Focused on TypeScript/JavaScript code only (no Java/Kotlin in this project)
 
 # Global settings
 disable-default-queries: false
 queries:
   # TypeScript/JavaScript Security Queries (Primary)
-  - uses: security-and-quality
-  - uses: security-extended
-  # Java/Kotlin (Android) Security Queries (Conditional)
   - uses: security-and-quality
   - uses: security-extended
 
@@ -32,49 +29,7 @@ paths-ignore:
   - ".git"
 
 # Language-specific configurations
-java:
-  # Enable Android-specific security rules
-  android:
-    # WebView security
-    - "java/android/webview-javascript-enabled"
-    - "java/android/webview-clear-cache"
-    - "java/android/webview-file-access"
-
-    # Cryptography
-    - "java/android/insecure-crypto-algorithm"
-    - "java/android/insecure-random"
-    - "java/android/insecure-key-size"
-
-    # Data storage
-    - "java/android/sql-injection"
-    - "java/android/cleartext-storage"
-    - "java/android/external-storage"
-
-    # Network security
-    - "java/android/insecure-hostname-verifier"
-    - "java/android/cleartext-traffic"
-    - "java/android/insecure-socket"
-
-    # Permissions
-    - "java/android/overly-permissive-file-permissions"
-    - "java/android/dangerous-permissions"
-
-    # Intents and IPC
-    - "java/android/implicit-pendingintent"
-    - "java/android/exposed-intent"
-    - "java/android/unsafe-intent-launch"
-
-kotlin:
-  # Same Android security rules apply to Kotlin
-  android:
-    - "kotlin/android/webview-javascript-enabled"
-    - "kotlin/android/webview-clear-cache"
-    - "kotlin/android/insecure-crypto-algorithm"
-    - "kotlin/android/sql-injection"
-    - "kotlin/android/cleartext-storage"
-    - "kotlin/android/cleartext-traffic"
-    - "kotlin/android/dangerous-permissions"
-    - "kotlin/android/exposed-intent"
+# This project is TypeScript/JavaScript only - no Java/Kotlin code
 
 # TypeScript/JavaScript Security Configuration
 javascript:
@@ -118,20 +73,19 @@ severity:
   medium: ["webview-javascript-enabled", "overly-permissive-permissions"]
   low: ["insecure-random", "implicit-pendingintent"]
 
-# Custom query suites for fintech-specific security
+# Custom query suites for fintech-specific security (TypeScript/JavaScript only)
 query-suites:
   - name: "fintech-security"
     description: "Fintech-specific security queries for Meqenet"
     queries:
-      - "java/fintech/sensitive-data-exposure"
-      - "kotlin/fintech/sensitive-data-exposure"
-      - "java/fintech/insecure-data-transmission"
-      - "kotlin/fintech/insecure-data-transmission"
+      - "js/fintech/sensitive-data-exposure"
+      - "ts/fintech/sensitive-data-exposure"
+      - "js/fintech/insecure-data-transmission"
+      - "ts/fintech/insecure-data-transmission"
 
 # Exclude false positives for known safe patterns
 exclude:
   paths:
-    - "frontend/apps/app/android/app/src/debug"
     - "**/test*/**"
     - "**/*Test.*"
     - "**/*Tests.*"
@@ -145,8 +99,6 @@ exclude:
     - "**/.git/**"
     - "**/logs/**"
   queries:
-    - "java/android/cleartext-traffic" # Exclude if using local development servers
-    - "kotlin/android/cleartext-traffic" # Exclude if using local development servers
     - "js/cleartext-transmission" # May be needed for local development
     - "js/insecure-random" # May be acceptable for non-cryptographic purposes
 
