@@ -6,6 +6,8 @@
   "scripts": {
     "prepare": "husky",
     "lint": "pnpm -r --if-present lint",
+    "lint:all": "pnpm run lint && pnpm run lint:security",
+    "lint:enterprise": "pnpm run lint:all && pnpm run security:audit && echo '✅ Enterprise-grade linting and security audit completed'",
     "lint:fix": "eslint . --fix",
     "lint:security": "eslint . --ext .ts,.tsx,.js,.jsx --config eslint.config.js",
     "test": "vitest run",
