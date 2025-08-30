@@ -9,12 +9,13 @@ services:
       POSTGRES_DB: test
     ports:
       - "5433:5432"
-    # In a real-world scenario, you would mount a script to initialize the db with encryption extensions like pgcrypto
+
   redis:
     image: redis:7
     restart: always
     ports:
       - "6380:6379"
+
   auth-service:
     build:
       context: .
@@ -25,3 +26,31 @@ services:
     environment:
       DATABASE_URL: postgresql://test:test@postgres:5432/test
       REDIS_URL: redis://redis:6379
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: backend/services/api-gateway/Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - auth-service
+
+  frontend:
+    build:
+      context: ./frontend/apps/website
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3000"
+    depends_on:
+      - api-gateway
+
+  playwright-runner:
+    image: mcr.microsoft.com/playwright:v1.42.1-focal
+    volumes:
+      - .:/app
+    working_dir: /app
+    command:
+      ["pnpm", "playwright", "test", "backend-e2e/src/tests/web.e2e.spec.ts"]
+    depends_on:
+      - frontend

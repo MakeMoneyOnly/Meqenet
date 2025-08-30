@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 
+import appConfig from './config/app.config';
+import { RedisConfigService } from './config/redis.config';
 import { SecurityConfigService } from './config/security.config';
 import { AIFraudDetectionController } from './controllers/ai-fraud-detection.controller';
 import { CredentialManagementController } from './controllers/credential-management.controller';
@@ -24,7 +26,10 @@ import { FaydaEncryptionUtil } from './utils/fayda-encryption.util';
  */
 @Module({
   imports: [
-    ConfigModule,
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [appConfig],
+    }),
     ScheduleModule.forRoot(), // For scheduled credential rotation
   ],
   controllers: [
@@ -35,6 +40,7 @@ import { FaydaEncryptionUtil } from './utils/fayda-encryption.util';
   ],
   providers: [
     SecurityConfigService,
+    RedisConfigService,
     FaydaEncryptionUtil,
     SecretManagerService,
     CredentialRotationService,
@@ -46,6 +52,7 @@ import { FaydaEncryptionUtil } from './utils/fayda-encryption.util';
   ],
   exports: [
     SecurityConfigService,
+    RedisConfigService,
     FaydaEncryptionUtil,
     SecretManagerService,
     CredentialRotationService,
