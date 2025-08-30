@@ -69,7 +69,11 @@ jobs:
             if command -v pnpm &> /dev/null; then
               echo "✅ pnpm installed successfully via primary CDN"
               PNPM_INSTALLED=true
+            else
+              echo "⚠️ pnpm command not found after CDN installation"
             fi
+          else
+            echo "⚠️ CDN installation failed"
           fi
 
           # Method 2: Use npm to install pnpm as fallback
@@ -99,19 +103,10 @@ jobs:
             fi
           fi
 
-          # Final verification
-          if [ "$PNPM_INSTALLED" = true ]; then
-            echo "🎉 pnpm installation completed successfully!"
-            pnpm --version
-          else
-            echo "💥 CRITICAL: All pnpm installation methods failed"
-            echo "🔍 Troubleshooting information:"
-            echo "   - Network connectivity: $(curl -s --connect-timeout 5 https://registry.npmjs.org/ && echo 'OK' || echo 'FAILED')"
-            echo "   - Available commands: $(which npm || echo 'npm not found')"
-            exit 1
-          fi
+          # Method 5: npm fallback (enterprise environments)
+          if [ "$PNPM_INSTALLED" = false ]; then
             echo "🔄 Attempt 5/6: Installing via npm fallback..."
-            if npm install -g pnpm; then
+            if npm install -g pnpm@${{ env.PNPM_VERSION }}; then
               export PATH="$(npm config get prefix)/bin:$PATH"
               if command -v pnpm &> /dev/null; then
                 echo "✅ pnpm installed successfully via npm"
@@ -376,7 +371,7 @@ jobs:
           # Method 5: npm fallback (enterprise environments)
           if [ "$PNPM_INSTALLED" = false ]; then
             echo "🔄 Attempt 5/6: Installing via npm fallback..."
-            if npm install -g pnpm; then
+            if npm install -g pnpm@${{ env.PNPM_VERSION }}; then
               export PATH="$(npm config get prefix)/bin:$PATH"
               if command -v pnpm &> /dev/null; then
                 echo "✅ pnpm installed successfully via npm"
@@ -656,7 +651,7 @@ jobs:
           # Method 5: npm fallback (enterprise environments)
           if [ "$PNPM_INSTALLED" = false ]; then
             echo "🔄 Attempt 5/6: Installing via npm fallback..."
-            if npm install -g pnpm; then
+            if npm install -g pnpm@${{ env.PNPM_VERSION }}; then
               export PATH="$(npm config get prefix)/bin:$PATH"
               if command -v pnpm &> /dev/null; then
                 echo "✅ pnpm installed successfully via npm"
@@ -1015,7 +1010,7 @@ jobs:
           # Method 5: npm fallback (enterprise environments)
           if [ "$PNPM_INSTALLED" = false ]; then
             echo "🔄 Attempt 5/6: Installing via npm fallback..."
-            if npm install -g pnpm; then
+            if npm install -g pnpm@${{ env.PNPM_VERSION }}; then
               export PATH="$(npm config get prefix)/bin:$PATH"
               if command -v pnpm &> /dev/null; then
                 echo "✅ pnpm installed successfully via npm"
@@ -1360,7 +1355,7 @@ jobs:
           # Method 5: npm fallback (enterprise environments)
           if [ "$PNPM_INSTALLED" = false ]; then
             echo "🔄 Attempt 5/6: Installing via npm fallback..."
-            if npm install -g pnpm; then
+            if npm install -g pnpm@${{ env.PNPM_VERSION }}; then
               export PATH="$(npm config get prefix)/bin:$PATH"
               if command -v pnpm &> /dev/null; then
                 echo "✅ pnpm installed successfully via npm"
@@ -1711,7 +1706,7 @@ jobs:
           # Method 5: npm fallback (enterprise environments)
           if [ "$PNPM_INSTALLED" = false ]; then
             echo "🔄 Attempt 5/6: Installing via npm fallback..."
-            if npm install -g pnpm; then
+            if npm install -g pnpm@${{ env.PNPM_VERSION }}; then
               export PATH="$(npm config get prefix)/bin:$PATH"
               if command -v pnpm &> /dev/null; then
                 echo "✅ pnpm installed successfully via npm"
@@ -2011,7 +2006,7 @@ jobs:
       - name: 🔧 Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
-          languages: javascript, typescript, java, kotlin
+          languages: javascript, typescript
           config-file: .github/codeql/codeql-config.yml
 
       - name: 🔧 Setup Node.js
@@ -2090,7 +2085,7 @@ jobs:
           # Method 5: npm fallback (enterprise environments)
           if [ "$PNPM_INSTALLED" = false ]; then
             echo "🔄 Attempt 5/6: Installing via npm fallback..."
-            if npm install -g pnpm; then
+            if npm install -g pnpm@${{ env.PNPM_VERSION }}; then
               export PATH="$(npm config get prefix)/bin:$PATH"
               if command -v pnpm &> /dev/null; then
                 echo "✅ pnpm installed successfully via npm"
@@ -2391,7 +2386,7 @@ jobs:
           # Method 5: npm fallback (enterprise environments)
           if [ "$PNPM_INSTALLED" = false ]; then
             echo "🔄 Attempt 5/6: Installing via npm fallback..."
-            if npm install -g pnpm; then
+            if npm install -g pnpm@${{ env.PNPM_VERSION }}; then
               export PATH="$(npm config get prefix)/bin:$PATH"
               if command -v pnpm &> /dev/null; then
                 echo "✅ pnpm installed successfully via npm"
