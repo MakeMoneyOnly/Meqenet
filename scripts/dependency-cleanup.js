@@ -45,69 +45,121 @@ function runCommand(command, description) {
     throw new Error('Command must be a non-empty string');
   }
 
-  // Allow only safe pnpm and npm commands
-  const allowedCommands = [
-    /^pnpm\s+(install|add|remove|update|ls|audit)\s/,
-    /^npm\s+(install|update|audit)\s/,
+  // Split command into base command and arguments for safer execution
+  const commandParts = command.split(/\s+/);
+  const baseCommand = commandParts[0];
+
+  // Allow only safe base commands
+  const allowedBaseCommands = ['pnpm', 'npm', 'rm', 'wc', 'grep'];
+
+  if (!allowedBaseCommands.includes(baseCommand)) {
+    throw new Error(`Base command not allowed: ${baseCommand}`);
+  }
+
+  // Validate specific command patterns more strictly
+  const allowedCommandPatterns = [
+    /^pnpm\s+(install|add|remove|update|ls|audit)(\s|$)/,
+    /^npm\s+(install|update|audit)(\s|$)/,
     /^rm\s+-rf\s+(node_modules|pnpm-lock\.yaml)$/,
     /^wc\s+-l$/,
-    /^grep\s+/,
+    /^grep\s+.*$/,
   ];
 
-  const isAllowed = allowedCommands.some(pattern => pattern.test(command));
+  const isAllowed = allowedCommandPatterns.some(pattern =>
+    pattern.test(command)
+  );
   if (!isAllowed) {
-    throw new Error(`Command not allowed: ${command}`);
+    throw new Error(`Command pattern not allowed: ${command}`);
   }
 
   console.log(`📦 ${description}`);
   console.log(`   Running: ${command}`);
   try {
-    const output = execSync(command, {
+    // Use spawn instead of execSync for better security
+    const { spawn } = require('child_process');
+    const [cmd, ...args] = commandParts;
+
+    // Execute command with proper argument separation to prevent injection
+    const childProcess = spawn(cmd, args, {
+      stdio: ['pipe', 'pipe', 'pipe'],
       encoding: 'utf8',
       maxBuffer: 1024 * 1024 * 10,
-      // Security: prevent shell injection by not using shell
-      shell: false,
     });
-    console.log(`   ✅ Success\n`);
-    return output;
+
+    let stdout = '';
+    let stderr = '';
+
+    childProcess.stdout.on('data', data => {
+      stdout += data.toString();
+    });
+
+    childProcess.stderr.on('data', data => {
+      stderr += data.toString();
+    });
+
+    return new Promise((resolve, reject) => {
+      childProcess.on('close', code => {
+        if (code === 0) {
+          console.log(`   ✅ Success\n`);
+          resolve(stdout);
+        } else {
+          const error = new Error(
+            `Command failed with exit code ${code}: ${stderr}`
+          );
+          console.log(`   ❌ Failed: ${error.message}\n`);
+          reject(error);
+        }
+      });
+
+      childProcess.on('error', error => {
+        console.log(`   ❌ Failed: ${error.message}\n`);
+        reject(error);
+      });
+    });
   } catch (error) {
     console.log(`   ❌ Failed: ${error.message}\n`);
-    return null;
+    throw error;
   }
 }
 
-function cleanNodeModules() {
+async function cleanNodeModules() {
   console.log('🧹 Cleaning node_modules and lockfile...');
-  runCommand('rm -rf node_modules pnpm-lock.yaml', 'Remove old dependencies');
-  runCommand('pnpm install --frozen-lockfile', 'Reinstall with clean lockfile');
+  await runCommand(
+    'rm -rf node_modules pnpm-lock.yaml',
+    'Remove old dependencies'
+  );
+  await runCommand(
+    'pnpm install --frozen-lockfile',
+    'Reinstall with clean lockfile'
+  );
 }
 
-function updateCriticalDependencies() {
+async function updateCriticalDependencies() {
   console.log('⚡ Updating critical dependencies...');
 
   for (const dep of CRITICAL_UPDATES) {
-    runCommand(`pnpm add -D ${dep}`, `Update ${dep}`);
+    await runCommand(`pnpm add -D ${dep}`, `Update ${dep}`);
   }
 
   // Update React ecosystem to latest stable
-  runCommand(
+  await runCommand(
     'pnpm add react@18.3.1 react-dom@18.3.1',
     'Update React to latest LTS'
   );
-  runCommand(
+  await runCommand(
     'pnpm add -D @types/react@18.3.12 @types/react-dom@18.3.1',
     'Update React types'
   );
 }
 
-function replaceDeprecatedPackages() {
+async function replaceDeprecatedPackages() {
   console.log('🔄 Replacing deprecated packages...');
 
   for (const [oldPkg, newPkg] of Object.entries(DEPRECATED_REPLACEMENTS)) {
     console.log(`   Replacing ${oldPkg} → ${newPkg}`);
     try {
-      runCommand(`pnpm remove ${oldPkg}`, `Remove ${oldPkg}`);
-      runCommand(`pnpm add -D ${newPkg}`, `Add ${newPkg}`);
+      await runCommand(`pnpm remove ${oldPkg}`, `Remove ${oldPkg}`);
+      await runCommand(`pnpm add -D ${newPkg}`, `Add ${newPkg}`);
     } catch (error) {
       console.log(`   ⚠️  Could not replace ${oldPkg}: ${error.message}`);
     }
@@ -138,13 +190,16 @@ function resolvePeerDependencies() {
   console.log('   ✅ Updated package.json with dependency resolutions');
 }
 
-function runSecurityAudit() {
+async function runSecurityAudit() {
   console.log('🔍 Running security audit...');
-  runCommand('pnpm audit --audit-level high', 'High-level security audit');
+  await runCommand(
+    'pnpm audit --audit-level high',
+    'High-level security audit'
+  );
 
   // Generate audit report
   try {
-    const auditResult = runCommand(
+    const auditResult = await runCommand(
       'pnpm audit --json',
       'Generate audit report JSON'
     );
@@ -179,20 +234,28 @@ function runSecurityAudit() {
   }
 }
 
-function validateDependencies() {
+async function validateDependencies() {
   console.log('✅ Validating dependency health...');
 
   // Check for deprecated packages
-  runCommand(
-    'pnpm ls --depth=3 | grep -i deprecated | wc -l',
-    'Count deprecated packages'
-  );
+  try {
+    await runCommand(
+      'pnpm ls --depth=3 | grep -i deprecated | wc -l',
+      'Count deprecated packages'
+    );
+  } catch (error) {
+    console.log('   ⚠️  Could not check deprecated packages');
+  }
 
   // Check peer dependency issues
-  runCommand(
-    'pnpm ls --depth=3 | grep -i unmet | wc -l',
-    'Count peer dependency issues'
-  );
+  try {
+    await runCommand(
+      'pnpm ls --depth=3 | grep -i unmet | wc -l',
+      'Count peer dependency issues'
+    );
+  } catch (error) {
+    console.log('   ⚠️  Could not check peer dependency issues');
+  }
 
   // Generate final report
   console.log('\n📋 Final Validation Report:');
@@ -202,28 +265,28 @@ function validateDependencies() {
   console.log('   ✅ Deprecated packages addressed');
 }
 
-function main() {
+async function main() {
   console.log('🏦 Meqenet.et Enterprise Dependency Cleanup');
   console.log('   FinTech Industry Standards Enforcement\n');
 
   try {
     // Phase 1: Clean slate
-    cleanNodeModules();
+    await cleanNodeModules();
 
     // Phase 2: Critical updates
-    updateCriticalDependencies();
+    await updateCriticalDependencies();
 
     // Phase 3: Replace deprecated packages
-    replaceDeprecatedPackages();
+    await replaceDeprecatedPackages();
 
     // Phase 4: Resolve peer dependencies
     resolvePeerDependencies();
 
     // Phase 5: Security validation
-    runSecurityAudit();
+    await runSecurityAudit();
 
     // Phase 6: Final validation
-    validateDependencies();
+    await validateDependencies();
 
     console.log('\n🎉 Dependency cleanup completed successfully!');
     console.log('\n📊 Next Steps:');
@@ -243,4 +306,7 @@ function main() {
 }
 
 // Run the cleanup
-main();
+main().catch(error => {
+  console.error('Unhandled error in main:', error);
+  process.exit(1);
+});
