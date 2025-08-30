@@ -35,9 +35,17 @@ resource "aws_secretsmanager_secret" "db_password" {
   name = "meqenet-db-master-password"
 }
 
+resource "random_password" "db_password" {
+  length  = 32
+  special = true
+}
+
 resource "aws_secretsmanager_secret_version" "db_password" {
   secret_id     = aws_secretsmanager_secret.db_password.id
-  secret_string = "aVerySecurePassword123!"
+  secret_string = jsonencode({
+    username = "meqenetadmin"
+    password = random_password.db_password.result
+  })
 }
 
 resource "aws_db_instance" "default" {
@@ -46,9 +54,21 @@ resource "aws_db_instance" "default" {
   engine_version       = "15.3"
   instance_class       = "db.t3.micro"
   name                 = "meqenetdb"
-  username             = "meqenetadmin"
-  password             = aws_secretsmanager_secret_version.db_password.secret_string
+  username             = jsondecode(aws_secretsmanager_secret_version.db_password.secret_string).username
+  password             = jsondecode(aws_secretsmanager_secret_version.db_password.secret_string).password
   db_subnet_group_name = aws_db_subnet_group.default.name
   vpc_security_group_ids = [aws_security_group.db.id]
-  skip_final_snapshot  = true
+
+  # Security improvements
+  storage_encrypted = true
+  backup_retention_period = 7
+  deletion_protection = true
+
+  # Additional security settings
+  publicly_accessible = false
+  multi_az = false
+
+  tags = {
+    Name = "meqenet-rds-instance"
+  }
 }
