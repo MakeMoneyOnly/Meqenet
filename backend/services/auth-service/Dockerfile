@@ -20,7 +20,7 @@ WORKDIR /app
 # This layer is cached and only re-runs if package manifests change.
 FROM base AS deps
 
-# Copy package files
+# Copy package files - this Dockerfile should be run from monorepo root
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 
 # Install dependencies with enhanced resilience and cache mount
@@ -49,7 +49,7 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
 # Copies source code and builds the specific application.
 FROM deps AS builder
 
-# Copy the rest of the monorepo source (respecting .dockerignore)
+# Copy the entire monorepo source (respecting .dockerignore)
 COPY . .
 
 # Ensure node_modules are properly linked and build the application
@@ -58,9 +58,6 @@ RUN echo "Ensuring dependencies are available..." && \
     echo "Building auth-service with tsc..." && \
     cd backend/services/auth-service && \
     npx tsc --project tsconfig.json --outDir dist
-
-# Create production deployment
-RUN pnpm deploy --filter=@meqenet/auth-service ./deploy --legacy
 
 # ---- Production Stage ----
 # Creates the final, small, and secure production image.
