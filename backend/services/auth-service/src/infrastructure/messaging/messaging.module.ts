@@ -1,17 +1,25 @@
+import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
 
-/**
- * Messaging Module
- *
- * Handles event-driven messaging and inter-service communication
- * including NBE compliance reporting and audit trails.
- */
+import { RedisConfigService } from '../../shared/config/redis.config';
+
+import { USER_QUEUE } from './messaging.constants';
+import { MessagingConsumer } from './messaging.consumer';
+import { MessagingProducerService } from './messaging.producer.service';
+
 @Module({
-  // TODO: Add messaging providers (RabbitMQ, SQS, etc.)
-  imports: [],
-  // TODO: Add messaging services for event-driven communication
-  providers: [],
-  // TODO: Export messaging services for inter-service communication
-  exports: [],
+  imports: [
+    BullModule.forRootAsync({
+      useFactory: async (redisConfig: RedisConfigService) => ({
+        connection: redisConfig.connection,
+      }),
+      inject: [RedisConfigService],
+    }),
+    BullModule.registerQueue({
+      name: USER_QUEUE,
+    }),
+  ],
+  providers: [MessagingProducerService, MessagingConsumer],
+  exports: [MessagingProducerService],
 })
 export class MessagingModule {}

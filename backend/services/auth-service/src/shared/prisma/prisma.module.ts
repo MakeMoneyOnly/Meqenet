@@ -1,0 +1,1 @@
+// This module is deprecated. Use DatabaseModule from /infrastructure/database instead.

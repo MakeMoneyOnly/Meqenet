@@ -2,10 +2,10 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { Injectable } from '@nestjs/common';
 import { Queue } from 'bullmq';
 
-import { USER_QUEUE, USER_REGISTERED_JOB } from './queue.constants';
+import { USER_QUEUE, USER_REGISTERED_JOB } from './messaging.constants';
 
 @Injectable()
-export class QueueProducerService {
+export class MessagingProducerService {
   constructor(@InjectQueue(USER_QUEUE) private readonly userQueue: Queue) {}
 
   async addUserRegisteredJob(userId: string, email: string): Promise<void> {

@@ -1,0 +1,1 @@
+// This service is deprecated. Use PrismaService from /infrastructure/database instead.

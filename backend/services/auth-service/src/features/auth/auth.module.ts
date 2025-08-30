@@ -1,20 +1,32 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { JwtModule } from '@nestjs/jwt';
 
-import { SharedModule } from '../../shared/shared.module';
+import { MessagingModule } from '../../infrastructure/messaging/messaging.module';
+import { PrismaModule } from '../../shared/prisma/prisma.module';
+import { OutboxModule } from '../../shared/outbox/outbox.module';
 
-/**
- * Authentication Module
- *
- * Handles user authentication, authorization, and session management
- * including Ethiopian Fayda ID verification and NBE compliance.
- */
+import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
+
 @Module({
-  imports: [SharedModule],
-  // TODO: Add auth controllers when implementing authentication features
-  controllers: [],
-  // TODO: Add auth services for user authentication and Fayda ID verification
-  providers: [],
-  // TODO: Export auth services for other modules to use
-  exports: [],
+  imports: [
+    PrismaModule,
+    MessagingModule,
+    OutboxModule,
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        secret: configService.get<string>('JWT_SECRET'),
+        signOptions: {
+          expiresIn: configService.get<string>('JWT_EXPIRES_IN'),
+        },
+      }),
+      inject: [ConfigService],
+    }),
+  ],
+  controllers: [AuthController],
+  providers: [AuthService],
+  exports: [AuthService],
 })
 export class AuthModule {}

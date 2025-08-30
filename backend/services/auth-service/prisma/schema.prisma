@@ -259,6 +259,63 @@ enum RiskLevel {
   CRITICAL      // Requires manual review for all transactions
 }
 
+/// Outbox message processing status
+enum OutboxStatus {
+  PENDING       // Message waiting to be processed
+  PROCESSING    // Message currently being processed
+  PROCESSED     // Message successfully processed
+  FAILED        // Message processing failed
+  DLQ           // Message moved to dead letter queue
+}
+
+// ==================================================================================
+// OUTBOX PATTERN - RELIABLE MESSAGE DELIVERY
+// ==================================================================================
+
+/// OutboxMessage model for reliable message delivery pattern
+/// Data Classification: INTERNAL
+/// Retention: 7 days (processed messages), 30 days (failed messages)
+model OutboxMessage {
+  id              String   @id @default(uuid())
+
+  // Message identification
+  messageId       String   @unique // UUID for message deduplication
+  aggregateType   String   // Entity type (User, Transaction, etc.)
+  aggregateId     String   // Entity ID
+  eventType       String   // Event name (USER_CREATED, PASSWORD_CHANGED, etc.)
+
+  // Message payload
+  payload         Json     // Event data payload
+  metadata        Json?    // Additional metadata (correlationId, causationId, etc.)
+
+  // Processing status
+  status          OutboxStatus @default(PENDING)
+  processedAt     DateTime?
+  errorMessage    String?
+
+  // Retry mechanism
+  retryCount      Int      @default(0)
+  maxRetries      Int      @default(3)
+  nextRetryAt     DateTime?
+
+  // Dead letter queue
+  dlqReason       String?
+  dlqAt           DateTime?
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Indexes for efficient processing
+  @@index([status, createdAt])
+  @@index([messageId])
+  @@index([aggregateType, aggregateId])
+  @@index([eventType])
+  @@index([nextRetryAt])
+  @@index([createdAt])
+  @@map("outbox_messages")
+}
+
 // ==================================================================================
 // DATABASE CONSTRAINTS AND VALIDATION
 // ==================================================================================
