@@ -1,0 +1,31 @@
+name: E2E Tests
+
+on:
+  pull_request:
+    paths:
+      - "frontend/**"
+      - "backend/**"
+
+jobs:
+  e2e-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "22"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run E2E tests
+        run: docker-compose -f docker-compose.e2e.yml up --build --abort-on-container-exit

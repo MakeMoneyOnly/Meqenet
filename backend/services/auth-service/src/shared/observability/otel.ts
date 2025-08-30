@@ -8,32 +8,30 @@ export interface OpenTelemetryConfig {
   nodeEnv?: string;
   serviceName?: string;
   jaegerEndpoint?: string;
+  otelEndpoint?: string;
 }
 
 export function initializeOpenTelemetry(config?: OpenTelemetryConfig): void {
   try {
     if (sdk) return; // already initialized
 
-    // Use provided config or defaults (no direct environment variable access)
     const nodeEnv = config?.nodeEnv ?? 'development';
     const serviceName = config?.serviceName ?? 'auth-service';
-    const _jaegerEndpoint =
-      config?.jaegerEndpoint ?? 'http://localhost:14268/api/traces';
 
-    // Be quiet in prod; verbose in non-prod
     const level =
       nodeEnv === 'production' ? DiagLogLevel.ERROR : DiagLogLevel.INFO;
     diag.setLogger(new DiagConsoleLogger(), level);
 
-    // Initialize SDK with basic configuration (simplified to avoid version conflicts)
     sdk = new NodeSDK({
       instrumentations: [getNodeAutoInstrumentations()],
       serviceName,
     });
 
     void sdk.start();
-  } catch {
-    // Ignore OpenTelemetry initialization errors to avoid service startup failures
+
+    diag.info('OpenTelemetry initialized successfully');
+  } catch (error) {
+    diag.error('Failed to initialize OpenTelemetry', error);
   }
 }
 
@@ -41,7 +39,7 @@ export async function shutdownOpenTelemetry(): Promise<void> {
   try {
     if (!sdk) return;
     await sdk.shutdown();
-  } catch {
-    // ignore
+  } catch (error) {
+    diag.error('Failed to shutdown OpenTelemetry', error);
   }
 }

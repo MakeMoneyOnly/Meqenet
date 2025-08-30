@@ -11,6 +11,7 @@ import { I18nModule, QueryResolver, AcceptLanguageResolver } from 'nestjs-i18n';
 import { LoggerModule } from 'nestjs-pino';
 
 import { AuthModule } from '../features/auth/auth.module';
+import { HealthModule } from '../health/health.module';
 import { DatabaseModule } from '../infrastructure/database/database.module';
 import { MessagingModule } from '../infrastructure/messaging/messaging.module';
 import { pinoConfig } from '../shared/config/pino.config';
@@ -18,7 +19,6 @@ import { throttlerConfig } from '../shared/config/throttler.config';
 import { GlobalExceptionFilter } from '../shared/filters/global-exception.filter';
 import { AdaptiveRateLimitGuard } from '../shared/guards/adaptive-rate-limit.guard';
 import { JwtAuthGuard } from '../shared/guards/jwt-auth.guard';
-import { HealthModule } from '../shared/health/health.module';
 import { LoggingInterceptor } from '../shared/interceptors/logging.interceptor';
 import { SharedModule } from '../shared/shared.module';
 import { ValidationModule } from '../shared/validation/validation.module';

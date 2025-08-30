@@ -10,6 +10,16 @@ exporters:
     hosts: ["http://opensearch:9200"]
     index: "meqenet-logs"
 
+  # Exporter for Jaeger (for traces)
+  jaeger:
+    endpoint: "jaeger:14250"
+    tls:
+      insecure: true
+
+  # Exporter for Prometheus (for metrics)
+  prometheus:
+    endpoint: "0.0.0.0:8889"
+
   # Exporter for logging to the console (for debugging)
   logging:
     verbosity: detailed
@@ -26,8 +36,8 @@ service:
     traces:
       receivers: [otlp]
       processors: [batch]
-      exporters: [logging] # Can add jaeger or other trace exporters here
+      exporters: [jaeger, logging]
     metrics:
       receivers: [otlp]
       processors: [batch]
-      exporters: [logging] # Can add prometheus or other metrics exporters here
+      exporters: [prometheus, logging]
