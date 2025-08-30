@@ -22,6 +22,7 @@ import { JwtAuthGuard } from '../shared/guards/jwt-auth.guard';
 import { LoggingInterceptor } from '../shared/interceptors/logging.interceptor';
 import { SharedModule } from '../shared/shared.module';
 import { ValidationModule } from '../shared/validation/validation.module';
+import { DLQModule } from '../shared/dlq/dlq.module';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -75,6 +76,7 @@ import { AppService } from './app.service';
     AuthModule,
     DatabaseModule,
     MessagingModule,
+    DLQModule,
   ],
   controllers: [AppController],
   providers: [

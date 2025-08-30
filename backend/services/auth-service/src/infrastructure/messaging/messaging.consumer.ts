@@ -2,11 +2,11 @@ import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
 import { Job } from 'bullmq';
 
-import { USER_QUEUE, USER_REGISTERED_JOB } from './queue.constants';
+import { USER_QUEUE, USER_REGISTERED_JOB } from './messaging.constants';
 
 @Processor(USER_QUEUE)
-export class QueueConsumer extends WorkerHost {
-  private readonly logger = new Logger(QueueConsumer.name);
+export class MessagingConsumer extends WorkerHost {
+  private readonly logger = new Logger(MessagingConsumer.name);
 
   async process(
     job: Job<{ email: string }, unknown, string>
