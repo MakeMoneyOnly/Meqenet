@@ -23,6 +23,9 @@ FROM base AS deps
 # Copy package files - this Dockerfile should be run from monorepo root
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 
+# Copy auth-service specific package.json
+COPY backend/services/auth-service/package.json ./backend/services/auth-service/
+
 # Install dependencies with enhanced resilience and cache mount
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
     --mount=type=cache,id=prisma,target=/tmp/prisma-engines \
@@ -43,7 +46,10 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
          pnpm store prune && \
          rm -rf node_modules && \
          sleep 10); \
-    done
+    done && \
+    echo "Installing auth-service specific dependencies..." && \
+    cd backend/services/auth-service && \
+    pnpm install
 
 # ---- Build Stage ----
 # Copies source code and builds the specific application.
@@ -51,6 +57,13 @@ FROM deps AS builder
 
 # Copy the entire monorepo source (respecting .dockerignore)
 COPY . .
+
+# Ensure auth-service dependencies are properly linked
+RUN cd backend/services/auth-service && \
+    echo "Checking auth-service dependencies..." && \
+    ls -la package.json && \
+    echo "Auth-service package.json content:" && \
+    cat package.json
 
 # Ensure node_modules are properly linked and build the application
 RUN echo "Ensuring dependencies are available..." && \
