@@ -20,10 +20,35 @@ resource "aws_security_group" "db" {
   }
 
   egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow HTTPS outbound traffic for RDS updates and monitoring"
+  }
+
+  egress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow HTTP outbound traffic for RDS updates"
+  }
+
+  egress {
+    from_port   = 53
+    to_port     = 53
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow DNS outbound traffic"
+  }
+
+  egress {
+    from_port   = 53
+    to_port     = 53
+    protocol    = "udp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow DNS outbound traffic (UDP)"
   }
 
   tags = {
@@ -31,8 +56,19 @@ resource "aws_security_group" "db" {
   }
 }
 
+resource "aws_kms_key" "secrets" {
+  description             = "KMS key for encrypting database secrets"
+  deletion_window_in_days = 30
+
+  tags = {
+    Name = "meqenet-secrets-kms-key"
+  }
+}
+
 resource "aws_secretsmanager_secret" "db_password" {
-  name = "meqenet-db-master-password"
+  name                    = "meqenet-db-master-password"
+  kms_key_id              = aws_kms_key.secrets.id
+  recovery_window_in_days = 30
 }
 
 resource "random_password" "db_password" {
@@ -67,6 +103,13 @@ resource "aws_db_instance" "default" {
   # Additional security settings
   publicly_accessible = false
   multi_az = false
+
+  # Enable IAM authentication
+  iam_database_authentication_enabled = true
+
+  # Enable Performance Insights
+  performance_insights_enabled = true
+  performance_insights_kms_key_id = aws_kms_key.secrets.arn
 
   tags = {
     Name = "meqenet-rds-instance"

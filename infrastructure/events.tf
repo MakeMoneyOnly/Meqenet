@@ -1,8 +1,17 @@
+resource "aws_kms_key" "sns" {
+  description             = "KMS key for encrypting SNS messages"
+  deletion_window_in_days = 30
+
+  tags = {
+    Name = "meqenet-sns-kms-key"
+  }
+}
+
 resource "aws_sns_topic" "main" {
   name = "meqenet-main-topic"
 
-  # Enable encryption
-  kms_master_key_id = "alias/aws/sns"
+  # Enable encryption with customer-managed key
+  kms_master_key_id = aws_kms_key.sns.id
 
   # Add delivery policy for better security
   delivery_policy = jsonencode({
@@ -20,11 +29,20 @@ resource "aws_sns_topic" "main" {
   }
 }
 
+resource "aws_kms_key" "sqs" {
+  description             = "KMS key for encrypting SQS messages"
+  deletion_window_in_days = 30
+
+  tags = {
+    Name = "meqenet-sqs-kms-key"
+  }
+}
+
 resource "aws_sqs_queue" "main" {
   name = "meqenet-main-queue"
 
-  # Enable encryption
-  kms_master_key_id = "alias/aws/sqs"
+  # Enable encryption with customer-managed key
+  kms_master_key_id = aws_kms_key.sqs.id
 
   # Security settings
   delay_seconds             = 0
@@ -48,8 +66,8 @@ resource "aws_sqs_queue" "main" {
 resource "aws_sqs_queue" "main_dlq" {
   name = "meqenet-main-queue-dlq"
 
-  # Enable encryption
-  kms_master_key_id = "alias/aws/sqs"
+  # Enable encryption with customer-managed key
+  kms_master_key_id = aws_kms_key.sqs.id
 
   message_retention_seconds = 1209600  # 14 days
 

@@ -1,0 +1,79 @@
+# Meqenet.et - Observability Stack
+# This Docker Compose file sets up a local observability stack using OpenSearch and OpenTelemetry.
+# It is intended to be used alongside the main docker-compose.yml.
+#
+# To run:
+# 1. Start the main services: docker-compose up -d
+# 2. Start this stack: docker-compose -f docker-compose.observability.yml up -d
+#
+version: "3.8"
+
+services:
+  # --------------------------------------------------------------------------
+  # OpenSearch: For central logging and tracing storage
+  # --------------------------------------------------------------------------
+  opensearch:
+    image: opensearchproject/opensearch:2.11.1
+    container_name: meqenet-opensearch
+    environment:
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true # along with the ulimits settings below
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m" # demo purposes
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536 # fallback for Docker Desktop
+        hard: 65536
+    volumes:
+      - opensearch-data:/usr/share/opensearch/data
+    ports:
+      - "9200:9200"
+      - "9600:9600" # for performance analyzer
+    networks:
+      - meqenet-dev-network
+    restart: unless-stopped
+
+  # --------------------------------------------------------------------------
+  # OpenSearch Dashboards: The visualization layer (Kibana equivalent)
+  # --------------------------------------------------------------------------
+  opensearch-dashboards:
+    image: opensearchproject/opensearch-dashboards:2.11.1
+    container_name: meqenet-opensearch-dashboards
+    ports:
+      - "5601:5601"
+    environment:
+      OPENSEARCH_HOSTS: '''[{"host": "opensearch", "protocol": "http"}]'''
+    depends_on:
+      - opensearch
+    networks:
+      - meqenet-dev-network
+    restart: unless-stopped
+
+  # --------------------------------------------------------------------------
+  # OpenTelemetry Collector: Receives data from services and exports it
+  # --------------------------------------------------------------------------
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.87.0
+    container_name: meqenet-otel-collector
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "4317:4317" # OTLP gRPC receiver
+      - "4318:4318" # OTLP HTTP receiver
+    depends_on:
+      - opensearch
+    networks:
+      - meqenet-dev-network
+    restart: unless-stopped
+
+volumes:
+  opensearch-data:
+    driver: local
+
+# This stack assumes the 'meqenet-dev-network' is already created by the main docker-compose.yml
+networks:
+  meqenet-dev-network:
+    external: true

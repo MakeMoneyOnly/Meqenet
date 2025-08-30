@@ -85,6 +85,8 @@ jobs:
                 echo "✅ pnpm installed successfully via npm"
                 PNPM_INSTALLED=true
               fi
+            else
+              echo "⚠️ npm installation failed"
             fi
           fi
 
@@ -100,6 +102,8 @@ jobs:
                 echo "✅ pnpm installed successfully via binary download"
                 PNPM_INSTALLED=true
               fi
+            else
+              echo "⚠️ Binary download failed"
             fi
           fi
 
@@ -112,6 +116,8 @@ jobs:
                 echo "✅ pnpm installed successfully via npm"
                 PNPM_INSTALLED=true
               fi
+            else
+              echo "⚠️ npm installation failed"
             fi
           fi
 
@@ -160,8 +166,8 @@ jobs:
 
             # Configure pnpm for enterprise environment
             pnpm config set registry https://registry.npmjs.org/
-            pnpm config set fetch-timeout 60000
-            pnpm config set network-timeout 300000
+            pnpm config set fetch-timeout 120000
+            pnpm config set network-timeout 600000
 
             # Enable corepack for proper pnpm version management
             corepack enable
@@ -194,9 +200,9 @@ jobs:
           pnpm config set registry https://registry.npmjs.org/
 
           # Configure retry settings for rate limiting
-          pnpm config set fetch-retry-mintimeout 20000
-          pnpm config set fetch-retry-maxtimeout 120000
-          pnpm config set fetch-timeout 60000
+                      pnpm config set fetch-retry-mintimeout 30000
+            pnpm config set fetch-retry-maxtimeout 180000
+            pnpm config set fetch-timeout 120000
 
           # Set auth token if available and valid
           if [ -n "${{ secrets.NPM_TOKEN }}" ] && [ "${{ secrets.NPM_TOKEN }}" != "XXXX[hidden]" ] && [ "${{ secrets.NPM_TOKEN }}" != "" ]; then
@@ -306,7 +312,7 @@ jobs:
 
           # Network diagnostics
           echo "🔍 Checking network connectivity..."
-          if curl -fs --connect-timeout 5 --max-time 10 https://registry.npmjs.org/ &> /dev/null; then
+          if curl -fs --connect-timeout 10 --max-time 30 https://registry.npmjs.org/ &> /dev/null; then
             echo "✅ NPM registry accessible"
           else
             echo "⚠️ NPM registry not accessible, will use offline methods"
@@ -317,38 +323,44 @@ jobs:
 
           # Method 1: Primary CDN (get.pnpm.io)
           echo "🔄 Attempt 1/6: Installing via primary CDN..."
-          if curl -fsSL --connect-timeout 15 --max-time 60 https://get.pnpm.io/install.sh | sh -; then
-            export PNPM_HOME="$HOME/.local/share/pnpm"
-            export PATH="$PNPM_HOME:$PATH"
-            if command -v pnpm &> /dev/null; then
-              echo "✅ pnpm installed successfully via primary CDN"
-              PNPM_INSTALLED=true
+                      if curl -fsSL --connect-timeout 30 --max-time 120 https://get.pnpm.io/install.sh | sh -; then
+              export PNPM_HOME="$HOME/.local/share/pnpm"
+              export PATH="$PNPM_HOME:$PATH"
+              if command -v pnpm &> /dev/null; then
+                echo "✅ pnpm installed successfully via primary CDN"
+                PNPM_INSTALLED=true
+              fi
+            else
+              echo "⚠️ Primary CDN installation failed"
             fi
-          fi
 
           # Method 2: Secondary CDN (cdn.jsdelivr.net)
           if [ "$PNPM_INSTALLED" = false ]; then
             echo "🔄 Attempt 2/6: Installing via secondary CDN..."
-            if curl -fsSL --connect-timeout 15 --max-time 60 https://cdn.jsdelivr.net/gh/pnpm/pnpm@latest/install.sh | sh -; then
+            if curl -fsSL --connect-timeout 30 --max-time 120 https://cdn.jsdelivr.net/gh/pnpm/pnpm@latest/install.sh | sh -; then
               export PNPM_HOME="$HOME/.local/share/pnpm"
               export PATH="$PNPM_HOME:$PATH"
               if command -v pnpm &> /dev/null; then
                 echo "✅ pnpm installed successfully via secondary CDN"
                 PNPM_INSTALLED=true
               fi
+            else
+              echo "⚠️ Secondary CDN installation failed"
             fi
           fi
 
           # Method 3: GitHub raw CDN
           if [ "$PNPM_INSTALLED" = false ]; then
             echo "🔄 Attempt 3/6: Installing via GitHub CDN..."
-            if curl -fsSL --connect-timeout 15 --max-time 60 https://raw.githubusercontent.com/pnpm/pnpm/master/install.sh | sh -; then
+            if curl -fsSL --connect-timeout 30 --max-time 120 https://raw.githubusercontent.com/pnpm/pnpm/master/install.sh | sh -; then
               export PNPM_HOME="$HOME/.local/share/pnpm"
               export PATH="$PNPM_HOME:$PATH"
               if command -v pnpm &> /dev/null; then
                 echo "✅ pnpm installed successfully via GitHub CDN"
                 PNPM_INSTALLED=true
               fi
+            else
+              echo "⚠️ GitHub CDN installation failed"
             fi
           fi
 
@@ -377,6 +389,8 @@ jobs:
                 echo "✅ pnpm installed successfully via npm"
                 PNPM_INSTALLED=true
               fi
+            else
+              echo "⚠️ npm installation failed"
             fi
           fi
 
@@ -425,8 +439,8 @@ jobs:
 
             # Configure pnpm for enterprise environment
             pnpm config set registry https://registry.npmjs.org/
-            pnpm config set fetch-timeout 60000
-            pnpm config set network-timeout 300000
+            pnpm config set fetch-timeout 120000
+            pnpm config set network-timeout 600000
 
             # Enable corepack for proper pnpm version management
             corepack enable
@@ -459,9 +473,9 @@ jobs:
           pnpm config set registry https://registry.npmjs.org/
 
           # Configure retry settings for rate limiting
-          pnpm config set fetch-retry-mintimeout 20000
-          pnpm config set fetch-retry-maxtimeout 120000
-          pnpm config set fetch-timeout 60000
+                      pnpm config set fetch-retry-mintimeout 30000
+            pnpm config set fetch-retry-maxtimeout 180000
+            pnpm config set fetch-timeout 120000
 
           # Set auth token if available and valid
           if [ -n "${{ secrets.NPM_TOKEN }}" ] && [ "${{ secrets.NPM_TOKEN }}" != "XXXX[hidden]" ] && [ "${{ secrets.NPM_TOKEN }}" != "" ]; then
@@ -586,7 +600,7 @@ jobs:
 
           # Network diagnostics
           echo "🔍 Checking network connectivity..."
-          if curl -fs --connect-timeout 5 --max-time 10 https://registry.npmjs.org/ &> /dev/null; then
+          if curl -fs --connect-timeout 10 --max-time 30 https://registry.npmjs.org/ &> /dev/null; then
             echo "✅ NPM registry accessible"
           else
             echo "⚠️ NPM registry not accessible, will use offline methods"
@@ -597,38 +611,44 @@ jobs:
 
           # Method 1: Primary CDN (get.pnpm.io)
           echo "🔄 Attempt 1/6: Installing via primary CDN..."
-          if curl -fsSL --connect-timeout 15 --max-time 60 https://get.pnpm.io/install.sh | sh -; then
-            export PNPM_HOME="$HOME/.local/share/pnpm"
-            export PATH="$PNPM_HOME:$PATH"
-            if command -v pnpm &> /dev/null; then
-              echo "✅ pnpm installed successfully via primary CDN"
-              PNPM_INSTALLED=true
+                      if curl -fsSL --connect-timeout 30 --max-time 120 https://get.pnpm.io/install.sh | sh -; then
+              export PNPM_HOME="$HOME/.local/share/pnpm"
+              export PATH="$PNPM_HOME:$PATH"
+              if command -v pnpm &> /dev/null; then
+                echo "✅ pnpm installed successfully via primary CDN"
+                PNPM_INSTALLED=true
+              fi
+            else
+              echo "⚠️ Primary CDN installation failed"
             fi
-          fi
 
           # Method 2: Secondary CDN (cdn.jsdelivr.net)
           if [ "$PNPM_INSTALLED" = false ]; then
             echo "🔄 Attempt 2/6: Installing via secondary CDN..."
-            if curl -fsSL --connect-timeout 15 --max-time 60 https://cdn.jsdelivr.net/gh/pnpm/pnpm@latest/install.sh | sh -; then
+            if curl -fsSL --connect-timeout 30 --max-time 120 https://cdn.jsdelivr.net/gh/pnpm/pnpm@latest/install.sh | sh -; then
               export PNPM_HOME="$HOME/.local/share/pnpm"
               export PATH="$PNPM_HOME:$PATH"
               if command -v pnpm &> /dev/null; then
                 echo "✅ pnpm installed successfully via secondary CDN"
                 PNPM_INSTALLED=true
               fi
+            else
+              echo "⚠️ Secondary CDN installation failed"
             fi
           fi
 
           # Method 3: GitHub raw CDN
           if [ "$PNPM_INSTALLED" = false ]; then
             echo "🔄 Attempt 3/6: Installing via GitHub CDN..."
-            if curl -fsSL --connect-timeout 15 --max-time 60 https://raw.githubusercontent.com/pnpm/pnpm/master/install.sh | sh -; then
+            if curl -fsSL --connect-timeout 30 --max-time 120 https://raw.githubusercontent.com/pnpm/pnpm/master/install.sh | sh -; then
               export PNPM_HOME="$HOME/.local/share/pnpm"
               export PATH="$PNPM_HOME:$PATH"
               if command -v pnpm &> /dev/null; then
                 echo "✅ pnpm installed successfully via GitHub CDN"
                 PNPM_INSTALLED=true
               fi
+            else
+              echo "⚠️ GitHub CDN installation failed"
             fi
           fi
 
@@ -657,6 +677,8 @@ jobs:
                 echo "✅ pnpm installed successfully via npm"
                 PNPM_INSTALLED=true
               fi
+            else
+              echo "⚠️ npm installation failed"
             fi
           fi
 
@@ -705,8 +727,8 @@ jobs:
 
             # Configure pnpm for enterprise environment
             pnpm config set registry https://registry.npmjs.org/
-            pnpm config set fetch-timeout 60000
-            pnpm config set network-timeout 300000
+            pnpm config set fetch-timeout 120000
+            pnpm config set network-timeout 600000
 
             # Enable corepack for proper pnpm version management
             corepack enable
@@ -739,9 +761,9 @@ jobs:
           pnpm config set registry https://registry.npmjs.org/
 
           # Configure retry settings for rate limiting
-          pnpm config set fetch-retry-mintimeout 20000
-          pnpm config set fetch-retry-maxtimeout 120000
-          pnpm config set fetch-timeout 60000
+                      pnpm config set fetch-retry-mintimeout 30000
+            pnpm config set fetch-retry-maxtimeout 180000
+            pnpm config set fetch-timeout 120000
 
           # Set auth token if available and valid
           if [ -n "${{ secrets.NPM_TOKEN }}" ] && [ "${{ secrets.NPM_TOKEN }}" != "XXXX[hidden]" ] && [ "${{ secrets.NPM_TOKEN }}" != "" ]; then
@@ -830,11 +852,11 @@ jobs:
 
           # Wait for PostgreSQL to be ready
           echo "⏳ Waiting for PostgreSQL..."
-          timeout 60 bash -c 'until docker exec postgres-test pg_isready -U test -d test; do sleep 2; done' || true
+          timeout 120 bash -c 'until docker exec postgres-test pg_isready -U test -d test; do sleep 2; done' || true
 
           # Wait for Redis to be ready
           echo "⏳ Waiting for Redis..."
-          timeout 30 bash -c 'until docker exec redis-test redis-cli ping | grep -q PONG; do sleep 2; done' || true
+          timeout 60 bash -c 'until docker exec redis-test redis-cli ping | grep -q PONG; do sleep 2; done' || true
 
           # Build and start Auth Service
           echo "🔐 Building and starting Auth Service..."
@@ -945,7 +967,7 @@ jobs:
 
           # Network diagnostics
           echo "🔍 Checking network connectivity..."
-          if curl -fs --connect-timeout 5 --max-time 10 https://registry.npmjs.org/ &> /dev/null; then
+          if curl -fs --connect-timeout 10 --max-time 30 https://registry.npmjs.org/ &> /dev/null; then
             echo "✅ NPM registry accessible"
           else
             echo "⚠️ NPM registry not accessible, will use offline methods"
@@ -956,38 +978,44 @@ jobs:
 
           # Method 1: Primary CDN (get.pnpm.io)
           echo "🔄 Attempt 1/6: Installing via primary CDN..."
-          if curl -fsSL --connect-timeout 15 --max-time 60 https://get.pnpm.io/install.sh | sh -; then
-            export PNPM_HOME="$HOME/.local/share/pnpm"
-            export PATH="$PNPM_HOME:$PATH"
-            if command -v pnpm &> /dev/null; then
-              echo "✅ pnpm installed successfully via primary CDN"
-              PNPM_INSTALLED=true
+                      if curl -fsSL --connect-timeout 30 --max-time 120 https://get.pnpm.io/install.sh | sh -; then
+              export PNPM_HOME="$HOME/.local/share/pnpm"
+              export PATH="$PNPM_HOME:$PATH"
+              if command -v pnpm &> /dev/null; then
+                echo "✅ pnpm installed successfully via primary CDN"
+                PNPM_INSTALLED=true
+              fi
+            else
+              echo "⚠️ Primary CDN installation failed"
             fi
-          fi
 
           # Method 2: Secondary CDN (cdn.jsdelivr.net)
           if [ "$PNPM_INSTALLED" = false ]; then
             echo "🔄 Attempt 2/6: Installing via secondary CDN..."
-            if curl -fsSL --connect-timeout 15 --max-time 60 https://cdn.jsdelivr.net/gh/pnpm/pnpm@latest/install.sh | sh -; then
+            if curl -fsSL --connect-timeout 30 --max-time 120 https://cdn.jsdelivr.net/gh/pnpm/pnpm@latest/install.sh | sh -; then
               export PNPM_HOME="$HOME/.local/share/pnpm"
               export PATH="$PNPM_HOME:$PATH"
               if command -v pnpm &> /dev/null; then
                 echo "✅ pnpm installed successfully via secondary CDN"
                 PNPM_INSTALLED=true
               fi
+            else
+              echo "⚠️ Secondary CDN installation failed"
             fi
           fi
 
           # Method 3: GitHub raw CDN
           if [ "$PNPM_INSTALLED" = false ]; then
             echo "🔄 Attempt 3/6: Installing via GitHub CDN..."
-            if curl -fsSL --connect-timeout 15 --max-time 60 https://raw.githubusercontent.com/pnpm/pnpm/master/install.sh | sh -; then
+            if curl -fsSL --connect-timeout 30 --max-time 120 https://raw.githubusercontent.com/pnpm/pnpm/master/install.sh | sh -; then
               export PNPM_HOME="$HOME/.local/share/pnpm"
               export PATH="$PNPM_HOME:$PATH"
               if command -v pnpm &> /dev/null; then
                 echo "✅ pnpm installed successfully via GitHub CDN"
                 PNPM_INSTALLED=true
               fi
+            else
+              echo "⚠️ GitHub CDN installation failed"
             fi
           fi
 
@@ -1016,6 +1044,8 @@ jobs:
                 echo "✅ pnpm installed successfully via npm"
                 PNPM_INSTALLED=true
               fi
+            else
+              echo "⚠️ npm installation failed"
             fi
           fi
 
@@ -1064,8 +1094,8 @@ jobs:
 
             # Configure pnpm for enterprise environment
             pnpm config set registry https://registry.npmjs.org/
-            pnpm config set fetch-timeout 60000
-            pnpm config set network-timeout 300000
+            pnpm config set fetch-timeout 120000
+            pnpm config set network-timeout 600000
 
             # Enable corepack for proper pnpm version management
             corepack enable
@@ -1118,9 +1148,9 @@ jobs:
           pnpm config set registry https://registry.npmjs.org/
 
           # Configure retry settings for rate limiting
-          pnpm config set fetch-retry-mintimeout 20000
-          pnpm config set fetch-retry-maxtimeout 120000
-          pnpm config set fetch-timeout 60000
+                      pnpm config set fetch-retry-mintimeout 30000
+            pnpm config set fetch-retry-maxtimeout 180000
+            pnpm config set fetch-timeout 120000
 
           # Set auth token if available and valid
           if [ -n "${{ secrets.NPM_TOKEN }}" ] && [ "${{ secrets.NPM_TOKEN }}" != "XXXX[hidden]" ] && [ "${{ secrets.NPM_TOKEN }}" != "" ]; then
@@ -1290,7 +1320,7 @@ jobs:
 
           # Network diagnostics
           echo "🔍 Checking network connectivity..."
-          if curl -fs --connect-timeout 5 --max-time 10 https://registry.npmjs.org/ &> /dev/null; then
+          if curl -fs --connect-timeout 10 --max-time 30 https://registry.npmjs.org/ &> /dev/null; then
             echo "✅ NPM registry accessible"
           else
             echo "⚠️ NPM registry not accessible, will use offline methods"
@@ -1301,38 +1331,44 @@ jobs:
 
           # Method 1: Primary CDN (get.pnpm.io)
           echo "🔄 Attempt 1/6: Installing via primary CDN..."
-          if curl -fsSL --connect-timeout 15 --max-time 60 https://get.pnpm.io/install.sh | sh -; then
-            export PNPM_HOME="$HOME/.local/share/pnpm"
-            export PATH="$PNPM_HOME:$PATH"
-            if command -v pnpm &> /dev/null; then
-              echo "✅ pnpm installed successfully via primary CDN"
-              PNPM_INSTALLED=true
+                      if curl -fsSL --connect-timeout 30 --max-time 120 https://get.pnpm.io/install.sh | sh -; then
+              export PNPM_HOME="$HOME/.local/share/pnpm"
+              export PATH="$PNPM_HOME:$PATH"
+              if command -v pnpm &> /dev/null; then
+                echo "✅ pnpm installed successfully via primary CDN"
+                PNPM_INSTALLED=true
+              fi
+            else
+              echo "⚠️ Primary CDN installation failed"
             fi
-          fi
 
           # Method 2: Secondary CDN (cdn.jsdelivr.net)
           if [ "$PNPM_INSTALLED" = false ]; then
             echo "🔄 Attempt 2/6: Installing via secondary CDN..."
-            if curl -fsSL --connect-timeout 15 --max-time 60 https://cdn.jsdelivr.net/gh/pnpm/pnpm@latest/install.sh | sh -; then
+            if curl -fsSL --connect-timeout 30 --max-time 120 https://cdn.jsdelivr.net/gh/pnpm/pnpm@latest/install.sh | sh -; then
               export PNPM_HOME="$HOME/.local/share/pnpm"
               export PATH="$PNPM_HOME:$PATH"
               if command -v pnpm &> /dev/null; then
                 echo "✅ pnpm installed successfully via secondary CDN"
                 PNPM_INSTALLED=true
               fi
+            else
+              echo "⚠️ Secondary CDN installation failed"
             fi
           fi
 
           # Method 3: GitHub raw CDN
           if [ "$PNPM_INSTALLED" = false ]; then
             echo "🔄 Attempt 3/6: Installing via GitHub CDN..."
-            if curl -fsSL --connect-timeout 15 --max-time 60 https://raw.githubusercontent.com/pnpm/pnpm/master/install.sh | sh -; then
+            if curl -fsSL --connect-timeout 30 --max-time 120 https://raw.githubusercontent.com/pnpm/pnpm/master/install.sh | sh -; then
               export PNPM_HOME="$HOME/.local/share/pnpm"
               export PATH="$PNPM_HOME:$PATH"
               if command -v pnpm &> /dev/null; then
                 echo "✅ pnpm installed successfully via GitHub CDN"
                 PNPM_INSTALLED=true
               fi
+            else
+              echo "⚠️ GitHub CDN installation failed"
             fi
           fi
 
@@ -1361,6 +1397,8 @@ jobs:
                 echo "✅ pnpm installed successfully via npm"
                 PNPM_INSTALLED=true
               fi
+            else
+              echo "⚠️ npm installation failed"
             fi
           fi
 
@@ -1409,8 +1447,8 @@ jobs:
 
             # Configure pnpm for enterprise environment
             pnpm config set registry https://registry.npmjs.org/
-            pnpm config set fetch-timeout 60000
-            pnpm config set network-timeout 300000
+            pnpm config set fetch-timeout 120000
+            pnpm config set network-timeout 600000
 
             # Enable corepack for proper pnpm version management
             corepack enable
@@ -1443,9 +1481,9 @@ jobs:
           pnpm config set registry https://registry.npmjs.org/
 
           # Configure retry settings for rate limiting
-          pnpm config set fetch-retry-mintimeout 20000
-          pnpm config set fetch-retry-maxtimeout 120000
-          pnpm config set fetch-timeout 60000
+                      pnpm config set fetch-retry-mintimeout 30000
+            pnpm config set fetch-retry-maxtimeout 180000
+            pnpm config set fetch-timeout 120000
 
           # Set auth token if available and valid
           if [ -n "${{ secrets.NPM_TOKEN }}" ] && [ "${{ secrets.NPM_TOKEN }}" != "XXXX[hidden]" ] && [ "${{ secrets.NPM_TOKEN }}" != "" ]; then
@@ -1641,7 +1679,7 @@ jobs:
 
           # Network diagnostics
           echo "🔍 Checking network connectivity..."
-          if curl -fs --connect-timeout 5 --max-time 10 https://registry.npmjs.org/ &> /dev/null; then
+          if curl -fs --connect-timeout 10 --max-time 30 https://registry.npmjs.org/ &> /dev/null; then
             echo "✅ NPM registry accessible"
           else
             echo "⚠️ NPM registry not accessible, will use offline methods"
@@ -1652,38 +1690,44 @@ jobs:
 
           # Method 1: Primary CDN (get.pnpm.io)
           echo "🔄 Attempt 1/6: Installing via primary CDN..."
-          if curl -fsSL --connect-timeout 15 --max-time 60 https://get.pnpm.io/install.sh | sh -; then
-            export PNPM_HOME="$HOME/.local/share/pnpm"
-            export PATH="$PNPM_HOME:$PATH"
-            if command -v pnpm &> /dev/null; then
-              echo "✅ pnpm installed successfully via primary CDN"
-              PNPM_INSTALLED=true
+                      if curl -fsSL --connect-timeout 30 --max-time 120 https://get.pnpm.io/install.sh | sh -; then
+              export PNPM_HOME="$HOME/.local/share/pnpm"
+              export PATH="$PNPM_HOME:$PATH"
+              if command -v pnpm &> /dev/null; then
+                echo "✅ pnpm installed successfully via primary CDN"
+                PNPM_INSTALLED=true
+              fi
+            else
+              echo "⚠️ Primary CDN installation failed"
             fi
-          fi
 
           # Method 2: Secondary CDN (cdn.jsdelivr.net)
           if [ "$PNPM_INSTALLED" = false ]; then
             echo "🔄 Attempt 2/6: Installing via secondary CDN..."
-            if curl -fsSL --connect-timeout 15 --max-time 60 https://cdn.jsdelivr.net/gh/pnpm/pnpm@latest/install.sh | sh -; then
+            if curl -fsSL --connect-timeout 30 --max-time 120 https://cdn.jsdelivr.net/gh/pnpm/pnpm@latest/install.sh | sh -; then
               export PNPM_HOME="$HOME/.local/share/pnpm"
               export PATH="$PNPM_HOME:$PATH"
               if command -v pnpm &> /dev/null; then
                 echo "✅ pnpm installed successfully via secondary CDN"
                 PNPM_INSTALLED=true
               fi
+            else
+              echo "⚠️ Secondary CDN installation failed"
             fi
           fi
 
           # Method 3: GitHub raw CDN
           if [ "$PNPM_INSTALLED" = false ]; then
             echo "🔄 Attempt 3/6: Installing via GitHub CDN..."
-            if curl -fsSL --connect-timeout 15 --max-time 60 https://raw.githubusercontent.com/pnpm/pnpm/master/install.sh | sh -; then
+            if curl -fsSL --connect-timeout 30 --max-time 120 https://raw.githubusercontent.com/pnpm/pnpm/master/install.sh | sh -; then
               export PNPM_HOME="$HOME/.local/share/pnpm"
               export PATH="$PNPM_HOME:$PATH"
               if command -v pnpm &> /dev/null; then
                 echo "✅ pnpm installed successfully via GitHub CDN"
                 PNPM_INSTALLED=true
               fi
+            else
+              echo "⚠️ GitHub CDN installation failed"
             fi
           fi
 
@@ -1712,6 +1756,8 @@ jobs:
                 echo "✅ pnpm installed successfully via npm"
                 PNPM_INSTALLED=true
               fi
+            else
+              echo "⚠️ npm installation failed"
             fi
           fi
 
@@ -1760,8 +1806,8 @@ jobs:
 
             # Configure pnpm for enterprise environment
             pnpm config set registry https://registry.npmjs.org/
-            pnpm config set fetch-timeout 60000
-            pnpm config set network-timeout 300000
+            pnpm config set fetch-timeout 120000
+            pnpm config set network-timeout 600000
 
             # Enable corepack for proper pnpm version management
             corepack enable
@@ -1794,9 +1840,9 @@ jobs:
           pnpm config set registry https://registry.npmjs.org/
 
           # Configure retry settings for rate limiting
-          pnpm config set fetch-retry-mintimeout 20000
-          pnpm config set fetch-retry-maxtimeout 120000
-          pnpm config set fetch-timeout 60000
+                      pnpm config set fetch-retry-mintimeout 30000
+            pnpm config set fetch-retry-maxtimeout 180000
+            pnpm config set fetch-timeout 120000
 
           # Set auth token if available and valid
           if [ -n "${{ secrets.NPM_TOKEN }}" ] && [ "${{ secrets.NPM_TOKEN }}" != "XXXX[hidden]" ] && [ "${{ secrets.NPM_TOKEN }}" != "" ]; then
@@ -2020,7 +2066,7 @@ jobs:
 
           # Network diagnostics
           echo "🔍 Checking network connectivity..."
-          if curl -fs --connect-timeout 5 --max-time 10 https://registry.npmjs.org/ &> /dev/null; then
+          if curl -fs --connect-timeout 10 --max-time 30 https://registry.npmjs.org/ &> /dev/null; then
             echo "✅ NPM registry accessible"
           else
             echo "⚠️ NPM registry not accessible, will use offline methods"
@@ -2031,38 +2077,44 @@ jobs:
 
           # Method 1: Primary CDN (get.pnpm.io)
           echo "🔄 Attempt 1/6: Installing via primary CDN..."
-          if curl -fsSL --connect-timeout 15 --max-time 60 https://get.pnpm.io/install.sh | sh -; then
-            export PNPM_HOME="$HOME/.local/share/pnpm"
-            export PATH="$PNPM_HOME:$PATH"
-            if command -v pnpm &> /dev/null; then
-              echo "✅ pnpm installed successfully via primary CDN"
-              PNPM_INSTALLED=true
+                      if curl -fsSL --connect-timeout 30 --max-time 120 https://get.pnpm.io/install.sh | sh -; then
+              export PNPM_HOME="$HOME/.local/share/pnpm"
+              export PATH="$PNPM_HOME:$PATH"
+              if command -v pnpm &> /dev/null; then
+                echo "✅ pnpm installed successfully via primary CDN"
+                PNPM_INSTALLED=true
+              fi
+            else
+              echo "⚠️ Primary CDN installation failed"
             fi
-          fi
 
           # Method 2: Secondary CDN (cdn.jsdelivr.net)
           if [ "$PNPM_INSTALLED" = false ]; then
             echo "🔄 Attempt 2/6: Installing via secondary CDN..."
-            if curl -fsSL --connect-timeout 15 --max-time 60 https://cdn.jsdelivr.net/gh/pnpm/pnpm@latest/install.sh | sh -; then
+            if curl -fsSL --connect-timeout 30 --max-time 120 https://cdn.jsdelivr.net/gh/pnpm/pnpm@latest/install.sh | sh -; then
               export PNPM_HOME="$HOME/.local/share/pnpm"
               export PATH="$PNPM_HOME:$PATH"
               if command -v pnpm &> /dev/null; then
                 echo "✅ pnpm installed successfully via secondary CDN"
                 PNPM_INSTALLED=true
               fi
+            else
+              echo "⚠️ Secondary CDN installation failed"
             fi
           fi
 
           # Method 3: GitHub raw CDN
           if [ "$PNPM_INSTALLED" = false ]; then
             echo "🔄 Attempt 3/6: Installing via GitHub CDN..."
-            if curl -fsSL --connect-timeout 15 --max-time 60 https://raw.githubusercontent.com/pnpm/pnpm/master/install.sh | sh -; then
+            if curl -fsSL --connect-timeout 30 --max-time 120 https://raw.githubusercontent.com/pnpm/pnpm/master/install.sh | sh -; then
               export PNPM_HOME="$HOME/.local/share/pnpm"
               export PATH="$PNPM_HOME:$PATH"
               if command -v pnpm &> /dev/null; then
                 echo "✅ pnpm installed successfully via GitHub CDN"
                 PNPM_INSTALLED=true
               fi
+            else
+              echo "⚠️ GitHub CDN installation failed"
             fi
           fi
 
@@ -2091,6 +2143,8 @@ jobs:
                 echo "✅ pnpm installed successfully via npm"
                 PNPM_INSTALLED=true
               fi
+            else
+              echo "⚠️ npm installation failed"
             fi
           fi
 
@@ -2139,8 +2193,8 @@ jobs:
 
             # Configure pnpm for enterprise environment
             pnpm config set registry https://registry.npmjs.org/
-            pnpm config set fetch-timeout 60000
-            pnpm config set network-timeout 300000
+            pnpm config set fetch-timeout 120000
+            pnpm config set network-timeout 600000
 
             # Enable corepack for proper pnpm version management
             corepack enable
@@ -2321,7 +2375,7 @@ jobs:
 
           # Network diagnostics
           echo "🔍 Checking network connectivity..."
-          if curl -fs --connect-timeout 5 --max-time 10 https://registry.npmjs.org/ &> /dev/null; then
+          if curl -fs --connect-timeout 10 --max-time 30 https://registry.npmjs.org/ &> /dev/null; then
             echo "✅ NPM registry accessible"
           else
             echo "⚠️ NPM registry not accessible, will use offline methods"
@@ -2332,38 +2386,44 @@ jobs:
 
           # Method 1: Primary CDN (get.pnpm.io)
           echo "🔄 Attempt 1/6: Installing via primary CDN..."
-          if curl -fsSL --connect-timeout 15 --max-time 60 https://get.pnpm.io/install.sh | sh -; then
-            export PNPM_HOME="$HOME/.local/share/pnpm"
-            export PATH="$PNPM_HOME:$PATH"
-            if command -v pnpm &> /dev/null; then
-              echo "✅ pnpm installed successfully via primary CDN"
-              PNPM_INSTALLED=true
+                      if curl -fsSL --connect-timeout 30 --max-time 120 https://get.pnpm.io/install.sh | sh -; then
+              export PNPM_HOME="$HOME/.local/share/pnpm"
+              export PATH="$PNPM_HOME:$PATH"
+              if command -v pnpm &> /dev/null; then
+                echo "✅ pnpm installed successfully via primary CDN"
+                PNPM_INSTALLED=true
+              fi
+            else
+              echo "⚠️ Primary CDN installation failed"
             fi
-          fi
 
           # Method 2: Secondary CDN (cdn.jsdelivr.net)
           if [ "$PNPM_INSTALLED" = false ]; then
             echo "🔄 Attempt 2/6: Installing via secondary CDN..."
-            if curl -fsSL --connect-timeout 15 --max-time 60 https://cdn.jsdelivr.net/gh/pnpm/pnpm@latest/install.sh | sh -; then
+            if curl -fsSL --connect-timeout 30 --max-time 120 https://cdn.jsdelivr.net/gh/pnpm/pnpm@latest/install.sh | sh -; then
               export PNPM_HOME="$HOME/.local/share/pnpm"
               export PATH="$PNPM_HOME:$PATH"
               if command -v pnpm &> /dev/null; then
                 echo "✅ pnpm installed successfully via secondary CDN"
                 PNPM_INSTALLED=true
               fi
+            else
+              echo "⚠️ Secondary CDN installation failed"
             fi
           fi
 
           # Method 3: GitHub raw CDN
           if [ "$PNPM_INSTALLED" = false ]; then
             echo "🔄 Attempt 3/6: Installing via GitHub CDN..."
-            if curl -fsSL --connect-timeout 15 --max-time 60 https://raw.githubusercontent.com/pnpm/pnpm/master/install.sh | sh -; then
+            if curl -fsSL --connect-timeout 30 --max-time 120 https://raw.githubusercontent.com/pnpm/pnpm/master/install.sh | sh -; then
               export PNPM_HOME="$HOME/.local/share/pnpm"
               export PATH="$PNPM_HOME:$PATH"
               if command -v pnpm &> /dev/null; then
                 echo "✅ pnpm installed successfully via GitHub CDN"
                 PNPM_INSTALLED=true
               fi
+            else
+              echo "⚠️ GitHub CDN installation failed"
             fi
           fi
 
@@ -2392,6 +2452,8 @@ jobs:
                 echo "✅ pnpm installed successfully via npm"
                 PNPM_INSTALLED=true
               fi
+            else
+              echo "⚠️ npm installation failed"
             fi
           fi
 
@@ -2440,8 +2502,8 @@ jobs:
 
             # Configure pnpm for enterprise environment
             pnpm config set registry https://registry.npmjs.org/
-            pnpm config set fetch-timeout 60000
-            pnpm config set network-timeout 300000
+            pnpm config set fetch-timeout 120000
+            pnpm config set network-timeout 600000
 
             # Enable corepack for proper pnpm version management
             corepack enable
