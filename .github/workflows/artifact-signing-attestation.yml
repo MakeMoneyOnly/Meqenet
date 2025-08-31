@@ -32,11 +32,11 @@ jobs:
 
       - name: Install SLSA verifier
         run: |
-          # Use a known working version
-          SLSA_VERSION="v2.4.1"
-          echo "Using SLSA verifier version: $SLSA_VERSION"
+          # Get the latest release version from GitHub API
+          SLSA_VERSION=$(curl -s https://api.github.com/repos/slsa-framework/slsa-verifier/releases/latest | grep '"tag_name"' | cut -d'"' -f4)
+          echo "Latest SLSA verifier version: $SLSA_VERSION"
 
-          # Download and install SLSA verifier
+          # Download and install SLSA verifier with proper URL format
           curl -sSfL "https://github.com/slsa-framework/slsa-verifier/releases/download/${SLSA_VERSION}/slsa-verifier-linux-amd64.tar.gz" | tar -xz
           sudo mv slsa-verifier-linux-amd64 /usr/local/bin/slsa-verifier
           chmod +x /usr/local/bin/slsa-verifier
