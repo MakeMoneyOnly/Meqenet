@@ -23,7 +23,9 @@ autonomy with centralized control.
   communication).
 - **Data Contracts**: These APIs and event schemas serve as formal "Data Contracts." Any change to a
   data schema that is not backward-compatible is a breaking change and must be versioned and managed
-  carefully to avoid disrupting downstream consumers.
+  carefully to avoid disrupting downstream consumers. All Protobuf-based contracts in the `proto/`
+  directory **MUST** be validated against breaking changes in the CI/CD pipeline using tools such as
+  **Buf**.
 - **Centralized Governance, Decentralized Enforcement**: While data ownership is decentralized, the
   overall governance policies (like this one) are centralized. All service teams are responsible for
   enforcing these central policies (e.g., for data classification, privacy, and retention) within
