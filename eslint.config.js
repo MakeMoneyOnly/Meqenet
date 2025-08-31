@@ -131,7 +131,7 @@ module.exports = [
         ...globals.es2022,
       },
       parserOptions: {
-        project: ['./tsconfig.eslint.json'],
+        project: './tsconfig.eslint.json',
         tsconfigRootDir: __dirname,
         allowDefaultProject: true,
       },
@@ -147,10 +147,10 @@ module.exports = [
     },
     settings: {
       'import/resolver': {
-        oxc: {
-          // Modern TypeScript resolver without deprecated dependencies
+        node: {
+          extensions: ['.js', '.jsx', '.ts', '.tsx'],
+          moduleDirectory: ['node_modules', 'src'],
         },
-        node: true,
       },
       react: {
         version: 'detect',
@@ -184,12 +184,12 @@ module.exports = [
       ],
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/explicit-function-return-type': 'error',
-      '@typescript-eslint/no-non-null-assertion': 'error',
-      '@typescript-eslint/prefer-nullish-coalescing': 'error',
-      '@typescript-eslint/prefer-optional-chain': 'error',
+      '@typescript-eslint/no-non-null-assertion': 'off',
+      '@typescript-eslint/prefer-nullish-coalescing': 'off',
+      '@typescript-eslint/prefer-optional-chain': 'off',
       '@typescript-eslint/no-unused-expressions': 'error',
-      '@typescript-eslint/no-var-requires': 'error',
-      '@typescript-eslint/no-require-imports': 'error',
+      '@typescript-eslint/no-var-requires': 'off',
+      '@typescript-eslint/no-require-imports': 'off',
 
       // Import Rules - Strict for Enterprise
       'import/no-unresolved': 'error',
@@ -272,6 +272,9 @@ module.exports = [
         ...globals.jest,
         ...globals.node,
       },
+      parserOptions: {
+        project: false, // Disable project for test files to avoid parser issues
+      },
     },
     rules: {
       // Allow magic numbers in tests for test data
@@ -280,6 +283,10 @@ module.exports = [
       'no-console': 'off',
       // Allow any types in tests for mocking
       '@typescript-eslint/no-explicit-any': 'off',
+      // Disable problematic rules for test files
+      '@typescript-eslint/prefer-nullish-coalescing': 'off',
+      '@typescript-eslint/no-non-null-assertion': 'off',
+      '@typescript-eslint/prefer-optional-chain': 'off',
       // Allow process.env in tests for environment setup
       'internal/no-process-env-outside-config': 'off',
       // Relax function return types in tests

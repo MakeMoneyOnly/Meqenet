@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  ConflictException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
@@ -6,7 +10,10 @@ import { v4 as uuidv4 } from 'uuid';
 const BCRYPT_SALT_ROUNDS = 12;
 
 import { MessagingProducerService } from '../../infrastructure/messaging/messaging.producer.service';
-import { OutboxService, OutboxMessage } from '../../shared/outbox/outbox.service';
+import {
+  OutboxService,
+  OutboxMessage,
+} from '../../shared/outbox/outbox.service';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 
 import { LoginUserDto } from './dto/login-user.dto';
@@ -18,13 +25,17 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly messagingProducerService: MessagingProducerService,
-    private readonly outboxService: OutboxService,
+    private readonly outboxService: OutboxService
   ) {}
 
-  async register(registerUserDto: RegisterUserDto): Promise<{ accessToken: string }> {
+  async register(
+    registerUserDto: RegisterUserDto
+  ): Promise<{ accessToken: string }> {
     const { email, password } = registerUserDto;
 
-    const existingUser = await this.prisma.user.findUnique({ where: { email } });
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email },
+    });
     if (existingUser) {
       throw new ConflictException('User with this email already exists');
     }
@@ -32,7 +43,7 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
 
     // Use a transaction to ensure user and outbox message are created atomically
-    const user = await this.prisma.$transaction(async (tx) => {
+    const user = await this.prisma.$transaction(async tx => {
       const createdUser = await tx.user.create({
         data: {
           email,
@@ -49,7 +60,7 @@ export class AuthService {
         payload: {
           email: createdUser.email,
           userId: createdUser.id,
-          registeredAt: createdUser.createdAt,
+          registeredAt: createdUser.createdAt.toISOString(),
         },
         metadata: {
           correlationId: uuidv4(),
