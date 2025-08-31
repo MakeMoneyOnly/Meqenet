@@ -126,6 +126,27 @@ discover and communicate with it using this address, without needing to hardcode
 ports. This provides a robust and automated service registry directly within our orchestration
 platform.
 
+### 3.6 Cross-Cutting Architectural Patterns
+
+#### 3.6.1 Idempotency
+
+To prevent data corruption and inconsistent state from duplicate requests (e.g., due to network
+retries), all state-modifying endpoints (especially those in the `payments-service`) **MUST** be
+idempotent. This is achieved by requiring clients to generate and send a unique `Idempotency-Key` in
+the header of `POST`, `PUT`, and `PATCH` requests. The server will store the result of the first
+successful request for a given key and return this cached response for any subsequent requests with
+the same key.
+
+#### 3.6.2 Caching
+
+To ensure high performance and reduce load on backend services, a distributed caching layer (e.g.,
+Redis) **MUST** be implemented. This cache will be used for:
+
+- **Read-heavy flows:** Caching product catalog data, merchant details, and other frequently
+  accessed, non-critical data in the `merchant-service` and `marketplace-service`.
+- **Session Management:** Storing session data to reduce database load.
+- **Rate Limiting:** Caching request counts for rate-limiting implementations in the API Gateway.
+
 ## 4. Cross-Cutting Concerns
 
 These concerns are managed centrally but apply to all services within the ecosystem:

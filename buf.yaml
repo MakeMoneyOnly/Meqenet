@@ -1,0 +1,8 @@
+version: v1
+name: buf.build/meqenet/meqenet-proto
+lint:
+  use:
+    - DEFAULT
+breaking:
+  use:
+    - FILE

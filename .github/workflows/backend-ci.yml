@@ -84,3 +84,17 @@ jobs:
 
       - name: Run E2E tests
         run: bash scripts/run-e2e-tests.sh
+
+  proto-check:
+    name: Protobuf Contract Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: bufbuild/buf-setup-action@v1
+      - uses: bufbuild/buf-lint-action@v1
+        with:
+          input: "proto"
+      - uses: bufbuild/buf-breaking-action@v1
+        with:
+          input: "proto"
+          against: "https://github.com/meqenet/meqenet-proto.git"

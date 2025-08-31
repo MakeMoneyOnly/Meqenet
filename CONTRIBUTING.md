@@ -355,6 +355,26 @@ git push origin feature/bnpl-payment-plans
 - **Performance impact** assessment
 - **Testing coverage** report
 
+### 5. Commit Message and Signing Rules
+
+#### Conventional Commits
+
+This project follows the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
+specification. All commit messages **MUST** adhere to this format. This ensures a meaningful and
+machine-readable commit history, which enables automated changelog generation and semantic
+versioning.
+
+- **Format**: `<type>(<scope>): <subject>`
+- **Allowed `type` values**: `feat`, `fix`, `build`, `chore`, `ci`, `docs`, `perf`, `refactor`,
+  `revert`, `style`, `test`.
+- **Example**: `feat(auth): add password reset flow`
+
+#### Commit Signing
+
+To ensure the integrity and provenance of our codebase, all commits made to the `main` and `develop`
+branches **MUST** be cryptographically signed with a developer's GPG key. This is a non-negotiable
+security requirement.
+
 ### 3. Code Review Process
 
 #### Review Checklist
