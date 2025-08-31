@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
 
 import { SecurityMonitoringService } from './security-monitoring.service';
@@ -16,25 +15,7 @@ const SUSPICIOUS_MAX_REQUESTS = 25;
 const BLOCKED_WINDOW_HOURS = 1;
 const BLOCKED_MAX_REQUESTS = 5;
 
-const _HIGH_VELOCITY_MULTIPLIER = 5.0;
-const _UNUSUAL_LOCATION_THRESHOLD = 0.8;
-const _RESET_WINDOW_MULTIPLIER = 3.0;
-const _SUSPICIOUS_TIME_WINDOW_HOURS = 2;
 
-const _CLEANUP_WINDOW_DAYS = 24;
-const _CLEANUP_REQUEST_THRESHOLD = 0;
-
-const _RATE_LIMIT_MULTIPLIER_LOW = 0.5;
-const _RATE_LIMIT_MULTIPLIER_HIGH = 0.25;
-const _BLOCK_DURATION_MINUTES = 15;
-
-const _MAX_REQUESTS_BASE = 10;
-const _REQUEST_VELOCITY_RATIO_THRESHOLD = 5.0;
-
-const _THREAT_LEVEL_ESCALATION_THRESHOLD = 10;
-const _RAPID_SUCCESSION_MINUTES = 5;
-const _RAPID_SUCCESSION_TIME_SECONDS =
-  _RAPID_SUCCESSION_MINUTES * SECONDS_PER_MINUTE;
 
 const RECENT_ACTIVITY_WINDOW_MINUTES = 30;
 const FAILURE_COUNT_THRESHOLD = 5;
@@ -43,6 +24,14 @@ const MEDIUM_THREAT_FAILURE_THRESHOLD = 2;
 const MEDIUM_THREAT_RATE_LIMIT_THRESHOLD = 1;
 const DEFAULT_ADAPTIVE_MULTIPLIER = 1.0;
 const HIGH_SUCCESS_RATE_THRESHOLD = 0.9;
+
+const _RATE_LIMIT_MULTIPLIER_LOW = 0.5;
+const _RATE_LIMIT_MULTIPLIER_HIGH = 0.25;
+const _BLOCK_DURATION_MINUTES = 15;
+const _UNUSUAL_LOCATION_THRESHOLD = 0.8;
+const _THREAT_LEVEL_ESCALATION_THRESHOLD = 10;
+const _CLEANUP_WINDOW_DAYS = 24;
+const _CLEANUP_REQUEST_THRESHOLD = 0;
 
 export interface RateLimitConfig {
   windowMs: number; // Time window in milliseconds
@@ -113,7 +102,6 @@ export class AdaptiveRateLimitingService {
   };
 
   constructor(
-    private configService: ConfigService,
     private securityMonitoringService: SecurityMonitoringService
   ) {}
 
@@ -430,7 +418,7 @@ export class AdaptiveRateLimitingService {
 
     if (status?.isBlocked) {
       status.isBlocked = false;
-      status.blockExpiry = undefined;
+      delete status.blockExpiry;
       status.threatLevel = 'low';
       status.adaptiveMultiplier = DEFAULT_ADAPTIVE_MULTIPLIER;
       this.logger.log(`✅ Unblocked ${identifier}`);

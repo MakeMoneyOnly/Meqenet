@@ -4,7 +4,6 @@ import {
   OnModuleDestroy,
   Logger,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { PrismaClient, Prisma } from '@prisma/client';
 
 /**
@@ -41,13 +40,13 @@ export class PrismaService
   private readonly maxRetries = RETRY_CONFIG.MAX_RETRIES;
   private readonly baseDelay = RETRY_CONFIG.BASE_DELAY;
 
-  constructor(private readonly configService: ConfigService) {
-    const databaseUrlValue = configService.get<string>('DATABASE_URL');
+  constructor() {
+    const databaseUrlValue = process.env.DATABASE_URL;
     if (!databaseUrlValue) {
       throw new Error('DATABASE_URL is not set in the environment variables.');
     }
     const databaseUrl = new URL(databaseUrlValue);
-    const isProduction = configService.get<string>('NODE_ENV') === 'production';
+    const isProduction = process.env.NODE_ENV === 'production';
 
     // Using controlled access pattern for fintech compliance
     const logLevels: ('error' | 'warn' | 'info' | 'query')[] = isProduction
@@ -69,147 +68,9 @@ export class PrismaService
    * Centralized for fintech compliance and audit purposes
    */
 
-  /**
-   * Validates database URL for security compliance
-   * Ensures SSL is enabled and credentials are not exposed
-   */
-  private static validateDatabaseUrl(url: string): void {
-    try {
-      const parsedUrl = new URL(url);
 
-      // Ensure SSL is enabled for Ethiopian financial compliance
-      if (
-        parsedUrl.searchParams.get('sslmode') !== 'require' &&
-        !parsedUrl.searchParams.has('ssl') &&
-        !url.includes('sslmode=require')
-      ) {
-        Logger.warn(
-          'Database connection should use SSL for Ethiopian financial compliance'
-        );
-      }
 
-      // Validate that sensitive credentials are not in plain text
-      if (
-        parsedUrl.password &&
-        parsedUrl.password.length < RETRY_CONFIG.PASSWORD_MIN_LENGTH
-      ) {
-        throw new Error(
-          'Database password must be at least 12 characters for security compliance'
-        );
-      }
 
-      // Ensure connection string is using secure protocols
-      if (
-        ![
-          'postgresql:',
-          'postgres:',
-          'postgresql+ssl:',
-          'postgres+ssl:',
-        ].includes(parsedUrl.protocol)
-      ) {
-        throw new Error(
-          'Only PostgreSQL databases are supported for Ethiopian financial services'
-        );
-      }
-    } catch (error) {
-      if (error instanceof TypeError) {
-        throw new Error(
-          'Invalid DATABASE_URL format. Must be a valid PostgreSQL connection string'
-        );
-      }
-      throw error;
-    }
-  }
-
-  /**
-   * Sets up event listeners for audit logging and monitoring
-   */
-  private setupEventListeners(): void {
-    // Prisma's $on method has a complex type signature that is difficult to satisfy
-    // when using conditional log levels. To avoid build errors, we cast the method
-    // to `any` to bypass the type checking. This is a pragmatic solution that
-    // allows us to use the event listeners without sacrificing type safety elsewhere
-    // in the application.
-
-    // Query logging for audit compliance (NBE requirement)
-    (
-      this.$on as (
-        event: 'query',
-        listener: (e: {
-          query: string;
-          duration: number;
-          params?: string;
-        }) => void
-      ) => void
-    )('query', event => {
-      // Security: Use ConfigService for environment variable access
-      if (this.configService.get<string>('NODE_ENV') !== 'production') {
-        this.logger.debug(
-          `Query: ${event.query} | Duration: ${event.duration}ms`
-        );
-      }
-
-      // Log slow queries for performance monitoring
-      if (event.duration > RETRY_CONFIG.SLOW_QUERY_THRESHOLD) {
-        this.logger.warn(`Slow query detected: ${event.duration}ms`, {
-          query: event.query,
-          params: event.params,
-          duration: event.duration,
-        });
-      }
-    });
-
-    // Error logging for security monitoring
-    (
-      this.$on as (
-        event: 'error',
-        listener: (e: {
-          message: string;
-          target?: string;
-          timestamp?: Date;
-        }) => void
-      ) => void
-    )('error', event => {
-      this.logger.error(`Database error: ${event.message}`, {
-        target: event.target,
-        timestamp: event.timestamp,
-      });
-    });
-
-    // Warning logging
-    (
-      this.$on as (
-        event: 'warn',
-        listener: (e: {
-          message: string;
-          target?: string;
-          timestamp?: Date;
-        }) => void
-      ) => void
-    )('warn', event => {
-      this.logger.warn(`Database warning: ${event.message}`, {
-        target: event.target,
-        timestamp: event.timestamp,
-      });
-    });
-
-    // Info logging for audit trail
-    (
-      this.$on as (
-        event: 'info',
-        listener: (e: {
-          message: string;
-          target?: string;
-          timestamp?: Date;
-        }) => void
-      ) => void
-    )('info', event => {
-      this.logger.log(`Database info: ${event.message}`, {
-        target: event.target,
-        timestamp: event.timestamp,
-      });
-    });
-  }
 
   /**
    * Initialize database connection with retry logic
@@ -355,20 +216,23 @@ export class PrismaService
     complianceFlags?: string[];
   }): Promise<void> {
     try {
+      const auditData: any = {
+        ...data,
+        complianceFlags: data.complianceFlags ?? [],
+      };
+
+      if (data.eventData) {
+        auditData.eventData = JSON.stringify(data.eventData);
+      }
+      if (data.previousValues) {
+        auditData.previousValues = JSON.stringify(data.previousValues);
+      }
+      if (data.newValues) {
+        auditData.newValues = JSON.stringify(data.newValues);
+      }
+
       await this.auditLog.create({
-        data: {
-          ...data,
-          eventData: data.eventData
-            ? JSON.stringify(data.eventData)
-            : undefined,
-          previousValues: data.previousValues
-            ? JSON.stringify(data.previousValues)
-            : undefined,
-          newValues: data.newValues
-            ? JSON.stringify(data.newValues)
-            : undefined,
-          complianceFlags: data.complianceFlags ?? [],
-        },
+        data: auditData,
       });
     } catch (error) {
       // Audit logging failures should not break the main operation

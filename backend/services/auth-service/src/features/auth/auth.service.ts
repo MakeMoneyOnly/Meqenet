@@ -9,7 +9,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 const BCRYPT_SALT_ROUNDS = 12;
 
-import { MessagingProducerService } from '../../infrastructure/messaging/messaging.producer.service';
+
 import {
   OutboxService,
   OutboxMessage,
@@ -24,7 +24,6 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
-    private readonly messagingProducerService: MessagingProducerService,
     private readonly outboxService: OutboxService
   ) {}
 

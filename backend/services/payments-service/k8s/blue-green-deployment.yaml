@@ -1,0 +1,429 @@
+---
+# Blue/Green Deployment Template for Meqenet payments-service
+# This template provides zero-downtime deployments for Ethiopian FinTech compliance
+#
+# Usage:
+# 1. Deploy to blue environment first
+# 2. Run health checks and smoke tests
+# 3. Switch traffic from green to blue
+# 4. Monitor for issues, rollback if needed
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: payments-service-config
+  namespace: meqenet-development
+  labels:
+    app: payments-service
+    version: "1.0.0"
+    environment: "development"
+data:
+  # Ethiopian timezone configuration
+  TZ: "Africa/Addis_Ababa"
+  LOCALE: "en_ET"
+  CURRENCY: "ETB"
+  
+  # NBE compliance settings
+  NBE_REPORTING_ENABLED: "true"
+  DATA_RESIDENCY_ENFORCEMENT: "true"
+  AUDIT_LOGGING_ENABLED: "true"
+
+---
+# Blue Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payments-service-blue
+  namespace: meqenet-development
+  labels:
+    app: payments-service
+    slot: blue
+    version: "1.0.0"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: payments-service
+      slot: blue
+  template:
+    metadata:
+      labels:
+        app: payments-service
+        slot: blue
+        version: "1.0.0"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3000"
+        prometheus.io/path: "/metrics"
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 2000
+      containers:
+      - name: payments-service
+        image: ghcr.io/meqenet/payments-service:1.0.0
+        ports:
+        - containerPort: 3004
+          name: http
+        - containerPort: 9090
+          name: metrics
+        env:
+        - name: NODE_ENV
+          value: "development"
+        - name: PORT
+          value: "3004"
+        - name: SLOT
+          value: "blue"
+        - name: TZ
+          valueFrom:
+            configMapKeyRef:
+              name: payments-service-config
+              key: TZ
+        envFrom:
+        - configMapRef:
+            name: payments-service-config
+        - secretRef:
+            name: payments-service-secrets
+        resources:
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: http
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          successThreshold: 1
+          failureThreshold: 3
+        startupProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 30
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: cache
+          mountPath: /app/.cache
+      volumes:
+      - name: tmp
+        emptyDir: {}
+      - name: cache
+        emptyDir: {}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - payments-service
+              topologyKey: kubernetes.io/hostname
+
+---
+# Green Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payments-service-green
+  namespace: meqenet-development
+  labels:
+    app: payments-service
+    slot: green
+    version: "1.0.0"
+spec:
+  replicas: 0  # Initially 0, scaled up during deployment
+  selector:
+    matchLabels:
+      app: payments-service
+      slot: green
+  template:
+    metadata:
+      labels:
+        app: payments-service
+        slot: green
+        version: "1.0.0"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3000"
+        prometheus.io/path: "/metrics"
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 2000
+      containers:
+      - name: payments-service
+        image: ghcr.io/meqenet/payments-service:1.0.0
+        ports:
+        - containerPort: 3004
+          name: http
+        - containerPort: 9090
+          name: metrics
+        env:
+        - name: NODE_ENV
+          value: "development"
+        - name: PORT
+          value: "3004"
+        - name: SLOT
+          value: "green"
+        - name: TZ
+          valueFrom:
+            configMapKeyRef:
+              name: payments-service-config
+              key: TZ
+        envFrom:
+        - configMapRef:
+            name: payments-service-config
+        - secretRef:
+            name: payments-service-secrets
+        resources:
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: http
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          successThreshold: 1
+          failureThreshold: 3
+        startupProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 30
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: cache
+          mountPath: /app/.cache
+      volumes:
+      - name: tmp
+        emptyDir: {}
+      - name: cache
+        emptyDir: {}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - payments-service
+              topologyKey: kubernetes.io/hostname
+
+---
+# Service (routes to active slot)
+apiVersion: v1
+kind: Service
+metadata:
+  name: payments-service-service
+  namespace: meqenet-development
+  labels:
+    app: payments-service
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: nlb
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+spec:
+  type: ClusterIP
+  selector:
+    app: payments-service
+    slot: blue  # Initially routes to blue
+  ports:
+  - name: http
+    port: 80
+    targetPort: 3004
+    protocol: TCP
+  - name: metrics
+    port: 9090
+    targetPort: 9090
+    protocol: TCP
+
+---
+# Blue Service (for direct access during testing)
+apiVersion: v1
+kind: Service
+metadata:
+  name: payments-service-blue-service
+  namespace: meqenet-development
+  labels:
+    app: payments-service
+    slot: blue
+spec:
+  type: ClusterIP
+  selector:
+    app: payments-service
+    slot: blue
+  ports:
+  - name: http
+    port: 80
+    targetPort: 3004
+    protocol: TCP
+
+---
+# Green Service (for direct access during testing)
+apiVersion: v1
+kind: Service
+metadata:
+  name: payments-service-green-service
+  namespace: meqenet-development
+  labels:
+    app: payments-service
+    slot: green
+spec:
+  type: ClusterIP
+  selector:
+    app: payments-service
+    slot: green
+  ports:
+  - name: http
+    port: 80
+    targetPort: 3004
+    protocol: TCP
+
+---
+# HorizontalPodAutoscaler for Blue
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: payments-service-blue-hpa
+  namespace: meqenet-development
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: payments-service-blue
+  minReplicas: 1
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+
+---
+# HorizontalPodAutoscaler for Green
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: payments-service-green-hpa
+  namespace: meqenet-development
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: payments-service-green
+  minReplicas: 1
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+
+---
+# NetworkPolicy for security isolation
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: payments-service-network-policy
+  namespace: meqenet-development
+spec:
+  podSelector:
+    matchLabels:
+      app: payments-service
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: meqenet-development
+    ports:
+    - protocol: TCP
+      port: 3004
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: monitoring
+    ports:
+    - protocol: TCP
+      port: 9090
+  egress:
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 443  # HTTPS
+    - protocol: TCP
+      port: 53   # DNS
+    - protocol: UDP
+      port: 53   # DNS 

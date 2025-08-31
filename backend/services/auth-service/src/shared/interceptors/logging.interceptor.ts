@@ -17,7 +17,6 @@ import { sanitizeObject } from '../utils/logging-sanitizer.util';
 const HTTP_CLIENT_ERROR_MIN = 400;
 const HTTP_SERVER_ERROR_MIN = 500;
 const ANOMALY_RISK_THRESHOLD = 75;
-const _MAX_SEQUENCE_LENGTH = 10;
 const MIN_USER_AGENT_LENGTH = 10;
 
 /**

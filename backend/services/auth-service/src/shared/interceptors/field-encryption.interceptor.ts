@@ -24,7 +24,6 @@ export class FieldEncryptionInterceptor implements NestInterceptor {
     next: CallHandler
   ): Promise<Observable<unknown>> {
     const request = context.switchToHttp().getRequest();
-    const _response = context.switchToHttp().getResponse();
 
     // Decrypt incoming request data
     await this.processRequest(request);
@@ -200,26 +199,5 @@ export class FieldEncryptionInterceptor implements NestInterceptor {
     return ['password', 'email', 'phoneNumber', 'cardNumber', 'accountNumber'];
   }
 
-  /**
-   * Check if endpoint should skip encryption
-   */
-  private shouldSkipEncryption(request: Record<string, unknown>): boolean {
-    const path =
-      (request.route as { path?: string })?.path ??
-      (request.url as string | undefined) ??
-      '';
 
-    // Skip encryption for these endpoints
-    const skipPatterns = [
-      /\/health/,
-      /\/metrics/,
-      /\/docs/,
-      /\/jwks/,
-      /\/credentials/,
-    ];
-
-    return path
-      ? skipPatterns.some(pattern => pattern.test(path as string))
-      : false;
-  }
 }

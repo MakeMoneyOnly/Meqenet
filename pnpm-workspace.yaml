@@ -5,5 +5,4 @@ packages:
   - "backend/services/*"
   # The root frontend application
   - "frontend"
-  # All frontend apps
   - "frontend/apps/*"

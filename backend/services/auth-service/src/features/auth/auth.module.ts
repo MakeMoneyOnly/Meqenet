@@ -16,12 +16,21 @@ import { AuthService } from './auth.service';
     OutboxModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET'),
-        signOptions: {
-          expiresIn: configService.get<string>('JWT_EXPIRES_IN'),
-        },
-      }),
+      useFactory: async (configService: ConfigService) => {
+        const secret = configService.get<string>('JWT_SECRET');
+        const expiresIn = configService.get<string>('JWT_EXPIRES_IN');
+
+        if (!secret) {
+          throw new Error('JWT_SECRET environment variable is required');
+        }
+
+        return {
+          secret,
+          signOptions: {
+            expiresIn: expiresIn || '1h',
+          },
+        };
+      },
       inject: [ConfigService],
     }),
   ],

@@ -89,6 +89,15 @@ src/
 - `credit` - Credit scoring and risk assessment
 - `premium` - Meqenet Plus subscription features
 
+### Backend Code Structure (DDD-Lite)
+
+All backend microservices **MUST** adopt a simplified Domain-Driven Design (DDD-lite) structure. This organizes code by its technical and business purpose, improving maintainability and separation of concerns.
+
+- **`domain`**: Contains the core business logic, entities, and services. This layer is pure and has no knowledge of the infrastructure.
+- **`application`**: Orchestrates use cases by interacting with the domain layer.
+- **`infrastructure`**: Contains adapters for external systems like databases (Prisma), message queues, and third-party APIs.
+- **`presentation`**: The entry point to the service, containing controllers (for REST/gRPC) and DTOs. This is the only layer that interacts with the network.
+
 ## 🔒 Security Requirements
 
 ### Zero Trust Security Model

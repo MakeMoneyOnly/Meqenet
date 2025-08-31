@@ -42,7 +42,6 @@ export enum DLQAction {
 @Injectable()
 export class DLQService {
   private readonly logger = new Logger(DLQService.name);
-  private readonly BATCH_SIZE = 100;
   // Magic numbers for DLQ operations - documented inline for linting compliance
   // eslint-disable-next-line no-magic-numbers
   private readonly ARCHIVE_DAYS = 90; // 90 days retention

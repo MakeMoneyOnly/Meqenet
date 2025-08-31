@@ -1,56 +1,51 @@
-version: "3.8"
+version: '3.8'
+
 services:
-  postgres:
-    image: postgres:15
-    restart: always
+  postgres_test:
+    image: postgres:15-alpine
     environment:
-      POSTGRES_USER: test
-      POSTGRES_PASSWORD: test
-      POSTGRES_DB: test
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: testpassword
+      POSTGRES_DB: meqenet_test
     ports:
-      - "5433:5432"
+      - '5433:5432'
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data
 
-  redis:
-    image: redis:7
-    restart: always
+  redis_test:
+    image: redis:7-alpine
     ports:
-      - "6380:6379"
+      - '6380:6379'
 
-  auth-service:
-    build:
-      context: .
-      dockerfile: backend/services/auth-service/Dockerfile
-    depends_on:
-      - postgres
-      - redis
-    environment:
-      DATABASE_URL: postgresql://test:test@postgres:5432/test
-      REDIS_URL: redis://redis:6379
-
-  api-gateway:
+  api_gateway:
     build:
       context: .
       dockerfile: backend/services/api-gateway/Dockerfile
     ports:
-      - "3000:3000"
+      - '3000:3000'
     depends_on:
-      - auth-service
+      - auth_service
+      - payments_service
 
-  frontend:
+  auth_service:
     build:
-      context: ./frontend/apps/website
-      dockerfile: Dockerfile
-    ports:
-      - "3001:3000"
+      context: .
+      dockerfile: backend/services/auth-service/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://testuser:testpassword@postgres_test:5432/meqenet_test
+      REDIS_HOST: redis_test
     depends_on:
-      - api-gateway
+      - postgres_test
+      - redis_test
 
-  playwright-runner:
-    image: mcr.microsoft.com/playwright:v1.42.1-focal
-    volumes:
-      - .:/app
-    working_dir: /app
-    command:
-      ["pnpm", "playwright", "test", "backend-e2e/src/tests/web.e2e.spec.ts"]
+  payments_service:
+    build:
+      context: .
+      dockerfile: backend/services/payments-service/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://testuser:testpassword@postgres_test:5432/meqenet_test
     depends_on:
-      - frontend
+      - postgres_test
+
+volumes:
+  postgres_test_data:

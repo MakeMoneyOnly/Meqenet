@@ -768,7 +768,7 @@ stages:
             description:
               "[UX] Build and document core UI components (Button, Input, Card,
               Modal) in Storybook for both web and mobile."
-            status: To Do
+            status: Completed
             context:
               [docs/Stage 1 - Foundation/12-User_Experience_Guidelines.md]
             personas:
@@ -777,7 +777,7 @@ stages:
             description:
               "[UX] Build and document specialized financial components (PaymentPlanCard,
               ProgressIndicator, etc.)."
-            status: To Do
+            status: Completed
             context:
               [docs/Stage 1 - Foundation/12-User_Experience_Guidelines.md]
             personas: [Senior Mobile Developer, UX Designer, Product Manager]
@@ -785,7 +785,7 @@ stages:
             description:
               "[UX/A11y] Implement and test WCAG 2.1 AAA compliance across the
               component library."
-            status: To Do
+            status: Completed
             context:
               [docs/Stage 1 - Foundation/12-User_Experience_Guidelines.md]
             personas:
@@ -799,7 +799,7 @@ stages:
             description:
               "[DevEx/Test] Develop a simulator/mock server for key Ethiopian
               payment providers (Telebirr, etc.) to enable robust integration testing."
-            status: To Do
+            status: Completed
             context: [docs/Stage 2 -Development/22-Testing_Guidelines.md]
             personas: [
                 Financial QA Specialist,
@@ -811,7 +811,7 @@ stages:
             description:
               "[DevEx/Test] Create and maintain a seed script to populate databases
               with realistic, anonymized Ethiopian test data."
-            status: To Do
+            status: Completed
             context: [docs/Stage 2 -Development/22-Testing_Guidelines.md]
             personas: [
                 Financial QA Specialist,
@@ -823,7 +823,7 @@ stages:
             description:
               "[DevEx/Test] Create Docker Compose configuration for E2E test
               environment with PostgreSQL 15, Redis 7, and all microservices."
-            status: To Do
+            status: Completed
             context: [docs/Stage 2 -Development/22-Testing_Guidelines.md]
             personas: [
                 FinTech DevOps Engineer,
@@ -835,7 +835,7 @@ stages:
             description:
               "[DevEx/Test] Implement E2E test orchestration scripts with service
               health checks and startup coordination."
-            status: To Do
+            status: Completed
             context: [docs/Stage 2 -Development/22-Testing_Guidelines.md]
             personas: [
                 FinTech DevOps Engineer,
@@ -958,7 +958,7 @@ stages:
             description:
               Design and finalize User, Profile, Credential, and Role schemas
               in `schema.prisma`.
-            status: To Do
+            status: Completed
             context:
               [
                 docs/Stage 1 - Foundation/10-Database.md,
@@ -974,7 +974,7 @@ stages:
             description:
               Generate and apply the database migration for all authentication-related
               tables.
-            status: To Do
+            status: Completed
             context: [docs/Stage 1 - Foundation/10-Database.md]
             personas: [
                 Senior Backend Developer,

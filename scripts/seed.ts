@@ -1,26 +1,28 @@
 import { PrismaClient } from '@prisma/client';
+import { faker } from '@faker-js/faker';
 
 const prisma = new PrismaClient();
 
-async function main(): Promise<void> {
-  // Start seeding ...
+async function main() {
+  console.log(`Start seeding ...`);
 
-  await prisma.user.create({
-    data: {
-      email: 'testuser@meqenet.com',
-      passwordHash: 'somehash',
-      firstName: 'Test',
-      lastName: 'User',
-      phone: '+251912345678',
-    },
-  });
+  // Create Users
+  for (let i = 0; i < 10; i++) {
+    await prisma.user.create({
+      data: {
+        email: faker.internet.email(),
+        name: faker.person.fullName(),
+        // Add other user fields as necessary
+      },
+    });
+  }
 
-  // Seeding finished.
+  console.log(`Seeding finished.`);
 }
 
 main()
-  .catch(_e => {
-    // Error occurred during seeding
+  .catch((e) => {
+    console.error(e);
     process.exit(1);
   })
   .finally(async () => {
