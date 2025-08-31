@@ -85,8 +85,27 @@ jobs:
 
       - name: Install Pact CLI
         run: |
-          curl -fsSL https://github.com/pact-foundation/pact-ruby-standalone/releases/latest/download/pact-2.4.10-linux-x86_64.tar.gz | tar xz
-          sudo mv pact /usr/local/bin/
+          # Get the latest release version from GitHub API
+          PACT_VERSION=$(curl -s https://api.github.com/repos/pact-foundation/pact-ruby-standalone/releases/latest | grep '"tag_name"' | cut -d'"' -f4 | sed 's/^v//')
+
+          if [ -z "$PACT_VERSION" ]; then
+            echo "❌ Failed to get latest Pact version from GitHub API"
+            # Fallback to a known working version
+            PACT_VERSION="2.4.7"
+            echo "🔄 Using fallback version: $PACT_VERSION"
+          else
+            echo "✅ Latest Pact CLI version: $PACT_VERSION"
+          fi
+
+          # Download and install Pact CLI
+          echo "📥 Downloading Pact CLI v${PACT_VERSION}..."
+          if curl -fsSL "https://github.com/pact-foundation/pact-ruby-standalone/releases/download/v${PACT_VERSION}/pact-${PACT_VERSION}-linux-x86_64.tar.gz" | tar xz; then
+            sudo mv pact /usr/local/bin/
+            echo "✅ Pact CLI installed successfully"
+          else
+            echo "❌ Failed to download Pact CLI v${PACT_VERSION}"
+            exit 1
+          fi
 
       - name: Run Contract Tests
         run: |
