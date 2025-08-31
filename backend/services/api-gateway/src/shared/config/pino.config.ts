@@ -1,3 +1,5 @@
+import { IncomingMessage, ServerResponse } from 'http';
+
 import { ConfigService } from '@nestjs/config';
 import { Params } from 'nestjs-pino';
 
@@ -21,7 +23,7 @@ export const pinoConfig = {
           },
         },
         serializers: {
-          req: req => ({
+          req: (req: IncomingMessage) => ({
             method: req.method,
             url: req.url,
             headers: {
@@ -30,11 +32,12 @@ export const pinoConfig = {
                 req.headers['x-request-id'] ?? req.headers['X-Request-ID'],
             },
           }),
-          res: res => ({
+          res: (res: ServerResponse) => ({
             statusCode: res.statusCode,
             headers: {
               'x-request-id':
-                res.headers?.['x-request-id'] ?? res.headers?.['X-Request-ID'],
+                res.getHeader?.('x-request-id') ??
+                res.getHeader?.('X-Request-ID'),
             },
           }),
         },
