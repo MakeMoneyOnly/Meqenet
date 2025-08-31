@@ -26,6 +26,9 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 # Copy auth-service specific package.json
 COPY backend/services/auth-service/package.json ./backend/services/auth-service/
 
+# Copy Prisma schema for client generation
+COPY backend/services/auth-service/prisma/schema.prisma ./backend/services/auth-service/prisma/schema.prisma
+
 # Install dependencies with enhanced resilience and cache mount
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
     set -e && \
@@ -49,7 +52,7 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
     cd backend/services/auth-service && \
     pnpm install && \
     echo "Generating Prisma client..." && \
-    npx prisma generate
+    npx prisma generate --schema=./prisma/schema.prisma
 
 # ---- Build Stage ----
 # Copies source code and builds the specific application.
