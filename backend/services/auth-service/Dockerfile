@@ -91,8 +91,9 @@ COPY --from=builder /app/deploy .
 # Copy package files for production dependencies
 COPY --from=builder /app/package.json /app/pnpm-lock.yaml ./
 
-# Install only production dependencies
-RUN pnpm install --prod --frozen-lockfile && \
+# Install only production dependencies (skip prepare scripts)
+RUN npm config set ignore-scripts true && \
+    pnpm install --prod --frozen-lockfile --ignore-scripts && \
     pnpm store prune
 
 # Create a non-root user for security
