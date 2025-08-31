@@ -254,8 +254,10 @@ jobs:
       # Semgrep Static Analysis
       - name: 🔍 Semgrep Security Scan
         run: |
-          # Install Semgrep
-          pip install semgrep
+          # Install Semgrep CLI
+          curl -L https://github.com/semgrep/semgrep/releases/latest/download/semgrep-linux.tar.gz | tar -xz
+          sudo mv semgrep /usr/local/bin/
+          semgrep --version
 
           # Run Semgrep scan with SARIF output
           semgrep scan \
