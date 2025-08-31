@@ -1,6 +1,7 @@
 resource "aws_kms_key" "sns" {
   description             = "KMS key for encrypting SNS messages"
   deletion_window_in_days = 30
+  enable_key_rotation     = true
 
   tags = {
     Name = "meqenet-sns-kms-key"
@@ -32,6 +33,7 @@ resource "aws_sns_topic" "main" {
 resource "aws_kms_key" "sqs" {
   description             = "KMS key for encrypting SQS messages"
   deletion_window_in_days = 30
+  enable_key_rotation     = true
 
   tags = {
     Name = "meqenet-sqs-kms-key"

@@ -17,38 +17,27 @@ resource "aws_security_group" "db" {
     to_port         = 5432
     protocol        = "tcp"
     security_groups = [aws_security_group.default.id]
+    description     = "Allow PostgreSQL traffic from application security group"
   }
 
-  egress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "Allow HTTPS outbound traffic for RDS updates and monitoring"
-  }
-
-  egress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "Allow HTTP outbound traffic for RDS updates"
-  }
+  # VPC ENDPOINTS ENABLED - NO PUBLIC EGRESS NEEDED FOR DATABASE
+  # RDS backups and all AWS service communication now use secure VPC endpoints
+  # Only DNS required for service discovery within VPC
 
   egress {
     from_port   = 53
     to_port     = 53
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "Allow DNS outbound traffic"
+    cidr_blocks = ["172.16.0.0/12"]  # AWS VPC DNS only
+    description = "Allow DNS outbound traffic to VPC DNS only"
   }
 
   egress {
     from_port   = 53
     to_port     = 53
     protocol    = "udp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "Allow DNS outbound traffic (UDP)"
+    cidr_blocks = ["172.16.0.0/12"]  # AWS VPC DNS only
+    description = "Allow DNS outbound traffic (UDP) to VPC DNS only"
   }
 
   tags = {
@@ -59,6 +48,7 @@ resource "aws_security_group" "db" {
 resource "aws_kms_key" "secrets" {
   description             = "KMS key for encrypting database secrets"
   deletion_window_in_days = 30
+  enable_key_rotation     = true
 
   tags = {
     Name = "meqenet-secrets-kms-key"
