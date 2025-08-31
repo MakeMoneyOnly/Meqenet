@@ -1,0 +1,89 @@
+# Meqenet.et - Cosign Configuration
+# Enterprise-grade artifact signing configuration
+
+# Sigstore configuration
+rekor_server: https://rekor.sigstore.dev
+fulcio_url: https://fulcio.sigstore.dev
+
+# Signing configuration
+signatures:
+  # Container images
+  - pattern: "ghcr.io/meqenet/**"
+    key: env://COSIGN_PRIVATE_KEY
+    certificate_identity: https://github.com/meqenet/meqenet/.github/workflows/artifact-signing-attestation.yml@refs/heads/main
+    certificate_oidc_issuer: https://token.actions.githubusercontent.com
+    other_name: "Meqenet Ethiopian BNPL Platform"
+
+  # NPM packages
+  - pattern: "@meqenet/**"
+    key: env://COSIGN_PRIVATE_KEY
+    certificate_identity: https://github.com/meqenet/meqenet/.github/workflows/artifact-signing-attestation.yml@refs/heads/main
+    certificate_oidc_issuer: https://token.actions.githubusercontent.com
+
+  # Binary artifacts
+  - pattern: "bin/**"
+    key: env://COSIGN_PRIVATE_KEY
+    certificate_identity: https://github.com/meqenet/meqenet/.github/workflows/artifact-signing-attestation.yml@refs/heads/main
+    certificate_oidc_issuer: https://token.actions.githubusercontent.com
+
+# Attestation types
+attestations:
+  - type: "slsa-provenance"
+    predicate_type: "https://slsa.dev/provenance/v1"
+    subjects:
+      - pattern: "**/*"
+        digest_algorithm: "sha256"
+
+  - type: "spdx"
+    predicate_type: "https://spdx.dev/Document"
+    subjects:
+      - pattern: "**/*.tar.gz"
+        digest_algorithm: "sha256"
+      - pattern: "**/*.zip"
+        digest_algorithm: "sha256"
+
+  - type: "cyclonedx"
+    predicate_type: "https://cyclonedx.org/bom"
+    subjects:
+      - pattern: "**/*.jar"
+        digest_algorithm: "sha256"
+      - pattern: "**/*.war"
+        digest_algorithm: "sha256"
+
+# Transparency log configuration
+tlog:
+  enabled: true
+  server: https://rekor.sigstore.dev
+
+# Certificate transparency
+ctlog:
+  enabled: true
+  server: https://ctfe.sigstore.dev/2022
+
+# Ethiopian compliance configuration
+compliance:
+  nbe_compliant: true
+  data_residency: "ethiopia"
+  audit_retention: "10_years"
+  encryption_standard: "AES-256-GCM"
+
+# Key management
+key_management:
+  provider: "aws-kms"
+  key_arn: "arn:aws:kms:us-east-1:ACCOUNT_ID:key/KEY_ID"
+  rotation_enabled: true
+  backup_enabled: true
+
+# Monitoring and alerting
+monitoring:
+  enabled: true
+  metrics_endpoint: "https://monitoring.meqenet.et/metrics"
+  alert_endpoint: "https://alerts.meqenet.et/webhook"
+
+# Enterprise features
+enterprise:
+  audit_trail: true
+  compliance_reporting: true
+  multi_signature: true
+  timestamp_authority: "https://timestamp.digicert.com"
+  ocsp_responder: "http://ocsp.digicert.com"

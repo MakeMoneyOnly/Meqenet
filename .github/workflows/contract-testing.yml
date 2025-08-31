@@ -1,0 +1,134 @@
+name: Contract Testing
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'backend/services/**'
+      - '.github/workflows/contract-testing.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'backend/services/**'
+
+jobs:
+  contract-test:
+    name: 'Contract Testing with Pact'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [auth-service, api-gateway]
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: meqenet
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: auth_service_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Generate Prisma client
+        run: pnpm --filter @meqenet/${{ matrix.service }} db:generate
+
+      - name: Run database migrations
+        run: pnpm --filter @meqenet/${{ matrix.service }} db:migrate
+        env:
+          DATABASE_URL: postgresql://meqenet:password@localhost:5432/auth_service_db
+
+      - name: Setup Pact Broker
+        run: |
+          # Start Pact Broker for testing
+          docker-compose -f docker-compose.pact.yml up -d
+          # Wait for Pact Broker to be ready
+          timeout 300 bash -c 'until curl -f http://localhost:9292/diagnostic/status/heartbeat; do sleep 5; done'
+
+      - name: Install Pact CLI
+        run: |
+          curl -fsSL https://github.com/pact-foundation/pact-ruby-standalone/releases/latest/download/pact-2.4.10-linux-x86_64.tar.gz | tar xz
+          sudo mv pact /usr/local/bin/
+
+      - name: Run Contract Tests
+        run: |
+          cd backend/services/${{ matrix.service }}
+          npm test -- --testPathPattern=contract
+        env:
+          PACT_BROKER_URL: http://localhost:9292
+          PACT_BROKER_USERNAME: admin
+          PACT_BROKER_PASSWORD: password
+
+      - name: Publish Contracts to Broker
+        if: github.ref == 'refs/heads/main'
+        run: |
+          cd backend/services/${{ matrix.service }}
+          pact-broker publish pacts \
+            --broker-base-url ${{ secrets.PACT_BROKER_URL }} \
+            --broker-username ${{ secrets.PACT_BROKER_USERNAME }} \
+            --broker-password ${{ secrets.PACT_BROKER_PASSWORD }} \
+            --consumer-app-version ${GITHUB_SHA} \
+            --tag main
+        env:
+          PACT_BROKER_URL: ${{ secrets.PACT_BROKER_URL }}
+          PACT_BROKER_USERNAME: ${{ secrets.PACT_BROKER_USERNAME }}
+          PACT_BROKER_PASSWORD: ${{ secrets.PACT_BROKER_PASSWORD }}
+
+      - name: Verify Contracts
+        if: github.ref == 'refs/heads/main'
+        run: |
+          pact-broker can-i-deploy \
+            --broker-base-url ${{ secrets.PACT_BROKER_URL }} \
+            --broker-username ${{ secrets.PACT_BROKER_USERNAME }} \
+            --broker-password ${{ secrets.PACT_BROKER_PASSWORD }} \
+            --pacticipant ${{ matrix.service }} \
+            --version ${GITHUB_SHA} \
+            --to main
+
+  contract-verification:
+    name: 'Contract Verification'
+    runs-on: ubuntu-latest
+    needs: [contract-test]
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Verify Provider Contracts
+        run: |
+          pact-broker can-i-deploy \
+            --broker-base-url ${{ secrets.PACT_BROKER_URL }} \
+            --broker-username ${{ secrets.PACT_BROKER_USERNAME }} \
+            --broker-password ${{ secrets.PACT_BROKER_PASSWORD }} \
+            --pacticipant auth-service \
+            --version ${GITHUB_SHA}
+        env:
+          PACT_BROKER_URL: ${{ secrets.PACT_BROKER_URL }}
+          PACT_BROKER_USERNAME: ${{ secrets.PACT_BROKER_USERNAME }}
+          PACT_BROKER_PASSWORD: ${{ secrets.PACT_BROKER_PASSWORD }}

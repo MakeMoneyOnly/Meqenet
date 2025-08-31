@@ -11,91 +11,74 @@ import { I18nModule, QueryResolver, AcceptLanguageResolver } from 'nestjs-i18n';
 import { LoggerModule } from 'nestjs-pino';
 
 import { AuthModule } from '../features/auth/auth.module';
+import { JwksModule } from '../features/jwks/jwks.module';
 import { HealthModule } from '../health/health.module';
 import { DatabaseModule } from '../infrastructure/database/database.module';
 import { MessagingModule } from '../infrastructure/messaging/messaging.module';
 import { pinoConfig } from '../shared/config/pino.config';
 import { throttlerConfig } from '../shared/config/throttler.config';
+import { DLQModule } from '../shared/dlq/dlq.module';
 import { GlobalExceptionFilter } from '../shared/filters/global-exception.filter';
 import { AdaptiveRateLimitGuard } from '../shared/guards/adaptive-rate-limit.guard';
 import { JwtAuthGuard } from '../shared/guards/jwt-auth.guard';
 import { LoggingInterceptor } from '../shared/interceptors/logging.interceptor';
 import { SharedModule } from '../shared/shared.module';
 import { ValidationModule } from '../shared/validation/validation.module';
-import { DLQModule } from '../shared/dlq/dlq.module';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+
 @Module({
   imports: [
-    // Configuration
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: ['.env.local', '.env'],
-      cache: true,
-      expandVariables: true,
     }),
-
-    // Throttling/Rate limiting
-    ThrottlerModule.forRootAsync(throttlerConfig),
-
-    // Logging
-    LoggerModule.forRootAsync(pinoConfig),
-
-    // Health checks
+    EventEmitterModule.forRoot(),
     TerminusModule,
-
-    // Internationalization
-    I18nModule.forRoot({
-      fallbackLanguage: 'en',
-      loaderOptions: {
-        path: path.join(__dirname, '../i18n/'),
-        watch: true,
-      },
+    ThrottlerModule.forRootAsync({
+      useFactory: throttlerConfig,
+    }),
+    I18nModule.forRootAsync({
+      useFactory: () => ({
+        fallbackLanguage: 'en',
+        loaderOptions: {
+          path: path.join(__dirname, '/i18n/'),
+          watch: true,
+        },
+      }),
       resolvers: [
         { use: QueryResolver, options: ['lang'] },
         AcceptLanguageResolver,
       ],
     }),
-
-    // Event handling
-    EventEmitterModule.forRoot({
-      wildcard: false,
-      delimiter: '.',
-      newListener: false,
-      removeListener: false,
-      maxListeners: 10,
-      verboseMemoryLeak: false,
-      ignoreErrors: false,
+    LoggerModule.forRootAsync({
+      useFactory: pinoConfig,
     }),
-
-    // Application modules
-    SharedModule,
-    ValidationModule,
-    HealthModule,
     AuthModule,
+    HealthModule,
     DatabaseModule,
     MessagingModule,
+    SharedModule,
+    ValidationModule,
     DLQModule,
+    JwksModule,
   ],
   controllers: [AppController],
   providers: [
     AppService,
-    // Global guards
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
     {
       provide: APP_GUARD,
       useClass: AdaptiveRateLimitGuard,
     },
     {
-      provide: APP_GUARD,
-      useClass: JwtAuthGuard,
-    },
-    // Global filters
-    {
       provide: APP_FILTER,
       useClass: GlobalExceptionFilter,
     },
-    // Global interceptors
     {
       provide: APP_INTERCEPTOR,
       useClass: LoggingInterceptor,

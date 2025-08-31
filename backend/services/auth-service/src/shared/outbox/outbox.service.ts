@@ -1,17 +1,21 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { MessagingProducerService } from '../../infrastructure/messaging/messaging.producer.service';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { Prisma, PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
+
+import { MessagingProducerService } from '../../infrastructure/messaging/messaging.producer.service';
+import { PrismaService } from '../prisma/prisma.service';
 
 export interface OutboxMessage {
   messageId: string;
   aggregateType: string;
   aggregateId: string;
   eventType: string;
-  payload: Record<string, any>;
-  metadata?: Record<string, any>;
+  payload: Record<string, unknown>;
+  metadata?: Record<string, unknown>;
 }
+
+// Type alias for Prisma outbox message
+type PrismaOutboxMessage = Prisma.OutboxMessageGetPayload<{}>;
 
 export enum OutboxStatus {
   PENDING = 'PENDING',
@@ -24,16 +28,24 @@ export enum OutboxStatus {
 @Injectable()
 export class OutboxService implements OnModuleInit {
   private readonly logger = new Logger(OutboxService.name);
-  private readonly BATCH_SIZE = 50;
-  private readonly MAX_RETRIES = 3;
-  private readonly RETRY_DELAY_MS = 60000; // 1 minute
+  // Magic numbers for outbox operations - documented inline for linting compliance
+  // eslint-disable-next-line no-magic-numbers
+  private readonly BATCH_SIZE = 50; // Messages per batch
+  // eslint-disable-next-line no-magic-numbers
+  private readonly MAX_RETRIES = 3; // Maximum retry attempts
+  // eslint-disable-next-line no-magic-numbers
+  private readonly RETRY_DELAY_MS = 60000; // 1 minute delay
+  // eslint-disable-next-line no-magic-numbers
+  private readonly CLEANUP_DAYS = 30; // Days to keep processed messages
+  // eslint-disable-next-line no-magic-numbers
+  private readonly EXPONENTIAL_BACKOFF_BASE = 2; // Base for exponential backoff
 
   constructor(
     private readonly prisma: PrismaService,
     private readonly messagingProducer: MessagingProducerService,
   ) {}
 
-  async onModuleInit() {
+  async onModuleInit(): Promise<void> {
     this.logger.log('OutboxService initialized');
   }
 
@@ -53,7 +65,7 @@ export class OutboxService implements OnModuleInit {
           aggregateId: message.aggregateId,
           eventType: message.eventType,
           payload: message.payload,
-          metadata: message.metadata || {},
+          metadata: message.metadata ?? {},
           status: OutboxStatus.PENDING,
           maxRetries: this.MAX_RETRIES,
         },
@@ -113,7 +125,7 @@ export class OutboxService implements OnModuleInit {
   /**
    * Process a single outbox message
    */
-  private async processMessage(message: any): Promise<void> {
+  private async processMessage(message: PrismaOutboxMessage): Promise<void> {
     const messageId = message.messageId;
 
     try {
@@ -148,7 +160,7 @@ export class OutboxService implements OnModuleInit {
   /**
    * Publish message to appropriate queue based on event type
    */
-  private async publishMessage(message: any): Promise<void> {
+  private async publishMessage(message: PrismaOutboxMessage): Promise<void> {
     const { eventType, aggregateId, payload } = message;
 
     switch (eventType) {
@@ -180,7 +192,7 @@ export class OutboxService implements OnModuleInit {
   /**
    * Handle processing errors with retry logic
    */
-  private async handleProcessingError(message: any, error: any): Promise<void> {
+  private async handleProcessingError(message: PrismaOutboxMessage, error: unknown): Promise<void> {
     const messageId = message.messageId;
     const retryCount = message.retryCount + 1;
 
@@ -204,7 +216,7 @@ export class OutboxService implements OnModuleInit {
       this.logger.error(`Message moved to DLQ: ${messageId}`);
     } else {
       // Schedule retry with exponential backoff
-      const nextRetryAt = new Date(Date.now() + this.RETRY_DELAY_MS * Math.pow(2, retryCount - 1));
+      const nextRetryAt = new Date(Date.now() + this.RETRY_DELAY_MS * Math.pow(this.EXPONENTIAL_BACKOFF_BASE, retryCount - 1));
 
       await this.prisma.outboxMessage.update({
         where: { id: message.id },
@@ -235,11 +247,11 @@ export class OutboxService implements OnModuleInit {
     });
 
     return {
-      pending: stats.find(s => s.status === OutboxStatus.PENDING)?._count.id || 0,
-      processing: stats.find(s => s.status === OutboxStatus.PROCESSING)?._count.id || 0,
-      processed: stats.find(s => s.status === OutboxStatus.PROCESSED)?._count.id || 0,
-      failed: stats.find(s => s.status === OutboxStatus.FAILED)?._count.id || 0,
-      dlq: stats.find(s => s.status === OutboxStatus.DLQ)?._count.id || 0,
+      pending: stats.find(s => s.status === OutboxStatus.PENDING)?._count.id ?? 0,
+      processing: stats.find(s => s.status === OutboxStatus.PROCESSING)?._count.id ?? 0,
+      processed: stats.find(s => s.status === OutboxStatus.PROCESSED)?._count.id ?? 0,
+      failed: stats.find(s => s.status === OutboxStatus.FAILED)?._count.id ?? 0,
+      dlq: stats.find(s => s.status === OutboxStatus.DLQ)?._count.id ?? 0,
     };
   }
 
@@ -269,7 +281,7 @@ export class OutboxService implements OnModuleInit {
   async cleanupProcessedMessages(): Promise<void> {
     try {
       const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - this.CLEANUP_DAYS);
 
       const result = await this.prisma.outboxMessage.deleteMany({
         where: {

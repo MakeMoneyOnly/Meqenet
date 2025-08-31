@@ -1,6 +1,20 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 
+// Circuit data structure
+interface CircuitData {
+  config: CircuitBreakerConfig;
+  state: CircuitState;
+  failures: number;
+  successes: number;
+  lastFailureTime: Date | null;
+  lastSuccessTime: Date | null;
+  nextAttemptTime: Date | null;
+  totalRequests: number;
+  totalFailures: number;
+  totalSuccesses: number;
+}
+
 export enum CircuitState {
   CLOSED = 'CLOSED',     // Normal operation
   OPEN = 'OPEN',         // Circuit is open, failing fast
@@ -30,6 +44,8 @@ export interface CircuitBreakerStats {
 @Injectable()
 export class CircuitBreakerService {
   private readonly logger = new Logger(CircuitBreakerService.name);
+  // eslint-disable-next-line no-magic-numbers
+  private readonly CLEANUP_DAYS = 30; // Days to keep old circuit data
   private circuits: Map<string, {
     config: CircuitBreakerConfig;
     state: CircuitState;
@@ -114,7 +130,11 @@ export class CircuitBreakerService {
    * Handle successful execution
    */
   private onSuccess(circuitName: string): void {
-    const circuit = this.circuits.get(circuitName)!;
+    const circuit = this.circuits.get(circuitName);
+    if (!circuit) {
+      this.logger.error(`Circuit ${circuitName} not found`);
+      return;
+    }
 
     circuit.totalSuccesses++;
     circuit.lastSuccessTime = new Date();
@@ -133,8 +153,12 @@ export class CircuitBreakerService {
   /**
    * Handle failed execution
    */
-  private onFailure(circuitName: string, error: any): void {
-    const circuit = this.circuits.get(circuitName)!;
+  private onFailure(circuitName: string, _error: unknown): void {
+    const circuit = this.circuits.get(circuitName);
+    if (!circuit) {
+      this.logger.error(`Circuit ${circuitName} not found`);
+      return;
+    }
 
     circuit.totalFailures++;
     circuit.failures++;
@@ -160,7 +184,11 @@ export class CircuitBreakerService {
    * Open the circuit breaker
    */
   private openCircuit(circuitName: string): void {
-    const circuit = this.circuits.get(circuitName)!;
+    const circuit = this.circuits.get(circuitName);
+    if (!circuit) {
+      this.logger.error(`Circuit ${circuitName} not found`);
+      return;
+    }
     circuit.state = CircuitState.OPEN;
     circuit.nextAttemptTime = new Date(Date.now() + circuit.config.recoveryTimeout);
 
@@ -171,7 +199,11 @@ export class CircuitBreakerService {
    * Reset the circuit breaker to closed state
    */
   private resetCircuit(circuitName: string): void {
-    const circuit = this.circuits.get(circuitName)!;
+    const circuit = this.circuits.get(circuitName);
+    if (!circuit) {
+      this.logger.error(`Circuit ${circuitName} not found`);
+      return;
+    }
     circuit.state = CircuitState.CLOSED;
     circuit.failures = 0;
     circuit.successes = 0;
@@ -183,7 +215,7 @@ export class CircuitBreakerService {
   /**
    * Check if we should attempt to reset the circuit
    */
-  private shouldAttemptReset(circuit: any): boolean {
+  private shouldAttemptReset(circuit: CircuitData): boolean {
     return (
       circuit.nextAttemptTime &&
       new Date() >= circuit.nextAttemptTime
@@ -214,9 +246,9 @@ export class CircuitBreakerService {
    * Get all circuit breaker statistics
    */
   getAllStats(): CircuitBreakerStats[] {
-    return Array.from(this.circuits.entries()).map(([name]) =>
-      this.getStats(name)!
-    );
+    return Array.from(this.circuits.entries())
+      .map(([name]) => this.getStats(name))
+      .filter((stats): stats is CircuitBreakerStats => stats !== null);
   }
 
   /**
@@ -248,7 +280,7 @@ export class CircuitBreakerService {
   async cleanupOldData(): Promise<void> {
     try {
       const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - this.CLEANUP_DAYS);
 
       for (const [name, circuit] of this.circuits) {
         // Reset old failure data in closed circuits

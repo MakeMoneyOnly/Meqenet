@@ -1,8 +1,8 @@
 import { PactV3, MatchersV3 } from '@pact-foundation/pact';
-import { describe, it } from 'vitest';
 import axios from 'axios';
+import { describe, it, expect } from 'vitest';
 
-const { like, eachLike } = MatchersV3;
+const { like } = MatchersV3;
 
 describe('Auth Service Consumer Contract', () => {
   const provider = new PactV3({
@@ -108,7 +108,7 @@ describe('Auth Service Consumer Contract', () => {
               },
             }
           );
-          fail('Expected request to fail with 409');
+          expect(true).toBe(false); // Should have failed with 409
         } catch (error: any) {
           expect(error.response.status).toBe(409);
           expect(error.response.data.message).toBe('User with this email already exists');
@@ -210,7 +210,7 @@ describe('Auth Service Consumer Contract', () => {
               },
             }
           );
-          fail('Expected request to fail with 401');
+          expect(true).toBe(false); // Should have failed with 401
         } catch (error: any) {
           expect(error.response.status).toBe(401);
           expect(error.response.data.message).toBe('Invalid credentials');

@@ -6,8 +6,8 @@ import { v4 as uuidv4 } from 'uuid';
 const BCRYPT_SALT_ROUNDS = 12;
 
 import { MessagingProducerService } from '../../infrastructure/messaging/messaging.producer.service';
-import { PrismaService } from '../../shared/prisma/prisma.service';
 import { OutboxService, OutboxMessage } from '../../shared/outbox/outbox.service';
+import { PrismaService } from '../../shared/prisma/prisma.service';
 
 import { LoginUserDto } from './dto/login-user.dto';
 import { RegisterUserDto } from './dto/register-user.dto';

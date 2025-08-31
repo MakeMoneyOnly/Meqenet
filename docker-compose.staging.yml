@@ -1,0 +1,18 @@
+version: '3.8' 
+services: 
+  postgres_staging: 
+    image: postgres:15-alpine 
+    environment: 
+      POSTGRES_USER: meqenet 
+      POSTGRES_PASSWORD: password 
+      POSTGRES_DB: staging_auth_db 
+    ports: 
+      - "5433:5432" 
+    volumes: 
+      - postgres_staging_data:/var/lib/postgresql/data 
+  redis_staging: 
+    image: redis:7-alpine 
+    ports: 
+      - "6380:6379" 
+volumes: 
+  postgres_staging_data: 

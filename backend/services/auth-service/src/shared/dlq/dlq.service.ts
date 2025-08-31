@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
 import { Cron, CronExpression } from '@nestjs/schedule';
+
+import { PrismaService } from '../prisma/prisma.service';
 
 export interface DLQMessage {
   id: string;
@@ -8,7 +9,21 @@ export interface DLQMessage {
   aggregateType: string;
   aggregateId: string;
   eventType: string;
-  payload: Record<string, any>;
+  payload: Record<string, unknown>;
+  errorMessage: string;
+  dlqReason: string;
+  retryCount: number;
+  createdAt: Date;
+  dlqAt: Date;
+}
+
+interface PrismaOutboxMessage {
+  id: string;
+  messageId: string;
+  aggregateType: string;
+  aggregateId: string;
+  eventType: string;
+  payload: Record<string, unknown>;
   errorMessage: string;
   dlqReason: string;
   retryCount: number;
@@ -27,7 +42,17 @@ export enum DLQAction {
 export class DLQService {
   private readonly logger = new Logger(DLQService.name);
   private readonly BATCH_SIZE = 100;
-  private readonly ARCHIVE_DAYS = 90;
+  // Magic numbers for DLQ operations - documented inline for linting compliance
+  // eslint-disable-next-line no-magic-numbers
+  private readonly ARCHIVE_DAYS = 90; // 90 days retention
+  // eslint-disable-next-line no-magic-numbers
+  private readonly DEFAULT_PAGE_SIZE = 50; // Default pagination size
+  // eslint-disable-next-line no-magic-numbers
+  private readonly HOURS_IN_DAY = 24; // Hours in a day
+  // eslint-disable-next-line no-magic-numbers
+  private readonly SECONDS_IN_HOUR = 60; // Seconds in an hour
+  // eslint-disable-next-line no-magic-numbers
+  private readonly MS_IN_SECOND = 1000; // Milliseconds in a second
 
   constructor(private readonly prisma: PrismaService) {}
 
@@ -36,7 +61,7 @@ export class DLQService {
    */
   async getDLQMessages(
     page: number = 1,
-    limit: number = 50,
+    limit: number = this.DEFAULT_PAGE_SIZE,
     eventType?: string,
     aggregateType?: string,
   ): Promise<{
@@ -47,7 +72,7 @@ export class DLQService {
   }> {
     const skip = (page - 1) * limit;
 
-    const where: any = {};
+    const where: { eventType?: string; aggregateType?: string } = {};
     if (eventType) where.eventType = eventType;
     if (aggregateType) where.aggregateType = aggregateType;
 
@@ -159,10 +184,10 @@ export class DLQService {
     total: number;
     byEventType: Record<string, number>;
     byAggregateType: Record<string, number>;
-    recentFailures: number; // Last 24 hours
+    recentFailures: number; // Last HOURS_IN_DAY hours
     oldestMessage: Date | null;
   }> {
-    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const twentyFourHoursAgo = new Date(Date.now() - this.HOURS_IN_DAY * this.SECONDS_IN_HOUR * this.MS_IN_SECOND);
 
     const [total, byEventType, byAggregateType, recentFailures, oldestMessage] = await Promise.all([
       this.prisma.outboxMessage.count({ where: { status: 'DLQ' } }),
@@ -200,7 +225,7 @@ export class DLQService {
         return acc;
       }, {} as Record<string, number>),
       recentFailures,
-      oldestMessage: oldestMessage?.dlqAt || null,
+      oldestMessage: oldestMessage?.dlqAt ?? null,
     };
   }
 
@@ -210,7 +235,7 @@ export class DLQService {
   async searchDLQMessages(
     searchTerm: string,
     page: number = 1,
-    limit: number = 50,
+    limit: number = this.DEFAULT_PAGE_SIZE,
   ): Promise<{
     messages: DLQMessage[];
     total: number;
@@ -287,7 +312,7 @@ export class DLQService {
 
   // Private helper methods
 
-  private mapToDLQMessage(message: any): DLQMessage {
+  private mapToDLQMessage(message: PrismaOutboxMessage): DLQMessage {
     return {
       id: message.id,
       messageId: message.messageId,
@@ -303,41 +328,41 @@ export class DLQService {
     };
   }
 
-  private async retryDLQMessage(message: any, notes?: string): Promise<void> {
+  private async retryDLQMessage(message: PrismaOutboxMessage, notes?: string): Promise<void> {
     await this.prisma.outboxMessage.update({
       where: { id: message.id },
       data: {
         status: 'PENDING',
         retryCount: 0,
         nextRetryAt: null,
-        errorMessage: notes || 'Manually retried from DLQ',
+        errorMessage: notes ?? 'Manually retried from DLQ',
       },
     });
   }
 
-  private async skipDLQMessage(message: any, notes?: string): Promise<void> {
+  private async skipDLQMessage(message: PrismaOutboxMessage, notes?: string): Promise<void> {
     await this.prisma.outboxMessage.update({
       where: { id: message.id },
       data: {
         status: 'PROCESSED',
         processedAt: new Date(),
-        errorMessage: notes || 'Skipped from DLQ',
+        errorMessage: notes ?? 'Skipped from DLQ',
       },
     });
   }
 
-  private async archiveDLQMessage(message: any, notes?: string): Promise<void> {
+  private async archiveDLQMessage(message: PrismaOutboxMessage, notes?: string): Promise<void> {
     await this.prisma.outboxMessage.update({
       where: { id: message.id },
       data: {
         payload: {},
-        errorMessage: notes || 'Archived from DLQ',
+        errorMessage: notes ?? 'Archived from DLQ',
       },
     });
   }
 
-  private async deleteDLQMessage(message: any, notes?: string): Promise<void> {
-    this.logger.log(`Deleting DLQ message ${message.id}: ${notes || 'No notes provided'}`);
+  private async deleteDLQMessage(message: PrismaOutboxMessage, notes?: string): Promise<void> {
+    this.logger.log(`Deleting DLQ message ${message.id}: ${notes ?? 'No notes provided'}`);
     await this.prisma.outboxMessage.delete({
       where: { id: message.id },
     });

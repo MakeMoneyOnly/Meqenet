@@ -1,0 +1,38 @@
+framework: "PCI DSS v4.0"
+control_id: "3.5.1.1"
+description: "Primary account numbers (PANs) are secured with strong cryptography wherever they are stored."
+
+implementation_narrative: |
+  All Primary Account Numbers (PANs) and other sensitive cardholder data are encrypted at the application layer before being stored in the database. We use AES-256-GCM, a strong, industry-accepted encryption algorithm. The encryption keys are managed by AWS KMS and are rotated annually. The code responsible for encryption is isolated within the 'payments-service' and is subject to strict access controls and code review policies. The database itself is also encrypted at rest as a secondary control.
+
+evidence:
+  - id: "CODE-ENCRYPTION-SERVICE"
+    type: "CODE"
+    description: "The centralized service responsible for encrypting and decrypting all sensitive financial data."
+    source: "backend/services/payments-service/src/shared/encryption.service.ts"
+    validated: false
+
+  - id: "CODE-ENCRYPTION-TEST"
+    type: "TEST_RESULT"
+    description: "Unit tests that verify the correctness and strength of the encryption implementation."
+    source: "backend/services/payments-service/test/unit/encryption.service.spec.ts"
+    validated: false
+
+  - id: "IAC-DB-ENCRYPTION"
+    type: "CONFIGURATION"
+    description: "The Infrastructure as Code (IaC) that defines and enables encryption-at-rest for the primary RDS database cluster."
+    source: "infrastructure/terraform/database.tf#L112-L115"
+    validated: false
+
+  - id: "POLICY-KEY-MANAGEMENT"
+    type: "DOCUMENTATION"
+    description: "The official policy document describing key management procedures, including key rotation and access control, as required by NBE."
+    source: "docs/Stage 1 - Foundation/07-Security.md#key-management"
+    validated: false
+
+  - id: "SCAN-IAC-SECURITY"
+    type: "SCAN_RESULT"
+    description: "The tfsec scan results from the CI/CD pipeline that verify the security of the Terraform configuration for the database."
+    source: ".github/workflows/infrastructure.yml"
+    artifact_name: "tfsec-results.sarif"
+    validated: false

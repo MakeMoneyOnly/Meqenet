@@ -3,8 +3,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 
 import { MessagingModule } from '../../infrastructure/messaging/messaging.module';
-import { PrismaModule } from '../../shared/prisma/prisma.module';
 import { OutboxModule } from '../../shared/outbox/outbox.module';
+import { PrismaModule } from '../../shared/prisma/prisma.module';
 
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';

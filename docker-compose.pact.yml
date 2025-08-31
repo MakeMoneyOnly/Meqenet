@@ -1,0 +1,50 @@
+# Pact Broker for Contract Testing
+# Run with: docker-compose -f docker-compose.pact.yml up -d
+
+version: '3.8'
+
+services:
+  pact-broker:
+    image: pactfoundation/pact-broker:latest
+    container_name: meqenet-pact-broker
+    ports:
+      - "9292:9292"
+    environment:
+      PACT_BROKER_DATABASE_URL: postgresql://pact_broker:password@pact-postgres:5432/pact_broker
+      PACT_BROKER_BASIC_AUTH_USERNAME: admin
+      PACT_BROKER_BASIC_AUTH_PASSWORD: password
+      PACT_BROKER_WEBHOOK_SCHEME_WHITELIST: http
+      PACT_BROKER_WEBHOOK_HOST_WHITELIST: localhost
+    depends_on:
+      pact-postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9292/diagnostic/status/heartbeat"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+
+  pact-postgres:
+    image: postgres:15-alpine
+    container_name: meqenet-pact-postgres
+    environment:
+      POSTGRES_USER: pact_broker
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: pact_broker
+    volumes:
+      - pact_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pact_broker -d pact_broker"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  pact_postgres_data:
+    driver: local
+
+networks:
+  default:
+    name: meqenet-dev-network
