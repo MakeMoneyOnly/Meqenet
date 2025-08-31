@@ -11,6 +11,7 @@ resource "aws_vpc" "main" {
 resource "aws_cloudwatch_log_group" "vpc_flow_logs" {
   name              = "/aws/vpc/flowlogs/meqenet-main-vpc"
   retention_in_days = 30
+  kms_key_id        = aws_kms_key.vpc_flow_logs.arn
 
   tags = {
     Name = "meqenet-vpc-flow-logs"
@@ -41,6 +42,146 @@ resource "aws_iam_role" "vpc_flow_logs" {
 resource "aws_iam_role_policy_attachment" "vpc_flow_logs" {
   role       = aws_iam_role.vpc_flow_logs.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonVPCCrossAccountNetworkInterfaceOperations"
+}
+
+# KMS key for VPC flow logs encryption
+resource "aws_kms_key" "vpc_flow_logs" {
+  description             = "KMS key for encrypting VPC flow logs"
+  deletion_window_in_days = 30
+  enable_key_rotation     = true
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "Enable IAM User Permissions"
+        Effect = "Allow"
+        Principal = {
+          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
+        }
+        Action   = "kms:*"
+        Resource = "*"
+      },
+      {
+        Sid    = "Allow VPC Flow Logs to encrypt logs"
+        Effect = "Allow"
+        Principal = {
+          Service = "vpc-flow-logs.amazonaws.com"
+        }
+        Action = [
+          "kms:GenerateDataKey*",
+          "kms:Decrypt"
+        ]
+        Resource = "*"
+        Condition = {
+          StringEquals = {
+            "aws:SourceArn" = aws_flow_log.main.arn
+          }
+        }
+      }
+    ]
+  })
+
+  tags = {
+    Name = "meqenet-vpc-flow-logs-kms"
+  }
+}
+
+data "aws_caller_identity" "current" {}
+
+# =============================================================================
+# VPC ENDPOINTS - FINTECH SECURITY ENHANCEMENT
+# =============================================================================
+
+# S3 Gateway Endpoint - Most secure for S3 access
+resource "aws_vpc_endpoint" "s3" {
+  vpc_id       = aws_vpc.main.id
+  service_name = "com.amazonaws.us-east-1.s3"
+
+  route_table_ids = [aws_route_table.private.id]
+
+  tags = {
+    Name = "meqenet-s3-endpoint"
+  }
+}
+
+# CloudWatch Logs Interface Endpoint
+resource "aws_vpc_endpoint" "cloudwatch_logs" {
+  vpc_id              = aws_vpc.main.id
+  service_name        = "com.amazonaws.us-east-1.logs"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = [aws_subnet.private_a.id, aws_subnet.private_b.id]
+  security_group_ids  = [aws_security_group.vpc_endpoint.id]
+
+  private_dns_enabled = true
+
+  tags = {
+    Name = "meqenet-cloudwatch-logs-endpoint"
+  }
+}
+
+# Secrets Manager Interface Endpoint
+resource "aws_vpc_endpoint" "secretsmanager" {
+  vpc_id              = aws_vpc.main.id
+  service_name        = "com.amazonaws.us-east-1.secretsmanager"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = [aws_subnet.private_a.id, aws_subnet.private_b.id]
+  security_group_ids  = [aws_security_group.vpc_endpoint.id]
+
+  private_dns_enabled = true
+
+  tags = {
+    Name = "meqenet-secretsmanager-endpoint"
+  }
+}
+
+# KMS Interface Endpoint
+resource "aws_vpc_endpoint" "kms" {
+  vpc_id              = aws_vpc.main.id
+  service_name        = "com.amazonaws.us-east-1.kms"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = [aws_subnet.private_a.id, aws_subnet.private_b.id]
+  security_group_ids  = [aws_security_group.vpc_endpoint.id]
+
+  private_dns_enabled = true
+
+  tags = {
+    Name = "meqenet-kms-endpoint"
+  }
+}
+
+# CloudTrail Interface Endpoint
+resource "aws_vpc_endpoint" "cloudtrail" {
+  vpc_id              = aws_vpc.main.id
+  service_name        = "com.amazonaws.us-east-1.cloudtrail"
+  vpc_endpoint_type   = "Interface"
+  subnet_ids          = [aws_subnet.private_a.id, aws_subnet.private_b.id]
+  security_group_ids  = [aws_security_group.vpc_endpoint.id]
+
+  private_dns_enabled = true
+
+  tags = {
+    Name = "meqenet-cloudtrail-endpoint"
+  }
+}
+
+# Security Group for VPC Endpoints
+resource "aws_security_group" "vpc_endpoint" {
+  name        = "meqenet-vpc-endpoint-sg"
+  description = "Security group for VPC endpoints"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["10.0.0.0/16"]
+    description = "Allow HTTPS traffic from VPC"
+  }
+
+  tags = {
+    Name = "meqenet-vpc-endpoint-sg"
+  }
 }
 
 resource "aws_flow_log" "main" {
@@ -187,36 +328,24 @@ resource "aws_security_group" "default" {
     description = "Allow HTTPS traffic from VPC"
   }
 
-  egress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "Allow HTTPS outbound traffic"
-  }
-
-  egress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "Allow HTTP outbound traffic"
-  }
+  # VPC ENDPOINTS ENABLED - NO PUBLIC EGRESS NEEDED
+  # All AWS service traffic now flows through secure VPC endpoints
+  # Only DNS required for service discovery within VPC
 
   egress {
     from_port   = 53
     to_port     = 53
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "Allow DNS outbound traffic"
+    cidr_blocks = ["172.16.0.0/12"]  # AWS VPC DNS only
+    description = "Allow DNS outbound traffic to VPC DNS only"
   }
 
   egress {
     from_port   = 53
     to_port     = 53
     protocol    = "udp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "Allow DNS outbound traffic (UDP)"
+    cidr_blocks = ["172.16.0.0/12"]  # AWS VPC DNS only
+    description = "Allow DNS outbound traffic (UDP) to VPC DNS only"
   }
 
   tags = {

@@ -84,8 +84,24 @@ resource "aws_s3_bucket" "cloudtrail" {
   }
 }
 
+# S3 bucket for access logs
+resource "aws_s3_bucket" "cloudtrail_access_logs" {
+  bucket = "meqenet-cloudtrail-access-logs-${random_id.suffix.hex}"
+
+  tags = {
+    Name = "meqenet-cloudtrail-access-logs"
+  }
+}
+
 resource "aws_s3_bucket_versioning" "cloudtrail" {
   bucket = aws_s3_bucket.cloudtrail.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+resource "aws_s3_bucket_versioning" "cloudtrail_access_logs" {
+  bucket = aws_s3_bucket.cloudtrail_access_logs.id
   versioning_configuration {
     status = "Enabled"
   }
@@ -110,6 +126,43 @@ resource "aws_s3_bucket_public_access_block" "cloudtrail" {
   block_public_policy     = true
   ignore_public_acls      = true
   restrict_public_buckets = true
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "cloudtrail_access_logs" {
+  bucket = aws_s3_bucket.cloudtrail_access_logs.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      kms_master_key_id = aws_kms_key.cloudtrail.arn
+      sse_algorithm     = "aws:kms"
+    }
+    bucket_key_enabled = true
+  }
+}
+
+resource "aws_s3_bucket_public_access_block" "cloudtrail_access_logs" {
+  bucket = aws_s3_bucket.cloudtrail_access_logs.id
+
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+# Enable access logging for CloudTrail bucket
+resource "aws_s3_bucket_logging" "cloudtrail" {
+  bucket = aws_s3_bucket.cloudtrail.id
+
+  target_bucket = aws_s3_bucket.cloudtrail_access_logs.id
+  target_prefix = "access-logs/cloudtrail/"
+}
+
+# Enable access logging for access logs bucket itself
+resource "aws_s3_bucket_logging" "cloudtrail_access_logs" {
+  bucket = aws_s3_bucket.cloudtrail_access_logs.id
+
+  target_bucket = aws_s3_bucket.cloudtrail_access_logs.id
+  target_prefix = "access-logs/self/"
 }
 
 # CloudTrail KMS Key
