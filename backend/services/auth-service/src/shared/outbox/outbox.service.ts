@@ -10,8 +10,8 @@ export interface OutboxMessage {
   aggregateType: string;
   aggregateId: string;
   eventType: string;
-  payload: Record<string, unknown>;
-  metadata?: Record<string, unknown>;
+  payload: Prisma.JsonValue;
+  metadata?: Prisma.JsonValue;
 }
 
 // Type alias for Prisma outbox message
@@ -42,7 +42,7 @@ export class OutboxService implements OnModuleInit {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly messagingProducer: MessagingProducerService,
+    private readonly messagingProducer: MessagingProducerService
   ) {}
 
   async onModuleInit(): Promise<void> {
@@ -55,7 +55,10 @@ export class OutboxService implements OnModuleInit {
    */
   async store(
     message: OutboxMessage,
-    prisma: Omit<PrismaClient, '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'> = this.prisma,
+    prisma: Omit<
+      PrismaClient,
+      '$connect' | '$disconnect' | '$on' | '$transaction' | '$use' | '$extends'
+    > = this.prisma
   ): Promise<void> {
     try {
       await prisma.outboxMessage.create({
@@ -64,7 +67,7 @@ export class OutboxService implements OnModuleInit {
           aggregateType: message.aggregateType,
           aggregateId: message.aggregateId,
           eventType: message.eventType,
-          payload: message.payload,
+          payload: message.payload ?? {},
           metadata: message.metadata ?? {},
           status: OutboxStatus.PENDING,
           maxRetries: this.MAX_RETRIES,
@@ -72,12 +75,12 @@ export class OutboxService implements OnModuleInit {
       });
 
       this.logger.debug(
-        `Message stored in outbox: ${message.messageId} (${message.eventType})`,
+        `Message stored in outbox: ${message.messageId} (${message.eventType})`
       );
     } catch (error) {
       this.logger.error(
         `Failed to store message in outbox: ${message.messageId}`,
-        error,
+        error
       );
       throw error;
     }
@@ -95,10 +98,7 @@ export class OutboxService implements OnModuleInit {
       const pendingMessages = await this.prisma.outboxMessage.findMany({
         where: {
           status: OutboxStatus.PENDING,
-          OR: [
-            { nextRetryAt: null },
-            { nextRetryAt: { lte: new Date() } },
-          ],
+          OR: [{ nextRetryAt: null }, { nextRetryAt: { lte: new Date() } }],
         },
         orderBy: { createdAt: 'asc' },
         take: this.BATCH_SIZE,
@@ -116,7 +116,6 @@ export class OutboxService implements OnModuleInit {
       );
 
       await Promise.allSettled(processingPromises);
-
     } catch (error) {
       this.logger.error('Error processing pending outbox messages', error);
     }
@@ -151,7 +150,6 @@ export class OutboxService implements OnModuleInit {
       });
 
       this.logger.debug(`Message processed successfully: ${messageId}`);
-
     } catch (error) {
       await this.handleProcessingError(message, error);
     }
@@ -165,7 +163,16 @@ export class OutboxService implements OnModuleInit {
 
     switch (eventType) {
       case 'USER_REGISTERED':
-        await this.messagingProducer.addUserRegisteredJob(aggregateId, payload.email);
+        if (payload && typeof payload === 'object' && 'email' in payload) {
+          await this.messagingProducer.addUserRegisteredJob(
+            aggregateId,
+            payload.email as string
+          );
+        } else {
+          this.logger.error(
+            `Invalid payload for USER_REGISTERED event: ${aggregateId}`
+          );
+        }
         break;
 
       case 'USER_LOGIN':
@@ -192,7 +199,10 @@ export class OutboxService implements OnModuleInit {
   /**
    * Handle processing errors with retry logic
    */
-  private async handleProcessingError(message: PrismaOutboxMessage, error: unknown): Promise<void> {
+  private async handleProcessingError(
+    message: PrismaOutboxMessage,
+    error: unknown
+  ): Promise<void> {
     const messageId = message.messageId;
     const retryCount = message.retryCount + 1;
 
@@ -207,7 +217,7 @@ export class OutboxService implements OnModuleInit {
         where: { id: message.id },
         data: {
           status: OutboxStatus.DLQ,
-          errorMessage: error.message,
+          errorMessage: error instanceof Error ? error.message : String(error),
           dlqReason: 'Max retries exceeded',
           dlqAt: new Date(),
         },
@@ -216,18 +226,24 @@ export class OutboxService implements OnModuleInit {
       this.logger.error(`Message moved to DLQ: ${messageId}`);
     } else {
       // Schedule retry with exponential backoff
-      const nextRetryAt = new Date(Date.now() + this.RETRY_DELAY_MS * Math.pow(this.EXPONENTIAL_BACKOFF_BASE, retryCount - 1));
+      const nextRetryAt = new Date(
+        Date.now() +
+          this.RETRY_DELAY_MS *
+            Math.pow(this.EXPONENTIAL_BACKOFF_BASE, retryCount - 1)
+      );
 
       await this.prisma.outboxMessage.update({
         where: { id: message.id },
         data: {
           status: OutboxStatus.PENDING,
-          errorMessage: error.message,
+          errorMessage: error instanceof Error ? error.message : String(error),
           nextRetryAt,
         },
       });
 
-      this.logger.debug(`Message scheduled for retry: ${messageId} at ${nextRetryAt}`);
+      this.logger.debug(
+        `Message scheduled for retry: ${messageId} at ${nextRetryAt}`
+      );
     }
   }
 
@@ -247,9 +263,12 @@ export class OutboxService implements OnModuleInit {
     });
 
     return {
-      pending: stats.find(s => s.status === OutboxStatus.PENDING)?._count.id ?? 0,
-      processing: stats.find(s => s.status === OutboxStatus.PROCESSING)?._count.id ?? 0,
-      processed: stats.find(s => s.status === OutboxStatus.PROCESSED)?._count.id ?? 0,
+      pending:
+        stats.find(s => s.status === OutboxStatus.PENDING)?._count.id ?? 0,
+      processing:
+        stats.find(s => s.status === OutboxStatus.PROCESSING)?._count.id ?? 0,
+      processed:
+        stats.find(s => s.status === OutboxStatus.PROCESSED)?._count.id ?? 0,
       failed: stats.find(s => s.status === OutboxStatus.FAILED)?._count.id ?? 0,
       dlq: stats.find(s => s.status === OutboxStatus.DLQ)?._count.id ?? 0,
     };

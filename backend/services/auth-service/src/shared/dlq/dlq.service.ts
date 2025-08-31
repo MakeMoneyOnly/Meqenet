@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { Prisma } from '@prisma/client';
 
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -9,12 +10,12 @@ export interface DLQMessage {
   aggregateType: string;
   aggregateId: string;
   eventType: string;
-  payload: Record<string, unknown>;
-  errorMessage: string;
-  dlqReason: string;
+  payload: Prisma.JsonValue;
+  errorMessage: string | null;
+  dlqReason: string | null;
   retryCount: number;
   createdAt: Date;
-  dlqAt: Date;
+  dlqAt: Date | null;
 }
 
 interface PrismaOutboxMessage {
@@ -23,12 +24,12 @@ interface PrismaOutboxMessage {
   aggregateType: string;
   aggregateId: string;
   eventType: string;
-  payload: Record<string, unknown>;
-  errorMessage: string;
-  dlqReason: string;
+  payload: Prisma.JsonValue;
+  errorMessage: string | null;
+  dlqReason: string | null;
   retryCount: number;
   createdAt: Date;
-  dlqAt: Date;
+  dlqAt: Date | null;
 }
 
 export enum DLQAction {
@@ -63,7 +64,7 @@ export class DLQService {
     page: number = 1,
     limit: number = this.DEFAULT_PAGE_SIZE,
     eventType?: string,
-    aggregateType?: string,
+    aggregateType?: string
   ): Promise<{
     messages: DLQMessage[];
     total: number;
@@ -121,7 +122,11 @@ export class DLQService {
   /**
    * Process DLQ message with specified action
    */
-  async processDLQMessage(id: string, action: DLQAction, notes?: string): Promise<void> {
+  async processDLQMessage(
+    id: string,
+    action: DLQAction,
+    notes?: string
+  ): Promise<void> {
     const message = await this.prisma.outboxMessage.findFirst({
       where: {
         id,
@@ -159,7 +164,7 @@ export class DLQService {
   async bulkProcessDLQMessages(
     messageIds: string[],
     action: DLQAction,
-    notes?: string,
+    notes?: string
   ): Promise<{ processed: number; failed: number }> {
     let processed = 0;
     let failed = 0;
@@ -187,43 +192,52 @@ export class DLQService {
     recentFailures: number; // Last HOURS_IN_DAY hours
     oldestMessage: Date | null;
   }> {
-    const twentyFourHoursAgo = new Date(Date.now() - this.HOURS_IN_DAY * this.SECONDS_IN_HOUR * this.MS_IN_SECOND);
+    const twentyFourHoursAgo = new Date(
+      Date.now() - this.HOURS_IN_DAY * this.SECONDS_IN_HOUR * this.MS_IN_SECOND
+    );
 
-    const [total, byEventType, byAggregateType, recentFailures, oldestMessage] = await Promise.all([
-      this.prisma.outboxMessage.count({ where: { status: 'DLQ' } }),
-      this.prisma.outboxMessage.groupBy({
-        by: ['eventType'],
-        where: { status: 'DLQ' },
-        _count: { id: true },
-      }),
-      this.prisma.outboxMessage.groupBy({
-        by: ['aggregateType'],
-        where: { status: 'DLQ' },
-        _count: { id: true },
-      }),
-      this.prisma.outboxMessage.count({
-        where: {
-          status: 'DLQ',
-          dlqAt: { gte: twentyFourHoursAgo },
-        },
-      }),
-      this.prisma.outboxMessage.findFirst({
-        where: { status: 'DLQ' },
-        orderBy: { dlqAt: 'asc' },
-        select: { dlqAt: true },
-      }),
-    ]);
+    const [total, byEventType, byAggregateType, recentFailures, oldestMessage] =
+      await Promise.all([
+        this.prisma.outboxMessage.count({ where: { status: 'DLQ' } }),
+        this.prisma.outboxMessage.groupBy({
+          by: ['eventType'],
+          where: { status: 'DLQ' },
+          _count: { id: true },
+        }),
+        this.prisma.outboxMessage.groupBy({
+          by: ['aggregateType'],
+          where: { status: 'DLQ' },
+          _count: { id: true },
+        }),
+        this.prisma.outboxMessage.count({
+          where: {
+            status: 'DLQ',
+            dlqAt: { gte: twentyFourHoursAgo },
+          },
+        }),
+        this.prisma.outboxMessage.findFirst({
+          where: { status: 'DLQ' },
+          orderBy: { dlqAt: 'asc' },
+          select: { dlqAt: true },
+        }),
+      ]);
 
     return {
       total,
-      byEventType: byEventType.reduce((acc, item) => {
-        acc[item.eventType] = item._count.id;
-        return acc;
-      }, {} as Record<string, number>),
-      byAggregateType: byAggregateType.reduce((acc, item) => {
-        acc[item.aggregateType] = item._count.id;
-        return acc;
-      }, {} as Record<string, number>),
+      byEventType: byEventType.reduce(
+        (acc, item) => {
+          acc[item.eventType] = item._count.id;
+          return acc;
+        },
+        {} as Record<string, number>
+      ),
+      byAggregateType: byAggregateType.reduce(
+        (acc, item) => {
+          acc[item.aggregateType] = item._count.id;
+          return acc;
+        },
+        {} as Record<string, number>
+      ),
       recentFailures,
       oldestMessage: oldestMessage?.dlqAt ?? null,
     };
@@ -235,7 +249,7 @@ export class DLQService {
   async searchDLQMessages(
     searchTerm: string,
     page: number = 1,
-    limit: number = this.DEFAULT_PAGE_SIZE,
+    limit: number = this.DEFAULT_PAGE_SIZE
   ): Promise<{
     messages: DLQMessage[];
     total: number;
@@ -321,14 +335,17 @@ export class DLQService {
       eventType: message.eventType,
       payload: message.payload,
       errorMessage: message.errorMessage,
-      dlqReason: message.dlqReason,
+      dlqReason: message.dlqReason ?? 'Unknown reason',
       retryCount: message.retryCount,
       createdAt: message.createdAt,
-      dlqAt: message.dlqAt,
+      dlqAt: message.dlqAt ?? new Date(),
     };
   }
 
-  private async retryDLQMessage(message: PrismaOutboxMessage, notes?: string): Promise<void> {
+  private async retryDLQMessage(
+    message: PrismaOutboxMessage,
+    notes?: string
+  ): Promise<void> {
     await this.prisma.outboxMessage.update({
       where: { id: message.id },
       data: {
@@ -340,7 +357,10 @@ export class DLQService {
     });
   }
 
-  private async skipDLQMessage(message: PrismaOutboxMessage, notes?: string): Promise<void> {
+  private async skipDLQMessage(
+    message: PrismaOutboxMessage,
+    notes?: string
+  ): Promise<void> {
     await this.prisma.outboxMessage.update({
       where: { id: message.id },
       data: {
@@ -351,7 +371,10 @@ export class DLQService {
     });
   }
 
-  private async archiveDLQMessage(message: PrismaOutboxMessage, notes?: string): Promise<void> {
+  private async archiveDLQMessage(
+    message: PrismaOutboxMessage,
+    notes?: string
+  ): Promise<void> {
     await this.prisma.outboxMessage.update({
       where: { id: message.id },
       data: {
@@ -361,8 +384,13 @@ export class DLQService {
     });
   }
 
-  private async deleteDLQMessage(message: PrismaOutboxMessage, notes?: string): Promise<void> {
-    this.logger.log(`Deleting DLQ message ${message.id}: ${notes ?? 'No notes provided'}`);
+  private async deleteDLQMessage(
+    message: PrismaOutboxMessage,
+    notes?: string
+  ): Promise<void> {
+    this.logger.log(
+      `Deleting DLQ message ${message.id}: ${notes ?? 'No notes provided'}`
+    );
     await this.prisma.outboxMessage.delete({
       where: { id: message.id },
     });

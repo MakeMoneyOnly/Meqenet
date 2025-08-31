@@ -36,9 +36,7 @@ import { AppService } from './app.service';
     }),
     EventEmitterModule.forRoot(),
     TerminusModule,
-    ThrottlerModule.forRootAsync({
-      useFactory: throttlerConfig,
-    }),
+    ThrottlerModule.forRootAsync(throttlerConfig),
     I18nModule.forRootAsync({
       useFactory: () => ({
         fallbackLanguage: 'en',
@@ -52,9 +50,7 @@ import { AppService } from './app.service';
         AcceptLanguageResolver,
       ],
     }),
-    LoggerModule.forRootAsync({
-      useFactory: pinoConfig,
-    }),
+    LoggerModule.forRootAsync(pinoConfig),
     AuthModule,
     HealthModule,
     DatabaseModule,

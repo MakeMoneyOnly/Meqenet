@@ -16,17 +16,17 @@ interface CircuitData {
 }
 
 export enum CircuitState {
-  CLOSED = 'CLOSED',     // Normal operation
-  OPEN = 'OPEN',         // Circuit is open, failing fast
+  CLOSED = 'CLOSED', // Normal operation
+  OPEN = 'OPEN', // Circuit is open, failing fast
   HALF_OPEN = 'HALF_OPEN', // Testing if service recovered
 }
 
 export interface CircuitBreakerConfig {
-  failureThreshold: number;     // Number of failures before opening
-  recoveryTimeout: number;      // Time in ms before attempting recovery
-  monitoringPeriod: number;     // Time window in ms for failure tracking
-  successThreshold: number;     // Number of successes needed in half-open state
-  name: string;                 // Circuit breaker name
+  failureThreshold: number; // Number of failures before opening
+  recoveryTimeout: number; // Time in ms before attempting recovery
+  monitoringPeriod: number; // Time window in ms for failure tracking
+  successThreshold: number; // Number of successes needed in half-open state
+  name: string; // Circuit breaker name
 }
 
 export interface CircuitBreakerStats {
@@ -46,18 +46,21 @@ export class CircuitBreakerService {
   private readonly logger = new Logger(CircuitBreakerService.name);
   // eslint-disable-next-line no-magic-numbers
   private readonly CLEANUP_DAYS = 30; // Days to keep old circuit data
-  private circuits: Map<string, {
-    config: CircuitBreakerConfig;
-    state: CircuitState;
-    failures: number;
-    successes: number;
-    lastFailureTime: Date | null;
-    lastSuccessTime: Date | null;
-    nextAttemptTime: Date | null;
-    totalRequests: number;
-    totalFailures: number;
-    totalSuccesses: number;
-  }> = new Map();
+  private circuits: Map<
+    string,
+    {
+      config: CircuitBreakerConfig;
+      state: CircuitState;
+      failures: number;
+      successes: number;
+      lastFailureTime: Date | null;
+      lastSuccessTime: Date | null;
+      nextAttemptTime: Date | null;
+      totalRequests: number;
+      totalFailures: number;
+      totalSuccesses: number;
+    }
+  > = new Map();
 
   /**
    * Register a new circuit breaker
@@ -89,7 +92,7 @@ export class CircuitBreakerService {
   async execute<T>(
     circuitName: string,
     fn: () => Promise<T>,
-    fallback?: () => Promise<T>,
+    fallback?: () => Promise<T>
   ): Promise<T> {
     const circuit = this.circuits.get(circuitName);
     if (!circuit) {
@@ -101,10 +104,14 @@ export class CircuitBreakerService {
       if (this.shouldAttemptReset(circuit)) {
         circuit.state = CircuitState.HALF_OPEN;
         circuit.successes = 0;
-        this.logger.log(`Circuit breaker ${circuitName} entering HALF_OPEN state`);
+        this.logger.log(
+          `Circuit breaker ${circuitName} entering HALF_OPEN state`
+        );
       } else {
         if (fallback) {
-          this.logger.warn(`Circuit breaker ${circuitName} is OPEN, using fallback`);
+          this.logger.warn(
+            `Circuit breaker ${circuitName} is OPEN, using fallback`
+          );
           return fallback();
         }
         throw new Error(`Circuit breaker ${circuitName} is OPEN`);
@@ -190,7 +197,9 @@ export class CircuitBreakerService {
       return;
     }
     circuit.state = CircuitState.OPEN;
-    circuit.nextAttemptTime = new Date(Date.now() + circuit.config.recoveryTimeout);
+    circuit.nextAttemptTime = new Date(
+      Date.now() + circuit.config.recoveryTimeout
+    );
 
     this.logger.error(`Circuit breaker ${circuitName} OPENED`);
   }
@@ -217,8 +226,7 @@ export class CircuitBreakerService {
    */
   private shouldAttemptReset(circuit: CircuitData): boolean {
     return (
-      circuit.nextAttemptTime &&
-      new Date() >= circuit.nextAttemptTime
+      circuit.nextAttemptTime !== null && new Date() >= circuit.nextAttemptTime
     );
   }
 

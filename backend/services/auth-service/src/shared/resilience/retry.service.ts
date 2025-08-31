@@ -2,10 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 
 export interface RetryConfig {
   maxAttempts: number;
-  initialDelay: number;        // Initial delay in milliseconds
-  maxDelay: number;           // Maximum delay in milliseconds
-  backoffMultiplier: number;  // Exponential backoff multiplier
-  jitter: boolean;            // Add random jitter to prevent thundering herd
+  initialDelay: number; // Initial delay in milliseconds
+  maxDelay: number; // Maximum delay in milliseconds
+  backoffMultiplier: number; // Exponential backoff multiplier
+  jitter: boolean; // Add random jitter to prevent thundering herd
   retryableErrors?: string[]; // Specific error messages/types to retry
 }
 
@@ -22,8 +22,8 @@ export class RetryService {
 
   private readonly defaultConfig: RetryConfig = {
     maxAttempts: 3,
-    initialDelay: 1000,        // 1 second
-    maxDelay: 30000,          // 30 seconds
+    initialDelay: 1000, // 1 second
+    maxDelay: 30000, // 30 seconds
     backoffMultiplier: 2,
     jitter: true,
     retryableErrors: [
@@ -52,7 +52,7 @@ export class RetryService {
    */
   async execute<T>(
     fn: () => Promise<T>,
-    config: Partial<RetryConfig> = {},
+    config: Partial<RetryConfig> = {}
   ): Promise<{ result: T; stats: RetryStats }> {
     const finalConfig = { ...this.defaultConfig, ...config };
     const stats: RetryStats = {
@@ -68,7 +68,9 @@ export class RetryService {
       stats.attempts = attempt;
 
       try {
-        this.logger.debug(`Retry attempt ${attempt}/${finalConfig.maxAttempts}`);
+        this.logger.debug(
+          `Retry attempt ${attempt}/${finalConfig.maxAttempts}`
+        );
 
         const result = await fn();
         stats.success = true;
@@ -111,7 +113,7 @@ export class RetryService {
   async executeWithCondition<T>(
     fn: () => Promise<T>,
     retryCondition: (error: unknown, attempt: number) => boolean,
-    config: Partial<RetryConfig> = {},
+    config: Partial<RetryConfig> = {}
   ): Promise<{ result: T; stats: RetryStats }> {
     const finalConfig = { ...this.defaultConfig, ...config };
     const stats: RetryStats = {
@@ -259,12 +261,17 @@ export class RetryService {
       return true; // Retry all errors if no specific list provided
     }
 
-    const errorMessage = (error as { message?: string }).message ?? String(error);
-    const errorCode = (error as { code?: string; status?: string }).code ?? (error as { code?: string; status?: string }).status ?? '';
+    const errorMessage =
+      (error as { message?: string }).message ?? String(error);
+    const errorCode =
+      (error as { code?: string; status?: string }).code ??
+      (error as { code?: string; status?: string }).status ??
+      '';
 
-    return config.retryableErrors.some(retryableError =>
-      errorMessage.includes(retryableError) ||
-      (errorCode?.includes(retryableError) ?? false)
+    return config.retryableErrors.some(
+      retryableError =>
+        errorMessage.includes(retryableError) ||
+        (errorCode?.includes(retryableError) ?? false)
     );
   }
 
@@ -272,7 +279,8 @@ export class RetryService {
    * Calculate delay with exponential backoff and optional jitter
    */
   private calculateDelay(attempt: number, config: RetryConfig): number {
-    let delay = config.initialDelay * Math.pow(config.backoffMultiplier, attempt - 1);
+    let delay =
+      config.initialDelay * Math.pow(config.backoffMultiplier, attempt - 1);
 
     // Cap at maximum delay
     delay = Math.min(delay, config.maxDelay);
@@ -280,7 +288,10 @@ export class RetryService {
     // Add jitter if enabled
     if (config.jitter) {
       const jitterRange = delay * this.JITTER_PERCENTAGE; // 10% jitter
-      delay += (Math.random() - this.JITTER_RANDOM_CENTER) * this.JITTER_RANGE_MULTIPLIER * jitterRange;
+      delay +=
+        (Math.random() - this.JITTER_RANDOM_CENTER) *
+        this.JITTER_RANGE_MULTIPLIER *
+        jitterRange;
       delay = Math.max(0, delay); // Ensure non-negative
     }
 
@@ -297,10 +308,22 @@ export class RetryService {
   /**
    * Create a retry decorator for methods
    */
-  createRetryDecorator(config: Partial<RetryConfig> = {}): (target: unknown, propertyName: string, descriptor: PropertyDescriptor) => void {
-    return function (target: unknown, propertyName: string, descriptor: PropertyDescriptor): void {
+  createRetryDecorator(
+    config: Partial<RetryConfig> = {}
+  ): (
+    target: unknown,
+    propertyName: string,
+    descriptor: PropertyDescriptor
+  ) => PropertyDescriptor {
+    return function (
+      target: unknown,
+      propertyName: string,
+      descriptor: PropertyDescriptor
+    ): PropertyDescriptor {
       const method = descriptor.value;
-      const logger = new Logger(`${target.constructor.name}.${propertyName}`);
+      const logger = new Logger(
+        `${target && typeof target === 'object' && target.constructor && typeof target.constructor === 'function' ? target.constructor.name : 'Unknown'}.${propertyName}`
+      );
 
       descriptor.value = async function (...args: unknown[]): Promise<unknown> {
         const retryService = new RetryService();
@@ -308,7 +331,7 @@ export class RetryService {
         try {
           const { result } = await retryService.execute(
             () => method.apply(this, args),
-            config,
+            config
           );
           return result;
         } catch (error) {
@@ -317,7 +340,7 @@ export class RetryService {
         }
       };
 
-      return descriptor;
+      return descriptor as PropertyDescriptor;
     };
   }
 }

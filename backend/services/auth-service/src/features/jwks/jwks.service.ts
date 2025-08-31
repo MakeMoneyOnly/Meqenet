@@ -2,12 +2,15 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
-import pem2jwk from 'pem-to-jwk';
+
+// Type declaration for pem-to-jwk module
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const pem2jwk = require('pem-to-jwk') as any;
 
 @Injectable()
 export class JwksService implements OnModuleInit {
   private readonly logger = new Logger(JwksService.name);
-  private jwks: { keys: Record<string, unknown>[] };
+  private jwks!: { keys: Record<string, unknown>[] };
 
   onModuleInit(): void {
     this.loadJwk();
@@ -18,14 +21,14 @@ export class JwksService implements OnModuleInit {
       const publicKeyPath = path.join(process.cwd(), 'secrets', 'public.pem');
       const publicKey = fs.readFileSync(publicKeyPath, 'utf8');
       const jwk = pem2jwk(publicKey);
-      
+
       this.jwks = {
         keys: [
           {
             ...jwk,
             kid: 'meqenet-key-1', // Key ID
-            alg: 'RS256',       // Algorithm
-            use: 'sig',         // Signature
+            alg: 'RS256', // Algorithm
+            use: 'sig', // Signature
           },
         ],
       };
