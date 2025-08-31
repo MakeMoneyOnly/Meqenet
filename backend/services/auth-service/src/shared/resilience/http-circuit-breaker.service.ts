@@ -1,7 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 
-import { CircuitBreakerService, CircuitBreakerConfig } from './circuit-breaker.service';
+import {
+  CircuitBreakerService,
+  CircuitBreakerConfig,
+} from './circuit-breaker.service';
 
 @Injectable()
 export class HttpCircuitBreakerService {
@@ -61,12 +64,14 @@ export class HttpCircuitBreakerService {
   async request<T = unknown>(
     circuitName: string,
     config: AxiosRequestConfig,
-    fallback?: () => Promise<T>,
+    fallback?: () => Promise<T>
   ): Promise<AxiosResponse<T>> {
     return this.circuitBreaker.execute(
       circuitName,
       async () => {
-        this.logger.debug(`Making HTTP request to ${config.url} via circuit ${circuitName}`);
+        this.logger.debug(
+          `Making HTTP request to ${config.url} via circuit ${circuitName}`
+        );
         return this.axiosInstance.request<T>(config);
       },
       async () => {
@@ -82,8 +87,10 @@ export class HttpCircuitBreakerService {
             config,
           } as AxiosResponse<T>;
         }
-        throw new Error(`Circuit breaker ${circuitName} is open and no fallback provided`);
-      },
+        throw new Error(
+          `Circuit breaker ${circuitName} is open and no fallback provided`
+        );
+      }
     );
   }
 
@@ -94,12 +101,12 @@ export class HttpCircuitBreakerService {
     circuitName: string,
     url: string,
     config?: AxiosRequestConfig,
-    fallback?: () => Promise<T>,
+    fallback?: () => Promise<T>
   ): Promise<AxiosResponse<T>> {
     return this.request<T>(
       circuitName,
       { ...config, method: 'GET', url },
-      fallback,
+      fallback
     );
   }
 
@@ -111,12 +118,12 @@ export class HttpCircuitBreakerService {
     url: string,
     data?: unknown,
     config?: AxiosRequestConfig,
-    fallback?: () => Promise<T>,
+    fallback?: () => Promise<T>
   ): Promise<AxiosResponse<T>> {
     return this.request<T>(
       circuitName,
       { ...config, method: 'POST', url, data },
-      fallback,
+      fallback
     );
   }
 
@@ -128,12 +135,12 @@ export class HttpCircuitBreakerService {
     url: string,
     data?: unknown,
     config?: AxiosRequestConfig,
-    fallback?: () => Promise<T>,
+    fallback?: () => Promise<T>
   ): Promise<AxiosResponse<T>> {
     return this.request<T>(
       circuitName,
       { ...config, method: 'PUT', url, data },
-      fallback,
+      fallback
     );
   }
 
@@ -144,12 +151,12 @@ export class HttpCircuitBreakerService {
     circuitName: string,
     url: string,
     config?: AxiosRequestConfig,
-    fallback?: () => Promise<T>,
+    fallback?: () => Promise<T>
   ): Promise<AxiosResponse<T>> {
     return this.request<T>(
       circuitName,
       { ...config, method: 'DELETE', url },
-      fallback,
+      fallback
     );
   }
 
@@ -192,7 +199,13 @@ export class HttpCircuitBreakerService {
   /**
    * Create a fallback function for payment operations
    */
-  createPaymentFallback(operation: string): () => Promise<{ status: string; operation: string; fallback: boolean; timestamp: string; message: string }> {
+  createPaymentFallback(operation: string): () => Promise<{
+    status: string;
+    operation: string;
+    fallback: boolean;
+    timestamp: string;
+    message: string;
+  }> {
     return async () => {
       this.logger.warn(`Payment operation ${operation} failed, using fallback`);
 
@@ -214,9 +227,17 @@ export class HttpCircuitBreakerService {
   /**
    * Create a fallback function for notification operations
    */
-  createNotificationFallback(operation: string): () => Promise<{ status: string; operation: string; fallback: boolean; timestamp: string; message: string }> {
+  createNotificationFallback(operation: string): () => Promise<{
+    status: string;
+    operation: string;
+    fallback: boolean;
+    timestamp: string;
+    message: string;
+  }> {
     return async () => {
-      this.logger.warn(`Notification operation ${operation} failed, using fallback`);
+      this.logger.warn(
+        `Notification operation ${operation} failed, using fallback`
+      );
 
       // For notifications, we might want to:
       // 1. Store the notification in a local queue
@@ -236,9 +257,17 @@ export class HttpCircuitBreakerService {
   /**
    * Create a fallback function for analytics operations
    */
-  createAnalyticsFallback(operation: string): () => Promise<{ status: string; operation: string; fallback: boolean; timestamp: string; message: string }> {
+  createAnalyticsFallback(operation: string): () => Promise<{
+    status: string;
+    operation: string;
+    fallback: boolean;
+    timestamp: string;
+    message: string;
+  }> {
     return async () => {
-      this.logger.warn(`Analytics operation ${operation} failed, using fallback`);
+      this.logger.warn(
+        `Analytics operation ${operation} failed, using fallback`
+      );
 
       // For analytics, we can often skip or batch operations
       return {
