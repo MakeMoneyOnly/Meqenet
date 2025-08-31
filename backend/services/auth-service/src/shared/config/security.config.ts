@@ -223,20 +223,4 @@ export class SecurityConfigService {
       );
     }
   }
-
-  /**
-   * Placeholder for HSM key retrieval
-   * In actual implementation, this would use AWS KMS, Azure Key Vault, etc.
-   * @param keyId - The HSM key identifier
-   * @returns Promise<string> - The retrieved key
-   */
-  private async getKeyFromHSM(keyId: string): Promise<string> {
-    if (!keyId || typeof keyId !== 'string') {
-      throw new Error('HSM key ID must be a non-empty string');
-    }
-
-    // TODO: Implement actual HSM integration
-    // This is a placeholder implementation
-    throw new Error('HSM integration not yet implemented');
-  }
 }

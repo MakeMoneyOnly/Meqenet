@@ -4,7 +4,6 @@ import {
   OnModuleInit,
   OnModuleDestroy,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import {
   register,
   collectDefaultMetrics,
@@ -27,24 +26,13 @@ const RESPONSE_TIME_BUCKET_4 = 2.0; // 2s
 const RESPONSE_TIME_BUCKET_5 = 5.0; // 5s
 const RESPONSE_TIME_BUCKET_6 = 10.0; // 10s
 
-// Alert threshold constants
-const _ALERT_THRESHOLD_LOW = 0.1;
-const _ALERT_THRESHOLD_MEDIUM = 0.5;
-const _ALERT_THRESHOLD_HIGH = 2.0;
-const _ALERT_THRESHOLD_CRITICAL = 5.0;
-const _ALERT_THRESHOLD_MAX = 10.0;
 
-const _MONITORING_WINDOW_MINUTES = 15;
-const _MONITORING_WINDOW_HOURS = 24;
-const _MONITORING_WINDOW_DAYS = 7;
-
-const _BASE_SUCCESS_RATE = 0.8;
-const _MEDIUM_SUCCESS_RATE = 0.6;
-
-const _RISK_SCORE_INCREMENT = 50;
-const _RISK_SCORE_DECREMENT = -50;
 
 const CLEANUP_WINDOW_HOURS = 24;
+
+// Alert threshold constants
+const _BASE_SUCCESS_RATE = 0.8;
+const _MEDIUM_SUCCESS_RATE = 0.6;
 
 // Event and indicator limits
 const MAX_EVENTS_HISTORY = 1000;
@@ -106,7 +94,7 @@ export class SecurityMonitoringService
   private threatIndicators: Map<string, ThreatIndicator[]> = new Map();
   private securityEvents: SecurityEvent[] = [];
 
-  constructor(private configService: ConfigService) {}
+  constructor() {}
 
   async onModuleInit(): Promise<void> {
     this.initializeMetrics();
@@ -240,7 +228,7 @@ export class SecurityMonitoringService
     await this.recordSecurityEvent({
       type: 'authentication',
       severity: 'medium',
-      userId,
+      userId: userId || 'unknown',
       ipAddress,
       userAgent,
       description: `Failed authentication: ${reason}`,
@@ -266,7 +254,7 @@ export class SecurityMonitoringService
     await this.recordSecurityEvent({
       type: 'rate_limit',
       severity: 'low',
-      userId,
+      userId: userId || 'anonymous',
       ipAddress,
       description: `Rate limit exceeded for endpoint: ${endpoint}`,
       metadata: { endpoint },
@@ -385,7 +373,7 @@ export class SecurityMonitoringService
       await this.recordSecurityEvent({
         type: 'threat_detection',
         severity: 'high',
-        userId,
+        userId: userId || 'unknown',
         ipAddress,
         description: `Potential brute force attack detected: ${recentFailures.length} failed attempts`,
         metadata: {

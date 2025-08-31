@@ -1,7 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 
-import { AnomalyDetectionService } from './anomaly-detection.service';
 import { SecurityMonitoringService } from './security-monitoring.service';
 
 // Constants for magic numbers
@@ -16,7 +14,6 @@ const UNUSUAL_AMOUNT_MULTIPLIER = 3.0;
 const UNUSUAL_LOCATION_THRESHOLD = 0.8;
 const HIGH_VELOCITY_MULTIPLIER = 5.0;
 
-const _MAX_TRANSACTIONS_HISTORY = 20;
 const HIGH_RISK_COUNTRY_SCORE = 90;
 const UNUSUAL_LOCATION_SCORE = 70;
 const UNUSUAL_HOUR_SCORE = 40;
@@ -24,20 +21,13 @@ const RAPID_SUCCESSION_SCORE = 60;
 const UNKNOWN_DEVICE_SCORE = 65;
 const SUSPICIOUS_MERCHANT_SCORE = 85;
 const UNUSUAL_MERCHANT_SCORE = 45;
-
-const _MEDIUM_RISK_THRESHOLD = 50;
-const _REVIEW_RISK_THRESHOLD = 60;
-const _LEGITIMATE_SUCCESS_RATE = 0.8;
+const RAPID_SUCCESSION_THRESHOLD_SECONDS = 5 * SECONDS_PER_MINUTE; // 5 minutes in seconds
 
 const _MAX_SCORE = 100;
 const _AMOUNT_DEVIATION_MULTIPLIER = 20;
 const _HIGH_RISK_AMOUNT_SCORE = 80;
-
 const _EARLY_HOUR_THRESHOLD = 6;
 const _LATE_HOUR_THRESHOLD = 22;
-const _RAPID_SUCCESSION_MINUTES = 5;
-const RAPID_SUCCESSION_THRESHOLD_SECONDS =
-  _RAPID_SUCCESSION_MINUTES * SECONDS_PER_MINUTE; // 5 minutes in seconds
 
 const HIGH_RISK_AMOUNT_1 = 10000;
 const HIGH_RISK_AMOUNT_2 = 50000;
@@ -46,7 +36,6 @@ const HIGH_RISK_AMOUNT_3 = 100000;
 const MAX_COMMON_LOCATIONS = 10;
 const MAX_COMMON_MERCHANTS = 10;
 const MAX_COMMON_DEVICES = 5;
-const _FRAUD_DETECTION_THRESHOLD = 10;
 const RISK_SCORE_INCREMENT = 10;
 const RISK_SCORE_DECREMENT = 1;
 
@@ -162,9 +151,7 @@ export class AIFraudDetectionService {
   };
 
   constructor(
-    private configService: ConfigService,
-    private securityMonitoringService: SecurityMonitoringService,
-    private anomalyDetectionService: AnomalyDetectionService
+    private securityMonitoringService: SecurityMonitoringService
   ) {
     this.initializeFraudDetection();
   }

@@ -9,24 +9,9 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 // Constants for magic numbers
-const _MILLISECONDS_PER_SECOND = 1000;
-const _SECONDS_PER_MINUTE = 60;
-
 const _AES_KEY_LENGTH = 32; // 256-bit key
 const _GCM_IV_LENGTH = 16; // 128-bit IV for GCM
 const _SCRYPT_KEYLEN = 32;
-const _SCRYPT_COST = 16384; // CPU/memory cost parameter
-const _SCRYPT_BLOCK_SIZE = 8;
-const _SCRYPT_PARALLELIZATION = 1;
-
-const _MAX_ENCRYPTION_ATTEMPTS = 3;
-const _FIELD_ENCRYPTION_VERSION = 1;
-
-const _ENCRYPTION_TIMEOUT_SECONDS = 30;
-const _CACHE_TTL_MINUTES = 5;
-
-const _MAX_FIELD_SIZE_BYTES = 1048576; // 1MB limit
-const _MAX_BATCH_SIZE = 100;
 
 // String masking constants
 const MIN_MASK_LENGTH = 4;

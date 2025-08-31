@@ -1,14 +1,17 @@
 import * as path from 'path';
 
+import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD, APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 // import { ClientsModule, Transport, GrpcOptions } from '@nestjs/microservices';
 import { TerminusModule } from '@nestjs/terminus';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { redisStore } from 'cache-manager-redis-store';
 import { I18nModule, QueryResolver, AcceptLanguageResolver } from 'nestjs-i18n';
 import { LoggerModule } from 'nestjs-pino';
+import type { RedisClientOptions } from 'redis';
 
 import { AuthModule } from '../features/auth/auth.module';
 import { JwksModule } from '../features/jwks/jwks.module';
@@ -28,11 +31,34 @@ import { ValidationModule } from '../shared/validation/validation.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
+/**
+ * Redis configuration constants for auth-service
+ * Enterprise FinTech compliant Redis configuration
+ */
+const REDIS_CONFIG = {
+  DEFAULT_PORT: 6379,
+  DEFAULT_TTL_SECONDS: 60,
+} as const;
+
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: ['.env.local', '.env'],
+    }),
+    CacheModule.registerAsync<RedisClientOptions>({
+      isGlobal: true,
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        store: await redisStore({
+          socket: {
+            host: configService.get<string>('REDIS_HOST', 'localhost'),
+            port: configService.get<number>('REDIS_PORT', REDIS_CONFIG.DEFAULT_PORT),
+          },
+          ttl: configService.get<number>('CACHE_TTL', REDIS_CONFIG.DEFAULT_TTL_SECONDS),
+        }),
+      }),
+      inject: [ConfigService],
     }),
     EventEmitterModule.forRoot(),
     TerminusModule,

@@ -1,10 +1,4 @@
 {
-  "payments": [
-    {
-      "id": 1,
-      "transactionId": "T123456789",
-      "status": "completed",
-      "amount": 1000
-    }
-  ]
+  "payments": [],
+  "refunds": []
 }

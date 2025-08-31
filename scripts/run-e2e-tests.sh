@@ -1,26 +1,21 @@
 #!/bin/bash
-
 set -e
 
-# Start services
-docker-compose -f docker-compose.e2e.yml up -d
+echo "Starting E2E test environment..."
+
+# Start services in the background
+docker-compose -f docker-compose.e2e.yml up -d --build
 
 # Wait for services to be healthy
-# TODO: Implement proper health checks
-sleep 10
+echo "Waiting for services to be ready..."
+# In a real scenario, you would use a more robust health check mechanism
+sleep 30
 
-# Seed database
-# Assuming the seed script is executable and connects to the e2e database
-# You might need to configure the DATABASE_URL for the seed script
-# export DATABASE_URL=postgresql://test:test@localhost:5433/test
-# ts-node scripts/seed.ts
+# Run the E2E tests
+# This assumes your E2E test runner is configured in the package.json test:e2e script
+echo "Running E2E tests..."
+pnpm run test:e2e
 
-# Run tests
-# Using the existing test:e2e script, but this should be changed to Vitest
-pnpm test:e2e
-
-# Cleanup database
-# This could be done by another script or by restarting the db container
-
-# Stop services
+# Stop and remove the containers
+echo "Tearing down E2E test environment..."
 docker-compose -f docker-compose.e2e.yml down

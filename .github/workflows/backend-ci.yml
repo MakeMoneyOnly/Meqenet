@@ -37,8 +37,14 @@ jobs:
       - name: Run lint
         run: pnpm lint
 
-      - name: Run tests
-        run: pnpm test
+      - name: Run tests with coverage
+        run: pnpm test -- --coverage --fail-if-under 70
+
+      - name: PAN and Sensitive Data Leak Scan
+        run: |
+          # Fail if a 16-digit number that looks like a credit card is found.
+          # This is a basic but effective guard against accidental PAN leaks.
+          ! git grep -E '[0-9]{13,16}' -- . ':!*.json' ':!*.lock'
 
       - name: Run Snyk to check for vulnerabilities
         uses: snyk/actions/node@master

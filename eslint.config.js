@@ -6,6 +6,7 @@ const importPlugin = require('eslint-plugin-import');
 const react = require('eslint-plugin-react');
 const reactHooks = require('eslint-plugin-react-hooks');
 const jsxA11y = require('eslint-plugin-jsx-a11y');
+const nxPlugin = require('@nx/eslint-plugin');
 
 // Internal plugin: restrict process.env usage to files under **/shared/config/** only
 const internalSecurityPlugin = {

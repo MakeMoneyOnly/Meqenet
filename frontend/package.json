@@ -14,6 +14,7 @@
     "next": "~14.2.32",
     "react": "18.3.1",
     "react-dom": "18.3.1",
+    "@sentry/nextjs": "^8.20.0",
     "react-native": "0.76.5"
   },
   "devDependencies": {

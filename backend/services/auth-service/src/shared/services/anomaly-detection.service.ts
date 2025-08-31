@@ -1,36 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 
 import { SecurityMonitoringService } from './security-monitoring.service';
 
 // Constants for magic numbers
 const MILLISECONDS_PER_SECOND = 1000;
 const SECONDS_PER_MINUTE = 60;
-const _MINUTES_PER_HOUR = 60;
-const _HOURS_PER_DAY = 24;
 
-const _ANOMALY_TIME_WINDOW_HOURS = 24;
-const _HIGH_RISK_THRESHOLD = 75;
-const _CRITICAL_RISK_THRESHOLD = 90;
-
-const _STATISTICAL_ANOMALY_MULTIPLIER = 2.0;
-const _BEHAVIORAL_ANOMALY_THRESHOLD = 0.8;
-const _SEQUENTIAL_PATTERN_LENGTH = 5;
-
-const _IP_VELOCITY_TIME_WINDOW_MINUTES = 15;
-const _DEVICE_VELOCITY_TIME_WINDOW_MINUTES = 30;
-const _LOCATION_CHANGE_TIME_WINDOW_MINUTES = 60;
-
-const _MAX_SEQUENCE_LENGTH = 10;
-const _MIN_SEQUENCE_LENGTH = 3;
-const _SEQUENCE_MULTIPLIER = 2;
-
-const _TIME_WINDOW_MULTIPLIER = 2.0;
-const _LOCATION_DISTANCE_THRESHOLD = 126; // km
-const _TIME_ZONE_DIFFERENCE_HOURS = 128; // hours difference threshold
-
-const _ANOMALY_SCORE_MULTIPLIER = 20;
-const _MAX_ANOMALY_SCORE = 100;
 
 // Simulation constants
 const MAX_SIMULATED_REQUESTS = 20;
@@ -133,7 +108,6 @@ export class AnomalyDetectionService {
   };
 
   constructor(
-    private configService: ConfigService,
     private securityMonitoringService: SecurityMonitoringService
   ) {}
 

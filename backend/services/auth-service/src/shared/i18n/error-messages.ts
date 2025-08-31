@@ -338,7 +338,7 @@ export function createBilingualErrorResponse(
       },
       httpStatus,
       timestamp: new Date().toISOString(),
-      requestId,
+      ...(requestId && { requestId }),
     },
   };
 }

@@ -4,7 +4,6 @@ import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import {
   HealthCheckService,
   HealthCheck,
-  HttpHealthIndicator,
   MemoryHealthIndicator,
   DiskHealthIndicator,
   HealthCheckResult,
@@ -35,7 +34,6 @@ const RSS_LIMIT_STANDARD = RSS_LIMIT_STANDARD_MB * BYTES_PER_MB; // 300MB for RS
 export class HealthController {
   constructor(
     private health: HealthCheckService,
-    private http: HttpHealthIndicator,
     private memory: MemoryHealthIndicator,
     private disk: DiskHealthIndicator,
     private configService: ConfigService
