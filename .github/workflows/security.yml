@@ -65,39 +65,44 @@ jobs:
           # Enterprise-grade installation with multiple fallbacks
           PNPM_INSTALLED=false
 
-          # Method 1: Primary CDN (get.pnpm.io)
-          echo "🔄 Attempt 1/6: Installing via primary CDN..."
-          if curl -fsSL --connect-timeout 15 --max-time 60 https://get.pnpm.io/install.sh | sh -; then
-            export PNPM_HOME="$HOME/.local/share/pnpm"
-            export PATH="$PNPM_HOME:$PATH"
+          # Method 1: Direct npm installation
+          echo "🔄 Attempt 1/6: Installing via npm..."
+          if npm install -g pnpm@10.14.0; then
+            export PATH="$(npm config get prefix)/bin:$PATH"
             if command -v pnpm &> /dev/null; then
-              echo "✅ pnpm installed successfully via primary CDN"
+              echo "✅ pnpm installed successfully via npm"
               PNPM_INSTALLED=true
             fi
           fi
 
-          # Method 2: Secondary CDN (cdn.jsdelivr.net)
+          # Method 2: Corepack (Node.js built-in)
           if [ "$PNPM_INSTALLED" = false ]; then
-            echo "🔄 Attempt 2/6: Installing via secondary CDN..."
-            if curl -fsSL --connect-timeout 15 --max-time 60 https://cdn.jsdelivr.net/gh/pnpm/pnpm@latest/install.sh | sh -; then
-              export PNPM_HOME="$HOME/.local/share/pnpm"
-              export PATH="$PNPM_HOME:$PATH"
+            echo "🔄 Attempt 2/6: Installing via corepack..."
+            if corepack enable && corepack prepare pnpm@10.14.0 --activate; then
+              export PATH="$HOME/.local/bin:$PATH"
               if command -v pnpm &> /dev/null; then
-                echo "✅ pnpm installed successfully via secondary CDN"
+                echo "✅ pnpm installed successfully via corepack"
                 PNPM_INSTALLED=true
               fi
             fi
           fi
 
-          # Method 3: GitHub raw CDN
+          # Method 3: Direct binary download (GitHub releases)
           if [ "$PNPM_INSTALLED" = false ]; then
-            echo "🔄 Attempt 3/6: Installing via GitHub CDN..."
-            if curl -fsSL --connect-timeout 15 --max-time 60 https://raw.githubusercontent.com/pnpm/pnpm/master/install.sh | sh -; then
-              export PNPM_HOME="$HOME/.local/share/pnpm"
-              export PATH="$PNPM_HOME:$PATH"
-              if command -v pnpm &> /dev/null; then
-                echo "✅ pnpm installed successfully via GitHub CDN"
-                PNPM_INSTALLED=true
+            echo "🔄 Attempt 3/6: Installing via direct binary download..."
+            # Get latest version
+            PNPM_VERSION=$(curl -s https://api.github.com/repos/pnpm/pnpm/releases/latest | grep '"tag_name"' | cut -d'"' -f4 | sed 's/^v//')
+            if [ -n "$PNPM_VERSION" ]; then
+              # Download for Linux x64
+              curl -fsSL --connect-timeout 15 --max-time 60 -o /tmp/pnpm.tar.gz https://github.com/pnpm/pnpm/releases/download/v${PNPM_VERSION}/pnpm-linux-x64.tar.gz
+              if [ $? -eq 0 ] && [ -f /tmp/pnpm.tar.gz ]; then
+                mkdir -p $HOME/.local/bin
+                tar -xzf /tmp/pnpm.tar.gz -C $HOME/.local/bin --strip-components=1
+                export PATH="$HOME/.local/bin:$PATH"
+                if command -v pnpm &> /dev/null; then
+                  echo "✅ pnpm installed successfully via direct binary"
+                  PNPM_INSTALLED=true
+                fi
               fi
             fi
           fi
@@ -248,18 +253,47 @@ jobs:
 
       # Semgrep Static Analysis
       - name: 🔍 Semgrep Security Scan
-        uses: semgrep/semgrep-action@v1
-        with:
-          config: >-
-            p/security-audit
-            p/secrets
-            p/owasp-top-ten
-            p/javascript
-            p/typescript
-            p/nodejs
+        run: |
+          # Install Semgrep
+          pip install semgrep
+
+          # Run Semgrep scan with SARIF output
+          semgrep scan \
+            --config "p/security-audit" \
+            --config "p/secrets" \
+            --config "p/owasp-top-ten" \
+            --config "p/javascript" \
+            --config "p/typescript" \
+            --config "p/nodejs" \
+            --sarif \
+            --output semgrep-results.sarif \
+            --json \
+            --output semgrep-results.json \
+            --text \
+            --output semgrep-results.txt \
+            || true
+
+          # Check if SARIF file was created
+          if [ -f "semgrep-results.sarif" ]; then
+            echo "✅ Semgrep scan completed successfully"
+          else
+            echo "⚠️ Semgrep scan completed but no SARIF file generated"
+          fi
         env:
           SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
         continue-on-error: true
+
+      # Upload Semgrep Results
+      - name: 📊 Upload Semgrep Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: semgrep-scan-results
+          path: |
+            semgrep-results.sarif
+            semgrep-results.json
+            semgrep-results.txt
+          retention-days: 30
 
       # Snyk Security Scanning
       - name: 🔍 Snyk Security Scan
@@ -334,39 +368,44 @@ jobs:
           # Enterprise-grade installation with multiple fallbacks
           PNPM_INSTALLED=false
 
-          # Method 1: Primary CDN (get.pnpm.io)
-          echo "🔄 Attempt 1/6: Installing via primary CDN..."
-          if curl -fsSL --connect-timeout 15 --max-time 60 https://get.pnpm.io/install.sh | sh -; then
-            export PNPM_HOME="$HOME/.local/share/pnpm"
-            export PATH="$PNPM_HOME:$PATH"
+          # Method 1: Direct npm installation
+          echo "🔄 Attempt 1/6: Installing via npm..."
+          if npm install -g pnpm@10.14.0; then
+            export PATH="$(npm config get prefix)/bin:$PATH"
             if command -v pnpm &> /dev/null; then
-              echo "✅ pnpm installed successfully via primary CDN"
+              echo "✅ pnpm installed successfully via npm"
               PNPM_INSTALLED=true
             fi
           fi
 
-          # Method 2: Secondary CDN (cdn.jsdelivr.net)
+          # Method 2: Corepack (Node.js built-in)
           if [ "$PNPM_INSTALLED" = false ]; then
-            echo "🔄 Attempt 2/6: Installing via secondary CDN..."
-            if curl -fsSL --connect-timeout 15 --max-time 60 https://cdn.jsdelivr.net/gh/pnpm/pnpm@latest/install.sh | sh -; then
-              export PNPM_HOME="$HOME/.local/share/pnpm"
-              export PATH="$PNPM_HOME:$PATH"
+            echo "🔄 Attempt 2/6: Installing via corepack..."
+            if corepack enable && corepack prepare pnpm@10.14.0 --activate; then
+              export PATH="$HOME/.local/bin:$PATH"
               if command -v pnpm &> /dev/null; then
-                echo "✅ pnpm installed successfully via secondary CDN"
+                echo "✅ pnpm installed successfully via corepack"
                 PNPM_INSTALLED=true
               fi
             fi
           fi
 
-          # Method 3: GitHub raw CDN
+          # Method 3: Direct binary download (GitHub releases)
           if [ "$PNPM_INSTALLED" = false ]; then
-            echo "🔄 Attempt 3/6: Installing via GitHub CDN..."
-            if curl -fsSL --connect-timeout 15 --max-time 60 https://raw.githubusercontent.com/pnpm/pnpm/master/install.sh | sh -; then
-              export PNPM_HOME="$HOME/.local/share/pnpm"
-              export PATH="$PNPM_HOME:$PATH"
-              if command -v pnpm &> /dev/null; then
-                echo "✅ pnpm installed successfully via GitHub CDN"
-                PNPM_INSTALLED=true
+            echo "🔄 Attempt 3/6: Installing via direct binary download..."
+            # Get latest version
+            PNPM_VERSION=$(curl -s https://api.github.com/repos/pnpm/pnpm/releases/latest | grep '"tag_name"' | cut -d'"' -f4 | sed 's/^v//')
+            if [ -n "$PNPM_VERSION" ]; then
+              # Download for Linux x64
+              curl -fsSL --connect-timeout 15 --max-time 60 -o /tmp/pnpm.tar.gz https://github.com/pnpm/pnpm/releases/download/v${PNPM_VERSION}/pnpm-linux-x64.tar.gz
+              if [ $? -eq 0 ] && [ -f /tmp/pnpm.tar.gz ]; then
+                mkdir -p $HOME/.local/bin
+                tar -xzf /tmp/pnpm.tar.gz -C $HOME/.local/bin --strip-components=1
+                export PATH="$HOME/.local/bin:$PATH"
+                if command -v pnpm &> /dev/null; then
+                  echo "✅ pnpm installed successfully via direct binary"
+                  PNPM_INSTALLED=true
+                fi
               fi
             fi
           fi

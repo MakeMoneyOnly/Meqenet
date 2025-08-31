@@ -28,16 +28,14 @@ COPY backend/services/auth-service/package.json ./backend/services/auth-service/
 
 # Install dependencies with enhanced resilience and cache mount
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
-    --mount=type=cache,id=prisma,target=/tmp/prisma-engines \
     set -e && \
     echo "Configuring pnpm for network resilience..." && \
     pnpm config set fetch-retries 10 && \
     pnpm config set fetch-retry-maxtimeout 300000 && \
     pnpm config set fetch-timeout 300000 && \
     pnpm config set network-concurrency 3 && \
-    echo "Configuring Prisma for offline engines..." && \
-    export PRISMA_ENGINES_MIRROR=https://binaries.prismadb.com && \
-    export PRISMA_CLI_BINARY_TARGETS=linux-musl-openssl-3.0.x && \
+    echo "Configuring Prisma for reliable engine downloads..." && \
+    export PRISMA_CLI_BINARY_TARGETS="linux-musl-openssl-3.0.x" && \
     echo "Starting dependency installation with retries..." && \
     for i in 1 2 3; do \
         echo "Installation attempt $i..." && \
@@ -49,7 +47,9 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
     done && \
     echo "Installing auth-service specific dependencies..." && \
     cd backend/services/auth-service && \
-    pnpm install
+    pnpm install && \
+    echo "Generating Prisma client..." && \
+    npx prisma generate
 
 # ---- Build Stage ----
 # Copies source code and builds the specific application.
@@ -70,20 +70,37 @@ RUN echo "Ensuring dependencies are available..." && \
     ls -la node_modules/.bin/ | head -10 && \
     echo "Building auth-service with tsc..." && \
     cd backend/services/auth-service && \
-    npx tsc --project tsconfig.json --outDir dist
+    npx tsc --project tsconfig.json --outDir dist && \
+    echo "Creating deploy directory..." && \
+    mkdir -p /app/deploy && \
+    cp -r dist/* /app/deploy/ && \
+    cp package.json /app/deploy/ && \
+    echo "Build completed successfully"
 
 # ---- Production Stage ----
 # Creates the final, small, and secure production image.
 FROM base AS production
 WORKDIR /app
-# Copy the pruned production-ready files from the builder stage's deploy folder
+
+# Copy the built application from the builder stage
 COPY --from=builder /app/deploy .
+
+# Copy package.json for production dependencies if needed
+COPY --from=builder /app/backend/services/auth-service/package.json ./
+
+# Install only production dependencies
+RUN pnpm install --prod --frozen-lockfile && \
+    pnpm store prune
+
 # Create a non-root user for security
 RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
 USER appuser
+
 # Expose the port the app runs on
 EXPOSE 3001
+
 # Use Tini as the entrypoint to properly handle signals
 ENTRYPOINT ["/usr/bin/tini", "--"]
+
 # Command to run the application
-CMD ["node", "dist/main.js"] 
+CMD ["node", "main.js"] 

@@ -1,6 +1,7 @@
 # Meqenet.et - Multi-Region Disaster Recovery Playbook
 
 ## Document Information
+
 - **Version**: 2.1
 - **Last Updated**: January 2024
 - **Classification**: RESTRICTED (NBE Compliance)
@@ -9,19 +10,24 @@
 
 ## Executive Summary
 
-This playbook outlines the disaster recovery (DR) procedures for the Meqenet.et BNPL platform, ensuring business continuity and compliance with Ethiopian financial regulations. The platform implements a multi-region active-active architecture with automated failover capabilities.
+This playbook outlines the disaster recovery (DR) procedures for the Meqenet.et BNPL platform,
+ensuring business continuity and compliance with Ethiopian financial regulations. The platform
+implements a multi-region active-active architecture with automated failover capabilities.
 
 **Recovery Objectives:**
+
 - **RTO (Recovery Time Objective)**: 15 minutes for critical services, 4 hours for full platform
 - **RPO (Recovery Point Objective)**: 5 minutes for transaction data, 15 minutes for analytical data
 
 ## 1. Architecture Overview
 
 ### Primary Regions
+
 - **Region 1**: EU-West-1 (Ireland) - Primary Production
 - **Region 2**: EU-Central-1 (Frankfurt) - Secondary Production
 
 ### Services Distribution
+
 ```
 EU-West-1 (Primary)
 ├── API Gateway (Active)
@@ -41,11 +47,13 @@ EU-Central-1 (Secondary)
 ## 2. Monitoring & Alerting
 
 ### Health Checks
+
 - **Application Level**: Kubernetes liveness/readiness probes
 - **Infrastructure Level**: AWS CloudWatch alarms
 - **Business Level**: Synthetic transaction monitoring
 
 ### Alert Classification
+
 - **CRITICAL**: Immediate response required (< 5 minutes)
 - **HIGH**: Response within 15 minutes
 - **MEDIUM**: Response within 1 hour
@@ -56,6 +64,7 @@ EU-Central-1 (Secondary)
 ### Phase 1: Detection & Assessment (0-5 minutes)
 
 #### Automated Monitoring
+
 ```bash
 # Check service health across regions
 curl -f https://api.meqenet.et/health
@@ -69,6 +78,7 @@ redis-cli -h redis-primary.eu-west-1.cache.amazonaws.com ping
 ```
 
 #### Manual Assessment
+
 1. **Check AWS Console**: CloudWatch dashboards
 2. **Verify Alert Sources**: PagerDuty, Slack, Email
 3. **Assess Impact**: User-facing vs internal services
@@ -77,6 +87,7 @@ redis-cli -h redis-primary.eu-west-1.cache.amazonaws.com ping
 ### Phase 2: Containment (5-15 minutes)
 
 #### Network Isolation
+
 ```bash
 # Isolate affected region (if needed)
 aws ec2 create-network-acl-entry \
@@ -88,6 +99,7 @@ aws ec2 create-network-acl-entry \
 ```
 
 #### Service Decommissioning
+
 ```bash
 # Scale down services in affected region
 kubectl scale deployment auth-service --replicas=0 -n meqenet
@@ -97,6 +109,7 @@ kubectl scale deployment api-gateway --replicas=0 -n meqenet
 ### Phase 3: Recovery (15-60 minutes)
 
 #### Automated Failover
+
 ```bash
 # Trigger automated failover
 aws lambda invoke \
@@ -106,6 +119,7 @@ aws lambda invoke \
 ```
 
 #### Database Failover
+
 ```bash
 # Promote read replica to primary
 aws rds failover-db-cluster \
@@ -114,6 +128,7 @@ aws rds failover-db-cluster \
 ```
 
 #### DNS Update
+
 ```bash
 # Update Route 53 to point to secondary region
 aws route53 change-resource-record-sets \
@@ -124,6 +139,7 @@ aws route53 change-resource-record-sets \
 ### Phase 4: Verification (60-120 minutes)
 
 #### Health Verification
+
 ```bash
 # Verify all services are healthy
 for service in auth-service api-gateway payment-service; do
@@ -133,6 +149,7 @@ done
 ```
 
 #### Data Consistency Check
+
 ```bash
 # Verify database consistency
 psql "postgresql://meqenet:***@db-primary.eu-central-1.rds.amazonaws.com/meqenetdb" \
@@ -140,6 +157,7 @@ psql "postgresql://meqenet:***@db-primary.eu-central-1.rds.amazonaws.com/meqenet
 ```
 
 #### Transaction Verification
+
 ```bash
 # Check for any stuck transactions
 psql "postgresql://meqenet:***@db-primary.eu-central-1.rds.amazonaws.com/meqenetdb" \
@@ -149,11 +167,13 @@ psql "postgresql://meqenet:***@db-primary.eu-central-1.rds.amazonaws.com/meqenet
 ### Phase 5: Communication (Ongoing)
 
 #### Internal Communication
+
 - **Slack Channel**: #incident-response
 - **Status Page**: Internal status page updates
 - **Runbook Updates**: Document lessons learned
 
 #### External Communication
+
 - **Customer Communication**: Via app notifications and email
 - **Partner Updates**: Payment processors, merchants
 - **Regulatory Reporting**: NBE notification requirements
@@ -161,6 +181,7 @@ psql "postgresql://meqenet:***@db-primary.eu-central-1.rds.amazonaws.com/meqenet
 ## 4. Service-Specific Recovery Procedures
 
 ### API Gateway Recovery
+
 ```bash
 # Scale up in secondary region
 kubectl scale deployment api-gateway --replicas=10 -n meqenet
@@ -173,6 +194,7 @@ curl -H "Host: api.meqenet.et" https://api-dr.meqenet.et/health
 ```
 
 ### Auth Service Recovery
+
 ```bash
 # Scale up auth service
 kubectl scale deployment auth-service --replicas=5 -n meqenet
@@ -187,6 +209,7 @@ curl -X POST https://api-dr.meqenet.et/auth/login \
 ```
 
 ### Database Recovery
+
 ```bash
 # Check replication lag
 aws rds describe-db-clusters \
@@ -203,6 +226,7 @@ psql "postgresql://meqenet:***@db-primary.eu-central-1.rds.amazonaws.com/meqenet
 ```
 
 ### Redis Cache Recovery
+
 ```bash
 # Verify Redis cluster status
 redis-cli -h redis-cluster.eu-central-1.cache.amazonaws.com cluster nodes
@@ -217,6 +241,7 @@ redis-cli -h redis-cluster.eu-central-1.cache.amazonaws.com info stats
 ## 5. Testing Procedures
 
 ### Quarterly DR Testing
+
 ```bash
 # Simulate region failure
 aws ec2 stop-instances --instance-ids i-1234567890abcdef0
@@ -229,6 +254,7 @@ time ./scripts/dr-test.sh
 ```
 
 ### Monthly Component Testing
+
 ```bash
 # Test individual service failover
 ./scripts/test-service-failover.sh auth-service
@@ -243,12 +269,14 @@ time ./scripts/dr-test.sh
 ## 6. Regulatory Compliance
 
 ### NBE Requirements
+
 - **Notification**: Report incidents within 24 hours
 - **Documentation**: Maintain incident logs for 7 years
 - **Testing**: Quarterly DR testing with documentation
 - **Business Continuity**: 99.9% uptime SLA
 
 ### Data Protection
+
 - **Encryption**: All data encrypted in transit and at rest
 - **Backup**: Cross-region backup with 30-day retention
 - **Access Control**: Multi-factor authentication required
@@ -257,12 +285,14 @@ time ./scripts/dr-test.sh
 ## 7. Contact Information
 
 ### Incident Response Team
+
 - **Primary On-Call**: +251-911-123-456
 - **Secondary On-Call**: +251-911-654-321
 - **DevOps Lead**: devops@meqenet.et
 - **Security Officer**: security@meqenet.et
 
 ### External Contacts
+
 - **AWS Support**: Enterprise support case
 - **NBE Regulator**: compliance@nbe.gov.et
 - **Payment Processors**: 24/7 support lines
@@ -271,12 +301,14 @@ time ./scripts/dr-test.sh
 ## 8. Lessons Learned & Improvements
 
 ### Post-Incident Review Process
+
 1. **Timeline Reconstruction**: Document all events and responses
 2. **Root Cause Analysis**: Identify contributing factors
 3. **Impact Assessment**: Quantify business and technical impact
 4. **Improvement Actions**: Implement preventive measures
 
 ### Continuous Improvement
+
 - **Runbook Updates**: Incorporate lessons learned
 - **Training**: Regular DR training for all team members
 - **Technology Updates**: Implement new monitoring and automation
@@ -285,6 +317,7 @@ time ./scripts/dr-test.sh
 ---
 
 **Document Control:**
+
 - **Approved By**: CTO, Chief Risk Officer
 - **Next Review**: April 2024
 - **Version History**: See Git history for complete change log
