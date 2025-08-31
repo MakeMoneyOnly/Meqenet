@@ -39,6 +39,14 @@ export class RetryService {
     ],
   };
 
+  // Magic numbers for retry jitter - documented inline for linting compliance
+  // eslint-disable-next-line no-magic-numbers
+  private readonly JITTER_PERCENTAGE = 0.1; // 10% jitter
+  // eslint-disable-next-line no-magic-numbers
+  private readonly JITTER_RANDOM_CENTER = 0.5; // Center point for random jitter
+  // eslint-disable-next-line no-magic-numbers
+  private readonly JITTER_RANGE_MULTIPLIER = 2; // Multiplier for jitter range
+
   /**
    * Execute function with retry logic
    */
@@ -54,7 +62,7 @@ export class RetryService {
       success: false,
     };
 
-    let lastError: any;
+    let lastError: unknown;
 
     for (let attempt = 1; attempt <= finalConfig.maxAttempts; attempt++) {
       stats.attempts = attempt;
@@ -68,7 +76,7 @@ export class RetryService {
         return { result, stats };
       } catch (error) {
         lastError = error;
-        stats.lastError = error.message || String(error);
+        stats.lastError = (error as Error).message || String(error);
 
         // Check if error is retryable
         if (!this.isRetryableError(error, finalConfig)) {
@@ -102,7 +110,7 @@ export class RetryService {
    */
   async executeWithCondition<T>(
     fn: () => Promise<T>,
-    retryCondition: (error: any, attempt: number) => boolean,
+    retryCondition: (error: unknown, attempt: number) => boolean,
     config: Partial<RetryConfig> = {},
   ): Promise<{ result: T; stats: RetryStats }> {
     const finalConfig = { ...this.defaultConfig, ...config };
@@ -113,7 +121,7 @@ export class RetryService {
       success: false,
     };
 
-    let lastError: any;
+    let lastError: unknown;
 
     for (let attempt = 1; attempt <= finalConfig.maxAttempts; attempt++) {
       stats.attempts = attempt;
@@ -125,7 +133,7 @@ export class RetryService {
         return { result, stats };
       } catch (error) {
         lastError = error;
-        stats.lastError = error.message || String(error);
+        stats.lastError = (error as Error).message || String(error);
 
         // Check custom retry condition
         if (!retryCondition(error, attempt)) {
@@ -246,17 +254,17 @@ export class RetryService {
   /**
    * Check if error is retryable
    */
-  private isRetryableError(error: any, config: RetryConfig): boolean {
+  private isRetryableError(error: unknown, config: RetryConfig): boolean {
     if (!config.retryableErrors || config.retryableErrors.length === 0) {
       return true; // Retry all errors if no specific list provided
     }
 
-    const errorMessage = error.message || String(error);
-    const errorCode = error.code || error.status || '';
+    const errorMessage = (error as { message?: string }).message ?? String(error);
+    const errorCode = (error as { code?: string; status?: string }).code ?? (error as { code?: string; status?: string }).status ?? '';
 
     return config.retryableErrors.some(retryableError =>
       errorMessage.includes(retryableError) ||
-      errorCode.includes(retryableError)
+      (errorCode?.includes(retryableError) ?? false)
     );
   }
 
@@ -271,8 +279,8 @@ export class RetryService {
 
     // Add jitter if enabled
     if (config.jitter) {
-      const jitterRange = delay * 0.1; // 10% jitter
-      delay += (Math.random() - 0.5) * 2 * jitterRange;
+      const jitterRange = delay * this.JITTER_PERCENTAGE; // 10% jitter
+      delay += (Math.random() - this.JITTER_RANDOM_CENTER) * this.JITTER_RANGE_MULTIPLIER * jitterRange;
       delay = Math.max(0, delay); // Ensure non-negative
     }
 
@@ -289,13 +297,13 @@ export class RetryService {
   /**
    * Create a retry decorator for methods
    */
-  createRetryDecorator(config: Partial<RetryConfig> = {}) {
-    return function (target: any, propertyName: string, descriptor: PropertyDescriptor) {
+  createRetryDecorator(config: Partial<RetryConfig> = {}): (target: unknown, propertyName: string, descriptor: PropertyDescriptor) => void {
+    return function (target: unknown, propertyName: string, descriptor: PropertyDescriptor): void {
       const method = descriptor.value;
       const logger = new Logger(`${target.constructor.name}.${propertyName}`);
 
-      descriptor.value = async function (...args: any[]) {
-        const retryService = new (require('./retry.service').RetryService)();
+      descriptor.value = async function (...args: unknown[]): Promise<unknown> {
+        const retryService = new RetryService();
 
         try {
           const { result } = await retryService.execute(

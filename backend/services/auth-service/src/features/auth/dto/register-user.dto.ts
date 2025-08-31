@@ -5,10 +5,10 @@ const MIN_PASSWORD_LENGTH = 8;
 export class RegisterUserDto {
   @IsEmail()
   @IsNotEmpty()
-  email: string;
+  email!: string;
 
   @IsString()
   @IsNotEmpty()
   @MinLength(MIN_PASSWORD_LENGTH)
-  password: string;
+  password!: string;
 }

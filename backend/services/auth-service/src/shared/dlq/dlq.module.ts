@@ -1,8 +1,9 @@
 import { Module } from '@nestjs/common';
 
 import { PrismaModule } from '../prisma/prisma.module';
-import { DLQService } from './dlq.service';
+
 import { DLQController } from './dlq.controller';
+import { DLQService } from './dlq.service';
 
 @Module({
   imports: [PrismaModule],

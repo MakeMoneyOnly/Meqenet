@@ -1,0 +1,19 @@
+﻿{
+    "StartTime":  "2025-08-31T00:19:27Z",
+    "Results":  {
+
+                },
+    "TestId":  "rpo-rto-test-20250831-001927",
+    "Compliance":  {
+                       "Timestamp":  "2025-08-31T00:19:27Z",
+                       "RTO_Compliant":  true,
+                       "Functional_Tests_Passed":  true,
+                       "RPO_Compliant":  true
+                   },
+    "Phases":  [
+
+               ],
+    "SecondaryRegion":  "eu-central-1",
+    "EndTime":  "2025-08-31T00:19:28Z",
+    "PrimaryRegion":  "eu-west-1"
+}

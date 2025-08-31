@@ -58,7 +58,7 @@ export class HttpCircuitBreakerService {
   /**
    * Make HTTP request with circuit breaker protection
    */
-  async request<T = any>(
+  async request<T = unknown>(
     circuitName: string,
     config: AxiosRequestConfig,
     fallback?: () => Promise<T>,
@@ -90,7 +90,7 @@ export class HttpCircuitBreakerService {
   /**
    * GET request with circuit breaker
    */
-  async get<T = any>(
+  async get<T = unknown>(
     circuitName: string,
     url: string,
     config?: AxiosRequestConfig,
@@ -106,10 +106,10 @@ export class HttpCircuitBreakerService {
   /**
    * POST request with circuit breaker
    */
-  async post<T = any>(
+  async post<T = unknown>(
     circuitName: string,
     url: string,
-    data?: any,
+    data?: unknown,
     config?: AxiosRequestConfig,
     fallback?: () => Promise<T>,
   ): Promise<AxiosResponse<T>> {
@@ -123,10 +123,10 @@ export class HttpCircuitBreakerService {
   /**
    * PUT request with circuit breaker
    */
-  async put<T = any>(
+  async put<T = unknown>(
     circuitName: string,
     url: string,
-    data?: any,
+    data?: unknown,
     config?: AxiosRequestConfig,
     fallback?: () => Promise<T>,
   ): Promise<AxiosResponse<T>> {
@@ -140,7 +140,7 @@ export class HttpCircuitBreakerService {
   /**
    * DELETE request with circuit breaker
    */
-  async delete<T = any>(
+  async delete<T = unknown>(
     circuitName: string,
     url: string,
     config?: AxiosRequestConfig,
@@ -164,14 +164,14 @@ export class HttpCircuitBreakerService {
   /**
    * Get circuit breaker statistics
    */
-  getCircuitStats(circuitName: string) {
+  getCircuitStats(circuitName: string): unknown {
     return this.circuitBreaker.getStats(circuitName);
   }
 
   /**
    * Get all circuit breaker statistics
    */
-  getAllCircuitStats() {
+  getAllCircuitStats(): unknown {
     return this.circuitBreaker.getAllStats();
   }
 
@@ -192,7 +192,7 @@ export class HttpCircuitBreakerService {
   /**
    * Create a fallback function for payment operations
    */
-  createPaymentFallback(operation: string) {
+  createPaymentFallback(operation: string): () => Promise<{ status: string; operation: string; fallback: boolean; timestamp: string; message: string }> {
     return async () => {
       this.logger.warn(`Payment operation ${operation} failed, using fallback`);
 
@@ -214,7 +214,7 @@ export class HttpCircuitBreakerService {
   /**
    * Create a fallback function for notification operations
    */
-  createNotificationFallback(operation: string) {
+  createNotificationFallback(operation: string): () => Promise<{ status: string; operation: string; fallback: boolean; timestamp: string; message: string }> {
     return async () => {
       this.logger.warn(`Notification operation ${operation} failed, using fallback`);
 
@@ -236,7 +236,7 @@ export class HttpCircuitBreakerService {
   /**
    * Create a fallback function for analytics operations
    */
-  createAnalyticsFallback(operation: string) {
+  createAnalyticsFallback(operation: string): () => Promise<{ status: string; operation: string; fallback: boolean; timestamp: string; message: string }> {
     return async () => {
       this.logger.warn(`Analytics operation ${operation} failed, using fallback`);
 

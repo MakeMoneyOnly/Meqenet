@@ -335,11 +335,11 @@ jobs:
         with:
           version: "v1.28.0"
 
-      - name: 🔑 Configure AWS Credentials
+      - name: 🔑 Configure AWS Credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: ${{ secrets.AWS_OIDC_ROLE_STAGING }}
+          role-session-name: MeqenetStagingDeployment
           aws-region: us-east-1
 
       - name: 📡 Update Kubeconfig
@@ -441,11 +441,11 @@ jobs:
         with:
           version: "v1.28.0"
 
-      - name: 🔑 Configure AWS Credentials
+      - name: 🔑 Configure AWS Credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_PROD }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_PROD }}
+          role-to-assume: ${{ secrets.AWS_OIDC_ROLE_PROD }}
+          role-session-name: MeqenetProductionDeployment
           aws-region: us-east-1
 
       - name: 📡 Update Kubeconfig

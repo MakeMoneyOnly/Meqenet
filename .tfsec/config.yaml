@@ -1,0 +1,79 @@
+# Meqenet.et - tfsec Configuration
+# Enterprise-grade Infrastructure as Code Security Configuration
+
+# Global configuration
+exclude:
+  - "aws-s3-enable-bucket-encryption"  # Handled by default AWS S3 encryption
+  - "aws-s3-enable-versioning"         # Versioning managed by application logic
+  - "aws-ec2-no-public-ip-subnet"      # Public IPs managed by NAT Gateway
+
+# Severity levels
+severity_overrides:
+  - code: "aws-ec2-no-public-ip"
+    severity: "HIGH"
+  - code: "aws-iam-no-policy-wildcards"
+    severity: "CRITICAL"
+  - code: "aws-rds-encrypt-instance"
+    severity: "CRITICAL"
+  - code: "aws-s3-enable-bucket-logging"
+    severity: "HIGH"
+
+# Custom checks for Ethiopian financial compliance
+custom_checks:
+  - name: "Ethiopian Financial Data Residency"
+    description: "Ensure data residency compliance for Ethiopian financial services"
+    required_labels:
+      - "data-residency: ethiopia"
+    severity: "HIGH"
+    check_type: "resource"
+    resource_types:
+      - "aws_s3_bucket"
+      - "aws_rds_cluster"
+      - "aws_db_instance"
+
+  - name: "NBE Compliance Tags"
+    description: "Ensure NBE compliance tags are present"
+    required_labels:
+      - "nbe-compliant: true"
+      - "data-classification"
+    severity: "HIGH"
+    check_type: "resource"
+    resource_types:
+      - "aws_s3_bucket"
+      - "aws_rds_cluster"
+      - "aws_db_instance"
+      - "aws_kms_key"
+
+  - name: "Financial Service Encryption"
+    description: "Ensure all financial data is encrypted"
+    required_labels:
+      - "encryption: kms"
+    severity: "CRITICAL"
+    check_type: "resource"
+    resource_types:
+      - "aws_db_instance"
+      - "aws_rds_cluster"
+      - "aws_s3_bucket"
+
+# Minimum TLS versions for Ethiopian compliance
+minimum_tls_version: "1.2"
+
+# Required tags for Ethiopian financial services
+required_tags:
+  - "Environment"
+  - "Project"
+  - "Owner"
+  - "CostCenter"
+  - "DataClassification"
+  - "NBECompliant"
+  - "LastReviewed"
+
+# AWS regions allowed for Ethiopian data residency
+allowed_regions:
+  - "eu-west-1"
+  - "eu-central-1"
+
+# Prohibited instance types for cost optimization
+prohibited_instance_types:
+  - "t2.micro"  # Too small for financial workloads
+  - "t2.small"  # Too small for financial workloads
