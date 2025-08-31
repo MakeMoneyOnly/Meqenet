@@ -254,12 +254,15 @@ jobs:
       # Semgrep Static Analysis
       - name: 🔍 Semgrep Security Scan
         run: |
-          # Install Semgrep CLI
-          curl -L https://github.com/semgrep/semgrep/releases/latest/download/semgrep-linux.tar.gz | tar -xz
-          sudo mv semgrep /usr/local/bin/
+          # Install Semgrep CLI using pip (recommended method)
+          python3 -m pip install --upgrade pip
+          pip install semgrep
+
+          # Verify installation
           semgrep --version
 
-          # Run Semgrep scan with SARIF output
+          # Run Semgrep scan with multiple output formats
+          echo "🔍 Running Semgrep security scan..."
           semgrep scan \
             --config "p/security-audit" \
             --config "p/secrets" \
@@ -273,14 +276,24 @@ jobs:
             --output semgrep-results.json \
             --text \
             --output semgrep-results.txt \
-            || true
+            --verbose \
+            --error \
+            || echo "Semgrep found issues (exit code: $?)"
 
-          # Check if SARIF file was created
+          # Check if files were created
           if [ -f "semgrep-results.sarif" ]; then
-            echo "✅ Semgrep scan completed successfully"
+            echo "✅ Semgrep SARIF report generated"
           else
-            echo "⚠️ Semgrep scan completed but no SARIF file generated"
+            echo "⚠️ Semgrep SARIF report not generated"
           fi
+
+          if [ -f "semgrep-results.json" ]; then
+            echo "✅ Semgrep JSON report generated"
+          else
+            echo "⚠️ Semgrep JSON report not generated"
+          fi
+
+          echo "✅ Semgrep scan completed"
         env:
           SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
         continue-on-error: true

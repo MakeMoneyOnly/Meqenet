@@ -88,8 +88,8 @@ WORKDIR /app
 # Copy the built application from the builder stage
 COPY --from=builder /app/deploy .
 
-# Copy package.json for production dependencies if needed
-COPY --from=builder /app/backend/services/auth-service/package.json ./
+# Copy package files for production dependencies
+COPY --from=builder /app/package.json /app/pnpm-lock.yaml ./
 
 # Install only production dependencies
 RUN pnpm install --prod --frozen-lockfile && \
