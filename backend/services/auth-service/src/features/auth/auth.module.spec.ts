@@ -1,8 +1,22 @@
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
+import { vi } from 'vitest';
+
+const mockPrismaService = {
+  user: {
+    findUnique: vi.fn(),
+    create: vi.fn(),
+  },
+  $transaction: vi.fn(),
+};
+
+const mockOutboxService = {
+  store: vi.fn(),
+};
 
 import { MessagingProducerService } from '../../infrastructure/messaging/messaging.producer.service';
+import { RedisConfigService } from '../../shared/config/redis.config';
 import { OutboxService } from '../../shared/outbox/outbox.service';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 
@@ -35,22 +49,18 @@ describe('AuthModule', () => {
       providers: [
         {
           provide: PrismaService,
-          useValue: {
-            user: {
-              findUnique: jest.fn(),
-              create: jest.fn(),
-            },
-            $transaction: jest.fn(),
-          },
+          useValue: mockPrismaService,
         },
         {
           provide: OutboxService,
-          useValue: {
-            store: jest.fn(),
-          },
+          useValue: mockOutboxService,
         },
         {
           provide: MessagingProducerService,
+          useValue: {},
+        },
+        {
+          provide: RedisConfigService,
           useValue: {},
         },
       ],
