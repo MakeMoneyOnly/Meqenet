@@ -1,10 +1,11 @@
-import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
-import helmet from 'helmet';
+import { NestFactory } from '@nestjs/core';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import compression from 'compression';
+import helmet from 'helmet';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+
 import { AppModule } from './app/app.module';
 
 async function bootstrap(): Promise<void> {
@@ -101,7 +102,9 @@ async function bootstrap(): Promise<void> {
   if (configService.get('NODE_ENV') !== 'production') {
     const config = new DocumentBuilder()
       .setTitle('payments-service API')
-      .setDescription('Core service for processing all Meqenet payment options, managing installment schedules, and handling financial settlements.')
+      .setDescription(
+        'Core service for processing all Meqenet payment options, managing installment schedules, and handling financial settlements.'
+      )
       .setVersion('1.0.0')
       .addBearerAuth(
         {

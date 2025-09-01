@@ -29,7 +29,7 @@ export class SharedModule {
     ];
 
     const missingConfig = requiredConfig.filter(
-      (key) => !this.configService.get(key)
+      key => !this.configService.get(key)
     );
 
     if (missingConfig.length > 0) {

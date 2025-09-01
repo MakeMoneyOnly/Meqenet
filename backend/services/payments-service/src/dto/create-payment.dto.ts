@@ -1,4 +1,12 @@
-import { IsString, IsNotEmpty, IsNumber, IsPositive, MinLength, MaxLength, IsIn } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsNumber,
+  IsPositive,
+  MinLength,
+  MaxLength,
+  IsIn,
+} from 'class-validator';
 
 /**
  * Supported currencies for Ethiopian FinTech payments

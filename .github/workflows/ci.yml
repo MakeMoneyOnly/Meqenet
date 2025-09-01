@@ -806,7 +806,32 @@ jobs:
         run: |
           export PNPM_HOME="$HOME/.local/share/pnpm"
           export PATH="$PNPM_HOME:$PATH"
-          pnpm db:generate
+
+          # Set Prisma binary targets for better compatibility
+          export PRISMA_CLI_BINARY_TARGETS="linux-musl-openssl-3.0.x"
+
+          echo "🏗️ Generating Prisma client..."
+          if ! pnpm db:generate; then
+            echo "❌ Prisma client generation failed, trying alternative approach..."
+
+            # Try installing Prisma CLI globally and generating
+            if pnpm add -g prisma; then
+              echo "✅ Prisma CLI installed globally"
+              prisma generate --schema=./prisma/schema.prisma
+            else
+              echo "❌ Failed to install Prisma CLI globally"
+              exit 1
+            fi
+          fi
+
+          # Verify Prisma client was generated
+          if [ ! -f "node_modules/.prisma/client/index.d.ts" ]; then
+            echo "❌ Prisma client generation verification failed"
+            ls -la node_modules/.prisma/ 2>/dev/null || echo "Prisma client directory not found"
+            exit 1
+          else
+            echo "✅ Prisma client generated successfully"
+          fi
 
       - name: 🧪 Run Unit Tests
         run: |

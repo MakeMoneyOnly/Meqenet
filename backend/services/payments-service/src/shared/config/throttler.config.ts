@@ -12,7 +12,10 @@ export const throttlerConfig: ThrottlerModuleAsyncOptions = {
 
     // FinTech specific throttling rules
     const paymentTtl = parseInt(process.env.PAYMENT_THROTTLE_TTL || '300', 10); // 5 minutes for payments
-    const paymentLimit = parseInt(process.env.PAYMENT_THROTTLE_LIMIT || '10', 10); // 10 payment requests per 5 minutes
+    const paymentLimit = parseInt(
+      process.env.PAYMENT_THROTTLE_LIMIT || '10',
+      10
+    ); // 10 payment requests per 5 minutes
 
     return {
       ttl: ttl * 1000, // Convert to milliseconds
@@ -24,7 +27,7 @@ export const throttlerConfig: ThrottlerModuleAsyncOptions = {
         /Prometheus/i,
         /DataDog/i,
       ],
-      skipIf: (context) => {
+      skipIf: context => {
         // Skip throttling for health checks
         const request = context.switchToHttp().getRequest();
         return request.url === '/health' || request.url === '/ready';

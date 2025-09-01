@@ -16,11 +16,22 @@ export class AppService {
    * @returns Application metadata for diagnostics
    */
   getAppInfo(): object {
-    const appName = this.configService.get<string>('npm_package_name', 'payments-service');
-    const version = this.configService.get<string>('npm_package_version', '1.0.0');
-    const environment = this.configService.get<string>('NODE_ENV', 'development');
+    const appName = this.configService.get<string>(
+      'npm_package_name',
+      'payments-service'
+    );
+    const version = this.configService.get<string>(
+      'npm_package_version',
+      '1.0.0'
+    );
+    const environment = this.configService.get<string>(
+      'NODE_ENV',
+      'development'
+    );
 
-    this.logger.debug(`Application info requested: ${appName} v${version} (${environment})`);
+    this.logger.debug(
+      `Application info requested: ${appName} v${version} (${environment})`
+    );
 
     return {
       name: appName,

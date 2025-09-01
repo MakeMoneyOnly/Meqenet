@@ -198,6 +198,4 @@ export class FieldEncryptionInterceptor implements NestInterceptor {
     // Default sensitive fields for unknown endpoints
     return ['password', 'email', 'phoneNumber', 'cardNumber', 'accountNumber'];
   }
-
-
 }

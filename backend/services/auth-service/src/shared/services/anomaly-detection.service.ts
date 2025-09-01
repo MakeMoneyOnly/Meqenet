@@ -6,7 +6,6 @@ import { SecurityMonitoringService } from './security-monitoring.service';
 const MILLISECONDS_PER_SECOND = 1000;
 const SECONDS_PER_MINUTE = 60;
 
-
 // Simulation constants
 const MAX_SIMULATED_REQUESTS = 20;
 
@@ -107,9 +106,7 @@ export class AnomalyDetectionService {
     riskScoreThreshold: 75, // Risk score above 75 triggers alerts
   };
 
-  constructor(
-    private securityMonitoringService: SecurityMonitoringService
-  ) {}
+  constructor(private securityMonitoringService: SecurityMonitoringService) {}
 
   /**
    * Analyze user behavior for anomalies

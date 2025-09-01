@@ -171,7 +171,9 @@ Since our microservices are deployed as containers, securing the container lifec
   - Secure token storage in mobile applications using platform keychain services
   - Token binding to prevent token replay attacks
 
-- **Password Hashing:** All user passwords **MUST** be hashed using `argon2id` with parameters calibrated for the current hardware environment to ensure strong resistance to brute-force and rainbow table attacks.
+- **Password Hashing:** All user passwords **MUST** be hashed using `argon2id` with parameters
+  calibrated for the current hardware environment to ensure strong resistance to brute-force and
+  rainbow table attacks.
 
 ## 4. Data Protection & Encryption
 
@@ -666,8 +668,12 @@ Since our microservices are deployed as containers, securing the container lifec
 ### 13.1 Security Information & Event Management (SIEM)
 
 - **Centralized Logging:**
-  - **Correlation IDs:** All requests **MUST** have a unique correlation ID (`X-Request-ID`). This ID must be generated at the edge (API Gateway) if not provided by the client, and propagated through all logs and downstream service calls.
-  - **Automated Redaction:** The logging pipeline **MUST** automatically redact sensitive data (including PII, financial details, secrets, and credentials) *before* logs are indexed and stored.
+  - **Correlation IDs:** All requests **MUST** have a unique correlation ID (`X-Request-ID`). This
+    ID must be generated at the edge (API Gateway) if not provided by the client, and propagated
+    through all logs and downstream service calls.
+  - **Automated Redaction:** The logging pipeline **MUST** automatically redact sensitive data
+    (including PII, financial details, secrets, and credentials) _before_ logs are indexed and
+    stored.
   - Log aggregation from all system components and applications
   - Real-time log analysis and correlation
   - Long-term log retention for forensic analysis

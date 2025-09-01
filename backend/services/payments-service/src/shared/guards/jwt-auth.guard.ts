@@ -4,8 +4,8 @@ import {
   UnauthorizedException,
   Logger,
 } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 import { ConfigService } from '@nestjs/config';
+import { AuthGuard } from '@nestjs/passport';
 
 /**
  * JWT Authentication Guard
@@ -87,7 +87,13 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
    * @param status HTTP status (unused)
    * @returns User object or throws exception
    */
-  handleRequest(err: any, user: any, info: any, context: ExecutionContext, status?: any): any {
+  handleRequest(
+    err: any,
+    user: any,
+    info: any,
+    context: ExecutionContext,
+    status?: any
+  ): any {
     if (err || !user) {
       this.logger.warn('JWT authentication failed', {
         error: err?.message,

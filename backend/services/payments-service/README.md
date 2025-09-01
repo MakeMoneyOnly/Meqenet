@@ -1,6 +1,7 @@
 # payments-service
 
-Core service for processing all Meqenet payment options, managing installment schedules, and handling financial settlements.
+Core service for processing all Meqenet payment options, managing installment schedules, and
+handling financial settlements.
 
 ## 🏗️ Architecture
 
@@ -9,7 +10,8 @@ with:
 
 - **Framework**: NestJS ^10.0.0
 - **Runtime**: Node.js 18.19.0
-- **Language**: TypeScript - **Database**: PostgreSQL with Prisma ORM - **Communication**: gRPC + REST API - **Messaging**: Event-driven architecture with AWS SNS/SQS ## 📁 Project Structure
+- **Language**: TypeScript - **Database**: PostgreSQL with Prisma ORM - **Communication**: gRPC +
+  REST API - **Messaging**: Event-driven architecture with AWS SNS/SQS ## 📁 Project Structure
 
 ```
 src/
@@ -39,6 +41,7 @@ src/
 - Yarn package manager - PostgreSQL (via Docker) ### Installation
 
 1. **Clone and install dependencies**
+
    ```bash
    cd payments-service
    yarn install
@@ -82,15 +85,14 @@ yarn db:seed
 
 ### Environment Variables
 
-| Variable     | Description        | Default                       |
-| ------------ | ------------------ | ----------------------------- |
-| `PORT`       | Service port       | 3004 |
-| `NODE_ENV`   | Environment        | development                   |
-| `JWT_SECRET` | JWT signing secret | Required                      |
+| Variable     | Description        | Default     |
+| ------------ | ------------------ | ----------- |
+| `PORT`       | Service port       | 3004        |
+| `NODE_ENV`   | Environment        | development |
+| `JWT_SECRET` | JWT signing secret | Required    |
 
-| `DATABASE_URL` | PostgreSQL connection string |
-Required | | `GRPC_URL` | gRPC server URL
-| localhost:5000 | | `LOG_LEVEL` | Logging level | info |
+| `DATABASE_URL` | PostgreSQL connection string | Required | | `GRPC_URL` | gRPC server URL |
+localhost:5000 | | `LOG_LEVEL` | Logging level | info |
 
 ## 📚 API Documentation
 

@@ -27,11 +27,11 @@ export class LoggingInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       tap({
-        next: (data) => {
+        next: data => {
           const duration = Date.now() - startTime;
           this.logResponse(request, response, duration, 'SUCCESS');
         },
-        error: (error) => {
+        error: error => {
           const duration = Date.now() - startTime;
           this.logResponse(request, response, duration, 'ERROR', error);
         },
@@ -128,7 +128,13 @@ export class LoggingInterceptor implements NestInterceptor {
       return body;
     }
 
-    const sensitiveFields = ['password', 'token', 'secret', 'creditCard', 'cvv'];
+    const sensitiveFields = [
+      'password',
+      'token',
+      'secret',
+      'creditCard',
+      'cvv',
+    ];
     const sanitized = { ...body };
 
     for (const field of sensitiveFields) {

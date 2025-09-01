@@ -309,7 +309,9 @@ export class AIFraudDetectionController {
             userId: testCase.userId,
             amount: testCase.amount,
             country: testCase.location.country,
-            ...(testCase.merchantCategory && { merchantCategory: testCase.merchantCategory }),
+            ...(testCase.merchantCategory && {
+              merchantCategory: testCase.merchantCategory,
+            }),
           },
           fraudScore,
         });

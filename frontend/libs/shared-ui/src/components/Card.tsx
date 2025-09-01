@@ -16,13 +16,22 @@ export const Card = ({ className, children, ...props }: CardProps) => {
 };
 
 export const CardHeader = ({ className, children, ...props }: CardProps) => (
-  <div className={`p-4 border-b border-gray-200 ${className}`} {...props}>{children}</div>
+  <div className={`p-4 border-b border-gray-200 ${className}`} {...props}>
+    {children}
+  </div>
 );
 
 export const CardContent = ({ className, children, ...props }: CardProps) => (
-  <div className={`p-4 ${className}`} {...props}>{children}</div>
+  <div className={`p-4 ${className}`} {...props}>
+    {children}
+  </div>
 );
 
 export const CardFooter = ({ className, children, ...props }: CardProps) => (
-  <div className={`p-4 bg-gray-50 border-t border-gray-200 ${className}`} {...props}>{children}</div>
+  <div
+    className={`p-4 bg-gray-50 border-t border-gray-200 ${className}`}
+    {...props}
+  >
+    {children}
+  </div>
 );

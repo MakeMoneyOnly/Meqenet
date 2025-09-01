@@ -1,6 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { CreatePaymentDto } from './dto/create-payment.dto';
 import { randomUUID } from 'crypto';
+
+import { Injectable, Logger } from '@nestjs/common';
+
+import { CreatePaymentDto } from './dto/create-payment.dto';
 
 @Injectable()
 export class PaymentsService {
@@ -21,7 +23,9 @@ export class PaymentsService {
       createdAt: new Date(),
     };
 
-    this.logger.log(`Payment processed successfully with transaction ID: ${transactionId}`);
+    this.logger.log(
+      `Payment processed successfully with transaction ID: ${transactionId}`
+    );
 
     return paymentRecord;
   }

@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 
 /**
  * Messaging Module - Enterprise FinTech compliant message queue configuration
@@ -15,7 +15,12 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         useFactory: (configService: ConfigService) => ({
           transport: Transport.RMQ,
           options: {
-            urls: [configService.get<string>('RABBITMQ_URL', 'amqp://localhost:5672')],
+            urls: [
+              configService.get<string>(
+                'RABBITMQ_URL',
+                'amqp://localhost:5672'
+              ),
+            ],
             queue: 'payment_events',
             queueOptions: {
               durable: true, // Survive broker restarts
@@ -38,7 +43,12 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         useFactory: (configService: ConfigService) => ({
           transport: Transport.RMQ,
           options: {
-            urls: [configService.get<string>('RABBITMQ_URL', 'amqp://localhost:5672')],
+            urls: [
+              configService.get<string>(
+                'RABBITMQ_URL',
+                'amqp://localhost:5672'
+              ),
+            ],
             queue: 'payment_commands',
             queueOptions: {
               durable: true,
