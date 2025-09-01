@@ -1,6 +1,7 @@
+import * as crypto from 'crypto';
+
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as crypto from 'crypto';
 
 /**
  * Fayda National ID Encryption Utility
@@ -32,7 +33,8 @@ const FAYDA_ENCRYPTION_CONFIG = {
 @Injectable()
 export class FaydaEncryptionUtil {
   private readonly algorithm = FAYDA_ENCRYPTION_CONFIG.ALGORITHM;
-  private readonly keyDerivationIterations = FAYDA_ENCRYPTION_CONFIG.KEY_DERIVATION_ITERATIONS;
+  private readonly keyDerivationIterations =
+    FAYDA_ENCRYPTION_CONFIG.KEY_DERIVATION_ITERATIONS;
   private readonly saltLength = FAYDA_ENCRYPTION_CONFIG.SALT_LENGTH;
   private readonly ivLength = FAYDA_ENCRYPTION_CONFIG.IV_LENGTH;
   private readonly tagLength = FAYDA_ENCRYPTION_CONFIG.TAG_LENGTH;

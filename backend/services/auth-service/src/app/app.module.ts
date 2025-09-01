@@ -53,9 +53,15 @@ const REDIS_CONFIG = {
         store: await redisStore({
           socket: {
             host: configService.get<string>('REDIS_HOST', 'localhost'),
-            port: configService.get<number>('REDIS_PORT', REDIS_CONFIG.DEFAULT_PORT),
+            port: configService.get<number>(
+              'REDIS_PORT',
+              REDIS_CONFIG.DEFAULT_PORT
+            ),
           },
-          ttl: configService.get<number>('CACHE_TTL', REDIS_CONFIG.DEFAULT_TTL_SECONDS),
+          ttl: configService.get<number>(
+            'CACHE_TTL',
+            REDIS_CONFIG.DEFAULT_TTL_SECONDS
+          ),
         }),
       }),
       inject: [ConfigService],

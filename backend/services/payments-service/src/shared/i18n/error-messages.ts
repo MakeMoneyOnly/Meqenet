@@ -232,7 +232,9 @@ export function createBilingualErrorResponse(
   };
 } {
   // Security: Validate input to prevent object injection
-  const error = isValidErrorCodeInput(errorCode) ? ErrorMessages[errorCode] : null;
+  const error = isValidErrorCodeInput(errorCode)
+    ? ErrorMessages[errorCode]
+    : null;
   const fallbackError: BilingualErrorMessage = {
     en: 'An unknown error occurred.',
     am: 'ያልታወቀ ስህተት ተፈጥሯል።',

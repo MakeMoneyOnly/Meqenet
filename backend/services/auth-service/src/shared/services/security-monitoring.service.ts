@@ -26,8 +26,6 @@ const RESPONSE_TIME_BUCKET_4 = 2.0; // 2s
 const RESPONSE_TIME_BUCKET_5 = 5.0; // 5s
 const RESPONSE_TIME_BUCKET_6 = 10.0; // 10s
 
-
-
 const CLEANUP_WINDOW_HOURS = 24;
 
 // Alert threshold constants

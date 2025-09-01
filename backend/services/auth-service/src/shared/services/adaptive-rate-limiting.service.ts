@@ -15,8 +15,6 @@ const SUSPICIOUS_MAX_REQUESTS = 25;
 const BLOCKED_WINDOW_HOURS = 1;
 const BLOCKED_MAX_REQUESTS = 5;
 
-
-
 const RECENT_ACTIVITY_WINDOW_MINUTES = 30;
 const FAILURE_COUNT_THRESHOLD = 5;
 const RATE_LIMIT_VIOLATION_THRESHOLD = 3;
@@ -101,9 +99,7 @@ export class AdaptiveRateLimitingService {
     },
   };
 
-  constructor(
-    private securityMonitoringService: SecurityMonitoringService
-  ) {}
+  constructor(private securityMonitoringService: SecurityMonitoringService) {}
 
   /**
    * Check if a request should be allowed based on adaptive rate limiting

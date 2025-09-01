@@ -1,6 +1,7 @@
+import { randomUUID } from 'crypto';
+
 import { Injectable, NestMiddleware } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
-import { randomUUID } from 'crypto';
 
 @Injectable()
 export class CorrelationIdMiddleware implements NestMiddleware {

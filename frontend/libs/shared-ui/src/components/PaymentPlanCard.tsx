@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { Card, CardContent, CardHeader } from './Card';
 
 export interface PaymentPlanCardProps {
@@ -10,8 +11,17 @@ export interface PaymentPlanCardProps {
   onSelect: () => void;
 }
 
-export const PaymentPlanCard = ({ planName, description, installments, interestRate, isSelected = false, onSelect }: PaymentPlanCardProps) => {
-  const selectionClasses = isSelected ? 'border-blue-500 ring-2 ring-blue-500' : 'border-gray-300';
+export const PaymentPlanCard = ({
+  planName,
+  description,
+  installments,
+  interestRate,
+  isSelected = false,
+  onSelect,
+}: PaymentPlanCardProps) => {
+  const selectionClasses = isSelected
+    ? 'border-blue-500 ring-2 ring-blue-500'
+    : 'border-gray-300';
 
   return (
     <Card

@@ -1,28 +1,35 @@
-import { Module, MiddlewareConsumer, NestModule, RequestMethod } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
-import { APP_GUARD, APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
-import { TerminusModule } from '@nestjs/terminus';
-import { EventEmitterModule } from '@nestjs/event-emitter';
-import { ClientsModule, Transport } from '@nestjs/microservices';
-import { WinstonModule } from 'nest-winston';
-import { I18nModule, QueryResolver, AcceptLanguageResolver } from 'nestjs-i18n';
 import * as path from 'path';
 
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { SharedModule } from '../shared/shared.module';
+import {
+  Module,
+  MiddlewareConsumer,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { APP_GUARD, APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { ClientsModule, Transport } from '@nestjs/microservices';
+import { TerminusModule } from '@nestjs/terminus';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { WinstonModule } from 'nest-winston';
+import { I18nModule, QueryResolver, AcceptLanguageResolver } from 'nestjs-i18n';
+
+import { IdempotencyMiddleware } from '../../../shared/middleware/idempotency.middleware';
 import { AuthModule } from '../features/auth/auth.module';
-import { JwtAuthGuard } from '../shared/guards/jwt-auth.guard';
-import { GlobalExceptionFilter } from '../shared/filters/global-exception.filter';
-import { LoggingInterceptor } from '../shared/interceptors/logging.interceptor';
-import { winstonConfig } from '../shared/config/winston.config';
 import { throttlerConfig } from '../shared/config/throttler.config';
 import { DatabaseModule } from '../infrastructure/database/database.module';
 import { MessagingModule } from '../infrastructure/messaging/messaging.module';
 import { PaymentsController } from '../payments.controller';
 import { PaymentsService } from '../payments.service';
-import { IdempotencyMiddleware } from '../../../shared/middleware/idempotency.middleware';
+import { winstonConfig } from '../shared/config/winston.config';
+import { GlobalExceptionFilter } from '../shared/filters/global-exception.filter';
+import { JwtAuthGuard } from '../shared/guards/jwt-auth.guard';
+import { LoggingInterceptor } from '../shared/interceptors/logging.interceptor';
+import { SharedModule } from '../shared/shared.module';
+
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 
 @Module({
   imports: [
@@ -119,4 +126,4 @@ export class AppModule implements NestModule {
       .apply(IdempotencyMiddleware)
       .forRoutes({ path: 'payments', method: RequestMethod.POST });
   }
-} 
+}

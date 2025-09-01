@@ -7,9 +7,7 @@ import { ConfigService } from '@nestjs/config';
  */
 @Controller()
 export class AppController {
-  constructor(
-    private readonly configService: ConfigService,
-  ) {}
+  constructor(private readonly configService: ConfigService) {}
 
   /**
    * Health check endpoint for load balancers and monitoring

@@ -282,7 +282,9 @@ export class CredentialRotationService implements OnModuleInit {
     return {
       apiKey: this.generateSecureString(API_KEY_LENGTH),
       secretKey: this.generateSecureString(SECRET_KEY_LENGTH),
-      endpoint: this.configService.get<string>('API_ENDPOINT') || 'https://api.default.com',
+      endpoint:
+        this.configService.get<string>('API_ENDPOINT') ||
+        'https://api.default.com',
     };
   }
 

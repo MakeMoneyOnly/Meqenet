@@ -39,27 +39,43 @@ export class IdempotencyMiddleware implements NestMiddleware {
 
     if (cached) {
       if (cached.isProcessing) {
-        this.logger.warn(`Request with key '${idempotencyKey}' is already being processed.`);
-        return res.status(IDEMPOTENCY_CONFIG.CONFLICT_STATUS_CODE).json({ message: 'Request in progress' });
+        this.logger.warn(
+          `Request with key '${idempotencyKey}' is already being processed.`
+        );
+        return res
+          .status(IDEMPOTENCY_CONFIG.CONFLICT_STATUS_CODE)
+          .json({ message: 'Request in progress' });
       }
       this.logger.log(`Returning cached response for key '${idempotencyKey}'`);
       return res.status(cached.statusCode).json(cached.responseBody);
     }
 
     // Key is not in cache, so this is a new request.
-    idempotencyCache.set(idempotencyKey, { isProcessing: true, responseBody: null, statusCode: 0 });
+    idempotencyCache.set(idempotencyKey, {
+      isProcessing: true,
+      responseBody: null,
+      statusCode: 0,
+    });
     this.logger.log(`Processing new request with key '${idempotencyKey}'`);
 
     const originalJson = res.json;
     const originalSend = res.send;
 
-    res.json = (body) => {
-      idempotencyCache.set(idempotencyKey, { isProcessing: false, responseBody: body, statusCode: res.statusCode });
+    res.json = body => {
+      idempotencyCache.set(idempotencyKey, {
+        isProcessing: false,
+        responseBody: body,
+        statusCode: res.statusCode,
+      });
       return originalJson.call(res, body);
     };
 
-    res.send = (body) => {
-      idempotencyCache.set(idempotencyKey, { isProcessing: false, responseBody: body, statusCode: res.statusCode });
+    res.send = body => {
+      idempotencyCache.set(idempotencyKey, {
+        isProcessing: false,
+        responseBody: body,
+        statusCode: res.statusCode,
+      });
       return originalSend.call(res, body);
     };
 

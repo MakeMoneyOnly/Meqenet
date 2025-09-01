@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 /**
  * Database Module - Enterprise FinTech compliant database configuration
@@ -26,7 +26,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         extra: {
           // Connection pool settings for FinTech workloads
           max: 20, // Maximum connections
-          min: 5,  // Minimum connections
+          min: 5, // Minimum connections
           idleTimeoutMillis: 30000,
           acquireTimeoutMillis: 60000,
         },

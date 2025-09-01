@@ -160,19 +160,33 @@ These concerns are managed centrally but apply to all services within the ecosys
 
 ## 5. Event-Driven Architecture Standards
 
-While many interactions are synchronous via gRPC, asynchronous, event-based communication is critical for decoupling services and ensuring resilience. All event-driven patterns **MUST** adhere to the following standards.
+While many interactions are synchronous via gRPC, asynchronous, event-based communication is
+critical for decoupling services and ensuring resilience. All event-driven patterns **MUST** adhere
+to the following standards.
 
 ### 5.1. Event Schema and Documentation
 
-To ensure clarity and prevent integration issues, all asynchronous events **MUST** be formally documented using the **AsyncAPI** specification. Each service that produces events must maintain an `asyncapi.yaml` file, defining the channels it publishes to and the schema of its event payloads. This specification serves as the discoverable, version-controlled contract for all events.
+To ensure clarity and prevent integration issues, all asynchronous events **MUST** be formally
+documented using the **AsyncAPI** specification. Each service that produces events must maintain an
+`asyncapi.yaml` file, defining the channels it publishes to and the schema of its event payloads.
+This specification serves as the discoverable, version-controlled contract for all events.
 
 ### 5.2. Reliable Event Publishing (Transactional Outbox)
 
-To guarantee that critical business events are published reliably (at-least-once delivery) and to avoid dual-writes, services that publish events (e.g., `payments-service`) **MUST** implement the **Transactional Outbox Pattern**. This pattern involves atomically committing the database state change and the event to be published in the same local transaction. A separate outbox processor service will then read from the outbox table and reliably publish the events to the message broker (e.g., RabbitMQ, Kafka).
+To guarantee that critical business events are published reliably (at-least-once delivery) and to
+avoid dual-writes, services that publish events (e.g., `payments-service`) **MUST** implement the
+**Transactional Outbox Pattern**. This pattern involves atomically committing the database state
+change and the event to be published in the same local transaction. A separate outbox processor
+service will then read from the outbox table and reliably publish the events to the message broker
+(e.g., RabbitMQ, Kafka).
 
 ### 5.3. Disaster Recovery (DR)
 
-Our disaster recovery strategy is based on a multi-region, active-passive model. Production infrastructure is replicated to a secondary AWS region. In the event of a primary region failure, traffic will be failed over after a manual approval gate. RPO (Recovery Point Objective) is targeted at < 1 hour, and RTO (Recovery Time Objective) is targeted at < 4 hours. This is documented in detail in the [Security](./07-Security.md) document.
+Our disaster recovery strategy is based on a multi-region, active-passive model. Production
+infrastructure is replicated to a secondary AWS region. In the event of a primary region failure,
+traffic will be failed over after a manual approval gate. RPO (Recovery Point Objective) is targeted
+at < 1 hour, and RTO (Recovery Time Objective) is targeted at < 4 hours. This is documented in
+detail in the [Security](./07-Security.md) document.
 
 ---
 

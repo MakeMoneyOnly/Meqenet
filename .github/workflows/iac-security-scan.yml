@@ -102,6 +102,13 @@ jobs:
           output_path: "kics-results"
           ignore_on_exit: "info"
 
+      - name: Check KICS output files
+        run: |
+          echo "📁 Listing KICS output directory..."
+          ls -la kics-results/ 2>/dev/null || echo "kics-results directory not found"
+          echo "📄 Searching for SARIF files..."
+          find . -name "*.sarif" -type f 2>/dev/null || echo "No SARIF files found"
+
       - name: Upload KICS SARIF file
         uses: github/codeql-action/upload-sarif@v3
         if: always()

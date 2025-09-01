@@ -18,19 +18,21 @@ export const winstonConfig: WinstonModuleAsyncOptions = {
       }),
       winston.format.errors({ stack: true }),
       winston.format.json(),
-      winston.format.printf(({ timestamp, level, message, context, stack, ...meta }) => {
-        // Sanitize sensitive data from logs
-        const sanitizedMeta = sanitizeLogData(meta);
+      winston.format.printf(
+        ({ timestamp, level, message, context, stack, ...meta }) => {
+          // Sanitize sensitive data from logs
+          const sanitizedMeta = sanitizeLogData(meta);
 
-        return JSON.stringify({
-          timestamp,
-          level,
-          message,
-          context: context || 'Application',
-          stack,
-          ...sanitizedMeta,
-        });
-      })
+          return JSON.stringify({
+            timestamp,
+            level,
+            message,
+            context: context || 'Application',
+            stack,
+            ...sanitizedMeta,
+          });
+        }
+      )
     );
 
     return {
@@ -109,7 +111,9 @@ function sanitizeLogData(meta: any): any {
   const sanitizeObject = (obj: any): any => {
     if (obj && typeof obj === 'object') {
       for (const [key, value] of Object.entries(obj)) {
-        if (sensitiveKeys.some(sensitive => key.toLowerCase().includes(sensitive))) {
+        if (
+          sensitiveKeys.some(sensitive => key.toLowerCase().includes(sensitive))
+        ) {
           obj[key] = '[REDACTED]';
         } else if (typeof value === 'object') {
           obj[key] = sanitizeObject(value);

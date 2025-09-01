@@ -1,5 +1,5 @@
-import { ConfigService } from '@nestjs/config';
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 export interface SecurityConfig {
   encryption: {
@@ -64,10 +64,7 @@ export class SecurityConfigService {
         secret: this.configService.get('JWT_SECRET', 'development-secret'),
         expiresIn: this.configService.get('JWT_EXPIRES_IN', '1h'),
         issuer: this.configService.get('JWT_ISSUER', 'meqenet.et'),
-        audience: this.configService.get(
-          'JWT_AUDIENCE',
-          'payments-service'
-        ),
+        audience: this.configService.get('JWT_AUDIENCE', 'payments-service'),
       },
       rateLimit: {
         ttl: parseInt(this.configService.get('RATE_LIMIT_TTL', '60'), 10),
