@@ -1,5 +1,7 @@
 import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
+import * as bcrypt from 'bcrypt';
+import { vi } from 'vitest';
 
 import { MessagingProducerService } from '../../infrastructure/messaging/messaging.producer.service';
 import { OutboxService } from '../../shared/outbox/outbox.service';
@@ -7,6 +9,15 @@ import { PrismaService } from '../../shared/prisma/prisma.service';
 
 import { AuthService } from './auth.service';
 
+// Mock bcrypt
+vi.mock('bcrypt', () => ({
+  default: {
+    compare: vi.fn(),
+    hash: vi.fn(),
+  },
+  compare: vi.fn(),
+  hash: vi.fn(),
+}));
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -15,18 +26,18 @@ describe('AuthService', () => {
 
   const mockPrismaService = {
     user: {
-      findUnique: jest.fn(),
-      create: jest.fn(),
+      findUnique: vi.fn(),
+      create: vi.fn(),
     },
-    $transaction: jest.fn(),
+    $transaction: vi.fn(),
   };
 
   const mockJwtService = {
-    sign: jest.fn(),
+    sign: vi.fn(),
   };
 
   const mockOutboxService = {
-    store: jest.fn(),
+    store: vi.fn(),
   };
 
   beforeEach(async () => {
@@ -53,8 +64,10 @@ describe('AuthService', () => {
     }).compile();
 
     service = module.get<AuthService>(AuthService);
-    _prismaService = module.get<PrismaService>(PrismaService);
-    _jwtService = module.get<JwtService>(JwtService);
+    // Mock the prisma property directly on the service instance
+    (service as any).prisma = mockPrismaService;
+    (service as any).jwtService = mockJwtService;
+    (service as any).outboxService = mockOutboxService;
   });
 
   it('should be defined', () => {
@@ -75,11 +88,15 @@ describe('AuthService', () => {
         createdAt: new Date(),
       };
 
+      // Mock bcrypt.hash for registration
+      const bcryptHashMock = vi.mocked(bcrypt.hash);
+      bcryptHashMock.mockResolvedValue('hashed-password');
+
       mockPrismaService.user.findUnique.mockResolvedValue(null);
       mockPrismaService.$transaction.mockImplementation(async callback => {
         return callback({
           user: {
-            create: jest.fn().mockResolvedValue(mockUser),
+            create: vi.fn().mockResolvedValue(mockUser),
           },
         });
       });
@@ -92,6 +109,7 @@ describe('AuthService', () => {
         where: { email: registerUserDto.email },
       });
       expect(mockJwtService.sign).toHaveBeenCalled();
+      expect(bcryptHashMock).toHaveBeenCalledWith(registerUserDto.password, 12);
     });
 
     it('should throw error if user already exists', async () => {
@@ -127,6 +145,10 @@ describe('AuthService', () => {
         createdAt: new Date(),
       };
 
+      // Mock bcrypt.compare to return true for valid password
+      const bcryptCompareMock = vi.mocked(bcrypt.compare);
+      bcryptCompareMock.mockResolvedValue(true);
+
       mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
       mockJwtService.sign.mockReturnValue('jwt-token');
 
@@ -137,18 +159,37 @@ describe('AuthService', () => {
         where: { email: loginUserDto.email },
       });
       expect(mockJwtService.sign).toHaveBeenCalled();
+      expect(bcryptCompareMock).toHaveBeenCalledWith(
+        loginUserDto.password,
+        mockUser.passwordHash
+      );
     });
 
     it('should throw error for invalid credentials', async () => {
       const loginUserDto = {
-        email: 'nonexistent@example.com',
-        password: 'password123',
+        email: 'test@example.com',
+        password: 'wrongpassword',
       };
 
-      mockPrismaService.user.findUnique.mockResolvedValue(null);
+      const mockUser = {
+        id: 'user-id',
+        email: 'test@example.com',
+        passwordHash: '$2b$10$hashedpassword',
+        createdAt: new Date(),
+      };
+
+      // Mock bcrypt.compare to return false for invalid password
+      const bcryptCompareMock = vi.mocked(bcrypt.compare);
+      bcryptCompareMock.mockResolvedValue(false);
+
+      mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
 
       await expect(service.login(loginUserDto)).rejects.toThrow(
         'Invalid credentials'
+      );
+      expect(bcryptCompareMock).toHaveBeenCalledWith(
+        loginUserDto.password,
+        mockUser.passwordHash
       );
     });
   });
