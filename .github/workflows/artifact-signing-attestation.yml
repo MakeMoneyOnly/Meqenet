@@ -46,7 +46,7 @@ jobs:
 
           # Verify installation
           echo "✅ SLSA verifier installed successfully"
-          slsa-verifier --version
+          slsa-verifier version
 
       - name: Verify Cosign installation
         run: |
