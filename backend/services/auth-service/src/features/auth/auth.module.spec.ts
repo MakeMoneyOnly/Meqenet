@@ -21,16 +21,23 @@ import { OutboxService } from '../../shared/outbox/outbox.service';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 
 import { AuthController } from './auth.controller';
-import { AuthModule } from './auth.module';
 import { AuthService } from './auth.service';
 
 describe('AuthModule', () => {
   let module: TestingModule;
 
   beforeEach(async () => {
+    const mockRedisConfigService = {
+      host: 'localhost',
+      port: 6379,
+      connection: {
+        host: 'localhost',
+        port: 6379,
+      },
+    };
+
     module = await Test.createTestingModule({
       imports: [
-        AuthModule,
         ConfigModule.forRoot({
           isGlobal: true,
           envFilePath: '.env.test',
@@ -46,7 +53,10 @@ describe('AuthModule', () => {
           inject: [ConfigService],
         }),
       ],
+      exports: [AuthService],
+      controllers: [AuthController],
       providers: [
+        AuthService,
         {
           provide: PrismaService,
           useValue: mockPrismaService,
@@ -61,7 +71,7 @@ describe('AuthModule', () => {
         },
         {
           provide: RedisConfigService,
-          useValue: {},
+          useValue: mockRedisConfigService,
         },
       ],
     }).compile();
