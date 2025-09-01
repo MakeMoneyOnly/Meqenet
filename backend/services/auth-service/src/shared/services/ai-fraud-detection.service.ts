@@ -21,7 +21,9 @@ const RAPID_SUCCESSION_SCORE = 60;
 const UNKNOWN_DEVICE_SCORE = 65;
 const SUSPICIOUS_MERCHANT_SCORE = 85;
 const UNUSUAL_MERCHANT_SCORE = 45;
-const RAPID_SUCCESSION_THRESHOLD_SECONDS = 5 * SECONDS_PER_MINUTE; // 5 minutes in seconds
+const RAPID_SUCCESSION_MINUTES = 5;
+const RAPID_SUCCESSION_THRESHOLD_SECONDS =
+  RAPID_SUCCESSION_MINUTES * SECONDS_PER_MINUTE; // 5 minutes in seconds
 
 const _MAX_SCORE = 100;
 const _AMOUNT_DEVIATION_MULTIPLIER = 20;
@@ -150,9 +152,7 @@ export class AIFraudDetectionService {
     ], // Threshold amounts
   };
 
-  constructor(
-    private securityMonitoringService: SecurityMonitoringService
-  ) {
+  constructor(private securityMonitoringService: SecurityMonitoringService) {
     this.initializeFraudDetection();
   }
 

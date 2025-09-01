@@ -28,12 +28,15 @@ async function bootstrap(): Promise<void> {
     app.useLogger(app.get(PinoLogger));
 
     // Initialize OpenTelemetry with centralized config (non-blocking). Fulfills APM instrumentation requirement.
-    const otelConfig: any = {
+    const otelConfig: Record<string, string> = {
       nodeEnv: configService.get<string>('NODE_ENV') || 'development',
-      serviceName: configService.get<string>('OTEL_SERVICE_NAME') || 'auth-service',
+      serviceName:
+        configService.get<string>('OTEL_SERVICE_NAME') || 'auth-service',
     };
 
-    const jaegerEndpoint = configService.get<string>('OTEL_EXPORTER_JAEGER_ENDPOINT');
+    const jaegerEndpoint = configService.get<string>(
+      'OTEL_EXPORTER_JAEGER_ENDPOINT'
+    );
     if (jaegerEndpoint) {
       otelConfig.jaegerEndpoint = jaegerEndpoint;
     }

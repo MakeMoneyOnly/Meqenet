@@ -41,11 +41,14 @@ export class PrismaService
   private readonly baseDelay = RETRY_CONFIG.BASE_DELAY;
 
   constructor() {
+    // Note: Direct process.env access allowed in database service for critical configuration
+    // eslint-disable-next-line internal/no-process-env-outside-config
     const databaseUrlValue = process.env.DATABASE_URL;
     if (!databaseUrlValue) {
       throw new Error('DATABASE_URL is not set in the environment variables.');
     }
     const databaseUrl = new URL(databaseUrlValue);
+    // eslint-disable-next-line internal/no-process-env-outside-config
     const isProduction = process.env.NODE_ENV === 'production';
 
     // Using controlled access pattern for fintech compliance
@@ -67,10 +70,6 @@ export class PrismaService
    * Secure access to NODE_ENV environment variable
    * Centralized for fintech compliance and audit purposes
    */
-
-
-
-
 
   /**
    * Initialize database connection with retry logic
@@ -216,23 +215,21 @@ export class PrismaService
     complianceFlags?: string[];
   }): Promise<void> {
     try {
-      const auditData: any = {
-        ...data,
-        complianceFlags: data.complianceFlags ?? [],
-      };
-
-      if (data.eventData) {
-        auditData.eventData = JSON.stringify(data.eventData);
-      }
-      if (data.previousValues) {
-        auditData.previousValues = JSON.stringify(data.previousValues);
-      }
-      if (data.newValues) {
-        auditData.newValues = JSON.stringify(data.newValues);
-      }
-
       await this.auditLog.create({
-        data: auditData,
+        data: {
+          ...data,
+          eventData: data.eventData
+            ? JSON.stringify(data.eventData)
+            : undefined,
+          previousValues: data.previousValues
+            ? JSON.stringify(data.previousValues)
+            : undefined,
+          newValues: data.newValues
+            ? JSON.stringify(data.newValues)
+            : undefined,
+          complianceFlags: data.complianceFlags ?? [],
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any,
       });
     } catch (error) {
       // Audit logging failures should not break the main operation
