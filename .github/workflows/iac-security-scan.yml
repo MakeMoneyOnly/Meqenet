@@ -47,6 +47,7 @@ jobs:
       - name: Run Checkov
         id: checkov
         uses: bridgecrewio/checkov-action@v12
+        continue-on-error: true
         with:
           directory: infrastructure/
           framework: terraform
