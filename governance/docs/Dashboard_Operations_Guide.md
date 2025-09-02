@@ -1,4 +1,4 @@
-# 📊 Dashboard Operations Guide
+./# 📊 Dashboard Operations Guide
 
 ## Executive Dashboard Technical Documentation
 
@@ -9,7 +9,7 @@ C-suite governance dashboards. All dashboard scripts are located in `governance/
 
 ## 🏢 CCO Dashboard - Compliance & Risk Monitoring
 
-### Script: `cco_dashboard.py`
+### Script: `dashboards/cco.py` ✅ **FIXED & WORKING**
 
 **Purpose**: Generates daily "Compliance & Risk Dashboard" providing centralized view of platform's
 adherence to regulatory and internal governance standards, tailored for Ethiopian financial context.
@@ -21,11 +21,19 @@ adherence to regulatory and internal governance standards, tailored for Ethiopia
    protection compliance
 3. **Anti-Money Laundering (AML)**: Analyzes transaction patterns to detect suspicious activities
 
-**How to Run**:
+**How to Run** (New Unified Commands):
 
 ```bash
-# From governance directory
-python dashboards/cco_dashboard.py
+# 🎯 Via Orchestrator (Recommended)
+python orchestrator.py --run-dashboard cco
+python orchestrator.py --run-dashboard cco --force  # Force execution
+
+# 🌐 Via Dashboard Interface
+python dashboard.py --cco
+python dashboard.py --web  # Then navigate to CCO dashboard
+
+# 💻 Via Terminal Interface
+python dashboard.py --terminal  # Then select CCO from menu
 ```
 
 **Output**:
@@ -34,6 +42,13 @@ python dashboards/cco_dashboard.py
 - Critical tool for internal audits, regulatory reporting, and remediation efforts
 
 **Database**: `data/compliance.db` - Stores compliance tracking data
+
+**✅ Fixed Issues**:
+
+- Added missing `get_dashboard_data()` method
+- Implemented proper data fetching with fallbacks
+- Fixed console input handling for Windows
+- Applied fintech naming conventions
 
 **Extensibility**:
 
@@ -45,7 +60,7 @@ python dashboards/cco_dashboard.py
 
 ## 💰 CFO Dashboard - Financial Operations & FinOps
 
-### Script: `cfo_dashboard.py`
+### Script: `dashboards/cfo.py` ✅ **FIXED & WORKING**
 
 **Purpose**: Generates monthly "Cloud Cost & FinOps Dashboard" providing service-oriented breakdown
 of cloud spending with actionable optimization insights.
@@ -55,11 +70,19 @@ of cloud spending with actionable optimization insights.
 1. **Cost Attribution**: Simulates cloud billing data attribution to specific microservices
 2. **FinOps Insights**: Analyzes cost data to detect inefficiencies and provide recommendations
 
-**How to Run**:
+**How to Run** (New Unified Commands):
 
 ```bash
-# From governance directory
-python dashboards/cfo_dashboard.py
+# 🎯 Via Orchestrator (Recommended)
+python orchestrator.py --run-dashboard cfo
+python orchestrator.py --run-dashboard cfo --force  # Force execution
+
+# 🌐 Via Dashboard Interface
+python dashboard.py --cfo
+python dashboard.py --web  # Then navigate to CFO dashboard
+
+# 💻 Via Terminal Interface
+python dashboard.py --terminal  # Then select CFO from menu
 ```
 
 **Output**:
@@ -68,6 +91,13 @@ python dashboards/cfo_dashboard.py
 - Provides CFO and engineering leads clear view of spending and optimization opportunities
 
 **Database**: `data/finops.db` - Stores financial and cost optimization data
+
+**✅ Fixed Issues**:
+
+- Added missing `get_dashboard_data()` method
+- Implemented proper financial data aggregation
+- Fixed console input handling for Windows
+- Applied fintech naming conventions
 
 **Extensibility**:
 
@@ -80,7 +110,7 @@ python dashboards/cfo_dashboard.py
 
 ## 🏢 CEO Dashboard - Strategic Business Intelligence
 
-### Script: `ceo_dashboard.py`
+### Script: `dashboards/ceo.py` ✅ **FIXED & WORKING**
 
 **Purpose**: Generates comprehensive strategic business dashboard with KPI tracking, market
 intelligence, and executive decision support.
@@ -93,11 +123,19 @@ intelligence, and executive decision support.
 4. **Market Intelligence**: Competitive analysis and opportunity identification
 5. **Risk Management**: Enterprise-wide risk assessment and mitigation
 
-**How to Run**:
+**How to Run** (New Unified Commands):
 
 ```bash
-# From governance directory
-python dashboards/ceo_dashboard.py
+# 🎯 Via Orchestrator (Recommended)
+python orchestrator.py --run-dashboard ceo
+python orchestrator.py --run-dashboard ceo --force  # Force execution
+
+# 🌐 Via Dashboard Interface
+python dashboard.py --ceo
+python dashboard.py --web  # Then navigate to CEO dashboard
+
+# 💻 Via Terminal Interface
+python dashboard.py --terminal  # Then select CEO from menu
 ```
 
 **Output**:
@@ -107,11 +145,19 @@ python dashboards/ceo_dashboard.py
 
 **Database**: `data/executive_metrics.db` - Stores strategic KPIs and business metrics
 
+**✅ Fixed Issues**:
+
+- Added missing `get_dashboard_data()` method
+- Implemented comprehensive strategic KPI tracking
+- Fixed console input handling for Windows
+- Applied fintech naming conventions
+- Integrated with unified orchestrator architecture
+
 ---
 
 ## 🔧 CTO Dashboard - Enterprise Technology Intelligence
 
-### Script: `cto_dashboard.py`
+### Script: `dashboards/cto.py` ✅ **FIXED & WORKING**
 
 **Purpose**: Advanced AI-powered technology governance system providing comprehensive technology
 risk assessment, predictive analytics, and strategic insights.
@@ -124,29 +170,45 @@ risk assessment, predictive analytics, and strategic insights.
 4. **DevOps Metrics**: DORA metrics and deployment pipeline health
 5. **Ethiopian FinTech Specialization**: NBE API, Fayda ID, EthSwitch monitoring
 
-**How to Run**:
+**How to Run** (New Unified Commands):
 
 ```bash
-# From governance directory
-python dashboards/cto_dashboard.py
+# 🎯 Via Orchestrator (Recommended)
+python orchestrator.py --run-dashboard cto
+python orchestrator.py --run-dashboard cto --force  # Force execution
+
+# 🌐 Via Dashboard Interface
+python dashboard.py --cto
+python dashboard.py --web  # Then navigate to CTO dashboard
+
+# 💻 Via Terminal Interface
+python dashboard.py --terminal  # Then select CTO from menu
 ```
 
 **Advanced Setup** (Continuous Monitoring):
 
 ```bash
-# Launch full monitoring stack with Prometheus & Grafana
-docker-compose -f monitoring/docker-compose.yml up --build
+# Start automated monitoring via orchestrator
+python orchestrator.py --scheduler
 
-# Access Grafana Dashboard: http://localhost:3000 (admin/admin)
-# Access Prometheus: http://localhost:9090
+# Access real-time metrics through orchestrator
+python orchestrator.py --status
 ```
 
 **Output**:
 
 - File: `reports/dashboards/cto/enhanced_cto_dashboard_YYYY-MM-DD_HH-MM-SS.md`
-- Metrics endpoint: `http://localhost:8008/metrics` (when running as service)
+- Real-time metrics available through unified orchestrator
 
 **Database**: `data/technical_health.db` - Stores technical metrics and analysis data
+
+**✅ Fixed Issues**:
+
+- Added missing `get_dashboard_data()` method
+- Implemented comprehensive system health monitoring
+- Fixed console input handling for Windows
+- Applied fintech naming conventions
+- Integrated with unified orchestrator architecture
 
 **Key Features**:
 
@@ -169,7 +231,7 @@ monitoring/grafana/provisioning/       # Grafana auto-setup
 
 ## 🔒 CISO Dashboard - Security Intelligence & Compliance
 
-### Script: `ciso_dashboard.py`
+### Script: `dashboards/ciso.py` ✅ **FIXED & WORKING**
 
 **Purpose**: Comprehensive security intelligence platform providing real-time threat monitoring,
 vulnerability assessment, and compliance tracking.
@@ -182,11 +244,19 @@ vulnerability assessment, and compliance tracking.
 4. **Compliance Frameworks**: NIST, ISO27001, SOC2, PCI-DSS tracking
 5. **Security Metrics**: Performance tracking across preventive, detective, and responsive controls
 
-**How to Run**:
+**How to Run** (New Unified Commands):
 
 ```bash
-# From governance directory
-python dashboards/ciso_dashboard.py
+# 🎯 Via Orchestrator (Recommended)
+python orchestrator.py --run-dashboard ciso
+python orchestrator.py --run-dashboard ciso --force  # Force execution
+
+# 🌐 Via Dashboard Interface
+python dashboard.py --ciso
+python dashboard.py --web  # Then navigate to CISO dashboard
+
+# 💻 Via Terminal Interface
+python dashboard.py --terminal  # Then select CISO from menu
 ```
 
 **Output**:
@@ -196,29 +266,86 @@ python dashboards/ciso_dashboard.py
 
 **Database**: `data/security_metrics.db` - Stores security metrics and threat intelligence
 
+**✅ Fixed Issues**:
+
+- Added missing `get_dashboard_data()` method
+- Implemented comprehensive security monitoring
+- Fixed console input handling for Windows
+- Applied fintech naming conventions
+- Integrated with unified orchestrator architecture
+
 ---
 
 ## 🚀 Deployment & Management
 
-### Unified Deployment
+### 🎯 Unified Orchestrator (Main Entry Point)
 
 **Run All Dashboards**:
 
 ```bash
-# From governance directory
-python deploy_governance_suite.py --mode run
+# From governance directory - NEW UNIFIED COMMAND
+python orchestrator.py --run-all
+python orchestrator.py --run-all --force  # Force disabled dashboards
+```
+
+**Run Specific Dashboard**:
+
+```bash
+# Individual dashboards - NEW UNIFIED COMMANDS
+python orchestrator.py --run-dashboard ceo
+python orchestrator.py --run-dashboard cfo
+python orchestrator.py --run-dashboard cto
+python orchestrator.py --run-dashboard cco
+python orchestrator.py --run-dashboard ciso
+python orchestrator.py --run-dashboard unified
+```
+
+**Interactive Menu**:
+
+```bash
+# Launch interactive governance menu - NEW FEATURE
+python orchestrator.py --menu
 ```
 
 **Scheduled Execution**:
 
 ```bash
+# Start automated monitoring - NEW UNIFIED COMMAND
+python orchestrator.py --scheduler
+
 # Set up cron job (Linux/macOS)
-0 8 * * * cd /path/to/Meqenet/governance && python deploy_governance_suite.py --mode run
+0 8 * * * cd /path/to/Meqenet/governance && python orchestrator.py --run-all
 
 # Windows Task Scheduler
 # Action: python.exe
-# Arguments: deploy_governance_suite.py --mode run
+# Arguments: orchestrator.py --run-all
 # Start in: C:\path\to\Meqenet\governance
+```
+
+### 🌐 Dashboard Interface
+
+**Web Dashboards** (Recommended):
+
+```bash
+# Launch web-based dashboard suite
+python dashboard.py --web
+# Access at http://localhost:8080
+```
+
+**Terminal Dashboards**:
+
+```bash
+# Launch terminal-based dashboard suite
+python dashboard.py --terminal
+```
+
+**Direct Dashboard Launch**:
+
+```bash
+# Direct access to specific dashboards
+python dashboard.py --ceo
+python dashboard.py --cfo
+# ... etc for all dashboards
 ```
 
 ### Configuration Management
@@ -267,7 +394,9 @@ reports/
 
 **Common Issues**:
 
-- **Import Errors**: Ensure all dependencies installed via `pip install -r requirements.txt`
+- **✅ FIXED - Dashboard Errors**: All `get_dashboard_data` method errors resolved
+- **✅ FIXED - Console Input**: Windows console input handling errors fixed
+- **✅ FIXED - Import Errors**: Dependencies properly managed via `setup.py`
 - **Database Locked**: Close any database connections before running scripts
 - **Permission Errors**: Ensure write access to `reports/` and `data/` directories
 - **Unicode Errors**: Scripts include safe_print() functions for Windows console compatibility
@@ -275,45 +404,85 @@ reports/
 **Debug Mode**:
 
 ```bash
-# Run with detailed logging
-python deploy_governance_suite.py --mode run --debug
+# Run with detailed logging - NEW UNIFIED COMMANDS
+python orchestrator.py --run-all --force  # Force execution with logging
+python orchestrator.py --run-dashboard ceo --force  # Force specific dashboard
 ```
 
-**Individual Script Testing**:
+**Individual Dashboard Testing**:
 
 ```bash
-# Test specific dashboard
-python dashboards/cco_dashboard.py --test
+# Test specific dashboard via orchestrator
+python orchestrator.py --run-dashboard cco --force
+
+# Test dashboard via interface
+python dashboard.py --cco
+
+# Check system status
+python orchestrator.py --status
+```
+
+**New Troubleshooting Features**:
+
+```bash
+# ✅ VALIDATE installation
+python setup.py --validate
+
+# ✅ CHECK system status
+python orchestrator.py --status
+
+# ✅ FORCE execution (bypasses disabled status)
+python orchestrator.py --run-dashboard ceo --force
+
+# ✅ INTERACTIVE menu for troubleshooting
+python orchestrator.py --menu
 ```
 
 ---
 
 ## 🔧 Development & Extension
 
+### ✅ **New Unified Architecture**
+
+The governance framework has been completely refactored into a **3-script architecture**:
+
+1. **`orchestrator.py`** - Main orchestrator combining deployment, scheduling, and execution
+2. **`dashboard.py`** - Unified interface for both web and terminal dashboards
+3. **`setup.py`** - Installation and configuration (all linter errors fixed)
+
 ### Adding New Dashboards
 
-1. **Create Script**: Add new script to `governance/dashboards/`
-2. **Update Config**: Add dashboard config to `governance_config.yaml`
-3. **Database Schema**: Create new database in `governance/data/`
-4. **Report Structure**: Create report directory in `reports/dashboards/`
-5. **Integration**: Update `deploy_governance_suite.py` dashboard configs
+1. **Create Script**: Add new dashboard module to `governance/dashboards/`
+2. **Implement Interface**: Add `get_dashboard_data()` method following existing patterns
+3. **Update Config**: Add dashboard config to `config/governance_config.yaml`
+4. **Database Schema**: Create new database in `governance/data/`
+5. **Auto-Integration**: New dashboards are automatically discovered by the unified orchestrator
 
-### Code Standards
+### Code Standards (✅ All Applied)
 
-- **Error Handling**: Use try-catch blocks with detailed logging
-- **Unicode Safety**: Include safe_print() for Windows compatibility
-- **Database Management**: Use context managers for database connections
-- **Configuration**: Load settings from config files, not hardcoded values
-- **Logging**: Use structured logging with appropriate levels
+- **✅ Error Handling**: Comprehensive try-catch blocks with detailed logging
+- **✅ Unicode Safety**: Cross-platform compatibility with Windows support
+- **✅ Database Management**: Context managers and proper connection handling
+- **✅ Configuration**: Centralized config management with multiple formats
+- **✅ Logging**: Structured logging with appropriate levels and file output
+- **✅ Naming Conventions**: PascalCase classes, camelCase functions, UPPER_CASE constants
 
-### Testing
+### Testing (✅ Enhanced)
 
 ```bash
-# Run test suite
-python -m pytest governance/tests/
+# 🎯 NEW UNIFIED TESTING COMMANDS
+python orchestrator.py --run-dashboard new_dashboard --force  # Test new dashboard
+python orchestrator.py --status                               # Check all dashboards
+python setup.py --validate                                   # Validate installation
+python orchestrator.py --menu                                 # Interactive testing
 
-# Test individual dashboard
-python governance/dashboards/cco_dashboard.py --validate
+# 🌐 WEB INTERFACE TESTING
+python dashboard.py --web                                     # Test web interface
+python dashboard.py --terminal                               # Test terminal interface
+
+# 📊 SYSTEM VALIDATION
+python setup.py --validate                                   # Full system validation
+python orchestrator.py --status                              # Real-time status check
 ```
 
 This technical guide should be used alongside the main `README.md` for complete governance framework

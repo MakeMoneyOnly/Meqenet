@@ -1,0 +1,105 @@
+name: Trivy IaC Security Scan
+# Trivy now includes tfsec functionality and is the recommended tool going forward
+
+on:
+  push:
+    paths:
+      - 'infrastructure/**'
+      - 'terraform/**'
+      - '*.tf'
+      - '.github/workflows/trivy-iac-scan.yml'
+  pull_request:
+    paths:
+      - 'infrastructure/**'
+      - 'terraform/**'
+      - '*.tf'
+      - '.github/workflows/trivy-iac-scan.yml'
+  schedule:
+    - cron: '0 2 * * 1'  # Weekly on Monday at 2 AM
+  workflow_dispatch:
+
+jobs:
+  trivy-scan:
+    name: Trivy IaC Security Scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner in IaC mode
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'config'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+          # Trivy includes tfsec checks for Terraform files
+          
+      - name: Upload Trivy results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+          category: 'trivy-iac'
+
+      - name: Run Trivy in table format for PR comment
+        if: github.event_name == 'pull_request'
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'config'
+          scan-ref: '.'
+          format: 'table'
+          exit-code: '1'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+          output: 'trivy-pr-report.txt'
+        continue-on-error: true
+
+      - name: Comment PR with Trivy results
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const fs = require('fs');
+            let output = '## 🔒 Trivy IaC Security Scan Results\n\n';
+            
+            try {
+              const report = fs.readFileSync('trivy-pr-report.txt', 'utf8');
+              output += '```\n' + report + '\n```';
+            } catch (error) {
+              output += '✅ No security issues found!';
+            }
+            
+            // Find existing comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            
+            const botComment = comments.find(comment => 
+              comment.user.type === 'Bot' && 
+              comment.body.includes('Trivy IaC Security Scan Results')
+            );
+            
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: output
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: output
+              });
+            }

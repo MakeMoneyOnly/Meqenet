@@ -50,11 +50,13 @@ jobs:
           # Use the official pnpm installation script
           curl -fsSL --connect-timeout 10 --max-time 30 https://get.pnpm.io/install.sh | sh -
 
-          # Add pnpm to PATH for the current session
-          export PNPM_HOME="$HOME/.local/share/pnpm"
-          export PATH="$PNPM_HOME:$PATH"
+          # Add pnpm to PATH for the current session and export to subsequent steps
+          echo "PNPM_HOME=$HOME/.local/share/pnpm" >> $GITHUB_ENV
+          echo "$HOME/.local/share/pnpm" >> $GITHUB_PATH
 
           # Verify pnpm installation
+          export PNPM_HOME="$HOME/.local/share/pnpm"
+          export PATH="$PNPM_HOME:$PATH"
           if command -v pnpm &> /dev/null; then
             echo "✅ pnpm installed successfully"
             pnpm --version
@@ -72,13 +74,12 @@ jobs:
       - name: 🔍 Run PWA Compliance Tests
         run: |
           echo "🧪 Running PWA compliance tests..."
-          export PNPM_HOME="$HOME/.local/share/pnpm"
-          export PATH="$PNPM_HOME:$PATH"
 
-          # Verify pnpm is available
+          # Verify pnpm is available (should be in PATH from previous step)
           if ! command -v pnpm &> /dev/null; then
             echo "❌ pnpm not found in PATH"
             echo "Current PATH: $PATH"
+            echo "PNPM_HOME: $PNPM_HOME"
             exit 1
           fi
 

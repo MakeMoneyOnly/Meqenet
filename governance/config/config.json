@@ -1,0 +1,25 @@
+{
+  "dashboards": {
+    "ceo": {
+      "enabled": true,
+      "script_path": "dashboards/ceo.py"
+    },
+    "cfo": {
+      "enabled": true,
+      "script_path": "dashboards/cfo.py"
+    },
+    "cto": {
+      "enabled": true,
+      "script_path": "dashboards/cto.py"
+    },
+    "cco": {
+      "enabled": true,
+      "script_path": "dashboards/cco.py"
+    },
+    "ciso": {
+      "enabled": true,
+      "script_path": "dashboards/ciso.py"
+    }
+  },
+  "installed_via": "simple_installer"
+}

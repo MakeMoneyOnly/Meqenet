@@ -1,0 +1,38 @@
+# Governance Framework .gitignore
+# Keep the governance folder clean by ignoring generated files
+
+# Database files (SQLite)
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Log files
+logs/*.log
+logs/*.json
+
+# Generated reports
+reports/*.md
+reports/*.html
+reports/*.json
+reports/dashboards/
+
+# Backup files
+backups/
+*.bak
+
+# OWASP cache and reports
+owasp-data/
+owasp-reports/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+*.log
