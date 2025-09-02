@@ -162,7 +162,7 @@ describe('GlobalExceptionFilter', () => {
     });
 
     it('should log security-relevant errors separately', () => {
-      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation();
+      const loggerSpy = vi.spyOn(filter['logger'], 'warn').mockImplementation();
 
       const mockRequest = {
         url: '/api/admin',
@@ -183,7 +183,7 @@ describe('GlobalExceptionFilter', () => {
         }),
       } as any);
 
-      expect(consoleSpy).toHaveBeenCalledWith(
+      expect(loggerSpy).toHaveBeenCalledWith(
         'Security-related error',
         expect.objectContaining({
           status: HttpStatus.UNAUTHORIZED,
@@ -191,7 +191,7 @@ describe('GlobalExceptionFilter', () => {
         })
       );
 
-      consoleSpy.mockRestore();
+      loggerSpy.mockRestore();
     });
 
     it('should mask sensitive headers in logs', () => {
@@ -373,7 +373,9 @@ describe('GlobalExceptionFilter', () => {
     });
 
     it('should log financial transaction errors for audit', () => {
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation();
+      const loggerSpy = vi
+        .spyOn(filter['logger'], 'error')
+        .mockImplementation();
 
       const mockRequest = {
         url: '/api/payment/process',
@@ -391,7 +393,7 @@ describe('GlobalExceptionFilter', () => {
         }),
       } as any);
 
-      expect(consoleSpy).toHaveBeenCalledWith(
+      expect(loggerSpy).toHaveBeenCalledWith(
         'Unhandled exception',
         expect.objectContaining({
           error: 'Financial transaction failed',
@@ -399,7 +401,7 @@ describe('GlobalExceptionFilter', () => {
         })
       );
 
-      consoleSpy.mockRestore();
+      loggerSpy.mockRestore();
     });
 
     it('should handle PCI DSS compliance for payment errors', () => {
@@ -453,11 +455,13 @@ describe('GlobalExceptionFilter', () => {
       const duration = endTime - startTime;
 
       // Should handle multiple errors within reasonable time (< 100ms)
-      expect(duration).toBeLessThan(100); // eslint-disable-line @typescript-eslint/no-magic-numbers
+      expect(duration).toBeLessThan(100);  
     });
 
     it('should include performance metrics in error logs', () => {
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation();
+      const loggerSpy = vi
+        .spyOn(filter['logger'], 'error')
+        .mockImplementation();
 
       const mockRequest = {
         url: '/api/slow-endpoint',
@@ -475,7 +479,7 @@ describe('GlobalExceptionFilter', () => {
         }),
       } as any);
 
-      expect(consoleSpy).toHaveBeenCalledWith(
+      expect(loggerSpy).toHaveBeenCalledWith(
         'Unhandled exception',
         expect.objectContaining({
           url: '/api/slow-endpoint',
@@ -484,7 +488,7 @@ describe('GlobalExceptionFilter', () => {
         })
       );
 
-      consoleSpy.mockRestore();
+      loggerSpy.mockRestore();
     });
   });
 });

@@ -6,15 +6,12 @@ import { vi } from 'vitest';
 import { MessagingProducerService } from '../../infrastructure/messaging/messaging.producer.service';
 import { OutboxService } from '../../shared/outbox/outbox.service';
 import { PrismaService } from '../../shared/prisma/prisma.service';
+import { EventService } from '../../shared/services/event.service';
 
 import { AuthService } from './auth.service';
 
 // Mock bcrypt
 vi.mock('bcrypt', () => ({
-  default: {
-    compare: vi.fn(),
-    hash: vi.fn(),
-  },
   compare: vi.fn(),
   hash: vi.fn(),
 }));
@@ -40,6 +37,10 @@ describe('AuthService', () => {
     store: vi.fn(),
   };
 
+  const mockEventService = {
+    publish: vi.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -60,6 +61,10 @@ describe('AuthService', () => {
           provide: MessagingProducerService,
           useValue: {},
         },
+        {
+          provide: EventService,
+          useValue: mockEventService,
+        },
       ],
     }).compile();
 
@@ -68,6 +73,7 @@ describe('AuthService', () => {
     (service as any).prisma = mockPrismaService;
     (service as any).jwtService = mockJwtService;
     (service as any).outboxService = mockOutboxService;
+    (service as any).eventService = mockEventService;
   });
 
   it('should be defined', () => {
@@ -108,6 +114,13 @@ describe('AuthService', () => {
       expect(mockPrismaService.user.findUnique).toHaveBeenCalledWith({
         where: { email: registerUserDto.email },
       });
+      expect(mockEventService.publish).toHaveBeenCalledWith(
+        'user.registered',
+        expect.objectContaining({
+          userId: mockUser.id,
+          email: mockUser.email,
+        })
+      );
       expect(mockJwtService.sign).toHaveBeenCalled();
       expect(bcryptHashMock).toHaveBeenCalledWith(registerUserDto.password, 12);
     });
@@ -141,7 +154,9 @@ describe('AuthService', () => {
       const mockUser = {
         id: 'user-id',
         email: 'test@example.com',
-        passwordHash: '$2b$10$hashedpassword',
+        credential: {
+          hashedPassword: '$2b$10$hashedpassword',
+        },
         createdAt: new Date(),
       };
 
@@ -161,7 +176,7 @@ describe('AuthService', () => {
       expect(mockJwtService.sign).toHaveBeenCalled();
       expect(bcryptCompareMock).toHaveBeenCalledWith(
         loginUserDto.password,
-        mockUser.passwordHash
+        mockUser.credential.hashedPassword
       );
     });
 
@@ -174,13 +189,15 @@ describe('AuthService', () => {
       const mockUser = {
         id: 'user-id',
         email: 'test@example.com',
-        passwordHash: '$2b$10$hashedpassword',
+        credential: {
+          hashedPassword: '$2b$10$hashedpassword',
+        },
         createdAt: new Date(),
       };
 
       // Mock bcrypt.compare to return false for invalid password
       const bcryptCompareMock = vi.mocked(bcrypt.compare);
-      bcryptCompareMock.mockResolvedValue(false);
+      bcryptCompareMock.mockResolvedValue(false as never);
 
       mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
 
@@ -189,7 +206,7 @@ describe('AuthService', () => {
       );
       expect(bcryptCompareMock).toHaveBeenCalledWith(
         loginUserDto.password,
-        mockUser.passwordHash
+        mockUser.credential.hashedPassword
       );
     });
   });

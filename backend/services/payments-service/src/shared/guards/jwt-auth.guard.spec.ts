@@ -145,7 +145,7 @@ describe('JwtAuthGuard', () => {
     });
 
     it('should log authentication failures for security monitoring', () => {
-      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation();
+      const loggerSpy = vi.spyOn(guard['logger'], 'warn').mockImplementation();
       const user = null;
       const info = { message: 'Invalid token' };
       const err = new Error('Authentication failed');
@@ -154,7 +154,7 @@ describe('JwtAuthGuard', () => {
         guard.handleRequest(err, user, info, mockContext);
       }).toThrow();
 
-      expect(consoleSpy).toHaveBeenCalledWith(
+      expect(loggerSpy).toHaveBeenCalledWith(
         'JWT authentication failed',
         expect.objectContaining({
           error: 'Authentication failed',
@@ -163,7 +163,7 @@ describe('JwtAuthGuard', () => {
         })
       );
 
-      consoleSpy.mockRestore();
+      loggerSpy.mockRestore();
     });
 
     it('should handle null error with user null', () => {
@@ -219,7 +219,7 @@ describe('JwtAuthGuard', () => {
     });
 
     it('should log security events for failed authentication', () => {
-      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation();
+      const loggerSpy = vi.spyOn(guard['logger'], 'warn').mockImplementation();
 
       const mockContext = {
         switchToHttp: vi.fn().mockReturnValue({
@@ -243,14 +243,14 @@ describe('JwtAuthGuard', () => {
         );
       }).toThrow();
 
-      expect(consoleSpy).toHaveBeenCalledWith(
+      expect(loggerSpy).toHaveBeenCalledWith(
         'JWT authentication failed',
         expect.objectContaining({
           ip: '192.168.1.100',
         })
       );
 
-      consoleSpy.mockRestore();
+      loggerSpy.mockRestore();
     });
 
     it('should handle rate limiting for failed authentication attempts', () => {
@@ -332,7 +332,7 @@ describe('JwtAuthGuard', () => {
     });
 
     it('should sanitize error messages for security', () => {
-      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation();
+      const loggerSpy = vi.spyOn(guard['logger'], 'warn').mockImplementation();
       const sensitiveError = new Error(
         'Internal server error with sensitive data: password=secret123'
       );
@@ -354,7 +354,7 @@ describe('JwtAuthGuard', () => {
       }).toThrow();
 
       // Logged message should not contain sensitive data
-      expect(consoleSpy).toHaveBeenCalledWith(
+      expect(loggerSpy).toHaveBeenCalledWith(
         'JWT authentication failed',
         expect.objectContaining({
           error: expect.not.stringContaining('password'),
@@ -362,7 +362,7 @@ describe('JwtAuthGuard', () => {
         })
       );
 
-      consoleSpy.mockRestore();
+      loggerSpy.mockRestore();
     });
   });
 

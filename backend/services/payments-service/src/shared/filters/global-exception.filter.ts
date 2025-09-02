@@ -32,20 +32,29 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     let errorCategory = 'TECHNICAL_ERROR';
 
     // Sanitize request headers before processing
-    const sanitizedHeaders = this.sanitizeHeaders(request.headers);
+    const sanitizedHeaders = request.headers
+      ? this.sanitizeHeaders(request.headers)
+      : {};
 
     // Modify the original request headers for logging purposes
-    const sensitiveHeaders = ['authorization', 'x-api-key', 'cookie'] as const;
-    sensitiveHeaders.forEach(headerKey => {
-      const headerValue =
-        request.headers[headerKey as keyof typeof request.headers];
-      const sanitizedValue =
-        sanitizedHeaders[headerKey as keyof typeof sanitizedHeaders];
-      if (sanitizedValue !== headerValue) {
-        // eslint-disable-next-line security/detect-object-injection
-        (request.headers as Record<string, string>)[headerKey] = sanitizedValue;
-      }
-    });
+    if (request.headers) {
+      const sensitiveHeaders = [
+        'authorization',
+        'x-api-key',
+        'cookie',
+      ] as const;
+      sensitiveHeaders.forEach(headerKey => {
+        const headerValue =
+          request.headers[headerKey as keyof typeof request.headers];
+        const sanitizedValue =
+          sanitizedHeaders[headerKey as keyof typeof sanitizedHeaders];
+        if (sanitizedValue !== headerValue) {
+          // eslint-disable-next-line security/detect-object-injection
+          (request.headers as Record<string, string>)[headerKey] =
+            sanitizedValue;
+        }
+      });
+    }
 
     // Handle known HTTP exceptions
     if (exception instanceof HttpException) {

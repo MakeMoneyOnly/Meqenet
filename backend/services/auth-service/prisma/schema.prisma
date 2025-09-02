@@ -8,26 +8,118 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum KycStatus {
+  PENDING
+  IN_PROGRESS
+  APPROVED
+  REJECTED
+  EXPIRED
+  SUSPENDED
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  BANNED
+  PENDING
+  DELETED
+}
+
+enum UserRole {
+  CUSTOMER
+  MERCHANT
+  ADMIN
+  COMPLIANCE
+  SUPPORT
+  DEVELOPER
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
 model User {
   /// @classification: Internal
-  id          String      @id @default(cuid())
+  id              String      @id @default(cuid())
   /// @classification: PII
-  email       String      @unique
+  email           String      @unique
+  /// @classification: Internal
+  emailVerified   Boolean     @default(false)
+  /// @classification: Internal
+  emailVerifiedAt DateTime?
+  /// @classification: Sensitive
+  passwordHash    String
   /// @classification: PII
-  name        String?
+  firstName       String?
+  /// @classification: PII
+  lastName        String?
+  /// @classification: PII
+  displayName     String?
+  /// @classification: PII
+  phone           String?
   /// @classification: Internal
-  createdAt   DateTime    @default(now())
+  phoneVerified   Boolean     @default(false)
   /// @classification: Internal
-  updatedAt   DateTime    @updatedAt
-  credential  Credential? @relation(fields: [credentialId], references: [id])
+  phoneVerifiedAt DateTime?
   /// @classification: Internal
-  credentialId String?     @unique
-  roles       Role[]      @relation
-  profile     Profile?    
+  preferredLanguage String    @default("en")
   /// @classification: Internal
-  retentionPolicy String?   @default("ACTIVE") // e.g., ACTIVE, DELETED
+  timezone        String      @default("Africa/Addis_Ababa")
+  /// @classification: Internal
+  kycStatus       KycStatus   @default(PENDING)
+  /// @classification: Internal
+  kycCompletedAt  DateTime?
+  /// @classification: Sensitive
+  faydaIdHash     String?     @unique
+  /// @classification: Internal
+  kycDocuments    Json?
+  /// @classification: Internal
+  status          UserStatus  @default(ACTIVE)
+  /// @classification: Internal
+  role            UserRole    @default(CUSTOMER)
+  /// @classification: Internal
+  lastLoginAt     DateTime?
+  /// @classification: Internal
+  lastLoginIp     String?
+  /// @classification: Internal
+  loginAttempts   Int         @default(0)
+  /// @classification: Internal
+  lockoutUntil    DateTime?
+  /// @classification: Internal
+  twoFactorEnabled Boolean    @default(false)
+  /// @classification: Sensitive
+  twoFactorSecret String?
+  /// @classification: Internal
+  riskLevel       RiskLevel   @default(LOW)
+  /// @classification: Internal
+  riskScore       Float?
+  /// @classification: Internal
+  riskAssessedAt  DateTime?
+  /// @classification: Internal
+  dataClassification String   @default("CONFIDENTIAL")
+  /// @classification: Internal
+  retentionPolicy String      @default("ACTIVE_USER")
+  /// @classification: Internal
+  gdprConsent     Boolean     @default(false)
+  /// @classification: Internal
+  marketingConsent Boolean    @default(false)
+  /// @classification: Internal
+  createdAt       DateTime    @default(now())
+  /// @classification: Internal
+  updatedAt       DateTime    @updatedAt
   /// @classification: Internal
   deletedAt       DateTime?
+  credential      Credential?
+  /// @classification: Internal
+  credentialId    String?     @unique
+  roles           Role[]      @relation
+  profile         Profile?
+  sessions        UserSession[]
+  passwordResets  PasswordReset[]
 }
 
 model Credential {
@@ -35,7 +127,9 @@ model Credential {
   id           String @id @default(cuid())
   /// @classification: Sensitive
   hashedPassword String
-  user         User?
+  user         User   @relation(fields: [userId], references: [id])
+  /// @classification: Internal
+  userId       String @unique
 }
 
 model Profile {
@@ -54,4 +148,62 @@ model Role {
   id     String @id @default(cuid())
   name   String @unique
   users  User[] @relation
+}
+
+model UserSession {
+  /// @classification: Internal
+  id             String   @id @default(cuid())
+  /// @classification: Internal
+  userId         String
+  /// @classification: Sensitive
+  token          String   @unique
+  /// @classification: Sensitive
+  refreshToken   String?  @unique
+  /// @classification: Internal
+  deviceId       String?
+  /// @classification: Internal
+  ipAddress      String
+  /// @classification: Internal
+  userAgent      String?
+  /// @classification: Internal
+  location       String?
+  /// @classification: Internal
+  isActive       Boolean  @default(true)
+  /// @classification: Internal
+  expiresAt      DateTime
+  /// @classification: Internal
+  lastActivityAt DateTime @default(now())
+  /// @classification: Internal
+  isSecure       Boolean  @default(true)
+  /// @classification: Internal
+  riskFlags      String[]
+  /// @classification: Internal
+  createdAt      DateTime @default(now())
+  /// @classification: Internal
+  updatedAt      DateTime @updatedAt
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PasswordReset {
+  /// @classification: Internal
+  id         String   @id @default(cuid())
+  /// @classification: Internal
+  userId     String
+  /// @classification: Sensitive
+  token      String   @unique
+  /// @classification: Sensitive
+  hashedToken String
+  /// @classification: Internal
+  ipAddress  String
+  /// @classification: Internal
+  userAgent  String?
+  /// @classification: Internal
+  isUsed     Boolean  @default(false)
+  /// @classification: Internal
+  usedAt     DateTime?
+  /// @classification: Internal
+  expiresAt  DateTime
+  /// @classification: Internal
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
