@@ -358,6 +358,13 @@ describe('JwtAuthGuard', () => {
         'JWT authentication failed',
         expect.objectContaining({
           error: expect.not.stringContaining('password'),
+        })
+      );
+
+      // Verify the error message doesn't contain secret123 either
+      expect(loggerSpy).toHaveBeenCalledWith(
+        'JWT authentication failed',
+        expect.objectContaining({
           error: expect.not.stringContaining('secret123'),
         })
       );

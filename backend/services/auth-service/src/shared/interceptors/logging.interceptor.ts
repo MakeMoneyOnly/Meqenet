@@ -33,7 +33,10 @@ export class LoggingInterceptor implements NestInterceptor {
     private readonly securityMonitoringService: SecurityMonitoringService,
     private readonly anomalyDetectionService: AnomalyDetectionService
   ) {
-    this.logger.setContext(LoggingInterceptor.name);
+    // Set logger context if logger is available (handles testing scenarios)
+    if (this.logger) {
+      this.logger.setContext(LoggingInterceptor.name);
+    }
   }
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
@@ -54,9 +57,11 @@ export class LoggingInterceptor implements NestInterceptor {
     const { method, url, body, headers } = request;
     const user = headers['user-agent'] ?? 'Unknown';
 
-    this.logger.info(
-      `[${correlationId}] ==> ${method} ${url} | User: ${user} | Body: ${JSON.stringify(sanitizeObject(body))}`
-    );
+    if (this.logger) {
+      this.logger.info(
+        `[${correlationId}] ==> ${method} ${url} | User: ${user} | Body: ${JSON.stringify(sanitizeObject(body))}`
+      );
+    }
 
     // Set correlation ID in response headers
     response.setHeader('X-Request-ID', correlationId);
@@ -66,9 +71,11 @@ export class LoggingInterceptor implements NestInterceptor {
       tap(async data => {
         const duration = Date.now() - now;
 
-        this.logger.info(
-          `[${correlationId}] <== ${method} ${url} | Status: ${response.statusCode} | Duration: ${duration}ms | Response: ${JSON.stringify(sanitizeObject(data))}`
-        );
+        if (this.logger) {
+          this.logger.info(
+            `[${correlationId}] <== ${method} ${url} | Status: ${response.statusCode} | Duration: ${duration}ms | Response: ${JSON.stringify(sanitizeObject(data))}`
+          );
+        }
 
         // Record security monitoring for suspicious activities
         if (response.statusCode >= HTTP_CLIENT_ERROR_MIN) {
@@ -123,7 +130,10 @@ export class LoggingInterceptor implements NestInterceptor {
               );
 
             // Log high-risk anomalies
-            if (anomalyResult.riskScore > ANOMALY_RISK_THRESHOLD) {
+            if (
+              anomalyResult.riskScore > ANOMALY_RISK_THRESHOLD &&
+              this.logger
+            ) {
               this.logger.warn(
                 `🚨 High-risk behavior detected for user ${request.user.id}: Risk Score ${anomalyResult.riskScore}`,
                 {
@@ -137,7 +147,9 @@ export class LoggingInterceptor implements NestInterceptor {
             // Store anomaly result in request for use in other interceptors (atomic update)
             Object.assign(request, { anomalyAnalysis: anomalyResult });
           } catch (error) {
-            this.logger.error('❌ Anomaly detection failed:', error);
+            if (this.logger) {
+              this.logger.error('❌ Anomaly detection failed:', error);
+            }
           }
         }
       })
@@ -148,7 +160,7 @@ export class LoggingInterceptor implements NestInterceptor {
    * Check if user agent appears suspicious (potential security threat)
    */
   private isSuspiciousUserAgent(userAgent: string): boolean {
-    if (!userAgent) return false;
+    if (userAgent === null || userAgent === undefined) return false;
 
     const suspiciousPatterns = [
       /sqlmap/i, // SQL injection tools
