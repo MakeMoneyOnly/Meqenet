@@ -40,6 +40,7 @@
   "dependencies": {
     "@aws-sdk/client-kms": "^3.864.0",
     "@aws-sdk/client-secrets-manager": "^3.864.0",
+    "@aws-sdk/client-sns": "^3.0.0",
     "@nestjs/axios": "^4.0.1",
     "@nestjs/bullmq": "^10.2.3",
     "@nestjs/cache-manager": "^3.0.1",
@@ -113,6 +114,6 @@
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.8.3",
-    "vitest": "^1.6.1"
+    "vitest": "^3.2.4"
   }
 }

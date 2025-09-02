@@ -64,9 +64,12 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
    * @param request HTTP request object
    * @returns JWT token string or null
    */
-  private extractTokenFromHeader(request: any): string | null {
-    const authHeader = request.headers.authorization;
-    if (!authHeader) {
+  private extractTokenFromHeader(
+    request: Record<string, unknown>
+  ): string | null {
+    const authHeader = (request.headers as Record<string, unknown>)
+      ?.authorization;
+    if (!authHeader || typeof authHeader !== 'string') {
       return null;
     }
 
@@ -88,21 +91,58 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
    * @returns User object or throws exception
    */
   handleRequest(
-    err: any,
-    user: any,
-    info: any,
+    err: Error | null,
+    user: Record<string, unknown> | null,
+    info: Record<string, unknown> | null,
     context: ExecutionContext,
-    status?: any
-  ): any {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _status?: number
+  ): Record<string, unknown> | null {
     if (err || !user) {
+      const request = context.switchToHttp().getRequest();
+      const sanitizedErrorMessage = this.sanitizeErrorMessage(
+        err?.message ?? 'Unknown authentication error'
+      );
+
       this.logger.warn('JWT authentication failed', {
-        error: err?.message,
+        error: sanitizedErrorMessage,
         info: info?.message,
-        ip: context.switchToHttp().getRequest().ip,
+        ip: request.ip,
+        userAgent: request.get('User-Agent'),
+        url: request.url,
+        timestamp: new Date().toISOString(),
       });
-      throw err || new UnauthorizedException('JWT authentication failed');
+
+      // Always throw UnauthorizedException for security
+      throw new UnauthorizedException('Invalid authentication credentials');
     }
 
     return user;
+  }
+
+  /**
+   * Sanitize error messages to prevent information leakage
+   * @param message Original error message
+   * @returns Sanitized error message
+   */
+  private sanitizeErrorMessage(message: string): string {
+    // Remove sensitive information from error messages
+    const sensitivePatterns = [
+      /password/i,
+      /token/i,
+      /secret/i,
+      /key/i,
+      /database/i,
+      /connection/i,
+      /stack/i,
+    ];
+
+    let sanitized = message;
+
+    for (const pattern of sensitivePatterns) {
+      sanitized = sanitized.replace(pattern, '[REDACTED]');
+    }
+
+    return sanitized;
   }
 }

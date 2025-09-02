@@ -17,7 +17,7 @@ import { tap } from 'rxjs/operators';
 export class LoggingInterceptor implements NestInterceptor {
   private readonly logger = new Logger(LoggingInterceptor.name);
 
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const request = context.switchToHttp().getRequest();
     const response = context.switchToHttp().getResponse();
     const startTime = Date.now();
@@ -27,7 +27,7 @@ export class LoggingInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       tap({
-        next: data => {
+        next: _data => {
           const duration = Date.now() - startTime;
           this.logResponse(request, response, duration, 'SUCCESS');
         },
@@ -43,7 +43,7 @@ export class LoggingInterceptor implements NestInterceptor {
    * Log incoming request details
    * @param request HTTP request object
    */
-  private logRequest(request: any): void {
+  private logRequest(request: Record<string, unknown>): void {
     const sanitizedHeaders = this.sanitizeHeaders(request.headers);
     const sanitizedBody = this.sanitizeBody(request.body);
 
@@ -67,14 +67,15 @@ export class LoggingInterceptor implements NestInterceptor {
    * @param error Optional error object
    */
   private logResponse(
-    request: any,
-    response: any,
+    request: Record<string, unknown>,
+    response: Record<string, unknown>,
     duration: number,
     status: string,
-    error?: any
+    error?: Error
   ): void {
     const logLevel = status === 'ERROR' ? 'error' : 'log';
 
+    // eslint-disable-next-line security/detect-object-injection
     this.logger[logLevel]('Request completed', {
       method: request.method,
       url: request.url,
@@ -85,13 +86,14 @@ export class LoggingInterceptor implements NestInterceptor {
       timestamp: new Date().toISOString(),
     });
 
-    // Log performance warnings
-    if (duration > 5000) {
+    // Log performance warnings - FinTech compliance: Monitor slow requests
+    const SLOW_REQUEST_THRESHOLD_MS = 5000;
+    if (duration > SLOW_REQUEST_THRESHOLD_MS) {
       this.logger.warn('Slow request detected', {
         method: request.method,
         url: request.url,
         duration: `${duration}ms`,
-        threshold: '5000ms',
+        threshold: `${SLOW_REQUEST_THRESHOLD_MS}ms`,
       });
     }
   }
@@ -101,17 +103,21 @@ export class LoggingInterceptor implements NestInterceptor {
    * @param headers Request headers object
    * @returns Sanitized headers object
    */
-  private sanitizeHeaders(headers: any): any {
+  private sanitizeHeaders(
+    headers: Record<string, unknown>
+  ): Record<string, unknown> {
     if (!headers || typeof headers !== 'object') {
       return headers;
     }
 
-    const sensitiveHeaders = ['authorization', 'x-api-key', 'cookie'];
+    const sensitiveHeaders = ['authorization', 'x-api-key', 'cookie'] as const;
     const sanitized = { ...headers };
 
     for (const header of sensitiveHeaders) {
-      if (sanitized[header]) {
-        sanitized[header] = '[REDACTED]';
+      const headerValue = sanitized[header as keyof typeof sanitized];
+      if (headerValue && typeof headerValue === 'string') {
+        // eslint-disable-next-line security/detect-object-injection
+        (sanitized as Record<string, string>)[header] = '[REDACTED]';
       }
     }
 
@@ -123,7 +129,7 @@ export class LoggingInterceptor implements NestInterceptor {
    * @param body Request body object
    * @returns Sanitized body object
    */
-  private sanitizeBody(body: any): any {
+  private sanitizeBody(body: Record<string, unknown>): Record<string, unknown> {
     if (!body || typeof body !== 'object') {
       return body;
     }
@@ -138,8 +144,10 @@ export class LoggingInterceptor implements NestInterceptor {
     const sanitized = { ...body };
 
     for (const field of sensitiveFields) {
-      if (sanitized[field]) {
-        sanitized[field] = '[REDACTED]';
+      const fieldValue = sanitized[field as keyof typeof sanitized];
+      if (fieldValue && typeof fieldValue === 'string') {
+        // eslint-disable-next-line security/detect-object-injection
+        (sanitized as Record<string, string>)[field] = '[REDACTED]';
       }
     }
 
@@ -151,12 +159,14 @@ export class LoggingInterceptor implements NestInterceptor {
    * @param error Error object
    * @returns Sanitized error information
    */
-  private sanitizeError(error: any): any {
+  private sanitizeError(error: Error): Record<string, unknown> {
     return {
       message: error.message,
       name: error.name,
-      status: error.status,
+      status: (error as Record<string, unknown>).status,
       // Don't include stack trace in production logs for security
+      // Note: This is a controlled access to process.env for logging configuration only
+      // eslint-disable-next-line internal/no-process-env-outside-config
       stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
     };
   }

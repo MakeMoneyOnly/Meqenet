@@ -10,10 +10,10 @@ export const ProgressIndicator = ({
   currentStep,
   totalSteps: _totalSteps,
   steps,
-}: ProgressIndicatorProps) => {
+}: ProgressIndicatorProps): React.JSX.Element => {
   return (
     <nav aria-label="Progress">
-      <ol role="list" className="flex items-center">
+      <ol className="flex items-center">
         {steps.map((step, stepIdx) => (
           <li
             key={step}
@@ -27,10 +27,7 @@ export const ProgressIndicator = ({
                 >
                   <div className="h-0.5 w-full bg-blue-600" />
                 </div>
-                <a
-                  href="#"
-                  className="relative w-8 h-8 flex items-center justify-center bg-blue-600 rounded-full hover:bg-blue-900"
-                >
+                <span className="relative w-8 h-8 flex items-center justify-center bg-blue-600 rounded-full">
                   <svg
                     className="w-5 h-5 text-white"
                     viewBox="0 0 20 20"
@@ -44,7 +41,7 @@ export const ProgressIndicator = ({
                     />
                   </svg>
                   <span className="sr-only">{step}</span>
-                </a>
+                </span>
               </>
             ) : stepIdx === currentStep ? (
               <>
@@ -54,8 +51,7 @@ export const ProgressIndicator = ({
                 >
                   <div className="h-0.5 w-full bg-gray-200" />
                 </div>
-                <a
-                  href="#"
+                <span
                   className="relative w-8 h-8 flex items-center justify-center bg-white border-2 border-blue-600 rounded-full"
                   aria-current="step"
                 >
@@ -64,7 +60,7 @@ export const ProgressIndicator = ({
                     aria-hidden="true"
                   />
                   <span className="sr-only">{step}</span>
-                </a>
+                </span>
               </>
             ) : (
               <>
@@ -74,16 +70,13 @@ export const ProgressIndicator = ({
                 >
                   <div className="h-0.5 w-full bg-gray-200" />
                 </div>
-                <a
-                  href="#"
-                  className="group relative w-8 h-8 flex items-center justify-center bg-white border-2 border-gray-300 rounded-full hover:border-gray-400"
-                >
+                <span className="group relative w-8 h-8 flex items-center justify-center bg-white border-2 border-gray-300 rounded-full hover:border-gray-400">
                   <span
                     className="h-2.5 w-2.5 bg-transparent rounded-full group-hover:bg-gray-300"
                     aria-hidden="true"
                   />
                   <span className="sr-only">{step}</span>
-                </a>
+                </span>
               </>
             )}
           </li>

@@ -1,1 +1,32 @@
-    pnpm exec lint-staged
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Meqenet.et Pre-Commit Hook
+# Comprehensive FinTech Security & Quality Gate
+
+echo "🚀 Meqenet.et Pre-Commit Comprehensive Checks"
+echo "============================================="
+
+# 1. Run Prettier formatting
+echo "💅 Running Prettier formatting..."
+pnpm run format:write || {
+  echo "❌ Prettier formatting failed"
+  exit 1
+}
+
+# 2. Run comprehensive linting
+echo "🔍 Running comprehensive linting..."
+pnpm run lint:enterprise || {
+  echo "❌ Comprehensive linting failed"
+  exit 1
+}
+
+# 3. Run lint-staged for staged files
+echo "📝 Running lint-staged for staged files..."
+pnpm exec lint-staged || {
+  echo "❌ Lint-staged failed"
+  exit 1
+}
+
+echo "✅ All pre-commit checks passed!"
+echo "🇪🇹 Code quality maintained for Ethiopian FinTech excellence!"

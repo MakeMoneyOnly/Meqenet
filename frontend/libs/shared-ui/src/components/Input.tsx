@@ -1,5 +1,10 @@
 import React from 'react';
 
+// Constants for input component - FinTech compliance
+const RANDOM_ID_LENGTH = 9;
+const RANDOM_ID_RADIX = 36;
+const RANDOM_ID_START_INDEX = 2;
+
 export interface InputProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string;
@@ -9,7 +14,14 @@ export interface InputProps
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className, type, label, error, id, ...props }, ref) => {
     // Generate unique ID without using hooks (safe for forwardRef)
-    const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`;
+    const inputId =
+      id ||
+      `input-${Math.random()
+        .toString(RANDOM_ID_RADIX)
+        .substring(
+          RANDOM_ID_START_INDEX,
+          RANDOM_ID_START_INDEX + RANDOM_ID_LENGTH,
+        )}`;
     return (
       <div className="w-full">
         <label
@@ -27,13 +39,15 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           aria-describedby={error ? `${inputId}-error` : undefined}
           {...props}
         />
-        {error ? <p
+        {error ? (
+          <p
             id={`${inputId}-error`}
             className="mt-2 text-sm text-red-600"
             role="alert"
           >
             {error}
-          </p> : null}
+          </p>
+        ) : null}
       </div>
     );
   },

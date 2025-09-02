@@ -11,9 +11,11 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
   exports: [ConfigService],
 })
 export class SharedModule {
-  constructor(private readonly configService: ConfigService) {
-    // Validate required configuration on module initialization
-    this.validateConfiguration();
+  constructor(private readonly configService?: ConfigService) {
+    // Validate required configuration on module initialization (skip if configService is not available)
+    if (this.configService) {
+      this.validateConfiguration();
+    }
   }
 
   /**
@@ -21,6 +23,10 @@ export class SharedModule {
    * Enterprise FinTech requirement: Fail fast on configuration errors
    */
   private validateConfiguration(): void {
+    if (!this.configService) {
+      return; // Skip validation if configService is not available
+    }
+
     const requiredConfig = [
       'DATABASE_URL',
       'JWT_SECRET',

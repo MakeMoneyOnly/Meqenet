@@ -1,0 +1,50 @@
+[33mcommit 21d43f51e5621265b24d0357b61768a1ba5da3b8[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m
+Author: Meqenet Development Team <admin@meqenet.et>
+Date:   Mon Sep 1 21:57:09 2025 +0300
+
+    fix: resolve ESLint errors after Prettier formatting
+
+.github/workflows/ci.yml
+.github/workflows/iac-security-scan.yml
+CONTRIBUTING.md
+backend/services/auth-service/src/app/app.module.ts
+backend/services/auth-service/src/features/auth/auth.service.ts
+backend/services/auth-service/src/shared/controllers/ai-fraud-detection.controller.ts
+backend/services/auth-service/src/shared/interceptors/field-encryption.interceptor.ts
+backend/services/auth-service/src/shared/services/adaptive-rate-limiting.service.ts
+backend/services/auth-service/src/shared/services/anomaly-detection.service.ts
+backend/services/auth-service/src/shared/services/credential-rotation.service.ts
+backend/services/auth-service/src/shared/services/security-monitoring.service.ts
+backend/services/payments-service/README.md
+backend/services/payments-service/src/app/app.controller.ts
+backend/services/payments-service/src/app/app.module.ts
+backend/services/payments-service/src/app/app.service.ts
+backend/services/payments-service/src/dto/create-payment.dto.ts
+backend/services/payments-service/src/features/auth/auth.module.ts
+backend/services/payments-service/src/infrastructure/database/database.module.ts
+backend/services/payments-service/src/infrastructure/messaging/messaging.module.ts
+backend/services/payments-service/src/main.ts
+backend/services/payments-service/src/payments.controller.ts
+backend/services/payments-service/src/payments.service.ts
+backend/services/payments-service/src/shared/config/security.config.ts
+backend/services/payments-service/src/shared/config/throttler.config.ts
+backend/services/payments-service/src/shared/config/winston.config.ts
+backend/services/payments-service/src/shared/filters/global-exception.filter.ts
+backend/services/payments-service/src/shared/guards/jwt-auth.guard.ts
+backend/services/payments-service/src/shared/i18n/error-messages.ts
+backend/services/payments-service/src/shared/interceptors/logging.interceptor.ts
+backend/services/payments-service/src/shared/shared.module.ts
+backend/services/payments-service/src/shared/utils/fayda-encryption.util.ts
+backend/shared/middleware/correlation-id.middleware.ts
+backend/shared/middleware/idempotency.middleware.ts
+docs/ACCESSIBILITY.md
+docs/Stage 1 - Foundation/07-Security.md
+docs/Stage 1 - Foundation/08-Architecture.md
+frontend/libs/shared-ui/src/components/Button.tsx
+frontend/libs/shared-ui/src/components/Card.tsx
+frontend/libs/shared-ui/src/components/Input.tsx
+frontend/libs/shared-ui/src/components/Modal.tsx
+frontend/libs/shared-ui/src/components/PaymentPlanCard.tsx
+frontend/libs/shared-ui/src/components/ProgressIndicator.tsx
+scripts/seed.ts
+test/mocks/telebirr-db.json

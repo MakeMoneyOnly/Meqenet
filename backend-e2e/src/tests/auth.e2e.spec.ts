@@ -1,5 +1,4 @@
 import request from 'supertest';
-
 import { describe, it, expect } from 'vitest';
 
 // This assumes the API Gateway is running on localhost:3000

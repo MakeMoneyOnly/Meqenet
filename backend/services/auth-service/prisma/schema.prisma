@@ -9,27 +9,43 @@ datasource db {
 }
 
 model User {
+  /// @classification: Internal
   id          String      @id @default(cuid())
+  /// @classification: PII
   email       String      @unique
+  /// @classification: PII
   name        String?
+  /// @classification: Internal
   createdAt   DateTime    @default(now())
+  /// @classification: Internal
   updatedAt   DateTime    @updatedAt
   credential  Credential? @relation(fields: [credentialId], references: [id])
+  /// @classification: Internal
   credentialId String?     @unique
   roles       Role[]      @relation
   profile     Profile?    
+  /// @classification: Internal
+  retentionPolicy String?   @default("ACTIVE") // e.g., ACTIVE, DELETED
+  /// @classification: Internal
+  deletedAt       DateTime?
 }
 
 model Credential {
+  /// @classification: Internal
   id           String @id @default(cuid())
+  /// @classification: Sensitive
   hashedPassword String
   user         User?
 }
 
 model Profile {
+  /// @classification: Internal
   id        String  @id @default(cuid())
+  /// @classification: PII
   bio       String?
+  /// @classification: Confidential
   faydaId   String? @unique // For eKYC
+  /// @classification: Internal
   userId    String  @unique
   user      User    @relation(fields: [userId], references: [id])
 }
