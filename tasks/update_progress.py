@@ -25,13 +25,47 @@ def generate_markdown_for_platform(stages, platform_name, output_filename):
 
     platform_stages = get_subtasks_for_platform(stages, platform_name)
 
+    # Calculate progress for this platform
+    platform_subtasks = []
+    for stage in platform_stages:
+        for task in stage['tasks']:
+            platform_subtasks.extend(task.get('subtasks', []))
+
+    total_platform_tasks = len(platform_subtasks)
+    completed_platform_tasks = sum(1 for task in platform_subtasks if task.get('status') == 'Completed')
+    platform_progress = (completed_platform_tasks / total_platform_tasks) * 100 if total_platform_tasks > 0 else 0
+
+    progress_bar_length = 40
+    filled_length = int(progress_bar_length * platform_progress // 100)
+    bar = '█' * filled_length + '-' * (progress_bar_length - filled_length)
+
+    content += f"## Platform Progress\n\n"
+    content += f"**{completed_platform_tasks} / {total_platform_tasks} Sub-tasks Completed**\n\n"
+    content += f"`[{bar}] {platform_progress:.2f}%`\n\n"
+
     for stage_data in platform_stages:
+        # Calculate progress for this stage
+        stage_subtasks = []
+        for task in stage_data['tasks']:
+            stage_subtasks.extend(task.get('subtasks', []))
+
+        total_stage_tasks = len(stage_subtasks)
+        completed_stage_tasks = sum(1 for task in stage_subtasks if task.get('status') == 'Completed')
+        stage_progress = (completed_stage_tasks / total_stage_tasks) * 100 if total_stage_tasks > 0 else 0
+
+        filled_length = int(progress_bar_length * stage_progress // 100)
+        stage_bar = '█' * filled_length + '-' * (progress_bar_length - filled_length)
+
         content += f"## {stage_data['stage']}\n\n"
+        content += f"**{completed_stage_tasks} / {total_stage_tasks} Sub-tasks Completed**\n\n"
+        content += f"`[{stage_bar}] {stage_progress:.2f}%`\n\n"
+
         for task in stage_data['tasks']:
             content += f"### {task['name']} (`{task['id']}`)\n\n"
             for subtask in task.get('subtasks', []):
-                checkbox = "- [x]" if subtask.get('status') == 'Done' else "- [ ]"
-                content += f"{checkbox} **{subtask['id']}**: {subtask['description']}\n"
+                checkbox = "- [x]" if subtask.get('status') == 'Completed' else "- [ ]"
+                content += f"{checkbox} {subtask['description']}\n"
+
             content += "\n"
         content += "---\n\n"
 
@@ -47,9 +81,9 @@ def generate_master_markdown(stages, output_filename):
     all_subtasks = [
         subtask for stage in stages for task in stage['tasks'] for subtask in task.get('subtasks', [])
     ]
-    
+
     total_tasks = len(all_subtasks)
-    completed_tasks = sum(1 for task in all_subtasks if task.get('status') == 'Done')
+    completed_tasks = sum(1 for task in all_subtasks if task.get('status') == 'Completed')
     progress = (completed_tasks / total_tasks) * 100 if total_tasks > 0 else 0
     
     progress_bar_length = 40
@@ -61,21 +95,34 @@ def generate_master_markdown(stages, output_filename):
     content += f"`[{bar}] {progress:.2f}%`\n\n"
     
     for stage_data in stages:
+        # Calculate progress for this stage
+        stage_subtasks = []
+        for task in stage_data['tasks']:
+            stage_subtasks.extend(task.get('subtasks', []))
+
+        total_stage_tasks = len(stage_subtasks)
+        completed_stage_tasks = sum(1 for task in stage_subtasks if task.get('status') == 'Completed')
+        stage_progress = (completed_stage_tasks / total_stage_tasks) * 100 if total_stage_tasks > 0 else 0
+
+        progress_bar_length = 40
+        filled_length = int(progress_bar_length * stage_progress // 100)
+        stage_bar = '█' * filled_length + '-' * (progress_bar_length - filled_length)
+
         content += f"## {stage_data['stage']}\n\n"
+        content += f"**{completed_stage_tasks} / {total_stage_tasks} Sub-tasks Completed**\n\n"
+        content += f"`[{stage_bar}] {stage_progress:.2f}%`\n\n"
+
         for task in stage_data['tasks']:
             platform_emoji = "📱" if task.get('platform') == 'App' else "🌐" if task.get('platform') == 'Website' else "🚀"
             content += f"### {platform_emoji} {task['name']} (`{task['id']}`)\n\n"
-            
+
             subtasks = task.get('subtasks', [])
             if not subtasks:
                 content += "_No sub-tasks defined._\n\n"
             else:
                 for subtask in subtasks:
-                    checkbox = "- [x]" if subtask.get('status') == 'Done' else "- [ ]"
-                    content += f"{checkbox} **{subtask['id']}**: {subtask['description']}\n"
-                    # Optionally, add context files back in if needed
-                    if 'context' in subtask and subtask['context']:
-                         content += "    - **Context**: " + ", ".join([f"`{f}`" for f in subtask['context']]) + "\n"
+                    checkbox = "- [x]" if subtask.get('status') == 'Completed' else "- [ ]"
+                    content += f"{checkbox} {subtask['description']}\n"
 
                 content += "\n"
         content += "---\n\n"

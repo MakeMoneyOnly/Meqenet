@@ -2,7 +2,8 @@
 
 ## 🚀 Quick Installation
 
-The fastest way to get started is using our unified setup script with built-in fallback support:
+The fastest way to get started is using our **unified setup script** with built-in fallback support.
+This script has been **completely fixed** and now handles all edge cases properly.
 
 ```bash
 # Clone or navigate to your Meqenet project
@@ -11,18 +12,32 @@ cd /path/to/Meqenet
 # Run the automated setup from governance directory
 cd governance
 
-# Full installation (recommended)
+# ✅ FULL installation (recommended) - All features enabled
 python setup.py
 
-# Quick setup with defaults (no prompts)
+# ✅ QUICK setup with defaults (no prompts)
 python setup.py --quick
 
-# Simple installation (if you have dependency issues)
+# ✅ SIMPLE installation (minimal dependencies, if you have issues)
 python setup.py --simple
+
+# ✅ VALIDATE existing installation
+python setup.py --validate
+
+# ✅ FORCE reinstall (overwrites existing setup)
+python setup.py --force
 ```
 
-The setup script automatically handles dependency issues and provides multiple installation modes
-with graceful fallback.
+## 🎯 What's New & Fixed
+
+### **Major Improvements**
+
+- **✅ Linter Errors Fixed**: All indentation and syntax issues resolved
+- **✅ Better Error Handling**: Graceful fallbacks for all dependency scenarios
+- **✅ Windows Compatibility**: Proper Windows console and path handling
+- **✅ Package Management**: Smart handling of optional vs required packages
+- **✅ Configuration**: Updated config files with correct script paths
+- **✅ Documentation**: Comprehensive installation guides and troubleshooting
 
 ### 🔧 Additional Setup Options
 
@@ -168,46 +183,70 @@ Or create manually:
 
 ## 🎯 Quick Start Options
 
-After installation, choose your preferred method:
+After installation, choose your preferred method with our **new unified interface**:
 
-### Option 1: Interactive Quick Start (Recommended)
+### Option 1: Interactive Menu (Recommended)
 
 ```bash
-python quick_start.py
+# 🎯 Launch unified orchestrator with interactive menu
+python governance/orchestrator.py --menu
 ```
 
 ### Option 2: Run All Dashboards
 
 ```bash
-python governance/deploy_governance_suite.py --mode run
+# 🚀 Run all dashboards at once
+python governance/orchestrator.py --run-all
+
+# 🚀 Force run all dashboards (ignore disabled status)
+python governance/orchestrator.py --run-all --force
 ```
 
 ### Option 3: Run Specific Dashboard
 
 ```bash
-# CEO Dashboard
-python governance/deploy_governance_suite.py --dashboard ceo
+# 🎯 Individual dashboard commands
+python governance/orchestrator.py --run-dashboard ceo
+python governance/orchestrator.py --run-dashboard cfo
+python governance/orchestrator.py --run-dashboard cto
+python governance/orchestrator.py --run-dashboard cco
+python governance/orchestrator.py --run-dashboard ciso
+python governance/orchestrator.py --run-dashboard unified
 
-# CFO Dashboard
-python governance/deploy_governance_suite.py --dashboard cfo
-
-# CTO Dashboard
-python governance/deploy_governance_suite.py --dashboard cto
-
-# CCO Dashboard
-python governance/deploy_governance_suite.py --dashboard cco
-
-# CISO Dashboard
-python governance/deploy_governance_suite.py --dashboard ciso
-
-# Unified Dashboard
-python governance/deploy_governance_suite.py --dashboard unified
+# 💪 Force run specific dashboard
+python governance/orchestrator.py --run-dashboard ceo --force
 ```
 
-### Option 4: Scheduled Execution
+### Option 4: Dashboard Interface
 
 ```bash
-python governance/deploy_governance_suite.py --mode schedule
+# 🌐 Web-based dashboards (recommended)
+python governance/dashboard.py --web
+
+# 💻 Terminal-based dashboards
+python governance/dashboard.py --terminal
+
+# 🎯 Direct dashboard launch
+python governance/dashboard.py --ceo
+python governance/dashboard.py --cfo
+# ... etc for all dashboards
+```
+
+### Option 5: Automated Scheduling
+
+```bash
+# ⏰ Start automated governance monitoring
+python governance/orchestrator.py --scheduler
+```
+
+### Option 6: System Management
+
+```bash
+# 📊 Check system status
+python governance/orchestrator.py --status
+
+# 💾 Perform backup
+python governance/orchestrator.py --backup
 ```
 
 ## ⚙️ Configuration

@@ -2,45 +2,79 @@
 
 ## Enterprise-Grade Executive Oversight & Decision Support System
 
-The Enhanced C-Suite Governance Framework provides comprehensive, intelligent oversight across all
-executive functions at Meqenet.et, enabling data-driven decision making, proactive risk management,
-and strategic optimization for our Ethiopian fintech platform.
+The **Enhanced C-Suite Governance Framework** provides comprehensive, intelligent oversight across
+all executive functions at Meqenet.et, enabling data-driven decision making, proactive risk
+management, and strategic optimization for our Ethiopian fintech platform.
 
 ---
 
 ## 🎯 Overview
 
-This governance framework transforms basic monitoring into an enterprise-grade executive dashboard
-ecosystem with:
+This governance framework transforms basic monitoring into an **enterprise-grade executive dashboard
+ecosystem** with:
 
-- **Real-time Intelligence**: Live monitoring of business, financial, technical, compliance, and
+- **✅ Real-time Intelligence**: Live monitoring of business, financial, technical, compliance, and
   security metrics
-- **Predictive Analytics**: AI-powered forecasting and trend analysis
-- **Cross-functional Insights**: Correlation analysis across different executive domains
-- **Automated Alerts**: Proactive notification system for critical issues
-- **Strategic Recommendations**: AI-driven suggestions for business optimization
-- **Board-level Reporting**: Executive summaries ready for board presentations
+- **✅ Predictive Analytics**: AI-powered forecasting and trend analysis
+- **✅ Cross-functional Insights**: Correlation analysis across different executive domains
+- **✅ Automated Alerts**: Proactive notification system for critical issues
+- **✅ Strategic Recommendations**: AI-driven suggestions for business optimization
+- **✅ Board-level Reporting**: Executive summaries ready for board presentations
+
+---
+
+## 🆕 **What's New & Fixed (v2.0)**
+
+### **🎯 Major Architecture Changes**
+
+- **✅ Streamlined to 3 Core Scripts**: Reduced from 7+ scripts to maintainable architecture
+- **✅ Unified Orchestrator**: All deployment, scheduling, and execution in one place
+- **✅ Unified Dashboard Interface**: Both web and terminal dashboards in single interface
+- **✅ Fixed Setup Script**: All linter errors resolved, proper indentation applied
+
+### **🔧 Critical Fixes Applied**
+
+- **✅ Dashboard Scripts**: All 6 executive dashboard scripts fixed with missing methods
+- **✅ Console Input**: Windows console input handling errors completely resolved
+- **✅ Configuration**: Updated config files with correct script paths
+- **✅ Naming Standards**: Applied fintech industry standards (PascalCase classes, camelCase
+  functions)
+- **✅ File Cleanup**: Removed duplicate files, **pycache** directories, and old reports
 
 ---
 
 ## 🏗️ Architecture
 
-### Core Components
+### 🎯 **New 3-Core Architecture**
 
 ```
 governance/
-├── CCO/                    # Chief Compliance Officer Dashboard
-├── CFO/                    # Chief Financial Officer Dashboard
-├── CEO/                    # Chief Executive Officer Dashboard
-├── CTO/                    # Chief Technology Officer Dashboard
-├── CISO/                   # Chief Information Security Officer Dashboard
-├── unified_governance_framework.py    # Cross-functional orchestration
-├── deploy_governance_suite.py         # Deployment & management
-├── config/                 # Configuration files
-├── reports/               # Generated reports
-├── logs/                  # System logs
-└── backups/              # Data backups
+├── orchestrator.py         # 🎯 MAIN ORCHESTRATOR (Unified Entry Point)
+├── dashboard.py           # 🎯 DASHBOARD INTERFACE (Web + Terminal)
+├── setup.py              # 🎯 SETUP & CONFIGURATION (✅ FIXED)
+├── dashboards/           # Executive dashboard modules
+│   ├── ceo.py           # CEO Strategic Dashboard ✅ FIXED
+│   ├── cfo.py           # CFO Financial Dashboard ✅ FIXED
+│   ├── cto.py           # CTO Technical Dashboard ✅ FIXED
+│   ├── cco.py           # CCO Compliance Dashboard ✅ FIXED
+│   ├── ciso.py          # CISO Security Dashboard ✅ FIXED
+│   └── unified.py       # Unified Executive Dashboard ✅ FIXED
+├── config/               # Configuration files
+├── reports/             # Generated reports
+├── logs/                # System logs
+└── backups/            # Data backups
 ```
+
+### **📋 Scripts Consolidation**
+
+**Removed & Consolidated Scripts:**
+
+- ❌ `deploy_governance_suite.py` → ✅ Integrated into `orchestrator.py`
+- ❌ `quickstart.py` → ✅ Integrated into `orchestrator.py`
+- ❌ `run_terminal_dashboards.py` → ✅ Integrated into `dashboard.py`
+- ❌ `terminal_dashboards.py` → ✅ Integrated into `dashboard.py`
+- ❌ `dashboard_server.py` → ✅ Integrated into `dashboard.py`
+- ❌ `init_databases.py` → ✅ Integrated into `orchestrator.py`
 
 ### Executive Dashboards
 
@@ -88,44 +122,42 @@ governance/
 
 ## 🚀 Quick Start
 
-### ⚡ Automated Installation (Recommended)
+### ⚡ **New Unified Workflow (3 Commands Only!)**
 
-The easiest way to get started is using our unified setup script with built-in fallback support:
+The framework has been completely streamlined to just **3 core commands**:
 
 ```bash
-# Navigate to your Meqenet project
+# 🎯 STEP 1: Setup & Installation
 cd /path/to/Meqenet/governance
+python setup.py                    # Full installation (recommended)
+python setup.py --quick           # Quick setup with defaults
+python setup.py --simple          # Minimal installation (fallback)
+python setup.py --validate        # Check installation status
 
-# Full installation (recommended)
-python setup.py
+# 🎯 STEP 2: Launch Orchestrator (Main Interface)
+python orchestrator.py --menu     # Interactive menu (recommended)
+python orchestrator.py --run-all  # Run all dashboards
+python orchestrator.py --status   # System status
+python orchestrator.py --scheduler # Start automated monitoring
 
-# Quick setup with defaults (no prompts)
-python setup.py --quick
-
-# Simple installation (minimal dependencies, if you have issues)
-python setup.py --simple
+# 🎯 STEP 3: Launch Dashboard Interface
+python dashboard.py --web         # Web dashboards (recommended)
+python dashboard.py --terminal    # Terminal dashboards
+python dashboard.py --ceo         # Direct CEO dashboard access
 ```
 
-The setup script automatically handles dependency issues with graceful fallback:
+### ✅ **Enhanced Setup Script Features**
 
-- ✅ **Smart Dependency Detection**: Automatically detects missing packages
-- ✅ **Graceful Fallback**: Switches to simple mode if full installation fails
-- ✅ **Cross-platform Support**: Works on Windows, macOS, and Linux
-- ✅ **Virtual Environment Aware**: Adapts installation method based on environment
-- ✅ **Modern Python Packaging**: Uses latest APIs, avoids deprecated warnings
-- ✅ **Complete Setup**: Creates directories, configs, and quick-start launcher
-- ✅ **Validation**: Verifies installation and provides troubleshooting
+The setup script has been **completely fixed** and includes:
 
-After setup, run:
-
-```bash
-# Interactive launcher (from project root)
-cd ..
-python quick_start.py
-
-# Or direct execution
-python governance/deploy_governance_suite.py --mode run
-```
+- **✅ Linter Errors Fixed**: All indentation and syntax issues resolved
+- **✅ Smart Dependency Detection**: Automatically detects and installs missing packages
+- **✅ Graceful Fallback**: Switches to simple mode if full installation fails
+- **✅ Cross-platform Support**: Works on Windows, macOS, and Linux
+- **✅ Virtual Environment Aware**: Adapts installation method automatically
+- **✅ Modern Python Packaging**: Uses latest APIs, avoids deprecated warnings
+- **✅ Complete Setup**: Creates directories, configs, and validation
+- **✅ Windows Compatibility**: Proper console input and path handling
 
 ### 📋 Prerequisites
 
@@ -214,7 +246,7 @@ If automated setup fails or you need custom configuration:
 
 ```bash
 # Run all dashboards once
-python governance/deploy_governance_suite.py --mode run
+ just
 
 # Run specific dashboard
 python governance/deploy_governance_suite.py --mode run --dashboard ceo
@@ -227,56 +259,64 @@ python governance/deploy_governance_suite.py --mode schedule
 
 ## 📊 Usage Guide
 
-### Running Individual Dashboards
+### 🎯 **New Unified Command Structure**
 
-Each C-Suite dashboard can be executed independently:
-
-```bash
-# CEO Strategic Dashboard
-python governance/CEO/ceo_dashboard.py
-
-# CFO Financial Dashboard
-python governance/CFO/cfo_dashboard.py
-
-# CTO Technical Dashboard
-python governance/CTO/cto_dashboard.py
-
-# CCO Compliance Dashboard
-python governance/CCO/cco_dashboard.py
-
-# CISO Security Dashboard
-python governance/CISO/ciso_dashboard.py
-
-# Unified Framework (requires all dashboards)
-python governance/unified_governance_framework.py
-```
-
-### Unified Orchestration
-
-The deployment script provides comprehensive management:
+#### **Main Orchestrator Commands:**
 
 ```bash
-# Run all enabled dashboards
-python governance/deploy_governance_suite.py --mode run
+# Interactive menu (recommended for beginners)
+python orchestrator.py --menu
 
-# Force run disabled dashboards
-python governance/deploy_governance_suite.py --mode run --force
+# Run all dashboards at once
+python orchestrator.py --run-all
 
-# Run specific dashboard only
-python governance/deploy_governance_suite.py --dashboard cto
+# Force run all dashboards (ignore disabled status)
+python orchestrator.py --run-all --force
 
-# Start continuous scheduled execution
-python governance/deploy_governance_suite.py --mode schedule
+# Run specific dashboards
+python orchestrator.py --run-dashboard ceo
+python orchestrator.py --run-dashboard cfo
+python orchestrator.py --run-dashboard cto
+python orchestrator.py --run-dashboard cco
+python orchestrator.py --run-dashboard ciso
+python orchestrator.py --run-dashboard unified
+
+# Force specific dashboard
+python orchestrator.py --run-dashboard ceo --force
+
+# System management
+python orchestrator.py --status     # Check system status
+python orchestrator.py --scheduler  # Start automated monitoring
+python orchestrator.py --backup     # Perform data backup
 ```
 
-### Configuration Management
+#### **Dashboard Interface Commands:**
+
+```bash
+# Web-based dashboards (recommended)
+python dashboard.py --web
+
+# Terminal-based dashboards
+python dashboard.py --terminal
+
+# Direct dashboard access
+python dashboard.py --ceo
+python dashboard.py --cfo
+python dashboard.py --cto
+python dashboard.py --cco
+python dashboard.py --ciso
+python dashboard.py --unified
+```
+
+### ✅ **Updated Configuration Management**
 
 Edit `governance/config/governance_config.yaml` to customize:
 
-- **Dashboard scheduling**: Cron expressions for automated execution
-- **Notification settings**: Email, Slack, Teams integration
-- **Performance thresholds**: Execution timeouts and resource limits
-- **Backup configuration**: Automated backup scheduling and retention
+- **✅ Dashboard scheduling**: Cron expressions for automated execution
+- **✅ Notification settings**: Email, Slack, Teams integration
+- **✅ Performance thresholds**: Execution timeouts and resource limits
+- **✅ Backup configuration**: Automated backup scheduling and retention
+- **✅ Script paths**: All updated to reflect new 3-script architecture
 
 ### Report Generation
 
@@ -480,41 +520,71 @@ monitoring:
 
 ## 🛠️ Troubleshooting
 
-### Common Issues
+### ✅ **Enhanced Troubleshooting (New Commands)**
 
-**Dashboard Execution Failures**
+#### **Dashboard Execution Issues**
 
 ```bash
-# Check logs
-tail -f governance/logs/governance_suite.log
+# 🎯 Check system status
+python orchestrator.py --status
 
-# Run with debug output
-python governance/deploy_governance_suite.py --mode run --dashboard cto
+# 🎯 Validate installation
+python setup.py --validate
 
-# Verify dependencies
-python -c "import pandas, numpy, matplotlib; print('Dependencies OK')"
+# 🎯 Force run specific dashboard
+python orchestrator.py --run-dashboard ceo --force
+
+# 🎯 Check logs
+tail -f governance/logs/governance_orchestrator.log
+
+# 🎯 Verify dependencies
+python -c "import pandas, numpy, matplotlib; print('✅ Dependencies OK')"
 ```
 
-**Configuration Issues**
+#### **Configuration Issues**
 
 ```bash
-# Validate configuration
-python -c "import yaml; yaml.safe_load(open('governance/config/governance_config.yaml'))"
+# 🎯 Validate configuration syntax
+python -c "import yaml; yaml.safe_load(open('governance/config/governance_config.yaml')); print('✅ Config OK')"
 
-# Reset to defaults
-rm governance/config/governance_config.yaml
-python governance/deploy_governance_suite.py --mode setup
+# 🎯 Reset configuration
+python setup.py --force
 ```
 
-**Database Connectivity**
+#### **Database Connectivity**
 
 ```bash
-# Test database connections
-python -c "import sqlite3; sqlite3.connect('governance/unified_governance.db')"
+# 🎯 Test database connections
+python -c "import sqlite3; sqlite3.connect('governance/data/executive_metrics.db'); print('✅ DB OK')"
 
-# Reset databases
-rm governance/**/*.db
-python governance/deploy_governance_suite.py --mode run
+# 🎯 Run orchestrator to recreate databases
+python orchestrator.py --run-all
+```
+
+#### **Web Dashboard Issues**
+
+```bash
+# 🎯 Start web server
+python dashboard.py --web --port 8080
+
+# 🎯 Check web server logs
+tail -f governance/logs/dashboard_server.log
+```
+
+#### **New Troubleshooting Features**
+
+```bash
+# ✅ Interactive troubleshooting menu
+python orchestrator.py --menu
+
+# ✅ Comprehensive system validation
+python setup.py --validate
+
+# ✅ Force execution (bypasses all errors)
+python orchestrator.py --run-all --force
+
+# ✅ Real-time monitoring
+python orchestrator.py --scheduler
 ```
 
 ### Performance Optimization
@@ -645,4 +715,17 @@ property laws. Unauthorized distribution or modification is strictly prohibited.
 
 ---
 
-_This documentation is maintained by the Meqenet.et Governance Team. Last updated: December 2024_
+## 📋 **Version History**
+
+- **v2.0** (January 2025): Complete architecture overhaul
+  - ✅ Streamlined to 3-core scripts
+  - ✅ Fixed all dashboard scripts
+  - ✅ Resolved console input issues
+  - ✅ Updated configuration files
+  - ✅ Enhanced documentation
+
+- **v1.0** (December 2024): Initial enterprise release
+
+---
+
+_This documentation is maintained by the Meqenet.et Governance Team. Last updated: January 2025_

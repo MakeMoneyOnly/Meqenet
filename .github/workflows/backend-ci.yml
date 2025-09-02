@@ -78,7 +78,7 @@ jobs:
           command: "build-docs backend/openapi.yaml"
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: api-docs
           path: redoc-static.html

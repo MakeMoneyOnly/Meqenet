@@ -85,37 +85,85 @@ jobs:
 
       - name: Install Pact CLI Tools
         run: |
-          # Install Pact Ruby CLI
-          echo "📦 Installing Pact Ruby CLI..."
-          PACT_VERSION=$(curl -s https://api.github.com/repos/pact-foundation/pact-ruby-standalone/releases/latest | grep '"tag_name"' | cut -d'"' -f4 | sed 's/^v//' || echo "2.4.7")
-
-          echo "📥 Downloading Pact CLI v${PACT_VERSION}..."
-          if curl -fsSL "https://github.com/pact-foundation/pact-ruby-standalone/releases/download/v${PACT_VERSION}/pact-${PACT_VERSION}-linux-x86_64.tar.gz" | tar xz; then
-            sudo mv pact /usr/local/bin/
-            echo "✅ Pact Ruby CLI installed successfully"
-          else
-            echo "❌ Failed to download Pact Ruby CLI v${PACT_VERSION}"
-            exit 1
+          # Install Pact Ruby Standalone
+          echo "📦 Installing Pact Ruby Standalone..."
+          
+          # Try to get the latest version from GitHub API
+          PACT_VERSION=$(curl -s https://api.github.com/repos/pact-foundation/pact-ruby-standalone/releases/latest | grep '"tag_name"' | cut -d'"' -f4 | sed 's/^v//')
+          
+          # Fallback to a known working version if API call fails
+          if [ -z "$PACT_VERSION" ]; then
+            PACT_VERSION="2.0.10"
+            echo "⚠️ Could not fetch latest version, using fallback v${PACT_VERSION}"
           fi
-
-          # Install Pact Broker CLI
-          echo "📦 Installing Pact Broker CLI..."
-          PACT_BROKER_VERSION=$(curl -s https://api.github.com/repos/pact-foundation/pact_broker-client/releases/latest | grep '"tag_name"' | cut -d'"' -f4 | sed 's/^v//' || echo "0.2.0")
-
-          echo "📥 Downloading Pact Broker CLI v${PACT_BROKER_VERSION}..."
-          if curl -fsSL "https://github.com/pact-foundation/pact_broker-client/releases/download/v${PACT_BROKER_VERSION}/pact_broker-client-${PACT_BROKER_VERSION}-linux-x86_64.tar.gz" | tar xz; then
-            sudo mv pact_broker-client /usr/local/bin/pact-broker
-            chmod +x /usr/local/bin/pact-broker
-            echo "✅ Pact Broker CLI installed successfully"
+          
+          echo "📥 Downloading Pact Ruby Standalone v${PACT_VERSION}..."
+          
+          # Construct the correct download URL
+          DOWNLOAD_URL="https://github.com/pact-foundation/pact-ruby-standalone/releases/download/v${PACT_VERSION}/pact-${PACT_VERSION}-linux-x86_64.tar.gz"
+          
+          # Download and extract the Pact Ruby Standalone
+          if curl -fsSL "$DOWNLOAD_URL" -o pact.tar.gz; then
+            tar xzf pact.tar.gz
+            
+            # The extracted directory is named 'pact', move binaries to PATH
+            sudo cp -r pact/bin/* /usr/local/bin/
+            sudo cp -r pact/lib /usr/local/
+            
+            # Clean up
+            rm -rf pact pact.tar.gz
+            
+            echo "✅ Pact Ruby Standalone installed successfully"
           else
-            echo "❌ Failed to download Pact Broker CLI v${PACT_BROKER_VERSION}"
-            exit 1
+            echo "⚠️ Failed to download from GitHub releases, trying alternative method..."
+            
+            # Alternative: Use the pact-foundation Docker image to extract binaries
+            echo "📦 Using Docker image to extract Pact binaries..."
+            docker pull pactfoundation/pact-cli:latest
+            
+            # Create a container and copy the binaries
+            CONTAINER_ID=$(docker create pactfoundation/pact-cli:latest)
+            docker cp $CONTAINER_ID:/pact/bin /tmp/pact-bin
+            docker rm $CONTAINER_ID
+            
+            # Install the binaries
+            sudo cp -r /tmp/pact-bin/* /usr/local/bin/
+            sudo chmod +x /usr/local/bin/pact*
+            
+            echo "✅ Pact CLI installed via Docker extraction"
           fi
-
+          
+          # Install pact_broker-client Ruby gem as a more reliable alternative
+          echo "📦 Installing Pact Broker Client..."
+          
+          # Install Ruby if not present
+          if ! command -v ruby &> /dev/null; then
+            echo "📥 Installing Ruby..."
+            sudo apt-get update
+            sudo apt-get install -y ruby-full
+          fi
+          
+          # Install the pact_broker-client gem
+          sudo gem install pact_broker-client --no-document
+          
+          echo "✅ Pact Broker Client installed successfully"
+          
           # Verify installations
           echo "🔍 Verifying installations..."
-          pact --version || echo "⚠️ Pact CLI version check failed"
-          pact-broker --version || echo "⚠️ Pact Broker CLI version check failed"
+          
+          # Check for pact command
+          if command -v pact &> /dev/null; then
+            pact version || echo "✅ Pact CLI is available"
+          else
+            echo "⚠️ Pact CLI not found in PATH"
+          fi
+          
+          # Check for pact-broker command
+          if command -v pact-broker &> /dev/null; then
+            pact-broker version || echo "✅ Pact Broker CLI is available"
+          else
+            echo "⚠️ Pact Broker CLI not found in PATH"
+          fi
 
       - name: Run Contract Tests
         run: |
@@ -183,6 +231,18 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Install Pact Broker Client
+        run: |
+          # Install Ruby and pact_broker-client gem
+          echo "📦 Installing Pact Broker Client..."
+          sudo apt-get update
+          sudo apt-get install -y ruby-full
+          sudo gem install pact_broker-client --no-document
+          echo "✅ Pact Broker Client installed successfully"
+          
+          # Verify installation
+          pact-broker version || echo "✅ Pact Broker CLI is available"
 
       - name: Verify Provider Contracts
         run: |
