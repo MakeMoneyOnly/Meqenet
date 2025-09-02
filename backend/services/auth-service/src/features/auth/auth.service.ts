@@ -37,27 +37,22 @@ export class AuthService {
 
     const hashedPassword = await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
 
-    const user = await this.prisma.$transaction(async tx => {
-      const createdUser = await tx.user.create({
-        data: {
-          email,
-          credential: {
-            create: { hashedPassword },
-          },
-        },
-      });
-
-      const eventPayload: UserRegisteredPayload = {
-        userId: createdUser.id,
-        email: createdUser.email,
-        timestamp: new Date().toISOString(),
-      };
-      await this.eventService.publish(AuthEvent.USER_REGISTERED, eventPayload);
-
-      return createdUser;
+    // Create user with password hash directly in the User model
+    const createdUser = await this.prisma.user.create({
+      data: {
+        email,
+        passwordHash: hashedPassword,
+      },
     });
 
-    const payload = { sub: user.id, email: user.email };
+    const eventPayload: UserRegisteredPayload = {
+      userId: createdUser.id,
+      email: createdUser.email,
+      timestamp: new Date().toISOString(),
+    };
+    await this.eventService.publish(AuthEvent.USER_REGISTERED, eventPayload);
+
+    const payload = { sub: createdUser.id, email: createdUser.email };
     const accessToken = this.jwtService.sign(payload);
 
     return { accessToken };
@@ -68,17 +63,13 @@ export class AuthService {
 
     const user = await this.prisma.user.findUnique({
       where: { email },
-      include: { credential: true },
     });
 
-    if (!user || !user.credential) {
+    if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const isPasswordValid = await bcrypt.compare(
-      password,
-      user.credential.hashedPassword
-    );
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
     }

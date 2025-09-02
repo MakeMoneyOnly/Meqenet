@@ -1,7 +1,7 @@
 // TODO: Install @aws-sdk/client-sns package
 // import { SNSClient, PublishCommand } from '@aws-sdk/client-sns';
 import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+// import { ConfigService } from '@nestjs/config'; // TODO: Re-enable when SNS client is added
 
 @Injectable()
 export class EventService {
@@ -10,12 +10,15 @@ export class EventService {
   // private readonly sns: SNSClient;
   // private readonly topicArn: string;
 
-  constructor(private readonly configService: ConfigService) {
-    // TODO: Re-enable SNS client initialization when package is installed
-    // this.sns = new SNSClient({
-    //   region: this.configService.get<string>('AWS_REGION'),
-    // });
-    // this.topicArn = this.configService.get<string>('AWS_SNS_TOPIC_ARN');
+  constructor() {
+    // TODO: Add configService parameter when SNS client is re-enabled
+    // constructor(private readonly configService: ConfigService) {
+    //   // TODO: Re-enable SNS client initialization when package is installed
+    //   // this.sns = new SNSClient({
+    //   //   region: this.configService.get<string>('AWS_REGION'),
+    //   // });
+    //   // this.topicArn = this.configService.get<string>('AWS_SNS_TOPIC_ARN');
+    // }
   }
 
   async publish(eventName: string, payload: unknown): Promise<void> {
