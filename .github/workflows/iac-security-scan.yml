@@ -13,8 +13,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  tfsec:
-    name: "tfsec Security Scan"
+  trivy-terraform:
+    name: "Trivy Terraform Security Scan"
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -23,16 +23,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Run tfsec
-        uses: aquasecurity/tfsec-sarif-action@v1.0.5
+      # Trivy now includes tfsec functionality for Terraform scanning
+      - name: Run Trivy for Terraform Security Scan
+        uses: aquasecurity/trivy-action@master
         with:
-          sarif_file: tfsec-results.sarif
+          scan-type: 'config'
+          scan-ref: 'infrastructure/'
+          format: 'sarif'
+          output: 'trivy-terraform-results.sarif'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+          exit-code: '0'  # Don't fail the build, just report
 
       - name: Upload SARIF file
         uses: github/codeql-action/upload-sarif@v2
         if: always()
         with:
-          sarif_file: tfsec-results.sarif
+          sarif_file: trivy-terraform-results.sarif
 
   checkov:
     name: "Checkov Security Scan"
