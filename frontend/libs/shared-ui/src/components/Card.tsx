@@ -5,14 +5,18 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export const Card = ({
-  className,
+  className = '',
   children,
   ...props
 }: CardProps): React.JSX.Element => {
+  // Add role="button" if onClick is present
+  const role = props.onClick ? 'button' : props.role;
+  
   return (
     <div
       className={`bg-white shadow-md rounded-lg overflow-hidden ${className}`}
       {...props}
+      role={role}
     >
       {children}
     </div>
@@ -20,7 +24,7 @@ export const Card = ({
 };
 
 export const CardHeader = ({
-  className,
+  className = '',
   children,
   ...props
 }: CardProps): React.JSX.Element => (
@@ -30,7 +34,7 @@ export const CardHeader = ({
 );
 
 export const CardContent = ({
-  className,
+  className = '',
   children,
   ...props
 }: CardProps): React.JSX.Element => (
@@ -40,7 +44,7 @@ export const CardContent = ({
 );
 
 export const CardFooter = ({
-  className,
+  className = '',
   children,
   ...props
 }: CardProps): React.JSX.Element => (

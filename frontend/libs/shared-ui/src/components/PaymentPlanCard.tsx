@@ -23,10 +23,18 @@ export const PaymentPlanCard = ({
     ? 'border-blue-500 ring-2 ring-blue-500'
     : 'border-gray-300';
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onSelect();
+    }
+  };
+
   return (
     <Card
       className={`cursor-pointer hover:shadow-lg transition-shadow ${selectionClasses}`}
       onClick={onSelect}
+      onKeyDown={handleKeyDown}
       aria-pressed={isSelected}
       tabIndex={0}
     >
