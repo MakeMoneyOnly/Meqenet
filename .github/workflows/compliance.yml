@@ -5,7 +5,7 @@ on:
     branches:
       - main
   schedule:
-    - cron: '0 2 * * 1' # Run at 2 AM UTC every Monday
+    - cron: "0 2 * * 1" # Run at 2 AM UTC every Monday
   workflow_dispatch:
 
 permissions:
@@ -13,26 +13,26 @@ permissions:
 
 jobs:
   gather-evidence:
-    name: 'Gather Compliance Evidence'
+    name: "Gather Compliance Evidence"
     runs-on: ubuntu-latest
 
     steps:
-      - name: 'Checkout Code'
+      - name: "Checkout Code"
         uses: actions/checkout@v4
 
-      - name: 'Install yq'
+      - name: "Install yq"
         run: |
           sudo wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq
           sudo chmod +x /usr/bin/yq
         shell: bash
 
-      - name: 'Make script executable'
+      - name: "Make script executable"
         run: chmod +x scripts/gather-compliance-evidence.sh
 
-      - name: 'Run Evidence Gathering Script'
+      - name: "Run Evidence Gathering Script"
         run: ./scripts/gather-compliance-evidence.sh
 
-      - name: 'Upload Compliance Report'
+      - name: "Upload Compliance Report"
         uses: actions/upload-artifact@v4
         with:
           name: compliance-report

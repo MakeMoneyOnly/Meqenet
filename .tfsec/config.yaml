@@ -3,9 +3,9 @@
 
 # Global configuration
 exclude:
-  - "aws-s3-enable-bucket-encryption"  # Handled by default AWS S3 encryption
-  - "aws-s3-enable-versioning"         # Versioning managed by application logic
-  - "aws-ec2-no-public-ip-subnet"      # Public IPs managed by NAT Gateway
+  - "aws-s3-enable-bucket-encryption" # Handled by default AWS S3 encryption
+  - "aws-s3-enable-versioning" # Versioning managed by application logic
+  - "aws-ec2-no-public-ip-subnet" # Public IPs managed by NAT Gateway
 
 # Severity levels
 severity_overrides:
@@ -75,5 +75,5 @@ allowed_regions:
 
 # Prohibited instance types for cost optimization
 prohibited_instance_types:
-  - "t2.micro"  # Too small for financial workloads
-  - "t2.small"  # Too small for financial workloads
+  - "t2.micro" # Too small for financial workloads
+  - "t2.small" # Too small for financial workloads

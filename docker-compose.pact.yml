@@ -1,7 +1,7 @@
 # Pact Broker for Contract Testing
 # Run with: docker-compose -f docker-compose.pact.yml up -d
 
-version: '3.8'
+version: "3.8"
 
 services:
   pact-broker:
@@ -19,7 +19,13 @@ services:
       pact-postgres:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9292/diagnostic/status/heartbeat"]
+      test:
+        [
+          "CMD",
+          "curl",
+          "-f",
+          "http://localhost:9292/diagnostic/status/heartbeat",
+        ]
       interval: 30s
       timeout: 10s
       retries: 5

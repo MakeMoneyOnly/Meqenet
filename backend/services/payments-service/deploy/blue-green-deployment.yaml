@@ -35,21 +35,21 @@ spec:
         slot: blue
     spec:
       containers:
-      - name: payments-service
-        image: meqenet/payments-service:latest
-        ports:
-        - containerPort: 3004
-        envFrom:
-        - configMapRef:
-            name: payments-service-config
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 3004
-        readinessProbe:
-          httpGet:
-            path: /ready
-            port: 3004
+        - name: payments-service
+          image: meqenet/payments-service:latest
+          ports:
+            - containerPort: 3004
+          envFrom:
+            - configMapRef:
+                name: payments-service-config
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3004
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 3004
 
 ---
 # Green Deployment
@@ -73,13 +73,13 @@ spec:
         slot: green
     spec:
       containers:
-      - name: payments-service
-        image: meqenet/payments-service:latest
-        ports:
-        - containerPort: 3004
-        envFrom:
-        - configMapRef:
-            name: payments-service-config
+        - name: payments-service
+          image: meqenet/payments-service:latest
+          ports:
+            - containerPort: 3004
+          envFrom:
+            - configMapRef:
+                name: payments-service-config
 
 ---
 # Service
@@ -90,7 +90,7 @@ metadata:
 spec:
   selector:
     app: payments-service
-    slot: blue  # Routes to blue initially
+    slot: blue # Routes to blue initially
   ports:
-  - port: 80
-    targetPort: 3004 
+    - port: 80
+      targetPort: 3004

@@ -22,7 +22,7 @@ data:
   TZ: "Africa/Addis_Ababa"
   LOCALE: "en_ET"
   CURRENCY: "ETB"
-  
+
   # NBE compliance settings
   NBE_REPORTING_ENABLED: "true"
   DATA_RESIDENCY_ENFORCEMENT: "true"
@@ -61,90 +61,90 @@ spec:
         runAsUser: 1000
         fsGroup: 2000
       containers:
-      - name: payments-service
-        image: ghcr.io/meqenet/payments-service:1.0.0
-        ports:
-        - containerPort: 3004
-          name: http
-        - containerPort: 9090
-          name: metrics
-        env:
-        - name: NODE_ENV
-          value: "development"
-        - name: PORT
-          value: "3004"
-        - name: SLOT
-          value: "blue"
-        - name: TZ
-          valueFrom:
-            configMapKeyRef:
-              name: payments-service-config
-              key: TZ
-        envFrom:
-        - configMapRef:
-            name: payments-service-config
-        - secretRef:
-            name: payments-service-secrets
-        resources:
-          limits:
-            cpu: 500m
-            memory: 512Mi
-          requests:
-            cpu: 100m
-            memory: 128Mi
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: http
-          initialDelaySeconds: 30
-          periodSeconds: 10
-          timeoutSeconds: 5
-          failureThreshold: 3
-        readinessProbe:
-          httpGet:
-            path: /ready
-            port: http
-          initialDelaySeconds: 5
-          periodSeconds: 5
-          timeoutSeconds: 3
-          successThreshold: 1
-          failureThreshold: 3
-        startupProbe:
-          httpGet:
-            path: /health
-            port: http
-          initialDelaySeconds: 10
-          periodSeconds: 10
-          timeoutSeconds: 5
-          failureThreshold: 30
-        securityContext:
-          allowPrivilegeEscalation: false
-          readOnlyRootFilesystem: true
-          capabilities:
-            drop:
-            - ALL
-        volumeMounts:
-        - name: tmp
-          mountPath: /tmp
-        - name: cache
-          mountPath: /app/.cache
+        - name: payments-service
+          image: ghcr.io/meqenet/payments-service:1.0.0
+          ports:
+            - containerPort: 3004
+              name: http
+            - containerPort: 9090
+              name: metrics
+          env:
+            - name: NODE_ENV
+              value: "development"
+            - name: PORT
+              value: "3004"
+            - name: SLOT
+              value: "blue"
+            - name: TZ
+              valueFrom:
+                configMapKeyRef:
+                  name: payments-service-config
+                  key: TZ
+          envFrom:
+            - configMapRef:
+                name: payments-service-config
+            - secretRef:
+                name: payments-service-secrets
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            successThreshold: 1
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 30
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: cache
+              mountPath: /app/.cache
       volumes:
-      - name: tmp
-        emptyDir: {}
-      - name: cache
-        emptyDir: {}
+        - name: tmp
+          emptyDir: {}
+        - name: cache
+          emptyDir: {}
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 100
-            podAffinityTerm:
-              labelSelector:
-                matchExpressions:
-                - key: app
-                  operator: In
-                  values:
-                  - payments-service
-              topologyKey: kubernetes.io/hostname
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - payments-service
+                topologyKey: kubernetes.io/hostname
 
 ---
 # Green Deployment
@@ -158,7 +158,7 @@ metadata:
     slot: green
     version: "1.0.0"
 spec:
-  replicas: 0  # Initially 0, scaled up during deployment
+  replicas: 0 # Initially 0, scaled up during deployment
   selector:
     matchLabels:
       app: payments-service
@@ -179,90 +179,90 @@ spec:
         runAsUser: 1000
         fsGroup: 2000
       containers:
-      - name: payments-service
-        image: ghcr.io/meqenet/payments-service:1.0.0
-        ports:
-        - containerPort: 3004
-          name: http
-        - containerPort: 9090
-          name: metrics
-        env:
-        - name: NODE_ENV
-          value: "development"
-        - name: PORT
-          value: "3004"
-        - name: SLOT
-          value: "green"
-        - name: TZ
-          valueFrom:
-            configMapKeyRef:
-              name: payments-service-config
-              key: TZ
-        envFrom:
-        - configMapRef:
-            name: payments-service-config
-        - secretRef:
-            name: payments-service-secrets
-        resources:
-          limits:
-            cpu: 500m
-            memory: 512Mi
-          requests:
-            cpu: 100m
-            memory: 128Mi
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: http
-          initialDelaySeconds: 30
-          periodSeconds: 10
-          timeoutSeconds: 5
-          failureThreshold: 3
-        readinessProbe:
-          httpGet:
-            path: /ready
-            port: http
-          initialDelaySeconds: 5
-          periodSeconds: 5
-          timeoutSeconds: 3
-          successThreshold: 1
-          failureThreshold: 3
-        startupProbe:
-          httpGet:
-            path: /health
-            port: http
-          initialDelaySeconds: 10
-          periodSeconds: 10
-          timeoutSeconds: 5
-          failureThreshold: 30
-        securityContext:
-          allowPrivilegeEscalation: false
-          readOnlyRootFilesystem: true
-          capabilities:
-            drop:
-            - ALL
-        volumeMounts:
-        - name: tmp
-          mountPath: /tmp
-        - name: cache
-          mountPath: /app/.cache
+        - name: payments-service
+          image: ghcr.io/meqenet/payments-service:1.0.0
+          ports:
+            - containerPort: 3004
+              name: http
+            - containerPort: 9090
+              name: metrics
+          env:
+            - name: NODE_ENV
+              value: "development"
+            - name: PORT
+              value: "3004"
+            - name: SLOT
+              value: "green"
+            - name: TZ
+              valueFrom:
+                configMapKeyRef:
+                  name: payments-service-config
+                  key: TZ
+          envFrom:
+            - configMapRef:
+                name: payments-service-config
+            - secretRef:
+                name: payments-service-secrets
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            successThreshold: 1
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 30
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: cache
+              mountPath: /app/.cache
       volumes:
-      - name: tmp
-        emptyDir: {}
-      - name: cache
-        emptyDir: {}
+        - name: tmp
+          emptyDir: {}
+        - name: cache
+          emptyDir: {}
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 100
-            podAffinityTerm:
-              labelSelector:
-                matchExpressions:
-                - key: app
-                  operator: In
-                  values:
-                  - payments-service
-              topologyKey: kubernetes.io/hostname
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - payments-service
+                topologyKey: kubernetes.io/hostname
 
 ---
 # Service (routes to active slot)
@@ -280,16 +280,16 @@ spec:
   type: ClusterIP
   selector:
     app: payments-service
-    slot: blue  # Initially routes to blue
+    slot: blue # Initially routes to blue
   ports:
-  - name: http
-    port: 80
-    targetPort: 3004
-    protocol: TCP
-  - name: metrics
-    port: 9090
-    targetPort: 9090
-    protocol: TCP
+    - name: http
+      port: 80
+      targetPort: 3004
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: 9090
+      protocol: TCP
 
 ---
 # Blue Service (for direct access during testing)
@@ -307,10 +307,10 @@ spec:
     app: payments-service
     slot: blue
   ports:
-  - name: http
-    port: 80
-    targetPort: 3004
-    protocol: TCP
+    - name: http
+      port: 80
+      targetPort: 3004
+      protocol: TCP
 
 ---
 # Green Service (for direct access during testing)
@@ -328,10 +328,10 @@ spec:
     app: payments-service
     slot: green
   ports:
-  - name: http
-    port: 80
-    targetPort: 3004
-    protocol: TCP
+    - name: http
+      port: 80
+      targetPort: 3004
+      protocol: TCP
 
 ---
 # HorizontalPodAutoscaler for Blue
@@ -348,18 +348,18 @@ spec:
   minReplicas: 1
   maxReplicas: 10
   metrics:
-  - type: Resource
-    resource:
-      name: cpu
-      target:
-        type: Utilization
-        averageUtilization: 70
-  - type: Resource
-    resource:
-      name: memory
-      target:
-        type: Utilization
-        averageUtilization: 80
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
 
 ---
 # HorizontalPodAutoscaler for Green
@@ -376,18 +376,18 @@ spec:
   minReplicas: 1
   maxReplicas: 10
   metrics:
-  - type: Resource
-    resource:
-      name: cpu
-      target:
-        type: Utilization
-        averageUtilization: 70
-  - type: Resource
-    resource:
-      name: memory
-      target:
-        type: Utilization
-        averageUtilization: 80
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
 
 ---
 # NetworkPolicy for security isolation
@@ -401,29 +401,29 @@ spec:
     matchLabels:
       app: payments-service
   policyTypes:
-  - Ingress
-  - Egress
+    - Ingress
+    - Egress
   ingress:
-  - from:
-    - namespaceSelector:
-        matchLabels:
-          name: meqenet-development
-    ports:
-    - protocol: TCP
-      port: 3004
-  - from:
-    - namespaceSelector:
-        matchLabels:
-          name: monitoring
-    ports:
-    - protocol: TCP
-      port: 9090
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: meqenet-development
+      ports:
+        - protocol: TCP
+          port: 3004
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - protocol: TCP
+          port: 9090
   egress:
-  - to: []
-    ports:
-    - protocol: TCP
-      port: 443  # HTTPS
-    - protocol: TCP
-      port: 53   # DNS
-    - protocol: UDP
-      port: 53   # DNS 
+    - to: []
+      ports:
+        - protocol: TCP
+          port: 443 # HTTPS
+        - protocol: TCP
+          port: 53 # DNS
+        - protocol: UDP
+          port: 53 # DNS
