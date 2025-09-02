@@ -88,7 +88,7 @@ export const App = (): React.JSX.Element => {
             <Text
               style={[styles.textXL, styles.appTitleText]}
               testID="heading"
-              role="heading"
+              accessibilityRole="header"
             >
               Welcome App 👋
             </Text>
@@ -370,7 +370,7 @@ export const App = (): React.JSX.Element => {
                   <Svg
                     width={48}
                     height={48}
-                    role="img"
+                    accessibilityRole="image"
                     stroke="currentColor"
                     fill="transparent"
                     viewBox="0 0 24 24"

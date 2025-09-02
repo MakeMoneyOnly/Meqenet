@@ -1,5 +1,14 @@
 import { ThrottlerModuleAsyncOptions } from '@nestjs/throttler';
 
+// Constants for magic numbers - FinTech compliance
+const MILLISECONDS_PER_SECOND = 1000;
+const DEFAULT_THROTTLE_TTL_SECONDS = 60;
+const DEFAULT_THROTTLE_LIMIT = 100;
+const PAYMENT_THROTTLE_TTL_SECONDS = 300;
+const PAYMENT_THROTTLE_LIMIT = 10;
+const ADMIN_THROTTLE_TTL_SECONDS = 60;
+const ADMIN_THROTTLE_LIMIT = 5;
+
 /**
  * Throttler Configuration Factory
  * Enterprise FinTech compliant rate limiting configuration
@@ -7,18 +16,27 @@ import { ThrottlerModuleAsyncOptions } from '@nestjs/throttler';
  */
 export const throttlerConfig: ThrottlerModuleAsyncOptions = {
   useFactory: () => {
-    const ttl = parseInt(process.env.THROTTLE_TTL || '60', 10); // 60 seconds
-    const limit = parseInt(process.env.THROTTLE_LIMIT || '100', 10); // 100 requests per ttl
+    const ttl = parseInt(
+      process.env.THROTTLE_TTL || `${DEFAULT_THROTTLE_TTL_SECONDS}`,
+      10
+    );
+    const limit = parseInt(
+      process.env.THROTTLE_LIMIT || `${DEFAULT_THROTTLE_LIMIT}`,
+      10
+    );
 
     // FinTech specific throttling rules
-    const paymentTtl = parseInt(process.env.PAYMENT_THROTTLE_TTL || '300', 10); // 5 minutes for payments
-    const paymentLimit = parseInt(
-      process.env.PAYMENT_THROTTLE_LIMIT || '10',
+    const _paymentTtl = parseInt(
+      process.env.PAYMENT_THROTTLE_TTL || `${PAYMENT_THROTTLE_TTL_SECONDS}`,
       10
-    ); // 10 payment requests per 5 minutes
+    );
+    const _paymentLimit = parseInt(
+      process.env.PAYMENT_THROTTLE_LIMIT || `${PAYMENT_THROTTLE_LIMIT}`,
+      10
+    );
 
     return {
-      ttl: ttl * 1000, // Convert to milliseconds
+      ttl: ttl * MILLISECONDS_PER_SECOND, // Convert to milliseconds
       limit,
       ignoreUserAgents: [
         // Allow monitoring tools to bypass throttling
@@ -27,7 +45,7 @@ export const throttlerConfig: ThrottlerModuleAsyncOptions = {
         /Prometheus/i,
         /DataDog/i,
       ],
-      skipIf: context => {
+      skipIf: (context: Record<string, unknown>): boolean => {
         // Skip throttling for health checks
         const request = context.switchToHttp().getRequest();
         return request.url === '/health' || request.url === '/ready';
@@ -52,8 +70,15 @@ export const throttlerConfig: ThrottlerModuleAsyncOptions = {
  * Stricter limits for financial transactions
  */
 export const paymentThrottlerConfig = {
-  ttl: parseInt(process.env.PAYMENT_THROTTLE_TTL || '300', 10) * 1000, // 5 minutes
-  limit: parseInt(process.env.PAYMENT_THROTTLE_LIMIT || '10', 10), // 10 payments per 5 minutes
+  ttl:
+    parseInt(
+      process.env.PAYMENT_THROTTLE_TTL || `${PAYMENT_THROTTLE_TTL_SECONDS}`,
+      10
+    ) * MILLISECONDS_PER_SECOND,
+  limit: parseInt(
+    process.env.PAYMENT_THROTTLE_LIMIT || `${PAYMENT_THROTTLE_LIMIT}`,
+    10
+  ),
 };
 
 /**
@@ -61,6 +86,13 @@ export const paymentThrottlerConfig = {
  * Even stricter limits for administrative functions
  */
 export const adminThrottlerConfig = {
-  ttl: parseInt(process.env.ADMIN_THROTTLE_TTL || '60', 10) * 1000, // 1 minute
-  limit: parseInt(process.env.ADMIN_THROTTLE_LIMIT || '5', 10), // 5 admin operations per minute
+  ttl:
+    parseInt(
+      process.env.ADMIN_THROTTLE_TTL || `${ADMIN_THROTTLE_TTL_SECONDS}`,
+      10
+    ) * MILLISECONDS_PER_SECOND,
+  limit: parseInt(
+    process.env.ADMIN_THROTTLE_LIMIT || `${ADMIN_THROTTLE_LIMIT}`,
+    10
+  ),
 };

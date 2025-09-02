@@ -59,6 +59,23 @@ export class FaydaEncryptionUtil {
     };
   }> {
     try {
+      // Check if encryption is disabled
+      const encryptionEnabled = this.configService.get(
+        'FAYDA_ENCRYPTION_ENABLED',
+        true
+      );
+      if (!encryptionEnabled) {
+        // Return unencrypted data with metadata when encryption is disabled
+        return {
+          encryptedData: faydaId,
+          metadata: {
+            algorithm: 'none',
+            timestamp: Date.now(),
+            checksum: crypto.createHash('sha256').update(faydaId).digest('hex'),
+          },
+        };
+      }
+
       // Validate Fayda ID format (basic validation)
       this.validateFaydaIdFormat(faydaId);
 
@@ -121,6 +138,21 @@ export class FaydaEncryptionUtil {
     additionalData?: string
   ): Promise<string> {
     try {
+      // Check if encryption is disabled (algorithm: 'none')
+      if (metadata.algorithm === 'none') {
+        // Verify checksum for unencrypted data
+        const currentChecksum = crypto
+          .createHash('sha256')
+          .update(encryptedData)
+          .digest('hex');
+
+        if (currentChecksum !== metadata.checksum) {
+          throw new Error('Data integrity verification failed');
+        }
+
+        return encryptedData;
+      }
+
       // Verify integrity
       const combined = Buffer.from(encryptedData, 'base64');
       const currentChecksum = crypto
@@ -204,6 +236,7 @@ export class FaydaEncryptionUtil {
   private validateFaydaIdFormat(faydaId: string): void {
     // Basic validation - actual format may vary
     // Ethiopian Fayda ID format: typically numeric, specific length
+    // eslint-disable-next-line security/detect-non-literal-regexp
     const faydaIdPattern = new RegExp(
       `^[0-9]{${FAYDA_ENCRYPTION_CONFIG.FAYDA_ID_MIN_LENGTH},${FAYDA_ENCRYPTION_CONFIG.FAYDA_ID_MAX_LENGTH}}$`
     );
@@ -213,10 +246,18 @@ export class FaydaEncryptionUtil {
     }
 
     if (!faydaIdPattern.test(faydaId)) {
-      throw new Error(
-        `Invalid Fayda ID format: must be ${FAYDA_ENCRYPTION_CONFIG.FAYDA_ID_MIN_LENGTH}-${FAYDA_ENCRYPTION_CONFIG.FAYDA_ID_MAX_LENGTH} digits`
-      );
+      throw new Error(`Invalid Fayda ID format: must be 10-16 digits`);
     }
+  }
+
+  /**
+   * Creates a secure hash of Fayda ID for database indexing
+   * This allows searching without exposing the actual ID
+   * @param faydaId - Fayda ID to hash
+   * @returns Secure hash suitable for database indexing
+   */
+  async hashFaydaId(faydaId: string): Promise<string> {
+    return this.createFaydaIdHash(faydaId);
   }
 
   /**

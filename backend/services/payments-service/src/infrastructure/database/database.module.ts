@@ -2,6 +2,9 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+// Constants for database configuration - FinTech compliance
+const DEFAULT_POSTGRES_PORT = 5432;
+
 /**
  * Database Module - Enterprise FinTech compliant database configuration
  * Uses TypeORM with PostgreSQL for ACID compliance and transaction safety
@@ -13,7 +16,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       useFactory: (configService: ConfigService) => ({
         type: 'postgres',
         host: configService.get<string>('DB_HOST', 'localhost'),
-        port: configService.get<number>('DB_PORT', 5432),
+        port: configService.get<number>('DB_PORT', DEFAULT_POSTGRES_PORT),
         username: configService.get<string>('DB_USERNAME', 'postgres'),
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_NAME', 'payments_db'),

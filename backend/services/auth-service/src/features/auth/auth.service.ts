@@ -5,25 +5,22 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { v4 as uuidv4 } from 'uuid';
 
-const BCRYPT_SALT_ROUNDS = 12;
-
-import {
-  OutboxService,
-  OutboxMessage,
-} from '../../shared/outbox/outbox.service';
-import { PrismaService } from '../../shared/prisma/prisma.service';
+import { PrismaService } from '../../infrastructure/database/prisma.service';
+import { AuthEvent, UserRegisteredPayload } from '../../shared/events';
+import { EventService } from '../../shared/services/event.service';
 
 import { LoginUserDto } from './dto/login-user.dto';
 import { RegisterUserDto } from './dto/register-user.dto';
+
+const BCRYPT_SALT_ROUNDS = 12;
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
-    private readonly outboxService: OutboxService
+    private readonly eventService: EventService
   ) {}
 
   async register(
@@ -40,34 +37,22 @@ export class AuthService {
 
     const hashedPassword = await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
 
-    // Use a transaction to ensure user and outbox message are created atomically
     const user = await this.prisma.$transaction(async tx => {
       const createdUser = await tx.user.create({
         data: {
           email,
-          passwordHash: hashedPassword,
+          credential: {
+            create: { hashedPassword },
+          },
         },
       });
 
-      // Store user registration event in outbox for reliable delivery
-      const outboxMessage: OutboxMessage = {
-        messageId: uuidv4(),
-        aggregateType: 'User',
-        aggregateId: createdUser.id,
-        eventType: 'USER_REGISTERED',
-        payload: {
-          email: createdUser.email,
-          userId: createdUser.id,
-          registeredAt: createdUser.createdAt.toISOString(),
-        },
-        metadata: {
-          correlationId: uuidv4(),
-          causationId: uuidv4(),
-          source: 'auth-service',
-        },
+      const eventPayload: UserRegisteredPayload = {
+        userId: createdUser.id,
+        email: createdUser.email,
+        timestamp: new Date().toISOString(),
       };
-
-      await this.outboxService.store(outboxMessage, tx);
+      await this.eventService.publish(AuthEvent.USER_REGISTERED, eventPayload);
 
       return createdUser;
     });
@@ -81,12 +66,19 @@ export class AuthService {
   async login(loginUserDto: LoginUserDto): Promise<{ accessToken: string }> {
     const { email, password } = loginUserDto;
 
-    const user = await this.prisma.user.findUnique({ where: { email } });
-    if (!user) {
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+      include: { credential: true },
+    });
+
+    if (!user || !user.credential) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+    const isPasswordValid = await bcrypt.compare(
+      password,
+      user.credential.hashedPassword
+    );
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
     }

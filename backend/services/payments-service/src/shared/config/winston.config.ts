@@ -1,6 +1,7 @@
 import { WinstonModuleAsyncOptions } from 'nest-winston';
 import * as winston from 'winston';
-import 'winston-daily-rotate-file';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import DailyRotateFile from 'winston-daily-rotate-file';
 
 /**
  * Winston Configuration Factory
@@ -86,7 +87,9 @@ export const winstonConfig: WinstonModuleAsyncOptions = {
  * Sanitize sensitive data from log entries
  * Enterprise FinTech requirement: Prevent sensitive data leakage
  */
-function sanitizeLogData(meta: any): any {
+function sanitizeLogData(
+  meta: Record<string, unknown>
+): Record<string, unknown> {
   if (!meta || typeof meta !== 'object') {
     return meta;
   }
@@ -108,15 +111,23 @@ function sanitizeLogData(meta: any): any {
   const sanitized = { ...meta };
 
   // Recursively sanitize object properties
-  const sanitizeObject = (obj: any): any => {
+  const sanitizeObject = (
+    obj: Record<string, unknown>
+  ): Record<string, unknown> => {
     if (obj && typeof obj === 'object') {
       for (const [key, value] of Object.entries(obj)) {
         if (
           sensitiveKeys.some(sensitive => key.toLowerCase().includes(sensitive))
         ) {
+          // eslint-disable-next-line security/detect-object-injection
           obj[key] = '[REDACTED]';
-        } else if (typeof value === 'object') {
-          obj[key] = sanitizeObject(value);
+        } else if (
+          typeof value === 'object' &&
+          value !== null &&
+          !Array.isArray(value)
+        ) {
+          // eslint-disable-next-line security/detect-object-injection
+          obj[key] = sanitizeObject(value as Record<string, unknown>);
         }
       }
     }

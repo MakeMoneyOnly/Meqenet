@@ -61,7 +61,7 @@ export class IdempotencyMiddleware implements NestMiddleware {
     const originalJson = res.json;
     const originalSend = res.send;
 
-    res.json = body => {
+    res.json = (body: unknown): Response => {
       idempotencyCache.set(idempotencyKey, {
         isProcessing: false,
         responseBody: body,
@@ -70,7 +70,7 @@ export class IdempotencyMiddleware implements NestMiddleware {
       return originalJson.call(res, body);
     };
 
-    res.send = body => {
+    res.send = (body: unknown): Response => {
       idempotencyCache.set(idempotencyKey, {
         isProcessing: false,
         responseBody: body,

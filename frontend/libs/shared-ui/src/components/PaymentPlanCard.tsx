@@ -18,7 +18,7 @@ export const PaymentPlanCard = ({
   interestRate,
   isSelected = false,
   onSelect,
-}: PaymentPlanCardProps) => {
+}: PaymentPlanCardProps): React.JSX.Element => {
   const selectionClasses = isSelected
     ? 'border-blue-500 ring-2 ring-blue-500'
     : 'border-gray-300';
@@ -27,8 +27,7 @@ export const PaymentPlanCard = ({
     <Card
       className={`cursor-pointer hover:shadow-lg transition-shadow ${selectionClasses}`}
       onClick={onSelect}
-      role="radio"
-      aria-checked={isSelected}
+      aria-pressed={isSelected}
       tabIndex={0}
     >
       <CardHeader>

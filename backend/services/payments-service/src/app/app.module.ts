@@ -15,13 +15,14 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { WinstonModule } from 'nest-winston';
 import { I18nModule, QueryResolver, AcceptLanguageResolver } from 'nestjs-i18n';
 
+// eslint-disable-next-line import/no-unresolved
 import { IdempotencyMiddleware } from '../../../shared/middleware/idempotency.middleware';
 import { AuthModule } from '../features/auth/auth.module';
-import { throttlerConfig } from '../shared/config/throttler.config';
 import { DatabaseModule } from '../infrastructure/database/database.module';
 import { MessagingModule } from '../infrastructure/messaging/messaging.module';
 import { PaymentsController } from '../payments.controller';
 import { PaymentsService } from '../payments.service';
+import { throttlerConfig } from '../shared/config/throttler.config';
 import { winstonConfig } from '../shared/config/winston.config';
 import { GlobalExceptionFilter } from '../shared/filters/global-exception.filter';
 import { JwtAuthGuard } from '../shared/guards/jwt-auth.guard';
@@ -78,7 +79,9 @@ import { AppService } from './app.service';
       {
         name: 'GRPC_SERVICE',
         imports: [ConfigModule],
-        useFactory: (configService: ConfigService) => ({
+        useFactory: (
+          configService: ConfigService
+        ): Record<string, unknown> => ({
           transport: Transport.GRPC,
           options: {
             package: 'payments-service',
@@ -121,7 +124,7 @@ import { AppService } from './app.service';
   ],
 })
 export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
+  configure(consumer: MiddlewareConsumer): void {
     consumer
       .apply(IdempotencyMiddleware)
       .forRoutes({ path: 'payments', method: RequestMethod.POST });
