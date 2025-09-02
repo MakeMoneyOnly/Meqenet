@@ -23,13 +23,13 @@
     "exactOptionalPropertyTypes": true,
     "types": ["vitest/globals", "node"],
     "paths": {
-      "@meqenet/auth-service/*": ["backend/services/auth-service/src/*"],
-      "@frontend/shared/ui": ["frontend/libs/shared/ui/src"],
-      "@frontend/shared/ui/*": ["frontend/libs/shared/ui/src/*"],
+      "@frontend/shared/api-client": ["frontend/libs/shared/api-client/src"],
+      "@frontend/shared/api-client/*": ["frontend/libs/shared/api-client/src/*"],
       "@frontend/shared/config": ["frontend/libs/shared/config/src"],
       "@frontend/shared/config/*": ["frontend/libs/shared/config/src/*"],
-      "@frontend/shared/api-client": ["frontend/libs/shared/api-client/src"],
-      "@frontend/shared/api-client/*": ["frontend/libs/shared/api-client/src/*"]
+      "@frontend/shared/ui": ["frontend/libs/shared/ui/src"],
+      "@frontend/shared/ui/*": ["frontend/libs/shared/ui/src/*"],
+      "@meqenet/auth-service/*": ["backend/services/auth-service/src/*"]
     }
   },
   "include": ["vitest.d.ts"],

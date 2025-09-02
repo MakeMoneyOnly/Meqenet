@@ -224,13 +224,17 @@ jobs:
             fi
           fi
 
-          # Verify Prisma client was generated
-          if [ ! -f "node_modules/.prisma/client/index.d.ts" ]; then
+          # Verify Prisma client was generated (check both relative paths)
+          if [ ! -f "../../node_modules/.prisma/client/index.d.ts" ] && [ ! -f "../../../node_modules/.prisma/client/index.d.ts" ]; then
             echo "❌ Prisma client generation verification failed"
-            ls -la node_modules/.prisma/ 2>/dev/null || echo "Prisma client directory not found"
+            echo "Checking workspace root node_modules..."
+            ls -la ../../node_modules/.prisma/ 2>/dev/null || echo "Prisma client directory not found in workspace root"
+            echo "Checking auth-service node_modules..."
+            ls -la node_modules/.prisma/ 2>/dev/null || echo "Prisma client directory not found in auth-service"
             exit 1
           else
             echo "✅ Prisma client generated successfully"
+            echo "Client location: $(find ../../node_modules ../../../node_modules -name "index.d.ts" -path "*/.prisma/client/*" 2>/dev/null | head -1)"
           fi
       - name: Run Bias Test Suite
         run: |

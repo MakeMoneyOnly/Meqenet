@@ -15,8 +15,7 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { WinstonModule } from 'nest-winston';
 import { I18nModule, QueryResolver, AcceptLanguageResolver } from 'nestjs-i18n';
 
-// eslint-disable-next-line import/no-unresolved
-import { IdempotencyMiddleware } from '../../../shared/middleware/idempotency.middleware';
+import { IdempotencyMiddleware } from '../../../../shared/middleware/idempotency.middleware';
 import { AuthModule } from '../features/auth/auth.module';
 import { DatabaseModule } from '../infrastructure/database/database.module';
 import { MessagingModule } from '../infrastructure/messaging/messaging.module';

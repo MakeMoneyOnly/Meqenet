@@ -74,6 +74,15 @@ jobs:
           echo "🧪 Running PWA compliance tests..."
           export PNPM_HOME="$HOME/.local/share/pnpm"
           export PATH="$PNPM_HOME:$PATH"
+
+          # Verify pnpm is available
+          if ! command -v pnpm &> /dev/null; then
+            echo "❌ pnpm not found in PATH"
+            echo "Current PATH: $PATH"
+            exit 1
+          fi
+
+          echo "✅ pnpm found: $(pnpm --version)"
           node scripts/test-pwa-compliance.js
         continue-on-error: true
 

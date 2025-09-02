@@ -348,3 +348,5 @@ tools/**/*.exe
 tools/**/*.msi
 # Large files (>50MB)
 *.zip
+
+storybook-static

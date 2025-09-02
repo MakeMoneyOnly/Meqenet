@@ -13,6 +13,8 @@ const MAX_PASSWORD_LENGTH = 128;
 const MIN_DEVICE_FINGERPRINT_LENGTH = 10;
 const MAX_DEVICE_FINGERPRINT_LENGTH = 512;
 const MAX_USER_AGENT_LENGTH = 512;
+// IPv4 octet maximum value
+const MAX_IPV4_OCTET = 255;
 const MAX_DEVICE_ID_LENGTH = 128;
 const TOKEN_MIN_LENGTH = 10;
 const TOKEN_MAX_LENGTH = 2048;
@@ -66,12 +68,20 @@ export const requestIdSchema = z
 
 // IP address validation - basic validation only
 export const ipAddressSchema = z.string().refine(val => {
-  // Simple validation for basic IP format - safe patterns
-  // eslint-disable-next-line security/detect-unsafe-regex
-  const ipv4Pattern = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/;
-  // eslint-disable-next-line security/detect-unsafe-regex
-  const ipv6Pattern = /^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$/;
-  return ipv4Pattern.test(val) || ipv6Pattern.test(val);
+  // Safe validation patterns for IP addresses - no exponential backtracking
+  const ipv4Pattern = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
+  // Safe IPv6 pattern with length constraints to prevent ReDoS
+  const ipv6Pattern = /^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$/;
+
+  if (ipv4Pattern.test(val)) {
+    // Additional validation for IPv4 ranges
+    return val.split('.').every(part => {
+      const num = parseInt(part, 10);
+      return num >= 0 && num <= MAX_IPV4_OCTET;
+    });
+  }
+
+  return ipv6Pattern.test(val);
 }, 'Invalid IP address format');
 
 // User agent validation

@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { Prisma } from '@prisma/client';
 
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -10,7 +9,7 @@ export interface DLQMessage {
   aggregateType: string;
   aggregateId: string;
   eventType: string;
-  payload: Prisma.JsonValue;
+  payload: Record<string, unknown>;
   errorMessage: string | null;
   dlqReason: string | null;
   retryCount: number;
@@ -24,7 +23,7 @@ interface PrismaOutboxMessage {
   aggregateType: string;
   aggregateId: string;
   eventType: string;
-  payload: Prisma.JsonValue;
+  payload: Record<string, unknown>;
   errorMessage: string | null;
   dlqReason: string | null;
   retryCount: number;
@@ -95,7 +94,8 @@ export class DLQService {
     ]);
 
     return {
-      messages: messages.map(msg => this.mapToDLQMessage(msg)),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      messages: messages.map((msg: any) => this.mapToDLQMessage(msg)),
       total,
       page,
       totalPages: Math.ceil(total / limit),
@@ -224,14 +224,16 @@ export class DLQService {
     return {
       total,
       byEventType: byEventType.reduce(
-        (acc, item) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (acc: Record<string, number>, item: any) => {
           acc[item.eventType] = item._count.id;
           return acc;
         },
         {} as Record<string, number>
       ),
       byAggregateType: byAggregateType.reduce(
-        (acc, item) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (acc: Record<string, number>, item: any) => {
           acc[item.aggregateType] = item._count.id;
           return acc;
         },
@@ -290,7 +292,8 @@ export class DLQService {
     ]);
 
     return {
-      messages: messages.map(msg => this.mapToDLQMessage(msg)),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      messages: messages.map((msg: any) => this.mapToDLQMessage(msg)),
       total,
       page,
       totalPages: Math.ceil(total / limit),

@@ -10,5 +10,13 @@
       "default": "./src/index.ts"
     },
     "./package.json": "./package.json"
+  },
+  "devDependencies": {
+    "@storybook/addon-a11y": "^9.1.4",
+    "@storybook/addon-docs": "^9.1.4",
+    "@storybook/react": "^9.1.4",
+    "@storybook/react-vite": "^9.1.4",
+    "storybook": "^9.1.4",
+    "vite": "^5.4.19"
   }
 }

@@ -115,55 +115,58 @@ jobs:
           # Enterprise-grade installation with multiple fallbacks
           PNPM_INSTALLED=false
 
-          # Method 1: Primary CDN (get.pnpm.io)
-          echo "🔄 Attempt 1/6: Installing via primary CDN..."
-          if curl -fsSL --connect-timeout 15 --max-time 60 https://get.pnpm.io/install.sh | sh -; then
+          # Method 1: Official pnpm installation (most reliable)
+          echo "🔄 Attempt 1/6: Installing via official pnpm installer..."
+          if curl -fsSL --connect-timeout 30 --max-time 120 https://get.pnpm.io/install.sh | sh -; then
             export PNPM_HOME="$HOME/.local/share/pnpm"
             export PATH="$PNPM_HOME:$PATH"
             if command -v pnpm &> /dev/null; then
-              echo "✅ pnpm installed successfully via primary CDN"
+              echo "✅ pnpm installed successfully via official installer"
               PNPM_INSTALLED=true
             fi
           fi
 
-          # Method 2: Secondary CDN (cdn.jsdelivr.net)
+          # Method 2: GitHub raw (stable branch)
           if [ "$PNPM_INSTALLED" = false ]; then
-            echo "🔄 Attempt 2/6: Installing via secondary CDN..."
-            if curl -fsSL --connect-timeout 15 --max-time 60 https://cdn.jsdelivr.net/gh/pnpm/pnpm@latest/install.sh | sh -; then
+            echo "🔄 Attempt 2/6: Installing via GitHub raw (stable branch)..."
+            if curl -fsSL --connect-timeout 30 --max-time 120 https://raw.githubusercontent.com/pnpm/pnpm/main/install.sh | sh -; then
               export PNPM_HOME="$HOME/.local/share/pnpm"
               export PATH="$PNPM_HOME:$PATH"
               if command -v pnpm &> /dev/null; then
-                echo "✅ pnpm installed successfully via secondary CDN"
+                echo "✅ pnpm installed successfully via GitHub raw"
                 PNPM_INSTALLED=true
               fi
             fi
           fi
 
-          # Method 3: GitHub raw CDN
+          # Method 3: GitHub raw (latest tag)
           if [ "$PNPM_INSTALLED" = false ]; then
-            echo "🔄 Attempt 3/6: Installing via GitHub CDN..."
-            if curl -fsSL --connect-timeout 15 --max-time 60 https://raw.githubusercontent.com/pnpm/pnpm/master/install.sh | sh -; then
+            echo "🔄 Attempt 3/6: Installing via GitHub raw (latest tag)..."
+            if curl -fsSL --connect-timeout 30 --max-time 120 https://raw.githubusercontent.com/pnpm/pnpm/latest/install.sh | sh -; then
               export PNPM_HOME="$HOME/.local/share/pnpm"
               export PATH="$PNPM_HOME:$PATH"
               if command -v pnpm &> /dev/null; then
-                echo "✅ pnpm installed successfully via GitHub CDN"
+                echo "✅ pnpm installed successfully via GitHub latest"
                 PNPM_INSTALLED=true
               fi
             fi
           fi
 
-          # Method 4: Direct binary download
+          # Method 4: Direct binary download (updated URL)
           if [ "$PNPM_INSTALLED" = false ]; then
             echo "🔄 Attempt 4/6: Installing via direct binary download..."
-            # Download latest pnpm binary
-            curl -fsSL --connect-timeout 15 --max-time 60 -o /tmp/pnpm.tar.gz https://github.com/pnpm/pnpm/releases/latest/download/pnpm-linux-x64.tar.gz
-            if [ $? -eq 0 ] && [ -f /tmp/pnpm.tar.gz ]; then
-              mkdir -p $HOME/.local/bin
-              tar -xzf /tmp/pnpm.tar.gz -C $HOME/.local/bin --strip-components=1
-              export PATH="$HOME/.local/bin:$PATH"
-              if command -v pnpm &> /dev/null; then
-                echo "✅ pnpm installed successfully via direct binary"
-                PNPM_INSTALLED=true
+            # Get the latest version first
+            PNPM_VERSION=$(curl -s https://api.github.com/repos/pnpm/pnpm/releases/latest | grep '"tag_name"' | cut -d'"' -f4 | sed 's/^v//')
+            if [ -n "$PNPM_VERSION" ]; then
+              curl -fsSL --connect-timeout 30 --max-time 120 -o /tmp/pnpm.tar.gz https://github.com/pnpm/pnpm/releases/download/v${PNPM_VERSION}/pnpm-linux-x64.tar.gz
+              if [ $? -eq 0 ] && [ -f /tmp/pnpm.tar.gz ]; then
+                mkdir -p $HOME/.local/bin
+                tar -xzf /tmp/pnpm.tar.gz -C $HOME/.local/bin --strip-components=1
+                export PATH="$HOME/.local/bin:$PATH"
+                if command -v pnpm &> /dev/null; then
+                  echo "✅ pnpm installed successfully via direct binary (v${PNPM_VERSION})"
+                  PNPM_INSTALLED=true
+                fi
               fi
             fi
           fi
@@ -380,55 +383,58 @@ jobs:
           # Enterprise-grade installation with multiple fallbacks
           PNPM_INSTALLED=false
 
-          # Method 1: Primary CDN (get.pnpm.io)
-          echo "🔄 Attempt 1/6: Installing via primary CDN..."
-          if curl -fsSL --connect-timeout 15 --max-time 60 https://get.pnpm.io/install.sh | sh -; then
+          # Method 1: Official pnpm installation (most reliable)
+          echo "🔄 Attempt 1/6: Installing via official pnpm installer..."
+          if curl -fsSL --connect-timeout 30 --max-time 120 https://get.pnpm.io/install.sh | sh -; then
             export PNPM_HOME="$HOME/.local/share/pnpm"
             export PATH="$PNPM_HOME:$PATH"
             if command -v pnpm &> /dev/null; then
-              echo "✅ pnpm installed successfully via primary CDN"
+              echo "✅ pnpm installed successfully via official installer"
               PNPM_INSTALLED=true
             fi
           fi
 
-          # Method 2: Secondary CDN (cdn.jsdelivr.net)
+          # Method 2: GitHub raw (stable branch)
           if [ "$PNPM_INSTALLED" = false ]; then
-            echo "🔄 Attempt 2/6: Installing via secondary CDN..."
-            if curl -fsSL --connect-timeout 15 --max-time 60 https://cdn.jsdelivr.net/gh/pnpm/pnpm@latest/install.sh | sh -; then
+            echo "🔄 Attempt 2/6: Installing via GitHub raw (stable branch)..."
+            if curl -fsSL --connect-timeout 30 --max-time 120 https://raw.githubusercontent.com/pnpm/pnpm/main/install.sh | sh -; then
               export PNPM_HOME="$HOME/.local/share/pnpm"
               export PATH="$PNPM_HOME:$PATH"
               if command -v pnpm &> /dev/null; then
-                echo "✅ pnpm installed successfully via secondary CDN"
+                echo "✅ pnpm installed successfully via GitHub raw"
                 PNPM_INSTALLED=true
               fi
             fi
           fi
 
-          # Method 3: GitHub raw CDN
+          # Method 3: GitHub raw (latest tag)
           if [ "$PNPM_INSTALLED" = false ]; then
-            echo "🔄 Attempt 3/6: Installing via GitHub CDN..."
-            if curl -fsSL --connect-timeout 15 --max-time 60 https://raw.githubusercontent.com/pnpm/pnpm/master/install.sh | sh -; then
+            echo "🔄 Attempt 3/6: Installing via GitHub raw (latest tag)..."
+            if curl -fsSL --connect-timeout 30 --max-time 120 https://raw.githubusercontent.com/pnpm/pnpm/latest/install.sh | sh -; then
               export PNPM_HOME="$HOME/.local/share/pnpm"
               export PATH="$PNPM_HOME:$PATH"
               if command -v pnpm &> /dev/null; then
-                echo "✅ pnpm installed successfully via GitHub CDN"
+                echo "✅ pnpm installed successfully via GitHub latest"
                 PNPM_INSTALLED=true
               fi
             fi
           fi
 
-          # Method 4: Direct binary download
+          # Method 4: Direct binary download (updated URL)
           if [ "$PNPM_INSTALLED" = false ]; then
             echo "🔄 Attempt 4/6: Installing via direct binary download..."
-            # Download latest pnpm binary
-            curl -fsSL --connect-timeout 15 --max-time 60 -o /tmp/pnpm.tar.gz https://github.com/pnpm/pnpm/releases/latest/download/pnpm-linux-x64.tar.gz
-            if [ $? -eq 0 ] && [ -f /tmp/pnpm.tar.gz ]; then
-              mkdir -p $HOME/.local/bin
-              tar -xzf /tmp/pnpm.tar.gz -C $HOME/.local/bin --strip-components=1
-              export PATH="$HOME/.local/bin:$PATH"
-              if command -v pnpm &> /dev/null; then
-                echo "✅ pnpm installed successfully via direct binary"
-                PNPM_INSTALLED=true
+            # Get the latest version first
+            PNPM_VERSION=$(curl -s https://api.github.com/repos/pnpm/pnpm/releases/latest | grep '"tag_name"' | cut -d'"' -f4 | sed 's/^v//')
+            if [ -n "$PNPM_VERSION" ]; then
+              curl -fsSL --connect-timeout 30 --max-time 120 -o /tmp/pnpm.tar.gz https://github.com/pnpm/pnpm/releases/download/v${PNPM_VERSION}/pnpm-linux-x64.tar.gz
+              if [ $? -eq 0 ] && [ -f /tmp/pnpm.tar.gz ]; then
+                mkdir -p $HOME/.local/bin
+                tar -xzf /tmp/pnpm.tar.gz -C $HOME/.local/bin --strip-components=1
+                export PATH="$HOME/.local/bin:$PATH"
+                if command -v pnpm &> /dev/null; then
+                  echo "✅ pnpm installed successfully via direct binary (v${PNPM_VERSION})"
+                  PNPM_INSTALLED=true
+                fi
               fi
             fi
           fi
@@ -746,55 +752,58 @@ jobs:
           # Enterprise-grade installation with multiple fallbacks
           PNPM_INSTALLED=false
 
-          # Method 1: Primary CDN (get.pnpm.io)
-          echo "🔄 Attempt 1/6: Installing via primary CDN..."
-          if curl -fsSL --connect-timeout 15 --max-time 60 https://get.pnpm.io/install.sh | sh -; then
+          # Method 1: Official pnpm installation (most reliable)
+          echo "🔄 Attempt 1/6: Installing via official pnpm installer..."
+          if curl -fsSL --connect-timeout 30 --max-time 120 https://get.pnpm.io/install.sh | sh -; then
             export PNPM_HOME="$HOME/.local/share/pnpm"
             export PATH="$PNPM_HOME:$PATH"
             if command -v pnpm &> /dev/null; then
-              echo "✅ pnpm installed successfully via primary CDN"
+              echo "✅ pnpm installed successfully via official installer"
               PNPM_INSTALLED=true
             fi
           fi
 
-          # Method 2: Secondary CDN (cdn.jsdelivr.net)
+          # Method 2: GitHub raw (stable branch)
           if [ "$PNPM_INSTALLED" = false ]; then
-            echo "🔄 Attempt 2/6: Installing via secondary CDN..."
-            if curl -fsSL --connect-timeout 15 --max-time 60 https://cdn.jsdelivr.net/gh/pnpm/pnpm@latest/install.sh | sh -; then
+            echo "🔄 Attempt 2/6: Installing via GitHub raw (stable branch)..."
+            if curl -fsSL --connect-timeout 30 --max-time 120 https://raw.githubusercontent.com/pnpm/pnpm/main/install.sh | sh -; then
               export PNPM_HOME="$HOME/.local/share/pnpm"
               export PATH="$PNPM_HOME:$PATH"
               if command -v pnpm &> /dev/null; then
-                echo "✅ pnpm installed successfully via secondary CDN"
+                echo "✅ pnpm installed successfully via GitHub raw"
                 PNPM_INSTALLED=true
               fi
             fi
           fi
 
-          # Method 3: GitHub raw CDN
+          # Method 3: GitHub raw (latest tag)
           if [ "$PNPM_INSTALLED" = false ]; then
-            echo "🔄 Attempt 3/6: Installing via GitHub CDN..."
-            if curl -fsSL --connect-timeout 15 --max-time 60 https://raw.githubusercontent.com/pnpm/pnpm/master/install.sh | sh -; then
+            echo "🔄 Attempt 3/6: Installing via GitHub raw (latest tag)..."
+            if curl -fsSL --connect-timeout 30 --max-time 120 https://raw.githubusercontent.com/pnpm/pnpm/latest/install.sh | sh -; then
               export PNPM_HOME="$HOME/.local/share/pnpm"
               export PATH="$PNPM_HOME:$PATH"
               if command -v pnpm &> /dev/null; then
-                echo "✅ pnpm installed successfully via GitHub CDN"
+                echo "✅ pnpm installed successfully via GitHub latest"
                 PNPM_INSTALLED=true
               fi
             fi
           fi
 
-          # Method 4: Direct binary download
+          # Method 4: Direct binary download (updated URL)
           if [ "$PNPM_INSTALLED" = false ]; then
             echo "🔄 Attempt 4/6: Installing via direct binary download..."
-            # Download latest pnpm binary
-            curl -fsSL --connect-timeout 15 --max-time 60 -o /tmp/pnpm.tar.gz https://github.com/pnpm/pnpm/releases/latest/download/pnpm-linux-x64.tar.gz
-            if [ $? -eq 0 ] && [ -f /tmp/pnpm.tar.gz ]; then
-              mkdir -p $HOME/.local/bin
-              tar -xzf /tmp/pnpm.tar.gz -C $HOME/.local/bin --strip-components=1
-              export PATH="$HOME/.local/bin:$PATH"
-              if command -v pnpm &> /dev/null; then
-                echo "✅ pnpm installed successfully via direct binary"
-                PNPM_INSTALLED=true
+            # Get the latest version first
+            PNPM_VERSION=$(curl -s https://api.github.com/repos/pnpm/pnpm/releases/latest | grep '"tag_name"' | cut -d'"' -f4 | sed 's/^v//')
+            if [ -n "$PNPM_VERSION" ]; then
+              curl -fsSL --connect-timeout 30 --max-time 120 -o /tmp/pnpm.tar.gz https://github.com/pnpm/pnpm/releases/download/v${PNPM_VERSION}/pnpm-linux-x64.tar.gz
+              if [ $? -eq 0 ] && [ -f /tmp/pnpm.tar.gz ]; then
+                mkdir -p $HOME/.local/bin
+                tar -xzf /tmp/pnpm.tar.gz -C $HOME/.local/bin --strip-components=1
+                export PATH="$HOME/.local/bin:$PATH"
+                if command -v pnpm &> /dev/null; then
+                  echo "✅ pnpm installed successfully via direct binary (v${PNPM_VERSION})"
+                  PNPM_INSTALLED=true
+                fi
               fi
             fi
           fi
