@@ -87,21 +87,21 @@ jobs:
         run: |
           # Install Pact Ruby Standalone
           echo "📦 Installing Pact Ruby Standalone..."
-          
+
           # Try to get the latest version from GitHub API
           PACT_VERSION=$(curl -s https://api.github.com/repos/pact-foundation/pact-ruby-standalone/releases/latest | grep '"tag_name"' | cut -d'"' -f4 | sed 's/^v//')
-          
+
           # Fallback to a known working version if API call fails
           if [ -z "$PACT_VERSION" ]; then
             PACT_VERSION="2.0.10"
             echo "⚠️ Could not fetch latest version, using fallback v${PACT_VERSION}"
           fi
-          
+
           echo "📥 Downloading Pact Ruby Standalone v${PACT_VERSION}..."
-          
+
           # Construct the correct download URL
           DOWNLOAD_URL="https://github.com/pact-foundation/pact-ruby-standalone/releases/download/v${PACT_VERSION}/pact-${PACT_VERSION}-linux-x86_64.tar.gz"
-          
+
           # Download and extract the Pact Ruby Standalone
           if curl -fsSL "$DOWNLOAD_URL" -o pact.tar.gz; then
             tar xzf pact.tar.gz
@@ -132,32 +132,32 @@ jobs:
             
             echo "✅ Pact CLI installed via Docker extraction"
           fi
-          
+
           # Install pact_broker-client Ruby gem as a more reliable alternative
           echo "📦 Installing Pact Broker Client..."
-          
+
           # Install Ruby if not present
           if ! command -v ruby &> /dev/null; then
             echo "📥 Installing Ruby..."
             sudo apt-get update
             sudo apt-get install -y ruby-full
           fi
-          
+
           # Install the pact_broker-client gem
           sudo gem install pact_broker-client --no-document
-          
+
           echo "✅ Pact Broker Client installed successfully"
-          
+
           # Verify installations
           echo "🔍 Verifying installations..."
-          
+
           # Check for pact command
           if command -v pact &> /dev/null; then
             pact version || echo "✅ Pact CLI is available"
           else
             echo "⚠️ Pact CLI not found in PATH"
           fi
-          
+
           # Check for pact-broker command
           if command -v pact-broker &> /dev/null; then
             pact-broker version || echo "✅ Pact Broker CLI is available"
@@ -240,7 +240,7 @@ jobs:
           sudo apt-get install -y ruby-full
           sudo gem install pact_broker-client --no-document
           echo "✅ Pact Broker Client installed successfully"
-          
+
           # Verify installation
           pact-broker version || echo "✅ Pact Broker CLI is available"
 

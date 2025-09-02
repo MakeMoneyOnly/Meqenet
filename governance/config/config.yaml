@@ -8,7 +8,7 @@ dashboards:
     name: CEO Strategic Dashboard
     description: Strategic Business Intelligence & Executive Oversight
     script_path: dashboards/ceo.py
-    schedule_cron: "0 8 * * 1-5"  # 8 AM weekdays
+    schedule_cron: "0 8 * * 1-5" # 8 AM weekdays
     timeout_minutes: 15
     dependencies: []
     environment_vars:
@@ -21,7 +21,7 @@ dashboards:
     name: CFO Financial Dashboard
     description: Financial Performance & Budget Analytics
     script_path: dashboards/cfo.py
-    schedule_cron: "0 9 * * 1-5"  # 9 AM weekdays
+    schedule_cron: "0 9 * * 1-5" # 9 AM weekdays
     timeout_minutes: 12
     dependencies: []
     environment_vars:
@@ -34,7 +34,7 @@ dashboards:
     name: CTO Technical Dashboard
     description: Technical Infrastructure & DevOps Metrics
     script_path: dashboards/cto.py
-    schedule_cron: "*/30 * * * *"  # Every 30 minutes
+    schedule_cron: "*/30 * * * *" # Every 30 minutes
     timeout_minutes: 10
     dependencies: []
     environment_vars:
@@ -47,7 +47,7 @@ dashboards:
     name: CCO Compliance Dashboard
     description: Regulatory Compliance & Risk Management
     script_path: dashboards/cco.py
-    schedule_cron: "0 */2 * * *"  # Every 2 hours
+    schedule_cron: "0 */2 * * *" # Every 2 hours
     timeout_minutes: 8
     dependencies: []
     environment_vars:
@@ -60,7 +60,7 @@ dashboards:
     name: CISO Security Dashboard
     description: Security Posture & Threat Intelligence
     script_path: dashboards/ciso.py
-    schedule_cron: "*/15 * * * *"  # Every 15 minutes
+    schedule_cron: "*/15 * * * *" # Every 15 minutes
     timeout_minutes: 6
     dependencies: []
     environment_vars:
@@ -95,7 +95,7 @@ notifications:
 # Backup Configuration
 backup:
   enabled: true
-  schedule_cron: "0 2 * * *"  # Daily at 2 AM
+  schedule_cron: "0 2 * * *" # Daily at 2 AM
   retention_days: 30
   max_backups: 10
   include_logs: true
@@ -105,7 +105,7 @@ backup:
 # Monitoring Configuration
 monitoring:
   enabled: true
-  health_check_interval: 300  # 5 minutes
+  health_check_interval: 300 # 5 minutes
   performance_thresholds:
     max_execution_time: 1800
     max_memory_usage: 2048
@@ -116,11 +116,11 @@ monitoring:
 compliance:
   enabled: true
   frameworks:
-    nbe: true      # National Bank of Ethiopia
-    gdpr: true     # General Data Protection Regulation
-    pci_dss: true  # Payment Card Industry
+    nbe: true # National Bank of Ethiopia
+    gdpr: true # General Data Protection Regulation
+    pci_dss: true # Payment Card Industry
     iso27001: true # Information Security Management
-    soc2: true     # Service Organization Control
+    soc2: true # Service Organization Control
 
 # Platform Information
 platform:

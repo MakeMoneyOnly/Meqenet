@@ -10,7 +10,7 @@ dashboards:
     name: CEO Strategic Dashboard
     description: Strategic Business Intelligence & Executive Oversight
     script_path: governance/dashboards/ceo.py
-    schedule_cron: "0 8 * * 1-5"  # Business hours, weekdays
+    schedule_cron: "0 8 * * 1-5" # Business hours, weekdays
     timeout_minutes: 15
     dependencies: []
     environment_vars:
@@ -19,7 +19,7 @@ dashboards:
       REPORT_FORMAT: executive_summary
     business_hours_only: true
     critical_thresholds:
-      revenue_drop: 0.05  # 5% revenue drop triggers alert
+      revenue_drop: 0.05 # 5% revenue drop triggers alert
       customer_churn: 0.03 # 3% churn rate triggers alert
 
   # Chief Financial Officer - Financial Performance & Risk
@@ -28,7 +28,7 @@ dashboards:
     name: CFO Financial Dashboard
     description: Financial Performance & Budget Analytics
     script_path: governance/dashboards/cfo.py
-    schedule_cron: "0 9 * * 1-5"  # Business hours, weekdays
+    schedule_cron: "0 9 * * 1-5" # Business hours, weekdays
     timeout_minutes: 12
     dependencies: []
     environment_vars:
@@ -38,8 +38,8 @@ dashboards:
       CURRENCY: ETB
     business_hours_only: true
     critical_thresholds:
-      burn_rate_threshold: 0.8  # 80% of monthly budget
-      cash_runway_days: 90      # Alert when below 90 days
+      burn_rate_threshold: 0.8 # 80% of monthly budget
+      cash_runway_days: 90 # Alert when below 90 days
 
   # Chief Technology Officer - Technical Infrastructure
   cto:
@@ -47,7 +47,7 @@ dashboards:
     name: CTO Technical Dashboard
     description: Technical Infrastructure & DevOps Metrics
     script_path: governance/dashboards/cto.py
-    schedule_cron: "*/30 * * * *"  # Every 30 minutes
+    schedule_cron: "*/30 * * * *" # Every 30 minutes
     timeout_minutes: 10
     dependencies: []
     environment_vars:
@@ -56,9 +56,9 @@ dashboards:
       MONITORING_LEVEL: comprehensive
     business_hours_only: false
     critical_thresholds:
-      system_uptime: 0.995     # 99.5% uptime required
-      response_time_ms: 2000   # Max 2s response time
-      error_rate: 0.001        # Max 0.1% error rate
+      system_uptime: 0.995 # 99.5% uptime required
+      response_time_ms: 2000 # Max 2s response time
+      error_rate: 0.001 # Max 0.1% error rate
 
   # Chief Compliance Officer - Regulatory Compliance
   cco:
@@ -66,7 +66,7 @@ dashboards:
     name: CCO Compliance Dashboard
     description: Regulatory Compliance & Risk Management
     script_path: governance/dashboards/cco.py
-    schedule_cron: "0 */2 * * *"  # Every 2 hours
+    schedule_cron: "0 */2 * * *" # Every 2 hours
     timeout_minutes: 8
     dependencies: []
     environment_vars:
@@ -76,9 +76,9 @@ dashboards:
       REPORT_FORMAT: compliance_audit
     business_hours_only: false
     critical_thresholds:
-      compliance_score: 0.95   # Min 95% compliance score
-      audit_findings: 5        # Max 5 open audit findings
-      risk_score: 3.0          # Max risk score threshold
+      compliance_score: 0.95 # Min 95% compliance score
+      audit_findings: 5 # Max 5 open audit findings
+      risk_score: 3.0 # Max risk score threshold
 
   # Chief Information Security Officer - Security Posture
   ciso:
@@ -86,7 +86,7 @@ dashboards:
     name: CISO Security Dashboard
     description: Security Posture & Threat Intelligence
     script_path: governance/dashboards/ciso.py
-    schedule_cron: "*/15 * * * *"  # Every 15 minutes
+    schedule_cron: "*/15 * * * *" # Every 15 minutes
     timeout_minutes: 6
     dependencies: []
     environment_vars:
@@ -96,9 +96,9 @@ dashboards:
       THREAT_INTELLIGENCE: enabled
     business_hours_only: false
     critical_thresholds:
-      security_score: 0.90     # Min 90% security score
-      vulnerability_count: 10  # Max 10 critical vulnerabilities
-      incident_response_time: 3600  # Max 1 hour response time
+      security_score: 0.90 # Min 90% security score
+      vulnerability_count: 10 # Max 10 critical vulnerabilities
+      incident_response_time: 3600 # Max 1 hour response time
 
 # Multi-Channel Notification System
 notifications:
@@ -111,7 +111,7 @@ notifications:
     smtp_port: 587
     smtp_security: tls
     username: governance@meqenet.et
-    password: "${GOVERNANCE_EMAIL_PASSWORD}"  # Environment variable
+    password: "${GOVERNANCE_EMAIL_PASSWORD}" # Environment variable
     recipients:
       ceo: ["ceo@meqenet.et"]
       cfo: ["cfo@meqenet.et"]
@@ -136,7 +136,7 @@ notifications:
       executive: "#executive-summary"
     username: "Meqenet Governance Suite"
     icon_emoji: ":chart_with_upwards_trend:"
-    rate_limit: 30  # Max messages per hour
+    rate_limit: 30 # Max messages per hour
 
   # Microsoft Teams Integration (Enterprise Communication)
   teams:
@@ -146,7 +146,7 @@ notifications:
       governance: "governance-updates"
       security: "security-alerts"
       executive: "executive-dashboard"
-    rate_limit: 50  # Max messages per hour
+    rate_limit: 50 # Max messages per hour
 
   # Alert Levels and Escalation
   alert_levels:
@@ -157,21 +157,21 @@ notifications:
     warning:
       enabled: true
       channels: ["slack", "email"]
-      escalation_time: 300  # 5 minutes
+      escalation_time: 300 # 5 minutes
     error:
       enabled: true
       channels: ["slack", "email", "teams"]
-      escalation_time: 600  # 10 minutes
+      escalation_time: 600 # 10 minutes
     critical:
       enabled: true
       channels: ["slack", "email", "teams"]
-      escalation_time: 60   # Immediate
-      emergency_contacts: ["+251911000000"]  # Emergency phone
+      escalation_time: 60 # Immediate
+      emergency_contacts: ["+251911000000"] # Emergency phone
 
 # Backup and Disaster Recovery Configuration
 backup:
   enabled: true
-  schedule_cron: "0 2 * * *"  # Daily at 2 AM
+  schedule_cron: "0 2 * * *" # Daily at 2 AM
   retention_days: 90
   max_backups: 30
   compression: true
@@ -196,42 +196,42 @@ backup:
 # Monitoring and Performance Configuration
 monitoring:
   enabled: true
-  health_check_interval: 300  # 5 minutes
+  health_check_interval: 300 # 5 minutes
   performance_thresholds:
-    max_execution_time: 1800  # 30 minutes
-    max_memory_usage: 2048   # 2GB
-    max_cpu_usage: 80        # 80%
-    max_disk_usage: 85       # 85%
+    max_execution_time: 1800 # 30 minutes
+    max_memory_usage: 2048 # 2GB
+    max_cpu_usage: 80 # 80%
+    max_disk_usage: 85 # 85%
   alerting:
     enabled: true
-    cooldown_period: 1800    # 30 minutes between similar alerts
-  metrics_retention: 365     # 1 year
-  log_retention: 90          # 90 days
+    cooldown_period: 1800 # 30 minutes between similar alerts
+  metrics_retention: 365 # 1 year
+  log_retention: 90 # 90 days
 
 # Compliance and Regulatory Configuration
 compliance:
   enabled: true
   frameworks:
-    nbe:  # National Bank of Ethiopia
+    nbe: # National Bank of Ethiopia
       enabled: true
       compliance_level: strict
       reporting_frequency: daily
       audit_trail: true
-    gdpr:  # General Data Protection Regulation
+    gdpr: # General Data Protection Regulation
       enabled: true
       data_processing_agreement: true
       privacy_impact_assessment: true
-      breach_notification: 72  # hours
-    pci_dss:  # Payment Card Industry Data Security Standard
+      breach_notification: 72 # hours
+    pci_dss: # Payment Card Industry Data Security Standard
       enabled: true
       scope: cardholder_data
       quarterly_scanning: true
       annual_assessment: true
-    iso27001:  # Information Security Management
+    iso27001: # Information Security Management
       enabled: true
       risk_assessment_frequency: quarterly
       security_awareness_training: monthly
-    soc2:  # Service Organization Control
+    soc2: # Service Organization Control
       enabled: true
       trust_services_criteria: [security, availability, confidentiality]
       audit_frequency: annual
@@ -246,11 +246,11 @@ security:
   access_control:
     role_based_access: true
     multi_factor_authentication: true
-    session_timeout: 3600  # 1 hour
+    session_timeout: 3600 # 1 hour
   audit_logging:
     enabled: true
     log_level: INFO
-    log_retention: 2555  # 7 years (GDPR requirement)
+    log_retention: 2555 # 7 years (GDPR requirement)
   vulnerability_scanning:
     enabled: true
     frequency: daily
@@ -266,7 +266,14 @@ fintech:
     start: "08:00"
     end: "17:00"
     timezone: "Africa/Addis_Ababa"
-    holidays: ["ethiopian_new_year", "orthodox_christmas", "timket", "orthodox_good_friday", "orthodox_easter"]
+    holidays:
+      [
+        "ethiopian_new_year",
+        "orthodox_christmas",
+        "timket",
+        "orthodox_good_friday",
+        "orthodox_easter",
+      ]
   regulatory_reporting:
     nbe_monthly: true
     nbe_quarterly: true
@@ -282,11 +289,11 @@ fintech:
 dashboard:
   theme: enterprise
   colors:
-    primary: "#1e40af"    # Ethiopian blue
-    secondary: "#059669"  # Ethiopian green
-    warning: "#d97706"    # Ethiopian gold
-    danger: "#dc2626"     # Alert red
-    success: "#16a34a"    # Success green
+    primary: "#1e40af" # Ethiopian blue
+    secondary: "#059669" # Ethiopian green
+    warning: "#d97706" # Ethiopian gold
+    danger: "#dc2626" # Alert red
+    success: "#16a34a" # Success green
   branding:
     company_name: "Meqenet.et"
     logo_path: "assets/logo.png"
@@ -306,7 +313,7 @@ integrations:
   cache:
     enabled: true
     type: memory
-    ttl: 3600  # 1 hour
+    ttl: 3600 # 1 hour
   api:
     enabled: true
     base_url: "https://api.meqenet.et"
@@ -320,7 +327,7 @@ integrations:
     market_data:
       enabled: true
       provider: yahoo_finance
-      cache_duration: 300  # 5 minutes
+      cache_duration: 300 # 5 minutes
 
 # Advanced Configuration
 advanced:

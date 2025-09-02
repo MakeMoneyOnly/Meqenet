@@ -170,12 +170,12 @@ jobs:
       - name: Run Trivy for Terraform Security Scan
         uses: aquasecurity/trivy-action@master
         with:
-          scan-type: 'config'
-          scan-ref: 'infrastructure/'
-          format: 'sarif'
-          output: 'trivy-terraform-results.sarif'
-          severity: 'CRITICAL,HIGH,MEDIUM'
-          exit-code: '0'  # Don't fail the build, just report
+          scan-type: "config"
+          scan-ref: "infrastructure/"
+          format: "sarif"
+          output: "trivy-terraform-results.sarif"
+          severity: "CRITICAL,HIGH,MEDIUM"
+          exit-code: "0" # Don't fail the build, just report
       - name: checkov
         uses: bridgecrewio/checkov-action@v12
         with:

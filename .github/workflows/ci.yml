@@ -267,14 +267,14 @@ jobs:
       - name: 🔍 Semgrep Security Analysis
         run: |
           echo "🔍 Installing Semgrep CLI..."
-          
+
           # Install Semgrep CLI using pip (recommended method)
           python3 -m pip install --upgrade pip
           pip install semgrep
-          
+
           # Verify installation
           semgrep --version
-          
+
           echo "🔍 Running Semgrep security analysis..."
 
           # Run Semgrep with modern command-line approach
