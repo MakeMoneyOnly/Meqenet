@@ -30,7 +30,7 @@ export const Button: React.FC<ButtonProps> = ({
 
   return (
     <button
-      className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]}`}  
+      className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]}`}
       onClick={onClick}
     >
       {children}
