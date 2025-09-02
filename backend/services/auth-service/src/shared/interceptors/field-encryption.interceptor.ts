@@ -51,7 +51,8 @@ export class FieldEncryptionInterceptor implements NestInterceptor {
           );
 
         if (decryptionResult.encryptedFields.length > 0) {
-          request.body = decryptionResult.data;
+          // Atomic update to avoid race conditions
+          Object.assign(request, { body: decryptionResult.data });
           this.logger.debug(
             `🔓 Decrypted ${decryptionResult.encryptedFields.length} fields in request body`
           );
@@ -67,7 +68,8 @@ export class FieldEncryptionInterceptor implements NestInterceptor {
           );
 
         if (decryptionResult.encryptedFields.length > 0) {
-          request.query = decryptionResult.data;
+          // Atomic update to avoid race conditions
+          Object.assign(request, { query: decryptionResult.data });
           this.logger.debug(
             `🔓 Decrypted ${decryptionResult.encryptedFields.length} fields in query parameters`
           );

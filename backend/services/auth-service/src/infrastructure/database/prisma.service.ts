@@ -121,7 +121,9 @@ export class PrismaService
           );
         }
 
-        await new Promise(resolve => setTimeout(resolve, delay));
+        await new Promise(resolve => {
+          setTimeout(resolve, delay);
+        });
       }
     }
   }

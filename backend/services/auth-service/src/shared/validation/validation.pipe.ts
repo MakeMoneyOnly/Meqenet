@@ -45,10 +45,8 @@ export class ZodValidationPipe implements PipeTransform {
 
       // Using Object.prototype.hasOwnProperty is safe here - controlled input from Zod
       if (!Object.prototype.hasOwnProperty.call(formattedErrors, path)) {
-        // eslint-disable-next-line security/detect-object-injection
         formattedErrors[path] = [];
       }
-      // eslint-disable-next-line security/detect-object-injection
       const pathErrors = formattedErrors[path];
       if (pathErrors) {
         pathErrors.push(message);

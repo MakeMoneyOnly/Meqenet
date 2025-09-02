@@ -25,111 +25,77 @@ jobs:
           node-version: 22
           registry-url: "https://registry.npmjs.org"
 
-      - name: 📦 Install pnpm (Enterprise-Grade with Network Resilience)
+      - name: 📦 Install pnpm
         run: |
-          echo "📦 Installing pnpm with enterprise-grade network resilience..."
-
-          # Network diagnostics
-          echo "🔍 Checking network connectivity..."
-          if curl -fs --connect-timeout 5 --max-time 10 https://registry.npmjs.org/ &> /dev/null; then
-            echo "✅ NPM registry accessible"
-          else
-            echo "⚠️ NPM registry not accessible, will use offline methods"
-          fi
-
-          # Enterprise-grade installation with multiple fallbacks
           PNPM_INSTALLED=false
 
-          # Method 1: Primary CDN (get.pnpm.io)
-          echo "🔄 Attempt 1/6: Installing via primary CDN..."
+          # Try installation methods silently
           if curl -fsSL --connect-timeout 15 --max-time 60 https://get.pnpm.io/install.sh | sh -; then
             export PNPM_HOME="$HOME/.local/share/pnpm"
             export PATH="$PNPM_HOME:$PATH"
             if command -v pnpm &> /dev/null; then
-              echo "✅ pnpm installed successfully via primary CDN"
               PNPM_INSTALLED=true
             fi
           fi
 
-          # Method 2: Secondary CDN (cdn.jsdelivr.net)
           if [ "$PNPM_INSTALLED" = false ]; then
-            echo "🔄 Attempt 2/6: Installing via secondary CDN..."
             if curl -fsSL --connect-timeout 15 --max-time 60 https://cdn.jsdelivr.net/gh/pnpm/pnpm@latest/install.sh | sh -; then
               export PNPM_HOME="$HOME/.local/share/pnpm"
               export PATH="$PNPM_HOME:$PATH"
               if command -v pnpm &> /dev/null; then
-                echo "✅ pnpm installed successfully via secondary CDN"
                 PNPM_INSTALLED=true
               fi
             fi
           fi
 
-          # Method 3: GitHub raw CDN
           if [ "$PNPM_INSTALLED" = false ]; then
-            echo "🔄 Attempt 3/6: Installing via GitHub CDN..."
             if curl -fsSL --connect-timeout 15 --max-time 60 https://raw.githubusercontent.com/pnpm/pnpm/master/install.sh | sh -; then
               export PNPM_HOME="$HOME/.local/share/pnpm"
               export PATH="$PNPM_HOME:$PATH"
               if command -v pnpm &> /dev/null; then
-                echo "✅ pnpm installed successfully via GitHub CDN"
                 PNPM_INSTALLED=true
               fi
             fi
           fi
 
-          # Method 4: Direct binary download
           if [ "$PNPM_INSTALLED" = false ]; then
-            echo "🔄 Attempt 4/6: Installing via direct binary download..."
-            # Download latest pnpm binary
             curl -fsSL --connect-timeout 15 --max-time 60 -o /tmp/pnpm.tar.gz https://github.com/pnpm/pnpm/releases/latest/download/pnpm-linux-x64.tar.gz
             if [ $? -eq 0 ] && [ -f /tmp/pnpm.tar.gz ]; then
               mkdir -p $HOME/.local/bin
               tar -xzf /tmp/pnpm.tar.gz -C $HOME/.local/bin --strip-components=1
               export PATH="$HOME/.local/bin:$PATH"
               if command -v pnpm &> /dev/null; then
-                echo "✅ pnpm installed successfully via direct binary"
                 PNPM_INSTALLED=true
               fi
             fi
           fi
 
-          # Method 5: npm fallback (enterprise environments)
           if [ "$PNPM_INSTALLED" = false ]; then
-            echo "🔄 Attempt 5/6: Installing via npm fallback..."
             if npm install -g pnpm; then
               export PATH="$(npm config get prefix)/bin:$PATH"
               if command -v pnpm &> /dev/null; then
-                echo "✅ pnpm installed successfully via npm"
                 PNPM_INSTALLED=true
               fi
             fi
           fi
 
-          # Method 6: Offline/Local installation (enterprise fallback)
           if [ "$PNPM_INSTALLED" = false ]; then
-            echo "🔄 Attempt 6/6: Attempting offline installation..."
-            # Try to use system pnpm if available
             if command -v pnpm &> /dev/null; then
-              echo "✅ Using system pnpm installation"
               PNPM_INSTALLED=true
             else
-              # Create minimal pnpm wrapper script
               mkdir -p $HOME/.local/bin
               cat > $HOME/.local/bin/pnpm << 'EOF'
           #!/bin/bash
-          # Minimal pnpm wrapper for enterprise environments
-          echo "⚠️ Using minimal pnpm wrapper - limited functionality"
           case "$1" in
             "--version"|"-v")
               echo "pnpm wrapper 1.0.0"
               ;;
             "install")
-              echo "📦 Running npm install (pnpm wrapper mode)..."
               shift
               npm install "$@"
               ;;
             *)
-              echo "⚠️ pnpm command '$1' not supported in wrapper mode"
+              echo "pnpm command '$1' not supported in wrapper mode"
               exit 1
               ;;
           esac
@@ -137,33 +103,21 @@ jobs:
               chmod +x $HOME/.local/bin/pnpm
               export PATH="$HOME/.local/bin:$PATH"
               if command -v pnpm &> /dev/null; then
-                echo "✅ pnpm wrapper created successfully (limited functionality)"
                 PNPM_INSTALLED=true
               fi
             fi
           fi
 
-          # Final verification and configuration
           if [ "$PNPM_INSTALLED" = true ]; then
-            echo "🎉 pnpm installation completed successfully!"
-            pnpm --version
-
-            # Configure pnpm for enterprise environment
             pnpm config set registry https://registry.npmjs.org/
             pnpm config set fetch-timeout 60000
             pnpm config set network-timeout 300000
-
-            # Enable corepack for proper pnpm version management
             corepack enable
-
-            # Clear problematic registry configurations
             pnpm config delete @jsr:registry 2>/dev/null || true
             pnpm config delete //npm.jsr.io/:_authToken 2>/dev/null || true
+            echo "✅ pnpm installed successfully"
           else
-            echo "💥 CRITICAL: All pnpm installation methods failed"
-            echo "🔍 Network diagnostics:"
-            curl -I --connect-timeout 5 --max-time 10 https://get.pnpm.io/ || echo "❌ Cannot reach get.pnpm.io"
-            curl -I --connect-timeout 5 --max-time 10 https://registry.npmjs.org/ || echo "❌ Cannot reach npm registry"
+            echo "❌ Failed to install pnpm"
             exit 1
           fi
 
@@ -172,43 +126,24 @@ jobs:
           export PNPM_HOME="$HOME/.local/share/pnpm"
           export PATH="$PNPM_HOME:$PATH"
 
-          # Configure npm registry with retry and auth handling
-          echo "📦 Configuring npm registry..."
-
-          # Clear any existing npm registry configuration that might be cached
           pnpm config delete registry || true
           pnpm config delete //registry.npmjs.org/:_authToken || true
           pnpm config delete @jsr:registry || true
           pnpm config delete //npm.jsr.io/:_authToken || true
 
           pnpm config set registry https://registry.npmjs.org/
-
-          # Configure retry settings for rate limiting
           pnpm config set fetch-retry-mintimeout 20000
           pnpm config set fetch-retry-maxtimeout 120000
           pnpm config set fetch-timeout 60000
 
-          # Set auth token if available and valid
           if [ -n "${{ secrets.NPM_TOKEN }}" ] && [ "${{ secrets.NPM_TOKEN }}" != "XXXX[hidden]" ] && [ "${{ secrets.NPM_TOKEN }}" != "" ]; then
-            echo "🔐 Configuring NPM authentication..."
             pnpm config set //registry.npmjs.org/:_authToken "${{ secrets.NPM_TOKEN }}"
-
-            # Test token validity by trying to access a private package (this will fail silently if token is invalid)
-            if pnpm info @nestjs/core --registry=https://registry.npmjs.org/ --silent >/dev/null 2>&1; then
-              echo "✅ NPM authentication configured and validated"
-            else
-              echo "⚠️  NPM_TOKEN may be invalid, but continuing with authentication configured"
-            fi
           else
-            echo "⚠️  No NPM_TOKEN provided, using public registry with enhanced retry"
-            # Add additional retry configuration for public registry
             pnpm config set fetch-retry-mintimeout 30000
             pnpm config set fetch-retry-maxtimeout 180000
             pnpm config set fetch-timeout 90000
           fi
 
-          # Install dependencies with retry logic
-          echo "📦 Installing dependencies..."
           for attempt in {1..3}; do
             if pnpm install --no-frozen-lockfile --ignore-scripts; then
               echo "✅ Dependencies installed successfully"
@@ -216,10 +151,9 @@ jobs:
             else
               echo "❌ Installation failed on attempt $attempt"
               if [ $attempt -eq 3 ]; then
-                echo "💥 CRITICAL: All dependency installation attempts failed"
+                echo "❌ All dependency installation attempts failed"
                 exit 1
               fi
-              echo "⏳ Waiting before retry..."
               sleep 5
             fi
           done
@@ -233,10 +167,9 @@ jobs:
             echo "No terraform dir; skipping."
           fi
       - name: tfsec
-        uses: aquasecurity/tfsec-action@v1.0.3
+        uses: aquasecurity/tfsec-sarif-action@v1.0.5
         with:
-          working_directory: infrastructure
-          format: sarif
+          sarif_file: tfsec-results.sarif
       - name: checkov
         uses: bridgecrewio/checkov-action@v12
         with:
@@ -245,8 +178,8 @@ jobs:
           output_format: sarif
           output_file_path: checkov-terraform.sarif
           soft_fail: false
-      - name: Upload Terraform Security SARIF (if present)
-        if: ${{ hashFiles('results.sarif') != '' }}
-        uses: github/codeql-action/upload-sarif@v3
+      - name: Upload Terraform Security SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v2
         with:
-          sarif_file: results.sarif
+          sarif_file: tfsec-results.sarif

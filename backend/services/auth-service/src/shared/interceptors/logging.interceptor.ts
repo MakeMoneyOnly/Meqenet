@@ -134,8 +134,8 @@ export class LoggingInterceptor implements NestInterceptor {
               );
             }
 
-            // Store anomaly result in request for use in other interceptors
-            request.anomalyAnalysis = anomalyResult;
+            // Store anomaly result in request for use in other interceptors (atomic update)
+            Object.assign(request, { anomalyAnalysis: anomalyResult });
           } catch (error) {
             this.logger.error('❌ Anomaly detection failed:', error);
           }

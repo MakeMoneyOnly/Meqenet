@@ -83,29 +83,39 @@ jobs:
             echo "⚠️ Pact Broker health check failed, but continuing with tests..."
           }
 
-      - name: Install Pact CLI
+      - name: Install Pact CLI Tools
         run: |
-          # Get the latest release version from GitHub API
-          PACT_VERSION=$(curl -s https://api.github.com/repos/pact-foundation/pact-ruby-standalone/releases/latest | grep '"tag_name"' | cut -d'"' -f4 | sed 's/^v//')
+          # Install Pact Ruby CLI
+          echo "📦 Installing Pact Ruby CLI..."
+          PACT_VERSION=$(curl -s https://api.github.com/repos/pact-foundation/pact-ruby-standalone/releases/latest | grep '"tag_name"' | cut -d'"' -f4 | sed 's/^v//' || echo "2.4.7")
 
-          if [ -z "$PACT_VERSION" ]; then
-            echo "❌ Failed to get latest Pact version from GitHub API"
-            # Fallback to a known working version
-            PACT_VERSION="2.4.7"
-            echo "🔄 Using fallback version: $PACT_VERSION"
-          else
-            echo "✅ Latest Pact CLI version: $PACT_VERSION"
-          fi
-
-          # Download and install Pact CLI
           echo "📥 Downloading Pact CLI v${PACT_VERSION}..."
           if curl -fsSL "https://github.com/pact-foundation/pact-ruby-standalone/releases/download/v${PACT_VERSION}/pact-${PACT_VERSION}-linux-x86_64.tar.gz" | tar xz; then
             sudo mv pact /usr/local/bin/
-            echo "✅ Pact CLI installed successfully"
+            echo "✅ Pact Ruby CLI installed successfully"
           else
-            echo "❌ Failed to download Pact CLI v${PACT_VERSION}"
+            echo "❌ Failed to download Pact Ruby CLI v${PACT_VERSION}"
             exit 1
           fi
+
+          # Install Pact Broker CLI
+          echo "📦 Installing Pact Broker CLI..."
+          PACT_BROKER_VERSION=$(curl -s https://api.github.com/repos/pact-foundation/pact_broker-client/releases/latest | grep '"tag_name"' | cut -d'"' -f4 | sed 's/^v//' || echo "0.2.0")
+
+          echo "📥 Downloading Pact Broker CLI v${PACT_BROKER_VERSION}..."
+          if curl -fsSL "https://github.com/pact-foundation/pact_broker-client/releases/download/v${PACT_BROKER_VERSION}/pact_broker-client-${PACT_BROKER_VERSION}-linux-x86_64.tar.gz" | tar xz; then
+            sudo mv pact_broker-client /usr/local/bin/pact-broker
+            chmod +x /usr/local/bin/pact-broker
+            echo "✅ Pact Broker CLI installed successfully"
+          else
+            echo "❌ Failed to download Pact Broker CLI v${PACT_BROKER_VERSION}"
+            exit 1
+          fi
+
+          # Verify installations
+          echo "🔍 Verifying installations..."
+          pact --version || echo "⚠️ Pact CLI version check failed"
+          pact-broker --version || echo "⚠️ Pact Broker CLI version check failed"
 
       - name: Run Contract Tests
         run: |

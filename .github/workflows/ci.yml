@@ -265,16 +265,37 @@ jobs:
           grep -n "android.permission" frontend/apps/app/android/app/src/main/AndroidManifest.xml || echo "No dangerous permissions found"
 
       - name: 🔍 Semgrep Security Analysis
-        uses: semgrep/semgrep-action@v1
-        with:
-          config: >-
-            p/ci
-            p/security-audit
-            p/secrets
-            p/supply-chain
-          generateSarif: 1
-          sarifOutput: semgrep-results.sarif
-          output: semgrep-results.json
+        run: |
+          echo "🔍 Running Semgrep security analysis..."
+
+          # Run Semgrep with modern command-line approach
+          if semgrep scan --sarif --output=semgrep-results.sarif \
+                         --config=p/ci \
+                         --config=p/security-audit \
+                         --config=p/secrets \
+                         --config=p/supply-chain; then
+            echo "✅ Semgrep security analysis completed successfully"
+
+            # Generate JSON output as well
+            semgrep scan --json --output=semgrep-results.json \
+                        --config=p/ci \
+                        --config=p/security-audit \
+                        --config=p/secrets \
+                        --config=p/supply-chain || true
+
+            # Check for blocking findings
+            BLOCKING=$(jq -r '.results.blocking_findings | length' semgrep-results.json 2>/dev/null || echo "0")
+            if [ "$BLOCKING" -gt 0 ]; then
+              echo "❌ Found $BLOCKING blocking security findings"
+              echo "📋 See semgrep-results.sarif for detailed findings"
+              exit 1
+            else
+              echo "✅ No blocking security findings detected"
+            fi
+          else
+            echo "❌ Semgrep security analysis failed"
+            exit 1
+          fi
 
       - name: 🚨 Upload Security Results
         uses: actions/upload-artifact@v4
@@ -824,13 +845,17 @@ jobs:
             fi
           fi
 
-          # Verify Prisma client was generated
-          if [ ! -f "node_modules/.prisma/client/index.d.ts" ]; then
+          # Verify Prisma client was generated (check both relative paths)
+          if [ ! -f "../../node_modules/.prisma/client/index.d.ts" ] && [ ! -f "../../../node_modules/.prisma/client/index.d.ts" ]; then
             echo "❌ Prisma client generation verification failed"
-            ls -la node_modules/.prisma/ 2>/dev/null || echo "Prisma client directory not found"
+            echo "Checking workspace root node_modules..."
+            ls -la ../../node_modules/.prisma/ 2>/dev/null || echo "Prisma client directory not found in workspace root"
+            echo "Checking auth-service node_modules..."
+            ls -la node_modules/.prisma/ 2>/dev/null || echo "Prisma client directory not found in auth-service"
             exit 1
           else
             echo "✅ Prisma client generated successfully"
+            echo "Client location: $(find ../../node_modules ../../../node_modules -name "index.d.ts" -path "*/.prisma/client/*" 2>/dev/null | head -1)"
           fi
 
       - name: 🧪 Run Unit Tests

@@ -1,6 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { PrismaClient, Prisma } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 
 import { MessagingProducerService } from '../../infrastructure/messaging/messaging.producer.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -10,12 +10,29 @@ export interface OutboxMessage {
   aggregateType: string;
   aggregateId: string;
   eventType: string;
-  payload: Prisma.JsonValue;
-  metadata?: Prisma.JsonValue;
+  payload: Record<string, unknown>;
+  metadata?: Record<string, unknown>;
 }
 
 // Type alias for Prisma outbox message
-type PrismaOutboxMessage = Prisma.OutboxMessageGetPayload<{}>;
+type PrismaOutboxMessage = {
+  id: string;
+  messageId: string;
+  aggregateType: string;
+  aggregateId: string;
+  eventType: string;
+  payload: Record<string, unknown>;
+  metadata?: Record<string, unknown>;
+  status: string;
+  retryCount: number;
+  maxRetries: number;
+  errorMessage?: string | null;
+  nextRetryAt?: Date | null;
+  createdAt: Date;
+  processedAt?: Date | null;
+  dlqAt?: Date | null;
+  dlqReason?: string | null;
+};
 
 export enum OutboxStatus {
   PENDING = 'PENDING',
@@ -111,8 +128,8 @@ export class OutboxService implements OnModuleInit {
       this.logger.debug(`Processing ${pendingMessages.length} outbox messages`);
 
       // Process messages in parallel with controlled concurrency
-      const processingPromises = pendingMessages.map(message =>
-        this.processMessage(message)
+      const processingPromises = pendingMessages.map(
+        (message: PrismaOutboxMessage) => this.processMessage(message)
       );
 
       await Promise.allSettled(processingPromises);
@@ -264,13 +281,30 @@ export class OutboxService implements OnModuleInit {
 
     return {
       pending:
-        stats.find(s => s.status === OutboxStatus.PENDING)?._count.id ?? 0,
+        stats.find(
+          (s: { status: string; _count: { id: number } }) =>
+            s.status === OutboxStatus.PENDING
+        )?._count.id ?? 0,
       processing:
-        stats.find(s => s.status === OutboxStatus.PROCESSING)?._count.id ?? 0,
+        stats.find(
+          (s: { status: string; _count: { id: number } }) =>
+            s.status === OutboxStatus.PROCESSING
+        )?._count.id ?? 0,
       processed:
-        stats.find(s => s.status === OutboxStatus.PROCESSED)?._count.id ?? 0,
-      failed: stats.find(s => s.status === OutboxStatus.FAILED)?._count.id ?? 0,
-      dlq: stats.find(s => s.status === OutboxStatus.DLQ)?._count.id ?? 0,
+        stats.find(
+          (s: { status: string; _count: { id: number } }) =>
+            s.status === OutboxStatus.PROCESSED
+        )?._count.id ?? 0,
+      failed:
+        stats.find(
+          (s: { status: string; _count: { id: number } }) =>
+            s.status === OutboxStatus.FAILED
+        )?._count.id ?? 0,
+      dlq:
+        stats.find(
+          (s: { status: string; _count: { id: number } }) =>
+            s.status === OutboxStatus.DLQ
+        )?._count.id ?? 0,
     };
   }
 
