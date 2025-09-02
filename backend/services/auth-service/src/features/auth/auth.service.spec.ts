@@ -99,13 +99,7 @@ describe('AuthService', () => {
       bcryptHashMock.mockResolvedValue('hashed-password');
 
       mockPrismaService.user.findUnique.mockResolvedValue(null);
-      mockPrismaService.$transaction.mockImplementation(async callback => {
-        return callback({
-          user: {
-            create: vi.fn().mockResolvedValue(mockUser),
-          },
-        });
-      });
+      mockPrismaService.user.create.mockResolvedValue(mockUser);
       mockJwtService.sign.mockReturnValue('jwt-token');
 
       const result = await service.register(registerUserDto);
@@ -154,9 +148,7 @@ describe('AuthService', () => {
       const mockUser = {
         id: 'user-id',
         email: 'test@example.com',
-        credential: {
-          hashedPassword: '$2b$10$hashedpassword',
-        },
+        passwordHash: '$2b$10$hashedpassword',
         createdAt: new Date(),
       };
 
@@ -176,7 +168,7 @@ describe('AuthService', () => {
       expect(mockJwtService.sign).toHaveBeenCalled();
       expect(bcryptCompareMock).toHaveBeenCalledWith(
         loginUserDto.password,
-        mockUser.credential.hashedPassword
+        mockUser.passwordHash
       );
     });
 
@@ -189,9 +181,7 @@ describe('AuthService', () => {
       const mockUser = {
         id: 'user-id',
         email: 'test@example.com',
-        credential: {
-          hashedPassword: '$2b$10$hashedpassword',
-        },
+        passwordHash: '$2b$10$hashedpassword',
         createdAt: new Date(),
       };
 
@@ -206,7 +196,7 @@ describe('AuthService', () => {
       );
       expect(bcryptCompareMock).toHaveBeenCalledWith(
         loginUserDto.password,
-        mockUser.credential.hashedPassword
+        mockUser.passwordHash
       );
     });
   });
