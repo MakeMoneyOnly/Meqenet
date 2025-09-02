@@ -455,7 +455,7 @@ describe('GlobalExceptionFilter', () => {
       const duration = endTime - startTime;
 
       // Should handle multiple errors within reasonable time (< 100ms)
-      expect(duration).toBeLessThan(100);  
+      expect(duration).toBeLessThan(100);
     });
 
     it('should include performance metrics in error logs', () => {
