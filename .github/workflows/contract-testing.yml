@@ -133,20 +133,31 @@ jobs:
             echo "✅ Pact CLI installed via Docker extraction"
           fi
 
-          # Install pact_broker-client Ruby gem as a more reliable alternative
-          echo "📦 Installing Pact Broker Client..."
+          # Install pact_broker-client Ruby gem if needed
+          echo "📦 Checking Pact Broker Client installation..."
 
-          # Install Ruby if not present
-          if ! command -v ruby &> /dev/null; then
-            echo "📥 Installing Ruby..."
-            sudo apt-get update
-            sudo apt-get install -y ruby-full
+          # Check if pact-broker command already exists from Pact Ruby Standalone
+          if command -v pact-broker &> /dev/null; then
+            echo "✅ Pact Broker command already available from Pact Ruby Standalone"
+            pact-broker version || echo "✅ Using existing Pact Broker CLI"
+          else
+            echo "📦 Installing Pact Broker Client gem..."
+            
+            # Install Ruby if not present
+            if ! command -v ruby &> /dev/null; then
+              echo "📥 Installing Ruby..."
+              sudo apt-get update
+              sudo apt-get install -y ruby-full
+            fi
+
+            # Try to install the pact_broker-client gem
+            # Use --force to overwrite any existing files if necessary
+            if sudo gem install pact_broker-client --no-document --force 2>/dev/null; then
+              echo "✅ Pact Broker Client gem installed successfully"
+            else
+              echo "⚠️ Could not install pact_broker-client gem, but continuing with existing binaries"
+            fi
           fi
-
-          # Install the pact_broker-client gem
-          sudo gem install pact_broker-client --no-document
-
-          echo "✅ Pact Broker Client installed successfully"
 
           # Verify installations
           echo "🔍 Verifying installations..."
@@ -234,15 +245,48 @@ jobs:
 
       - name: Install Pact Broker Client
         run: |
-          # Install Ruby and pact_broker-client gem
-          echo "📦 Installing Pact Broker Client..."
-          sudo apt-get update
-          sudo apt-get install -y ruby-full
-          sudo gem install pact_broker-client --no-document
-          echo "✅ Pact Broker Client installed successfully"
+          echo "📦 Setting up Pact Broker Client..."
+          
+          # First, try to install Pact Ruby Standalone for the pact-broker command
+          PACT_VERSION="2.0.10"
+          echo "📥 Installing Pact Ruby Standalone v${PACT_VERSION}..."
+          
+          DOWNLOAD_URL="https://github.com/pact-foundation/pact-ruby-standalone/releases/download/v${PACT_VERSION}/pact-${PACT_VERSION}-linux-x86_64.tar.gz"
+          
+          if curl -fsSL "$DOWNLOAD_URL" -o pact.tar.gz; then
+            tar xzf pact.tar.gz
+            sudo cp -r pact/bin/* /usr/local/bin/
+            sudo cp -r pact/lib /usr/local/
+            rm -rf pact pact.tar.gz
+            echo "✅ Pact Ruby Standalone installed successfully"
+          else
+            # Fallback: Install Ruby and try gem installation with force flag
+            echo "⚠️ Could not download Pact Ruby Standalone, trying gem installation..."
+            
+            if ! command -v ruby &> /dev/null; then
+              echo "📥 Installing Ruby..."
+              sudo apt-get update
+              sudo apt-get install -y ruby-full
+            fi
+            
+            # Remove any existing pact-broker binary to avoid conflicts
+            if [ -f "/usr/local/bin/pact-broker" ]; then
+              echo "⚠️ Removing existing pact-broker binary to avoid conflicts..."
+              sudo rm -f /usr/local/bin/pact-broker
+            fi
+            
+            # Install with force flag to handle any remaining conflicts
+            sudo gem install pact_broker-client --no-document --force
+            echo "✅ Pact Broker Client gem installed"
+          fi
 
           # Verify installation
-          pact-broker version || echo "✅ Pact Broker CLI is available"
+          if command -v pact-broker &> /dev/null; then
+            pact-broker version || echo "✅ Pact Broker CLI is available"
+          else
+            echo "❌ Pact Broker CLI installation failed"
+            exit 1
+          fi
 
       - name: Verify Provider Contracts
         run: |
