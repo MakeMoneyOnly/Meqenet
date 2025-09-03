@@ -1589,6 +1589,14 @@ jobs:
         run: |
           # Ensure React Native Android dependencies are available
           echo "Checking React Native Android setup..."
+          
+          # Ensure the React Native gradle plugin is available
+          if [ ! -d "../../node_modules/@react-native/gradle-plugin" ]; then
+            echo "⚠️  React Native gradle plugin not found, installing dependencies in frontend..."
+            cd ../../ && export PNPM_HOME="$HOME/.local/share/pnpm" && export PATH="$PNPM_HOME:$PATH" && pnpm install --filter frontend --ignore-scripts
+            echo "✅ Frontend dependencies installed"
+          fi
+          
           if [ ! -d "../../node_modules/react-native/ReactAndroid" ]; then
             echo "⚠️  React Native Android directory not found, reinstalling React Native..."
             cd ../../ && export PNPM_HOME="$HOME/.local/share/pnpm" && export PATH="$PNPM_HOME:$PATH" && pnpm install react-native --ignore-scripts -w
@@ -1604,6 +1612,13 @@ jobs:
             echo "android.useAndroidX=true" >> ../../node_modules/react-native/ReactAndroid/gradle.properties
             echo "android.enableJetifier=true" >> ../../node_modules/react-native/ReactAndroid/gradle.properties
             echo "✅ Created minimal React Native Android gradle.properties"
+          fi
+          
+          # Verify the gradle plugin is available
+          if [ -d "../../node_modules/@react-native/gradle-plugin" ]; then
+            echo "✅ React Native gradle plugin found at: $(pwd)/../../node_modules/@react-native/gradle-plugin"
+          else
+            echo "❌ React Native gradle plugin still missing"
           fi
 
       - name: 🔧 Setup Java
