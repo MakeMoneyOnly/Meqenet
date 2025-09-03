@@ -85,6 +85,7 @@
     "@faker-js/faker": "^10.0.0",
     "@grpc/grpc-js": "^1.13.4",
     "@grpc/proto-loader": "^0.8.0",
+    "@nest-lab/throttler-storage-redis": "^1.1.0",
     "@nestjs/axios": "^4.0.1",
     "@nestjs/common": "^11.1.6",
     "@nestjs/config": "^4.0.2",
@@ -98,7 +99,6 @@
     "@nestjs/swagger": "^11.2.0",
     "@nestjs/terminus": "^11.0.0",
     "@nestjs/throttler": "^6.4.0",
-    "@nest-lab/throttler-storage-redis": "^1.1.0",
     "@nestjs/typeorm": "^11.0.0",
     "@nestjs/websockets": "^11.1.6",
     "@opentelemetry/api": "1.9.0",
@@ -175,6 +175,7 @@
     "eslint": "^8.57.0",
     "eslint-import-resolver-node": "^0.3.9",
     "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-jsx-a11y": "6.10.1",
     "eslint-plugin-react": "^7.35.0",
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-security": "^3.0.1",
@@ -206,6 +207,7 @@
     "typescript": "~5.9.2",
     "vite": "^5.4.19",
     "vitest": "^3.2.4",
+    "webpack": "^5.101.3",
     "webpack-cli": "^6.0.1"
   },
   "repository": {

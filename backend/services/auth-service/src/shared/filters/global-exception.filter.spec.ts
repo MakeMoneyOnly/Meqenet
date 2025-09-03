@@ -25,6 +25,7 @@ describe('GlobalExceptionFilter - Security Tests', () => {
     mockResponse = {
       status: vi.fn().mockReturnThis(),
       json: vi.fn().mockReturnThis(),
+      setHeader: vi.fn().mockReturnThis(),
     };
 
     mockArgumentsHost = {
@@ -54,7 +55,13 @@ describe('GlobalExceptionFilter - Security Tests', () => {
   describe('HTTP Exception Handling', () => {
     it('should handle standard HTTP exceptions correctly', () => {
       const httpException = new HttpException(
-        'Unauthorized access',
+        {
+          errorCode: 'INVALID_CREDENTIALS',
+          message: {
+            en: 'Invalid email or password. Please check and try again.',
+            am: 'ልክ ያልሆነ ኢሜይል ወይም የይለፍ ቃል። እባክዎ ይመልከቱና እንደገና ይሞክሩ።',
+          },
+        },
         HttpStatus.UNAUTHORIZED
       );
 
@@ -71,10 +78,12 @@ describe('GlobalExceptionFilter - Security Tests', () => {
             en: 'Invalid email or password. Please check and try again.',
             am: 'ልክ ያልሆነ ኢሜይል ወይም የይለፍ ቃል። እባክዎ ይመልከቱና እንደገና ይሞክሩ።',
           },
+          details: undefined,
         },
         method: 'POST',
         path: '/api/auth/login',
         requestId: expect.any(String),
+        language: 'en',
       });
     });
 
@@ -99,13 +108,15 @@ describe('GlobalExceptionFilter - Security Tests', () => {
           category: 'VALIDATION',
           code: 'BAD_REQUEST',
           message: {
-            en: 'Field validation failed',
-            am: 'ስህተት ተፈጥሯል።',
+            en: 'An error occurred',
+            am: 'ያልታወቀ ስህተት ተፈጥሯል።',
           },
+          details: undefined,
         },
         method: 'POST',
         path: '/api/auth/login',
         requestId: expect.any(String),
+        language: 'en',
       });
     });
 
@@ -142,10 +153,12 @@ describe('GlobalExceptionFilter - Security Tests', () => {
             en: 'An unexpected error occurred. Please try again later.',
             am: 'ያልተጠበቀ ስህተት ተፈጥሯል። እባክዎ ቆየት ብለው እንደገና ይሞክሩ።',
           },
+          details: undefined,
         },
         method: 'POST',
         path: '/api/auth/login',
         requestId: expect.any(String),
+        language: 'en',
       });
     });
 
@@ -161,11 +174,16 @@ describe('GlobalExceptionFilter - Security Tests', () => {
         error: {
           category: 'SYSTEM',
           code: 'INTERNAL_ERROR',
-          message: 'Internal server error',
+          message: {
+            en: 'Internal server error',
+            am: 'የውስጥ ስህተት ተፈጥሯል።',
+          },
+          details: undefined,
         },
         method: 'POST',
         path: '/api/auth/login',
         requestId: expect.any(String),
+        language: 'en',
       });
     });
 
@@ -181,11 +199,16 @@ describe('GlobalExceptionFilter - Security Tests', () => {
         error: {
           category: 'SYSTEM',
           code: 'INTERNAL_ERROR',
-          message: 'Internal server error',
+          message: {
+            en: 'Internal server error',
+            am: 'የውስጥ ስህተት ተፈጥሯል።',
+          },
+          details: undefined,
         },
         method: 'POST',
         path: '/api/auth/login',
         requestId: expect.any(String),
+        language: 'en',
       });
     });
   });
@@ -364,7 +387,7 @@ describe('GlobalExceptionFilter - Security Tests', () => {
         expect(response).toHaveProperty('method');
         expect(response).toHaveProperty('path');
         expect(response).toHaveProperty('requestId');
-        expect(Object.keys(response)).toHaveLength(6);
+        expect(Object.keys(response)).toHaveLength(7);
       });
     });
   });

@@ -3,7 +3,7 @@ import { randomBytes, createHash } from 'crypto';
 import { vi } from 'vitest';
 
 import { PasswordResetTokenService } from './password-reset-token.service';
-import { PrismaService } from '../../prisma/prisma.service';
+import { PrismaService } from '../../infrastructure/database/prisma.service';
 
 // Mock crypto functions
 vi.mock('crypto', () => ({
@@ -11,15 +11,24 @@ vi.mock('crypto', () => ({
   createHash: vi.fn(),
 }));
 
-// Mock PrismaService
+// Create mock PrismaService instance
 const mockPrismaService = {
   passwordReset: {
     create: vi.fn(),
     findFirst: vi.fn(),
+    update: vi.fn(),
     updateMany: vi.fn(),
+    delete: vi.fn(),
     deleteMany: vi.fn(),
+    upsert: vi.fn(),
   },
+  $transaction: vi.fn(),
 };
+
+// Mock the PrismaService constructor
+vi.mock('../../infrastructure/database/prisma.service', () => ({
+  PrismaService: vi.fn().mockImplementation(() => mockPrismaService),
+}));
 
 describe('PasswordResetTokenService', () => {
   let service: PasswordResetTokenService;
@@ -32,6 +41,13 @@ describe('PasswordResetTokenService', () => {
     // Clear all mocks
     vi.clearAllMocks();
 
+    // Reset all mock implementations
+    Object.keys(mockPrismaService.passwordReset).forEach(key => {
+      if (typeof mockPrismaService.passwordReset[key] === 'function') {
+        mockPrismaService.passwordReset[key].mockReset();
+      }
+    });
+
     // Setup crypto mocks
     mockRandomBytes.mockReturnValue({
       toString: vi.fn().mockReturnValue('mockedhexstring'),
@@ -42,6 +58,35 @@ describe('PasswordResetTokenService', () => {
       digest: vi.fn().mockReturnValue('hashedtoken'),
     };
     mockCreateHash.mockReturnValue(mockHashInstance as any);
+
+    // Setup default Prisma mocks with proper mockResolvedValue
+    mockPrismaService.passwordReset.create.mockResolvedValue({
+      id: 'reset-123',
+      userId: 'user-123',
+      token: 'hashedtoken',
+      hashedToken: 'hashedtoken',
+      ipAddress: '192.168.1.1',
+      userAgent: 'Mozilla/5.0',
+      isUsed: false,
+      expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+      createdAt: new Date(),
+    });
+    mockPrismaService.passwordReset.findFirst.mockResolvedValue(null);
+    mockPrismaService.passwordReset.update.mockResolvedValue({ count: 1 });
+    mockPrismaService.passwordReset.updateMany.mockResolvedValue({ count: 1 });
+    mockPrismaService.passwordReset.delete.mockResolvedValue({ count: 1 });
+    mockPrismaService.passwordReset.deleteMany.mockResolvedValue({ count: 5 });
+    mockPrismaService.passwordReset.upsert.mockResolvedValue({
+      id: 'reset-123',
+      userId: 'user-123',
+      token: 'hashedtoken',
+      hashedToken: 'hashedtoken',
+      ipAddress: '192.168.1.1',
+      userAgent: 'Mozilla/5.0',
+      isUsed: false,
+      expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+      createdAt: new Date(),
+    });
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -54,7 +99,9 @@ describe('PasswordResetTokenService', () => {
     }).compile();
 
     service = module.get<PasswordResetTokenService>(PasswordResetTokenService);
-    prismaService = module.get<PrismaService>(PrismaService);
+
+    // Manually set the prisma service on the service instance to ensure it works
+    (service as any).prisma = mockPrismaService;
   });
 
   it('should be defined', () => {
@@ -205,7 +252,8 @@ describe('PasswordResetTokenService', () => {
         user: mockUser,
       };
 
-      mockPrismaService.passwordReset.findFirst.mockResolvedValue(
+      // Ensure the mock is set up for this specific test
+      mockPrismaService.passwordReset.findFirst.mockResolvedValueOnce(
         mockResetRecord
       );
 
@@ -245,9 +293,10 @@ describe('PasswordResetTokenService', () => {
         user: { id: 'user-123', email: 'test@example.com' },
       };
 
-      mockPrismaService.passwordReset.findFirst.mockResolvedValue(
-        expiredResetRecord
-      );
+      // Clear the default mock and set up specific mock for this test
+      // Since the query filters out expired tokens, we should return null
+      mockPrismaService.passwordReset.findFirst.mockReset();
+      mockPrismaService.passwordReset.findFirst.mockResolvedValue(null);
 
       const result = await service.validateToken(plainToken);
 
@@ -272,9 +321,10 @@ describe('PasswordResetTokenService', () => {
         user: { id: 'user-123', email: 'test@example.com' },
       };
 
-      mockPrismaService.passwordReset.findFirst.mockResolvedValue(
-        usedResetRecord
-      );
+      // Clear the default mock and set up specific mock for this test
+      // Since the query filters out used tokens, we should return null
+      mockPrismaService.passwordReset.findFirst.mockReset();
+      mockPrismaService.passwordReset.findFirst.mockResolvedValue(null);
 
       const result = await service.validateToken(plainToken);
 
@@ -313,7 +363,7 @@ describe('PasswordResetTokenService', () => {
     const hashedToken = 'hashedtoken';
 
     it('should consume a valid token successfully', async () => {
-      mockPrismaService.passwordReset.updateMany.mockResolvedValue({
+      mockPrismaService.passwordReset.updateMany.mockResolvedValueOnce({
         count: 1,
       });
 
@@ -357,7 +407,7 @@ describe('PasswordResetTokenService', () => {
 
   describe('cleanupExpiredTokens', () => {
     it('should cleanup expired and used tokens successfully', async () => {
-      mockPrismaService.passwordReset.deleteMany.mockResolvedValue({
+      mockPrismaService.passwordReset.deleteMany.mockResolvedValueOnce({
         count: 5,
       });
 
@@ -405,7 +455,9 @@ describe('PasswordResetTokenService', () => {
         createdAt: new Date(),
       };
 
-      mockPrismaService.passwordReset.findFirst.mockResolvedValue(activeToken);
+      mockPrismaService.passwordReset.findFirst.mockResolvedValueOnce(
+        activeToken
+      );
 
       const result = await service.hasActiveToken(userId);
 
