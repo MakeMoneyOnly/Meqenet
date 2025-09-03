@@ -71,20 +71,26 @@ async function bootstrap(): Promise<void> {
     const http = app.getHttpAdapter().getInstance();
     http.disable('x-powered-by');
 
+    // Security: derive Helmet options from security config
+    const hstsMaxAge = configService.get<number>('security.hstsMaxAge', 31536000);
+    const cspDefault = configService.get<string>('security.csp.defaultSrc', "'self'");
+    const cspScript = configService.get<string>('security.csp.scriptSrc', "'self'");
+    const cspStyle = configService.get<string>('security.csp.styleSrc', "'self' 'unsafe-inline'");
+
     // Security middleware - central Helmet configuration
     app.use(
       helmet({
         hsts: {
-          maxAge: 31536000,
+          maxAge: hstsMaxAge,
           includeSubDomains: true,
           preload: false,
         },
         contentSecurityPolicy: {
           useDefaults: true,
           directives: {
-            defaultSrc: ["'self'"],
-            scriptSrc: ["'self'"],
-            styleSrc: ["'self'", "'unsafe-inline'"],
+            defaultSrc: [cspDefault],
+            scriptSrc: [cspScript],
+            styleSrc: [cspStyle],
             imgSrc: ["'self'", 'data:'],
             connectSrc: ["'self'"],
           },
@@ -138,23 +144,19 @@ async function bootstrap(): Promise<void> {
     // Global latency metrics interceptor
     app.useGlobalInterceptors(new LatencyMetricsInterceptor());
 
-    // Centralized CORS configuration
-    const corsOriginsEnv =
-      configService.get<string>('CORS_ORIGINS') ||
-      'https://nbe.gov.et,https://cbe.com.et,https://meqenet.et';
-    const allowedOrigins = corsOriginsEnv
-      .split(',')
-      .map(o => o.trim())
-      .filter(Boolean);
+    // CORS from config
+    const corsOrigins = configService.get<string[]>('cors.origins', []);
+    const corsCredentials = configService.get<boolean>('cors.credentials', true);
 
+    // Centralized CORS configuration
     app.enableCors({
       origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin)) {
+        if (!origin || corsOrigins.includes(origin)) {
           return callback(null, true);
         }
         return callback(new Error('CORS blocked'));
       },
-      credentials: true,
+      credentials: corsCredentials,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
       allowedHeaders: [
         'Content-Type',
