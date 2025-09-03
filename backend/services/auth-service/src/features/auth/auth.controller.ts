@@ -11,6 +11,7 @@ import {
 import { AuthService } from './auth.service';
 import { LoginUserDto } from './dto/login-user.dto';
 import { RegisterUserDto } from './dto/register-user.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { GlobalExceptionFilter } from '../../shared/filters/global-exception.filter';
 
 @Controller('auth')
@@ -42,5 +43,17 @@ export class AuthController {
 
     // Pass language context to service if needed
     return this.authService.login(loginUserDto, { language });
+  }
+
+  @Post('refresh')
+  @HttpCode(HttpStatus.OK)
+  async refresh(
+    @Body() refreshTokenDto: RefreshTokenDto,
+    @Headers('accept-language') acceptLanguage?: string
+  ): Promise<{ accessToken: string }> {
+    // Placeholder for future secure refresh token rotation
+    // For compliance, we do not echo tokens or sensitive data
+    const language = acceptLanguage?.includes('am') ? 'am' : 'en';
+    return this.authService.refresh(refreshTokenDto, { language });
   }
 }

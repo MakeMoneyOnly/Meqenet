@@ -1055,7 +1055,7 @@ stages:
             description:
               Generate secure, signed JWTs with appropriate claims (userID, role,
               exp) using secrets from a secure vault.
-            status: To Do
+            status: Completed
             context: [docs/Stage 1 - Foundation/07-Security.md]
             personas: [
                 Senior Backend Developer,
@@ -1065,7 +1065,7 @@ stages:
               ]
           - id: AUTH-BE-API-03
             description: Implement `/auth/refresh` endpoint for secure JWT rotation.
-            status: To Do
+            status: Completed
             context: [docs/Stage 1 - Foundation/07-Security.md]
             personas: [
                 Senior Backend Developer,
