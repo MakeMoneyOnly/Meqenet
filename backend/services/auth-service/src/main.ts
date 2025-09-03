@@ -13,6 +13,7 @@ import { AppModule } from './app/app.module';
 import { initializeOpenTelemetry } from './shared/observability/otel';
 import { GlobalExceptionFilter } from './shared/filters/global-exception.filter';
 import { LatencyMetricsInterceptor } from './shared/interceptors/latency-metrics.interceptor';
+import { AccessLogMiddleware } from './shared/middleware/access-log.middleware';
 
 const DEFAULT_PORT = 3001;
 const DEFAULT_GRPC_URL = 'localhost:5000';
@@ -52,11 +53,9 @@ async function bootstrap(): Promise<void> {
       const incoming = req.headers['x-request-id'] as string | undefined;
       const requestId = incoming || randomUUID();
       res.setHeader('X-Request-ID', requestId);
-      // Create a span context scope if none
       const tracer = otTrace.getTracer('meqenet-auth');
       const span: Span = tracer.startSpan('http.request', { kind: SpanKind.SERVER });
       const ctx = otTrace.setSpan(otContext.active() || ROOT_CONTEXT, span);
-      // Attach requestId on response finish and end span
       res.on('finish', () => {
         span.setAttribute('http.request_id', requestId);
         span.setAttribute('http.status_code', res.statusCode);
@@ -64,6 +63,9 @@ async function bootstrap(): Promise<void> {
       });
       otContext.with(ctx, next);
     });
+
+    // Access log middleware with sampling
+    app.use(new AccessLogMiddleware(configService).use.bind(new AccessLogMiddleware(configService)));
 
     // Express hardening
     const http = app.getHttpAdapter().getInstance();
@@ -147,7 +149,6 @@ async function bootstrap(): Promise<void> {
 
     app.enableCors({
       origin: (origin, callback) => {
-        // Allow no origin (e.g., curl) and explicit allowlist
         if (!origin || allowedOrigins.includes(origin)) {
           return callback(null, true);
         }
@@ -159,7 +160,7 @@ async function bootstrap(): Promise<void> {
         'Content-Type',
         'Authorization',
         'Accept',
-        'Accept-Language', // Bilingual support
+        'Accept-Language',
         'X-Request-ID',
       ],
       exposedHeaders: ['X-Request-ID'],
@@ -167,7 +168,6 @@ async function bootstrap(): Promise<void> {
       optionsSuccessStatus: 204,
     });
 
-    // Add Vary: Origin for CORS cache correctness
     app.use((req, res, next) => {
       res.vary('Origin');
       next();
@@ -187,7 +187,6 @@ async function bootstrap(): Promise<void> {
 
     const grpcUrl = configService.get<string>('GRPC_URL') ?? DEFAULT_GRPC_URL;
 
-    // Connect the gRPC microservice
     app.connectMicroservice<MicroserviceOptions>({
       transport: Transport.GRPC,
       options: {

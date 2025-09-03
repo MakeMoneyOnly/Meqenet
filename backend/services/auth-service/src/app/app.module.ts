@@ -18,6 +18,10 @@ import { JwksModule } from '../features/jwks/jwks.module';
 import { HealthModule } from '../health/health.module';
 import { DatabaseModule } from '../infrastructure/database/database.module';
 import { MessagingModule } from '../infrastructure/messaging/messaging.module';
+import appConfig from '../shared/config/app.config';
+import corsConfig from '../shared/config/cors.config';
+import securityConfig from '../shared/config/security.config';
+import loggerConfig from '../shared/config/logger.config';
 import { pinoConfig } from '../shared/config/pino.config';
 import { throttlerConfig } from '../shared/config/throttler.config';
 import { DLQModule } from '../shared/dlq/dlq.module';
@@ -45,6 +49,7 @@ const REDIS_CONFIG = {
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: ['.env.local', '.env'],
+      load: [appConfig, corsConfig, securityConfig, loggerConfig],
     }),
     CacheModule.registerAsync<RedisClientOptions>({
       isGlobal: true,
