@@ -9,6 +9,7 @@ import { AIFraudDetectionController } from './controllers/ai-fraud-detection.con
 import { CredentialManagementController } from './controllers/credential-management.controller';
 import { JWKSController } from './controllers/jwks.controller';
 import { MetricsController } from './controllers/metrics.controller';
+import { DiagnosticsController } from './controllers/diagnostics.controller';
 import { AdaptiveRateLimitingService } from './services/adaptive-rate-limiting.service';
 import { AIFraudDetectionService } from './services/ai-fraud-detection.service';
 import { AnomalyDetectionService } from './services/anomaly-detection.service';
@@ -37,6 +38,7 @@ import { FaydaEncryptionUtil } from './utils/fayda-encryption.util';
     JWKSController,
     CredentialManagementController,
     MetricsController,
+    DiagnosticsController,
   ],
   providers: [
     SecurityConfigService,
