@@ -920,7 +920,15 @@ stages:
             description:
               "[Docs/DevEx] Create and maintain Postman collections for all public-facing
               APIs, including environment setups for local and staging."
-            status: To Do
+            status: Completed
+            completed_date: "2024-01-02"
+            deliverables:
+              [
+                backend/docs/postman/Meqenet-API-Collection.postman_collection.json,
+                backend/docs/postman/Meqenet-Local.postman_environment.json,
+                backend/docs/postman/Meqenet-Staging.postman_environment.json,
+                backend/docs/postman/README.md
+              ]
             context:
               [docs/Stage 2 -Development/19-API_Documentation_Strategy.md]
             personas:
@@ -933,7 +941,18 @@ stages:
             description:
               "[Docs/DevEx] Generate and publish code examples for API usage
               in key languages (JavaScript, Python) alongside API documentation."
-            status: To Do
+            status: Completed
+            completed_date: "2024-01-02"
+            deliverables:
+              [
+                backend/docs/examples/javascript/authentication.js,
+                backend/docs/examples/javascript/payments.js,
+                backend/docs/examples/javascript/meqenet-client.js,
+                backend/docs/examples/python/authentication.py,
+                backend/docs/examples/python/meqenet_client.py,
+                backend/docs/examples/javascript/README.md,
+                backend/docs/examples/python/README.md
+              ]
             context:
               [docs/Stage 2 -Development/19-API_Documentation_Strategy.md]
             personas:
@@ -944,7 +963,16 @@ stages:
               ]
           - id: FND-BE-I18N-01
             description: "[BE/i18n] Wire bilingual (Amharic/English) error responses across backend controllers and DTO validation messages."
-            status: To Do
+            status: Completed
+            completed_date: "2024-01-02"
+            deliverables:
+              [
+                backend/services/auth-service/src/shared/i18n/error-messages.ts,
+                backend/services/auth-service/src/shared/filters/global-exception.filter.ts,
+                backend/services/auth-service/docs/I18N_ERROR_HANDLING.md,
+                backend/services/auth-service/src/features/auth/dto/register-user.dto.ts,
+                backend/services/auth-service/src/features/auth/dto/login-user.dto.ts
+              ]
             context: [docs/Stage 2 -Development/20-Error_Handling.md]
             personas: [Senior Backend Developer, UX Designer]
 

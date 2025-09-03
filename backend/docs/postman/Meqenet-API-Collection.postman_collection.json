@@ -1,0 +1,587 @@
+{
+  "info": {
+    "name": "Meqenet 2.0 BNPL Platform API",
+    "description": "Complete API collection for Meqenet 2.0 financial super-app. This collection includes all platform features including authentication, payments, merchant marketplace, rewards, and financial management tools.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Set request ID for NBE compliance tracking",
+          "pm.variables.set('requestId', pm.variables.replaceIn('{{$guid}}'));",
+          "",
+          "// Set timestamp",
+          "pm.variables.set('timestamp', new Date().toISOString());",
+          "",
+          "// Set preferred language header (en or am)",
+          "pm.request.headers.add({",
+          "    key: 'Accept-Language',",
+          "    value: pm.environment.get('language') || 'en'",
+          "});"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global test for response time",
+          "pm.test('Response time is less than 2000ms', function () {",
+          "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+          "});",
+          "",
+          "// Check for NBE compliance requestId",
+          "pm.test('Response has requestId for NBE compliance', function () {",
+          "    if (pm.response.code >= 400) {",
+          "        pm.expect(pm.response.json()).to.have.property('requestId');",
+          "    }",
+          "});"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "description": "User authentication, registration, and session management endpoints",
+      "item": [
+        {
+          "name": "Register User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Response has access token', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('accessToken');",
+                  "});",
+                  "",
+                  "// Save tokens for subsequent requests",
+                  "if (pm.response.code === 201) {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.environment.set('access_token', jsonData.accessToken);",
+                  "    if (jsonData.refreshToken) {",
+                  "        pm.environment.set('refresh_token', jsonData.refreshToken);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Generate random test data for Ethiopian user",
+                  "const phoneNumber = '+2519' + Math.floor(Math.random() * 100000000).toString().padStart(8, '0');",
+                  "const faydaId = Math.floor(Math.random() * 1000000000000).toString().padStart(12, '0');",
+                  "",
+                  "pm.variables.set('test_phone', phoneNumber);",
+                  "pm.variables.set('test_fayda_id', faydaId);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-ID",
+                "value": "{{requestId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"phone\": \"{{test_phone}}\",\n    \"password\": \"SecureP@ssw0rd123!\",\n    \"faydaId\": \"{{test_fayda_id}}\",\n    \"email\": \"user{{$randomInt}}@example.com\",\n    \"firstName\": \"Test\",\n    \"lastName\": \"User\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            },
+            "description": "Register a new consumer using their phone number and Fayda National ID verification."
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has authentication tokens', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('accessToken');",
+                  "});",
+                  "",
+                  "// Save tokens for subsequent requests",
+                  "if (pm.response.code === 200) {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.environment.set('access_token', jsonData.accessToken);",
+                  "    if (jsonData.refreshToken) {",
+                  "        pm.environment.set('refresh_token', jsonData.refreshToken);",
+                  "    }",
+                  "    if (jsonData.user) {",
+                  "        pm.environment.set('user_id', jsonData.user.id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Request-ID",
+                "value": "{{requestId}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"{{test_email}}\",\n    \"password\": \"{{test_password}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Authenticate a user with their credentials and receive JWT tokens."
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has new access token', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('accessToken');",
+                  "});",
+                  "",
+                  "// Update access token",
+                  "if (pm.response.code === 200) {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.environment.set('access_token', jsonData.accessToken);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"refreshToken\": \"{{refresh_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/token/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "token", "refresh"]
+            },
+            "description": "Obtain a new JWT access token using a valid refresh token."
+          }
+        },
+        {
+          "name": "Password Reset Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"{{test_email}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/password-reset-request",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "password-reset-request"]
+            },
+            "description": "Request a password reset token to be sent to the user's registered email."
+          }
+        },
+        {
+          "name": "Password Reset Confirm",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"token\": \"{{reset_token}}\",\n    \"newPassword\": \"NewSecureP@ssw0rd456!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/password-reset-confirm",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "password-reset-confirm"]
+            },
+            "description": "Confirm password reset using the token received via email."
+          }
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/me",
+              "host": ["{{base_url}}"],
+              "path": ["users", "me"]
+            },
+            "description": "Fetch the current authenticated user's profile information."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Payments",
+      "description": "Payment processing and transaction management",
+      "item": [
+        {
+          "name": "Initiate Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"amount\": 1000.00,\n    \"currency\": \"ETB\",\n    \"paymentMethod\": \"TELEBIRR\",\n    \"merchantId\": \"{{merchant_id}}\",\n    \"orderReference\": \"ORD-{{$timestamp}}\",\n    \"description\": \"Test payment\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/payments/initiate",
+              "host": ["{{base_url}}"],
+              "path": ["payments", "initiate"]
+            },
+            "description": "Initiate a payment transaction with selected payment provider."
+          }
+        },
+        {
+          "name": "Get Payment Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/payments/{{payment_id}}/status",
+              "host": ["{{base_url}}"],
+              "path": ["payments", "{{payment_id}}", "status"]
+            },
+            "description": "Check the current status of a payment transaction."
+          }
+        },
+        {
+          "name": "List Transactions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/transactions?page=1&limit=20&startDate={{start_date}}&endDate={{end_date}}",
+              "host": ["{{base_url}}"],
+              "path": ["transactions"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "startDate",
+                  "value": "{{start_date}}"
+                },
+                {
+                  "key": "endDate",
+                  "value": "{{end_date}}"
+                }
+              ]
+            },
+            "description": "Retrieve a paginated list of user's transactions."
+          }
+        }
+      ]
+    },
+    {
+      "name": "BNPL",
+      "description": "Buy Now Pay Later loan management",
+      "item": [
+        {
+          "name": "Apply for Loan",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"amount\": 5000.00,\n    \"paymentPlan\": \"PAY_IN_4\",\n    \"merchantId\": \"{{merchant_id}}\",\n    \"productDetails\": {\n        \"name\": \"Test Product\",\n        \"category\": \"Electronics\",\n        \"price\": 5000.00\n    }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/loans/apply",
+              "host": ["{{base_url}}"],
+              "path": ["loans", "apply"]
+            },
+            "description": "Apply for a BNPL loan for a purchase."
+          }
+        },
+        {
+          "name": "Get Loan Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/loans/{{loan_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["loans", "{{loan_id}}"]
+            },
+            "description": "Get detailed information about a specific loan."
+          }
+        },
+        {
+          "name": "Make Installment Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"installmentId\": \"{{installment_id}}\",\n    \"amount\": 1250.00,\n    \"paymentMethod\": \"TELEBIRR\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/loans/{{loan_id}}/installments/pay",
+              "host": ["{{base_url}}"],
+              "path": ["loans", "{{loan_id}}", "installments", "pay"]
+            },
+            "description": "Make a payment towards a loan installment."
+          }
+        },
+        {
+          "name": "Get Payment Schedule",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/loans/{{loan_id}}/schedule",
+              "host": ["{{base_url}}"],
+              "path": ["loans", "{{loan_id}}", "schedule"]
+            },
+            "description": "Get the payment schedule for a loan."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Merchants",
+      "description": "Merchant management and onboarding",
+      "item": [
+        {
+          "name": "Apply as Merchant",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"businessName\": \"Test Business\",\n    \"businessType\": \"RETAIL\",\n    \"tradeLicense\": \"TL123456789\",\n    \"tinNumber\": \"TIN987654321\",\n    \"businessAddress\": {\n        \"street\": \"Bole Road\",\n        \"city\": \"Addis Ababa\",\n        \"region\": \"Addis Ababa\",\n        \"postalCode\": \"1000\"\n    },\n    \"contactPerson\": {\n        \"firstName\": \"John\",\n        \"lastName\": \"Doe\",\n        \"phone\": \"+251911234567\",\n        \"email\": \"john@business.com\"\n    }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/merchants/apply",
+              "host": ["{{base_url}}"],
+              "path": ["merchants", "apply"]
+            },
+            "description": "Submit an application to become a merchant partner."
+          }
+        },
+        {
+          "name": "Get Merchant Profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/merchants/profile",
+              "host": ["{{base_url}}"],
+              "path": ["merchants", "profile"]
+            },
+            "description": "Get merchant's profile and business information."
+          }
+        },
+        {
+          "name": "Generate API Key",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"keyName\": \"Production API Key\",\n    \"permissions\": [\"payments:create\", \"payments:read\", \"refunds:create\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/merchants/api-keys",
+              "host": ["{{base_url}}"],
+              "path": ["merchants", "api-keys"]
+            },
+            "description": "Generate a new API key for merchant integration."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health Checks",
+      "description": "System health and monitoring endpoints",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            },
+            "description": "Basic health check endpoint."
+          }
+        },
+        {
+          "name": "Readiness Check",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health/ready",
+              "host": ["{{base_url}}"],
+              "path": ["health", "ready"]
+            },
+            "description": "Check if the service is ready to accept requests."
+          }
+        },
+        {
+          "name": "Liveness Check",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health/live",
+              "host": ["{{base_url}}"],
+              "path": ["health", "live"]
+            },
+            "description": "Check if the service is alive and running."
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://api.meqenet.et/v1",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "requestId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "language",
+      "value": "en",
+      "type": "string"
+    }
+  ]
+}
