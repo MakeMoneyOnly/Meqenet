@@ -1,5 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 import { Params } from 'nestjs-pino';
+import { context, trace } from '@opentelemetry/api';
 
 export const pinoConfig = {
   useFactory: (configService: ConfigService): Params => {
@@ -14,11 +15,15 @@ export const pinoConfig = {
             return { level: label };
           },
           log: (obj: Record<string, unknown>): Record<string, unknown> => {
+            const span = trace.getSpan(context.active());
+            const spanContext = span?.spanContext();
             return {
               ...obj,
               timestamp: new Date().toISOString(),
               correlationId:
                 (obj as { correlationId?: string }).correlationId ?? 'unknown',
+              traceId: spanContext?.traceId,
+              spanId: spanContext?.spanId,
             };
           },
         },
@@ -51,11 +56,16 @@ export const pinoConfig = {
           }),
         },
         customProps: (
-          _req: unknown,
+          req: { headers?: Record<string, string | string[] | undefined> } | undefined,
           _res: unknown
-        ): { correlationId: string } => {
+        ): { correlationId: string; traceId?: string; spanId?: string } => {
+          const span = trace.getSpan(context.active());
+          const spanContext = span?.spanContext();
+          const requestId = req?.headers?.['x-request-id'] as string | undefined;
           return {
-            correlationId: 'unknown',
+            correlationId: requestId ?? 'unknown',
+            traceId: spanContext?.traceId,
+            spanId: spanContext?.spanId,
           };
         },
         ...(nodeEnv === 'production'
@@ -86,7 +96,7 @@ export const pinoConfig = {
                   colorize: true,
                   translateTime: 'SYS:standard',
                   ignore: 'pid,hostname',
-                  messageFormat: '[{correlationId}] {levelLabel} {msg}',
+                  messageFormat: '[{correlationId} {traceId}:{spanId}] {levelLabel} {msg}',
                 },
               },
             }),
