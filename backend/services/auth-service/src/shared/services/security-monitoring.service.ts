@@ -90,6 +90,7 @@ export class SecurityMonitoringService
   private anomalyDetectionCounter!: Counter<string>;
   private authLoginCounter!: Counter<string>;
   private authRegisterCounter!: Counter<string>;
+  private jwtRotationCounter!: Counter<string>;
 
   private threatIndicators: Map<string, ThreatIndicator[]> = new Map();
   private securityEvents: SecurityEvent[] = [];
@@ -181,6 +182,13 @@ export class SecurityMonitoringService
       labelNames: ['outcome'], // success|failure
     });
 
+    // JWT Rotation Counter
+    this.jwtRotationCounter = new Counter({
+      name: 'meqenet_jwt_rotation_total',
+      help: 'Total number of JWT key rotations by outcome',
+      labelNames: ['outcome'], // success|failure
+    });
+
     this.logger.log('📊 Prometheus metrics initialized successfully');
   }
 
@@ -191,6 +199,10 @@ export class SecurityMonitoringService
 
   recordRegister(outcome: 'success' | 'failure'): void {
     this.authRegisterCounter.labels(outcome).inc();
+  }
+
+  recordJwtRotation(outcome: 'success' | 'failure'): void {
+    this.jwtRotationCounter.labels(outcome).inc();
   }
 
   /**

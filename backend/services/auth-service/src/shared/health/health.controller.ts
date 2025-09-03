@@ -11,6 +11,7 @@ import {
 } from '@nestjs/terminus';
 
 import { PrismaService } from '../../infrastructure/database/prisma.service';
+import { SecretManagerService } from '../services/secret-manager.service';
 
 import { Public } from '../decorators/public.decorator';
 
@@ -39,7 +40,8 @@ export class HealthController {
     private memory: MemoryHealthIndicator,
     private disk: DiskHealthIndicator,
     private configService: ConfigService,
-    private prisma: PrismaService
+    private prisma: PrismaService,
+    private secrets: SecretManagerService
   ) {}
 
   @Get()
@@ -68,13 +70,10 @@ export class HealthController {
   @HealthCheck()
   async check(): Promise<HealthCheckResult> {
     return this.health.check([
-      // Database connectivity
       async (): Promise<HealthIndicatorResult> => this.checkDatabase(),
-
-      // External service dependencies
+      async (): Promise<HealthIndicatorResult> => this.checkSecretsManager(),
+      async (): Promise<HealthIndicatorResult> => this.checkKMS(),
       (): HealthIndicatorResult => this.checkExternalServices(),
-
-      // System resource checks
       (): Promise<HealthIndicatorResult> =>
         this.memory.checkHeap('memory_heap', HEAP_LIMIT_STANDARD),
       (): Promise<HealthIndicatorResult> =>
@@ -174,6 +173,47 @@ export class HealthController {
         error: health.error,
       },
     };
+  }
+
+  private async checkSecretsManager(): Promise<HealthIndicatorResult> {
+    try {
+      // Attempt to read JWT keys metadata
+      const jwks = await this.secrets.getJWKS();
+      return {
+        secrets_manager: {
+          status: (jwks.keys && jwks.keys.length > 0 ? 'up' : 'down') as const,
+          keys: jwks.keys.length,
+        },
+      };
+    } catch (error) {
+      return {
+        secrets_manager: {
+          status: 'down',
+          error: (error as Error).message,
+        },
+      };
+    }
+  }
+
+  private async checkKMS(): Promise<HealthIndicatorResult> {
+    try {
+      // Perform a lightweight encrypt/decrypt round-trip with a short string
+      const cipher = await this.secrets.encryptData('ping');
+      const plain = await this.secrets.decryptData(cipher);
+      const ok = plain === 'ping';
+      return {
+        kms: {
+          status: (ok ? 'up' : 'down') as const,
+        },
+      };
+    } catch (error) {
+      return {
+        kms: {
+          status: 'down',
+          error: (error as Error).message,
+        },
+      };
+    }
   }
 
   /**
