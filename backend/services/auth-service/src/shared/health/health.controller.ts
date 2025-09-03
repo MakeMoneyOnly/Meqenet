@@ -10,6 +10,9 @@ import {
   HealthIndicatorResult,
 } from '@nestjs/terminus';
 
+import { PrismaService } from '../../infrastructure/database/prisma.service';
+import { SecretManagerService } from '../services/secret-manager.service';
+
 import { Public } from '../decorators/public.decorator';
 
 /**
@@ -36,7 +39,9 @@ export class HealthController {
     private health: HealthCheckService,
     private memory: MemoryHealthIndicator,
     private disk: DiskHealthIndicator,
-    private configService: ConfigService
+    private configService: ConfigService,
+    private prisma: PrismaService,
+    private secrets: SecretManagerService
   ) {}
 
   @Get()
@@ -65,13 +70,10 @@ export class HealthController {
   @HealthCheck()
   async check(): Promise<HealthCheckResult> {
     return this.health.check([
-      // Database connectivity
-      (): HealthIndicatorResult => this.checkDatabase(),
-
-      // External service dependencies
+      async (): Promise<HealthIndicatorResult> => this.checkDatabase(),
+      async (): Promise<HealthIndicatorResult> => this.checkSecretsManager(),
+      async (): Promise<HealthIndicatorResult> => this.checkKMS(),
       (): HealthIndicatorResult => this.checkExternalServices(),
-
-      // System resource checks
       (): Promise<HealthIndicatorResult> =>
         this.memory.checkHeap('memory_heap', HEAP_LIMIT_STANDARD),
       (): Promise<HealthIndicatorResult> =>
@@ -159,18 +161,59 @@ export class HealthController {
   }
 
   /**
-   * Database connectivity check with timeout
+   * Database connectivity check with real Prisma ping
    */
-  private checkDatabase(): HealthIndicatorResult {
-    // Using a custom health indicator since TypeOrmHealthIndicator might not be available
-    // This is a placeholder - in real implementation, you'd check actual database connectivity
+  private async checkDatabase(): Promise<HealthIndicatorResult> {
+    const start = Date.now();
+    const health = await this.prisma.healthCheck();
     return {
       database: {
-        status: 'up' as const,
-        message: 'Database connection successful',
-        responseTime: '< 100ms',
+        status: (health.status === 'healthy' ? 'up' : 'down') as const,
+        responseTime: `${Date.now() - start}ms`,
+        error: health.error,
       },
     };
+  }
+
+  private async checkSecretsManager(): Promise<HealthIndicatorResult> {
+    try {
+      // Attempt to read JWT keys metadata
+      const jwks = await this.secrets.getJWKS();
+      return {
+        secrets_manager: {
+          status: (jwks.keys && jwks.keys.length > 0 ? 'up' : 'down') as const,
+          keys: jwks.keys.length,
+        },
+      };
+    } catch (error) {
+      return {
+        secrets_manager: {
+          status: 'down',
+          error: (error as Error).message,
+        },
+      };
+    }
+  }
+
+  private async checkKMS(): Promise<HealthIndicatorResult> {
+    try {
+      // Perform a lightweight encrypt/decrypt round-trip with a short string
+      const cipher = await this.secrets.encryptData('ping');
+      const plain = await this.secrets.decryptData(cipher);
+      const ok = plain === 'ping';
+      return {
+        kms: {
+          status: (ok ? 'up' : 'down') as const,
+        },
+      };
+    } catch (error) {
+      return {
+        kms: {
+          status: 'down',
+          error: (error as Error).message,
+        },
+      };
+    }
   }
 
   /**

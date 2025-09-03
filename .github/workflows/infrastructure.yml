@@ -25,101 +25,19 @@ jobs:
           node-version: 22
           registry-url: "https://registry.npmjs.org"
 
-      - name: 📦 Install pnpm
+      - name: 📦 Setup pnpm via Corepack (pinned)
         run: |
-          PNPM_INSTALLED=false
-
-          # Try installation methods silently
-          if curl -fsSL --connect-timeout 15 --max-time 60 https://get.pnpm.io/install.sh | sh -; then
-            export PNPM_HOME="$HOME/.local/share/pnpm"
-            export PATH="$PNPM_HOME:$PATH"
-            if command -v pnpm &> /dev/null; then
-              PNPM_INSTALLED=true
-            fi
-          fi
-
-          if [ "$PNPM_INSTALLED" = false ]; then
-            if curl -fsSL --connect-timeout 15 --max-time 60 https://cdn.jsdelivr.net/gh/pnpm/pnpm@latest/install.sh | sh -; then
-              export PNPM_HOME="$HOME/.local/share/pnpm"
-              export PATH="$PNPM_HOME:$PATH"
-              if command -v pnpm &> /dev/null; then
-                PNPM_INSTALLED=true
-              fi
-            fi
-          fi
-
-          if [ "$PNPM_INSTALLED" = false ]; then
-            if curl -fsSL --connect-timeout 15 --max-time 60 https://raw.githubusercontent.com/pnpm/pnpm/master/install.sh | sh -; then
-              export PNPM_HOME="$HOME/.local/share/pnpm"
-              export PATH="$PNPM_HOME:$PATH"
-              if command -v pnpm &> /dev/null; then
-                PNPM_INSTALLED=true
-              fi
-            fi
-          fi
-
-          if [ "$PNPM_INSTALLED" = false ]; then
-            curl -fsSL --connect-timeout 15 --max-time 60 -o /tmp/pnpm.tar.gz https://github.com/pnpm/pnpm/releases/latest/download/pnpm-linux-x64.tar.gz
-            if [ $? -eq 0 ] && [ -f /tmp/pnpm.tar.gz ]; then
-              mkdir -p $HOME/.local/bin
-              tar -xzf /tmp/pnpm.tar.gz -C $HOME/.local/bin --strip-components=1
-              export PATH="$HOME/.local/bin:$PATH"
-              if command -v pnpm &> /dev/null; then
-                PNPM_INSTALLED=true
-              fi
-            fi
-          fi
-
-          if [ "$PNPM_INSTALLED" = false ]; then
-            if npm install -g pnpm; then
-              export PATH="$(npm config get prefix)/bin:$PATH"
-              if command -v pnpm &> /dev/null; then
-                PNPM_INSTALLED=true
-              fi
-            fi
-          fi
-
-          if [ "$PNPM_INSTALLED" = false ]; then
-            if command -v pnpm &> /dev/null; then
-              PNPM_INSTALLED=true
-            else
-              mkdir -p $HOME/.local/bin
-              cat > $HOME/.local/bin/pnpm << 'EOF'
-          #!/bin/bash
-          case "$1" in
-            "--version"|"-v")
-              echo "pnpm wrapper 1.0.0"
-              ;;
-            "install")
-              shift
-              npm install "$@"
-              ;;
-            *)
-              echo "pnpm command '$1' not supported in wrapper mode"
-              exit 1
-              ;;
-          esac
-          EOF
-              chmod +x $HOME/.local/bin/pnpm
-              export PATH="$HOME/.local/bin:$PATH"
-              if command -v pnpm &> /dev/null; then
-                PNPM_INSTALLED=true
-              fi
-            fi
-          fi
-
-          if [ "$PNPM_INSTALLED" = true ]; then
-            pnpm config set registry https://registry.npmjs.org/
-            pnpm config set fetch-timeout 60000
-            pnpm config set network-timeout 300000
-            corepack enable
-            pnpm config delete @jsr:registry 2>/dev/null || true
-            pnpm config delete //npm.jsr.io/:_authToken 2>/dev/null || true
-            echo "✅ pnpm installed successfully"
-          else
-            echo "❌ Failed to install pnpm"
-            exit 1
-          fi
+          set -euo pipefail
+          echo "📦 Enabling Corepack and activating pnpm 10.4.1"
+          corepack enable
+          corepack prepare pnpm@10.4.1 --activate
+          pnpm --version
+          pnpm config set registry https://registry.npmjs.org/
+          pnpm config set fetch-timeout 60000
+          pnpm config set network-timeout 300000
+          pnpm config delete @jsr:registry 2>/dev/null || true
+          pnpm config delete //npm.jsr.io/:_authToken 2>/dev/null || true
+          echo "✅ pnpm configured via Corepack"
 
       - name: 📚 Install Dependencies
         run: |

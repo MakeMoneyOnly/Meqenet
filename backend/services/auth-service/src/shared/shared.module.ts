@@ -4,11 +4,12 @@ import { ScheduleModule } from '@nestjs/schedule';
 
 import appConfig from './config/app.config';
 import { RedisConfigService } from './config/redis.config';
-import { SecurityConfigService } from './config/security.config';
+
 import { AIFraudDetectionController } from './controllers/ai-fraud-detection.controller';
 import { CredentialManagementController } from './controllers/credential-management.controller';
 import { JWKSController } from './controllers/jwks.controller';
 import { MetricsController } from './controllers/metrics.controller';
+import { DiagnosticsController } from './controllers/diagnostics.controller';
 import { AdaptiveRateLimitingService } from './services/adaptive-rate-limiting.service';
 import { AIFraudDetectionService } from './services/ai-fraud-detection.service';
 import { AnomalyDetectionService } from './services/anomaly-detection.service';
@@ -16,6 +17,9 @@ import { CredentialRotationService } from './services/credential-rotation.servic
 import { FieldEncryptionService } from './services/field-encryption.service';
 import { SecretManagerService } from './services/secret-manager.service';
 import { SecurityMonitoringService } from './services/security-monitoring.service';
+import { PasswordResetTokenService } from './services/password-reset-token.service';
+import { EmailService } from './services/email.service';
+import { SecurityConfigService } from './services/security-config.service';
 import { FaydaEncryptionUtil } from './utils/fayda-encryption.util';
 
 /**
@@ -37,18 +41,21 @@ import { FaydaEncryptionUtil } from './utils/fayda-encryption.util';
     JWKSController,
     CredentialManagementController,
     MetricsController,
+    DiagnosticsController,
   ],
   providers: [
-    SecurityConfigService,
     RedisConfigService,
     FaydaEncryptionUtil,
     SecretManagerService,
     CredentialRotationService,
     SecurityMonitoringService,
+    SecurityConfigService,
     AdaptiveRateLimitingService,
     AnomalyDetectionService,
     FieldEncryptionService,
     AIFraudDetectionService,
+    PasswordResetTokenService,
+    EmailService,
   ],
   exports: [
     SecurityConfigService,
@@ -61,6 +68,8 @@ import { FaydaEncryptionUtil } from './utils/fayda-encryption.util';
     AnomalyDetectionService,
     FieldEncryptionService,
     AIFraudDetectionService,
+    PasswordResetTokenService,
+    EmailService,
   ],
 })
 export class SharedModule {}

@@ -16,11 +16,17 @@ import type { RedisClientOptions } from 'redis';
 import { AuthModule } from '../features/auth/auth.module';
 import { JwksModule } from '../features/jwks/jwks.module';
 import { HealthModule } from '../health/health.module';
+import { UserModule } from '../features/user/user.module';
 import { DatabaseModule } from '../infrastructure/database/database.module';
 import { MessagingModule } from '../infrastructure/messaging/messaging.module';
+import appConfig from '../shared/config/app.config';
+import corsConfig from '../shared/config/cors.config';
+import securityConfig from '../shared/config/security.config';
+import loggerConfig from '../shared/config/logger.config';
 import { pinoConfig } from '../shared/config/pino.config';
 import { throttlerConfig } from '../shared/config/throttler.config';
 import { DLQModule } from '../shared/dlq/dlq.module';
+import { JwtStrategy } from '../shared/strategies/jwt.strategy';
 import { GlobalExceptionFilter } from '../shared/filters/global-exception.filter';
 import { AdaptiveRateLimitGuard } from '../shared/guards/adaptive-rate-limit.guard';
 import { JwtAuthGuard } from '../shared/guards/jwt-auth.guard';
@@ -45,6 +51,7 @@ const REDIS_CONFIG = {
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: ['.env.local', '.env'],
+      load: [appConfig, corsConfig, securityConfig, loggerConfig],
     }),
     CacheModule.registerAsync<RedisClientOptions>({
       isGlobal: true,
@@ -84,6 +91,7 @@ const REDIS_CONFIG = {
     }),
     LoggerModule.forRootAsync(pinoConfig),
     AuthModule,
+    UserModule,
     HealthModule,
     DatabaseModule,
     MessagingModule,
@@ -95,6 +103,7 @@ const REDIS_CONFIG = {
   controllers: [AppController],
   providers: [
     AppService,
+    JwtStrategy,
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,

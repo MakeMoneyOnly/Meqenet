@@ -1020,7 +1020,7 @@ stages:
             description:
               Implement `/auth/register` endpoint with robust DTO validation
               for incoming data.
-            status: To Do
+            status: Completed
             context:
               [docs/Stage 1 - Foundation/02-API_Specification_and_Governance.md]
             personas: [
@@ -1033,7 +1033,7 @@ stages:
             description:
               Use `bcrypt` with a configurable salt round count for all password
               hashing.
-            status: To Do
+            status: Completed
             context: [docs/Stage 1 - Foundation/07-Security.md]
             personas: [
                 Senior Backend Developer,
@@ -1043,7 +1043,7 @@ stages:
               ]
           - id: AUTH-BE-API-02
             description: Implement `/auth/login` endpoint and protect it with rate limiting.
-            status: To Do
+            status: Completed
             context: [docs/Stage 1 - Foundation/07-Security.md]
             personas: [
                 Senior Backend Developer,
@@ -1055,7 +1055,7 @@ stages:
             description:
               Generate secure, signed JWTs with appropriate claims (userID, role,
               exp) using secrets from a secure vault.
-            status: To Do
+            status: Completed
             context: [docs/Stage 1 - Foundation/07-Security.md]
             personas: [
                 Senior Backend Developer,
@@ -1065,7 +1065,7 @@ stages:
               ]
           - id: AUTH-BE-API-03
             description: Implement `/auth/refresh` endpoint for secure JWT rotation.
-            status: To Do
+            status: Completed
             context: [docs/Stage 1 - Foundation/07-Security.md]
             personas: [
                 Senior Backend Developer,
@@ -1077,7 +1077,7 @@ stages:
             description:
               Implement `/auth/password-reset-request` endpoint to generate a
               secure, single-use token.
-            status: To Do
+            status: Completed
             context: [docs/Stage 1 - Foundation/07-Security.md]
             personas: [
                 Senior Backend Developer,
@@ -1089,7 +1089,7 @@ stages:
             description:
               Implement `/auth/password-reset-confirm` endpoint to validate token
               and update password.
-            status: To Do
+            status: Completed
             context: [docs/Stage 1 - Foundation/07-Security.md]
             personas: [
                 Senior Backend Developer,
@@ -1101,7 +1101,7 @@ stages:
             description:
               Implement `/users/me` endpoint to fetch the current authenticated
               user's profile.
-            status: To Do
+            status: Completed
             context:
               [docs/Stage 1 - Foundation/02-API_Specification_and_Governance.md]
             personas:
@@ -1112,19 +1112,19 @@ stages:
               ]
           - id: AUTH-BE-MFA-01
             description: "[Security] Implement Multi-Factor Authentication (MFA) via SMS and Email OTP with secure rate-limiting and anti-SIM swap controls."
-            status: To Do
+            status: Completed
             context: [docs/Stage 1 - Foundation/07-Security.md]
             personas: [Senior Backend Developer, Data Security Specialist]
           - id: AUTH-BE-MFA-02
             description: "[Security/Mobile] Integrate biometric factor (device biometrics) into MFA flow and risk-based step-up authentication."
-            status: To Do
+            status: Completed
             context: [docs/Stage 1 - Foundation/07-Security.md]
             personas: [Senior Backend Developer, Data Security Specialist]
           - id: AUTH-BE-GUA-01
             description:
               Implement a global NestJS Guard using Passport.js to validate JWTs
               on all protected routes.
-            status: To Do
+            status: Completed
             context: [docs/Stage 1 - Foundation/07-Security.md]
             personas: [
                 Senior Backend Developer,
@@ -1136,7 +1136,7 @@ stages:
             description:
               Implement a Role-Based Access Control (RBAC) Guard and decorator
               to restrict endpoints by user role.
-            status: To Do
+            status: Completed
             context: [docs/Stage 1 - Foundation/01-Architecture_Governance.md]
             personas: [
                 Senior Backend Developer,
