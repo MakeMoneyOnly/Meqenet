@@ -1,4 +1,4 @@
-import { Logger, ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
@@ -10,6 +10,7 @@ import { PinoLogger } from 'nestjs-pino';
 import { AppModule } from './app/app.module';
 import { initializeOpenTelemetry } from './shared/observability/otel';
 import { GlobalExceptionFilter } from './shared/filters/global-exception.filter';
+import { LatencyMetricsInterceptor } from './shared/interceptors/latency-metrics.interceptor';
 
 const DEFAULT_PORT = 3001;
 const DEFAULT_GRPC_URL = 'localhost:5000';
@@ -72,6 +73,7 @@ async function bootstrap(): Promise<void> {
     );
     app.use(compression());
 
+    // Global class-validator ValidationPipe with bilingual errors
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
@@ -80,11 +82,39 @@ async function bootstrap(): Promise<void> {
         transformOptions: {
           enableImplicitConversion: true,
         },
+        exceptionFactory: validationErrors => {
+          const messages = validationErrors.map(err => {
+            const constraints = err.constraints || {};
+            const firstMessage = Object.values(constraints)[0] as string | undefined;
+            if (firstMessage) {
+              try {
+                const parsed = JSON.parse(firstMessage) as { en?: string; am?: string };
+                return {
+                  en: parsed.en || 'Validation failed',
+                  am: parsed.am || 'ማረጋገጥ አልተሳካም።',
+                };
+              } catch {
+                return {
+                  en: firstMessage,
+                  am: 'የማረጋገጫ ስህተት ተፈጥሯል።',
+                };
+              }
+            }
+            return {
+              en: 'Validation failed',
+              am: 'ማረጋገጥ አልተሳካም።',
+            };
+          });
+          return new BadRequestException({ message: messages });
+        },
       })
     );
 
     // Global exception filter for bilingual error responses (NBE compliance)
     app.useGlobalFilters(new GlobalExceptionFilter());
+
+    // Global latency metrics interceptor
+    app.useGlobalInterceptors(new LatencyMetricsInterceptor());
 
     // Centralized CORS configuration
     const corsOriginsEnv =

@@ -791,3 +791,76 @@ jobs:
         if: failure()
         run: |
           echo "::error title=Security Scan Failed::One or more security scans have failed. Please review the security reports and address any identified vulnerabilities before proceeding."
+
+---
+
+name: Security SAST/SCA
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+  push:
+    branches: [ main ]
+
+jobs:
+  sast-sca:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Install dependencies (root)
+        run: pnpm install --frozen-lockfile
+
+      - name: pnpm audit (moderate or higher)
+        run: pnpm audit --audit-level=moderate
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: '/language:javascript'
+
+      - name: Semgrep (OSS)
+        if: ${{ env.SEMGREP_APP_TOKEN != '' }}
+        uses: returntocorp/semgrep-action@v1
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+        with:
+          config: >-
+            p/owasp-top-ten
+
+      - name: Snyk Open Source Scan
+        if: ${{ env.SNYK_TOKEN != '' }}
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: test --severity-threshold=medium
+
+      - name: Fail if vulnerabilities found (pnpm audit JSON)
+        run: |
+          pnpm audit --json > audit.json || true
+          node -e "const fs=require('fs'); const a=JSON.parse(fs.readFileSync('audit.json','utf8')); const ok = !a.advisories && (!a.vulnerabilities || a.metadata.totalDependencies===0 || a.metadata.vulnerabilities.total===0); if(!ok){console.error('Audit policy failed'); process.exit(1);} console.log('Audit policy ok');"
