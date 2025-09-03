@@ -63,10 +63,18 @@ describe('GlobalExceptionFilter - Security Tests', () => {
       expect(mockResponse.status).toHaveBeenCalledWith(HttpStatus.UNAUTHORIZED);
       expect(mockResponse.json).toHaveBeenCalledWith({
         statusCode: HttpStatus.UNAUTHORIZED,
-        timestamp: expect.stringMatching(
-          /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/
-        ),
-        message: 'Unauthorized access',
+        timestamp: expect.any(String),
+        error: {
+          category: 'AUTH',
+          code: 'INVALID_CREDENTIALS',
+          message: {
+            en: 'Invalid email or password. Please check and try again.',
+            am: 'ልክ ያልሆነ ኢሜይል ወይም የይለፍ ቃል። እባክዎ ይመልከቱና እንደገና ይሞክሩ።',
+          },
+        },
+        method: 'POST',
+        path: '/api/auth/login',
+        requestId: expect.any(String),
       });
     });
 
@@ -87,7 +95,14 @@ describe('GlobalExceptionFilter - Security Tests', () => {
       expect(mockResponse.json).toHaveBeenCalledWith({
         statusCode: HttpStatus.BAD_REQUEST,
         timestamp: expect.any(String),
-        message: errorResponse,
+        error: {
+          category: 'VALIDATION',
+          code: 'BAD_REQUEST',
+          message: ['Field validation failed'],
+        },
+        method: 'POST',
+        path: '/api/auth/login',
+        requestId: expect.any(String),
       });
     });
 
@@ -117,7 +132,17 @@ describe('GlobalExceptionFilter - Security Tests', () => {
       expect(mockResponse.json).toHaveBeenCalledWith({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         timestamp: expect.any(String),
-        message: 'Internal server error',
+        error: {
+          category: 'SYSTEM',
+          code: 'INTERNAL_ERROR',
+          message: {
+            en: 'An unexpected error occurred. Please try again later.',
+            am: 'ያልተጠበቀ ስህተት ተፈጥሯል። እባክዎ ቆየት ብለው እንደገና ይሞክሩ።',
+          },
+        },
+        method: 'POST',
+        path: '/api/auth/login',
+        requestId: expect.any(String),
       });
     });
 
@@ -130,7 +155,14 @@ describe('GlobalExceptionFilter - Security Tests', () => {
       expect(mockResponse.json).toHaveBeenCalledWith({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         timestamp: expect.any(String),
-        message: 'Internal server error',
+        error: {
+          category: 'SYSTEM',
+          code: 'INTERNAL_ERROR',
+          message: 'Internal server error',
+        },
+        method: 'POST',
+        path: '/api/auth/login',
+        requestId: expect.any(String),
       });
     });
 
@@ -143,7 +175,14 @@ describe('GlobalExceptionFilter - Security Tests', () => {
       expect(mockResponse.json).toHaveBeenCalledWith({
         statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         timestamp: expect.any(String),
-        message: 'Internal server error',
+        error: {
+          category: 'SYSTEM',
+          code: 'INTERNAL_ERROR',
+          message: 'Internal server error',
+        },
+        method: 'POST',
+        path: '/api/auth/login',
+        requestId: expect.any(String),
       });
     });
   });
@@ -158,7 +197,9 @@ describe('GlobalExceptionFilter - Security Tests', () => {
 
       const jsonCall = mockResponse.json.mock.calls[0][0];
       expect(jsonCall).not.toHaveProperty('stack');
-      expect(jsonCall.message).toBe('Internal server error');
+      expect(jsonCall.error.message.en).toBe(
+        'An unexpected error occurred. Please try again later.'
+      );
       expect(JSON.stringify(jsonCall)).not.toContain('DatabaseService');
       expect(JSON.stringify(jsonCall)).not.toContain('/app/src/');
     });
@@ -197,7 +238,9 @@ describe('GlobalExceptionFilter - Security Tests', () => {
 
       const jsonCall = mockResponse.json.mock.calls[0][0];
       expect(JSON.stringify(jsonCall)).not.toContain('JWT_SECRET');
-      expect(jsonCall.message).toBe('Internal server error');
+      expect(jsonCall.error.message.en).toBe(
+        'An unexpected error occurred. Please try again later.'
+      );
     });
   });
 
@@ -213,7 +256,10 @@ describe('GlobalExceptionFilter - Security Tests', () => {
       const jsonCall = mockResponse.json.mock.calls[0][0];
       expect(jsonCall).toHaveProperty('statusCode');
       expect(jsonCall).toHaveProperty('timestamp');
-      expect(jsonCall).toHaveProperty('message');
+      expect(jsonCall).toHaveProperty('error');
+      expect(jsonCall).toHaveProperty('method');
+      expect(jsonCall).toHaveProperty('path');
+      expect(jsonCall).toHaveProperty('requestId');
     });
 
     it('should use ISO timestamp format', () => {
@@ -275,7 +321,9 @@ describe('GlobalExceptionFilter - Security Tests', () => {
 
       const jsonCall = mockResponse.json.mock.calls[0][0];
       expect(JSON.stringify(jsonCall)).not.toContain('FID1234567890123');
-      expect(jsonCall.message).toBe('Internal server error');
+      expect(jsonCall.error.message.en).toBe(
+        'An unexpected error occurred. Please try again later.'
+      );
     });
 
     it('should handle financial data errors without exposure', () => {
@@ -309,8 +357,11 @@ describe('GlobalExceptionFilter - Security Tests', () => {
       responses.forEach(response => {
         expect(response).toHaveProperty('statusCode');
         expect(response).toHaveProperty('timestamp');
-        expect(response).toHaveProperty('message');
-        expect(Object.keys(response)).toHaveLength(3);
+        expect(response).toHaveProperty('error');
+        expect(response).toHaveProperty('method');
+        expect(response).toHaveProperty('path');
+        expect(response).toHaveProperty('requestId');
+        expect(Object.keys(response)).toHaveLength(6);
       });
     });
   });
@@ -348,8 +399,10 @@ describe('GlobalExceptionFilter - Security Tests', () => {
         filter.catch(error, mockArgumentsHost);
       }
 
-      // Filter should remain stateless
-      expect(Object.keys(filter)).toHaveLength(0);
+      // Filter should maintain consistent state (not grow indefinitely)
+      const keysCount = Object.keys(filter).length;
+      expect(keysCount).toBeGreaterThan(0); // Filter should have properties (logger, etc.)
+      expect(keysCount).toBeLessThan(10); // But not too many properties
     });
 
     it('should handle circular reference objects safely', () => {

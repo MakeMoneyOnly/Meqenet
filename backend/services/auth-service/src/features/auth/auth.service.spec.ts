@@ -192,7 +192,7 @@ describe('AuthService', () => {
       mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
 
       await expect(service.login(loginUserDto)).rejects.toThrow(
-        'Invalid credentials'
+        'Invalid email or password'
       );
       expect(bcryptCompareMock).toHaveBeenCalledWith(
         loginUserDto.password,
