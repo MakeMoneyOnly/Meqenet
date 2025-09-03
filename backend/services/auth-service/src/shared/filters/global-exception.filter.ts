@@ -38,6 +38,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       en: 'Internal server error',
       am: 'የውስጥ ስህተት ተፈጥሯል።',
     };
+    let details: unknown = undefined;
 
     // Handle validation errors from class-validator
     if (exception instanceof BadRequestException) {
@@ -46,32 +47,31 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
       if (
         typeof exceptionResponse === 'object' &&
-        'message' in exceptionResponse
+        exceptionResponse !== null
       ) {
-        const validationMessages = (exceptionResponse as Record<string, unknown>)
-          .message;
+        const resp = exceptionResponse as Record<string, unknown>;
+        details = resp.message; // array of bilingual messages or structured map if provided
 
-        // Normalize to bilingual message object
-        if (Array.isArray(validationMessages) && validationMessages.length > 0) {
-          const first = validationMessages[0];
+        if (Array.isArray(resp.message) && resp.message.length > 0) {
+          const first = resp.message[0] as { en?: string; am?: string } | string;
           if (typeof first === 'string') {
             try {
               const parsed = JSON.parse(first) as { en?: string; am?: string };
               message = {
-                en: parsed.en || first,
-                am: parsed.am || 'የማረጋገጫ ስህተት ተፈጥሯል።',
+                en: parsed.en || 'Validation failed',
+                am: parsed.am || 'ማረጋገጥ አልተሳካም።',
               };
             } catch {
               message = {
                 en: first,
                 am: 'የማረጋገጫ ስህተት ተፈጥሯል።',
-              };
+              } as unknown as { en: string; am: string };
             }
           } else if (typeof first === 'object' && first) {
             const obj = first as { en?: string; am?: string };
             message = {
-              en: obj.en || 'Validation failed. Please check your input.',
-              am: obj.am || 'ማረጋገጥ አልተሳካም። እባክዎ ግብዓትዎን ይመልከቱ።',
+              en: obj.en || 'Validation failed',
+              am: obj.am || 'ማረጋገጥ አልተሳካም።',
             };
           }
           errorCode = 'VALIDATION_ERROR';
@@ -218,6 +218,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         code: errorCode,
         message, // Always bilingual
         category: this.getErrorCategory(errorCode),
+        details,
       },
     };
 

@@ -5,11 +5,12 @@ import {
   NestInterceptor,
 } from '@nestjs/common';
 import { Observable, tap } from 'rxjs';
-import { Histogram, register } from 'prom-client';
+import { Histogram, Counter } from 'prom-client';
 
 const buckets = [0.1, 0.25, 0.5, 1, 2, 5, 10];
 
 let httpLatencyHistogram: Histogram<string> | undefined;
+let httpRequestsCounter: Counter<string> | undefined;
 
 function getHistogram(): Histogram<string> {
   if (!httpLatencyHistogram) {
@@ -21,6 +22,17 @@ function getHistogram(): Histogram<string> {
     });
   }
   return httpLatencyHistogram;
+}
+
+function getCounter(): Counter<string> {
+  if (!httpRequestsCounter) {
+    httpRequestsCounter = new Counter({
+      name: 'meqenet_http_server_requests_total',
+      help: 'Total number of HTTP requests',
+      labelNames: ['method', 'route', 'status_code'],
+    });
+  }
+  return httpRequestsCounter;
 }
 
 @Injectable()
@@ -40,6 +52,7 @@ export class LatencyMetricsInterceptor implements NestInterceptor {
         const durationSeconds = Number(end - start) / 1_000_000_000;
         const statusCode = res.statusCode || 0;
         getHistogram().labels(method, route, String(statusCode)).observe(durationSeconds);
+        getCounter().labels(method, route, String(statusCode)).inc();
       })
     );
   }
