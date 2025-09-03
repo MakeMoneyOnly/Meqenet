@@ -44,8 +44,31 @@ async function bootstrap(): Promise<void> {
 
     initializeOpenTelemetry(otelConfig);
 
-    // Security middleware
-    app.use(helmet());
+    // Express hardening
+    app.disable('x-powered-by');
+
+    // Security middleware - central Helmet configuration
+    app.use(
+      helmet({
+        hsts: {
+          maxAge: 31536000,
+          includeSubDomains: true,
+          preload: false,
+        },
+        contentSecurityPolicy: {
+          useDefaults: true,
+          directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'"],
+            styleSrc: ["'self'", "'unsafe-inline'"],
+            imgSrc: ["'self'", 'data:'],
+            connectSrc: ["'self'"],
+          },
+        },
+        referrerPolicy: { policy: 'no-referrer' },
+        crossOriginEmbedderPolicy: false,
+      })
+    );
     app.use(compression());
 
     app.useGlobalPipes(
@@ -62,21 +85,41 @@ async function bootstrap(): Promise<void> {
     // Global exception filter for bilingual error responses (NBE compliance)
     app.useGlobalFilters(new GlobalExceptionFilter());
 
+    // Centralized CORS configuration
+    const corsOriginsEnv =
+      configService.get<string>('CORS_ORIGINS') ||
+      'https://nbe.gov.et,https://cbe.com.et,https://meqenet.et';
+    const allowedOrigins = corsOriginsEnv
+      .split(',')
+      .map(o => o.trim())
+      .filter(Boolean);
+
     app.enableCors({
-      origin: [
-        'https://nbe.gov.et',
-        'https://cbe.com.et',
-        'https://meqenet.et',
-      ],
+      origin: (origin, callback) => {
+        // Allow no origin (e.g., curl) and explicit allowlist
+        if (!origin || allowedOrigins.includes(origin)) {
+          return callback(null, true);
+        }
+        return callback(new Error('CORS blocked'));
+      },
       credentials: true,
-      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
       allowedHeaders: [
         'Content-Type',
         'Authorization',
         'Accept',
-        'Accept-Language', // Added for bilingual support
+        'Accept-Language', // Bilingual support
         'X-Request-ID',
       ],
+      exposedHeaders: ['X-Request-ID'],
+      preflightContinue: false,
+      optionsSuccessStatus: 204,
+    });
+
+    // Add Vary: Origin for CORS cache correctness
+    app.use((req, res, next) => {
+      res.vary('Origin');
+      next();
     });
 
     if (configService.get<string>('NODE_ENV') !== 'production') {

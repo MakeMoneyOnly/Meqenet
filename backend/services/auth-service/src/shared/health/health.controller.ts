@@ -10,6 +10,8 @@ import {
   HealthIndicatorResult,
 } from '@nestjs/terminus';
 
+import { PrismaService } from '../../infrastructure/database/prisma.service';
+
 import { Public } from '../decorators/public.decorator';
 
 /**
@@ -36,7 +38,8 @@ export class HealthController {
     private health: HealthCheckService,
     private memory: MemoryHealthIndicator,
     private disk: DiskHealthIndicator,
-    private configService: ConfigService
+    private configService: ConfigService,
+    private prisma: PrismaService
   ) {}
 
   @Get()
@@ -66,7 +69,7 @@ export class HealthController {
   async check(): Promise<HealthCheckResult> {
     return this.health.check([
       // Database connectivity
-      (): HealthIndicatorResult => this.checkDatabase(),
+      async (): Promise<HealthIndicatorResult> => this.checkDatabase(),
 
       // External service dependencies
       (): HealthIndicatorResult => this.checkExternalServices(),
@@ -159,16 +162,16 @@ export class HealthController {
   }
 
   /**
-   * Database connectivity check with timeout
+   * Database connectivity check with real Prisma ping
    */
-  private checkDatabase(): HealthIndicatorResult {
-    // Using a custom health indicator since TypeOrmHealthIndicator might not be available
-    // This is a placeholder - in real implementation, you'd check actual database connectivity
+  private async checkDatabase(): Promise<HealthIndicatorResult> {
+    const start = Date.now();
+    const health = await this.prisma.healthCheck();
     return {
       database: {
-        status: 'up' as const,
-        message: 'Database connection successful',
-        responseTime: '< 100ms',
+        status: (health.status === 'healthy' ? 'up' : 'down') as const,
+        responseTime: `${Date.now() - start}ms`,
+        error: health.error,
       },
     };
   }
