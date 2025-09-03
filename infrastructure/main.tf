@@ -472,6 +472,14 @@ resource "aws_iam_role_policy" "replication" {
       {
         Effect = "Allow"
         Action = [
+          "s3:GetReplicationConfiguration",
+          "s3:ListBucket"
+        ]
+        Resource = aws_s3_bucket.cloudtrail_access_logs.arn
+      },
+      {
+        Effect = "Allow"
+        Action = [
           "s3:GetObjectVersionForReplication",
           "s3:GetObjectVersionAcl",
           "s3:GetObjectVersionTagging"
@@ -481,11 +489,30 @@ resource "aws_iam_role_policy" "replication" {
       {
         Effect = "Allow"
         Action = [
+          "s3:GetObjectVersionForReplication",
+          "s3:GetObjectVersionAcl",
+          "s3:GetObjectVersionTagging"
+        ]
+        Resource = "${aws_s3_bucket.cloudtrail_access_logs.arn}/*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
           "s3:ReplicateObject",
           "s3:ReplicateDelete",
           "s3:ReplicateTags"
         ]
         Resource = "${aws_s3_bucket.cloudtrail_replica.arn}/*"
+      }
+      ,
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:ReplicateObject",
+          "s3:ReplicateDelete",
+          "s3:ReplicateTags"
+        ]
+        Resource = "${aws_s3_bucket.cloudtrail_access_logs_replica.arn}/*"
       }
     ]
   })
@@ -507,6 +534,28 @@ resource "aws_s3_bucket_replication_configuration" "cloudtrail" {
   }
 
   depends_on = [aws_s3_bucket_versioning.cloudtrail_replication]
+}
+
+# Replication configuration for CloudTrail access logs bucket (CKV_AWS_144)
+resource "aws_s3_bucket_replication_configuration" "cloudtrail_access_logs" {
+  role   = aws_iam_role.replication.arn
+  bucket = aws_s3_bucket.cloudtrail_access_logs.id
+
+  rule {
+    id     = "replicate-access-logs"
+    status = "Enabled"
+
+    destination {
+      bucket        = aws_s3_bucket.cloudtrail_access_logs_replica.arn
+      storage_class = "STANDARD_IA"
+    }
+
+    filter {
+      prefix = "access-logs/"
+    }
+  }
+
+  depends_on = [aws_s3_bucket_versioning.cloudtrail_access_logs_replication]
 }
 
 resource "aws_s3_bucket_versioning" "cloudtrail" {
