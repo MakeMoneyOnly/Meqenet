@@ -99,6 +99,16 @@ async function bootstrap(): Promise<void> {
         crossOriginEmbedderPolicy: false,
       })
     );
+
+    // Set Permissions-Policy header if provided in config
+    const permissionsPolicy = configService.get<string>('security.permissionsPolicy');
+    if (permissionsPolicy) {
+      app.use((req, res, next) => {
+        res.setHeader('Permissions-Policy', permissionsPolicy);
+        next();
+      });
+    }
+
     app.use(compression());
 
     // Global class-validator ValidationPipe with bilingual errors
