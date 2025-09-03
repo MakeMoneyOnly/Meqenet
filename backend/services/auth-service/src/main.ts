@@ -45,7 +45,8 @@ async function bootstrap(): Promise<void> {
     initializeOpenTelemetry(otelConfig);
 
     // Express hardening
-    app.disable('x-powered-by');
+    const http = app.getHttpAdapter().getInstance();
+    http.disable('x-powered-by');
 
     // Security middleware - central Helmet configuration
     app.use(
