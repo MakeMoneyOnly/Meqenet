@@ -50,152 +50,20 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: "https://registry.npmjs.org"
 
-      - name: 📦 Install pnpm (Enterprise-Grade with Network Resilience)
+      - name: 📦 Setup pnpm via Corepack (pinned)
         run: |
-          echo "📦 Installing pnpm with enterprise-grade network resilience..."
-
-          # Network diagnostics
-          echo "🔍 Checking network connectivity..."
-          if curl -fs --connect-timeout 5 --max-time 10 https://registry.npmjs.org/ &> /dev/null; then
-            echo "✅ NPM registry accessible"
-          else
-            echo "⚠️ NPM registry not accessible, will use offline methods"
-          fi
-
-          # Enterprise-grade installation with multiple fallbacks
-          PNPM_INSTALLED=false
-
-          # Method 1: Direct npm installation
-          echo "🔄 Attempt 1/6: Installing via npm..."
-          if npm install -g pnpm@10.14.0; then
-            export PATH="$(npm config get prefix)/bin:$PATH"
-            if command -v pnpm &> /dev/null; then
-              echo "✅ pnpm installed successfully via npm"
-              PNPM_INSTALLED=true
-            fi
-          fi
-
-          # Method 2: Corepack (Node.js built-in)
-          if [ "$PNPM_INSTALLED" = false ]; then
-            echo "🔄 Attempt 2/6: Installing via corepack..."
-            if corepack enable && corepack prepare pnpm@10.14.0 --activate; then
-              export PATH="$HOME/.local/bin:$PATH"
-              if command -v pnpm &> /dev/null; then
-                echo "✅ pnpm installed successfully via corepack"
-                PNPM_INSTALLED=true
-              fi
-            fi
-          fi
-
-          # Method 3: Direct binary download (GitHub releases)
-          if [ "$PNPM_INSTALLED" = false ]; then
-            echo "🔄 Attempt 3/6: Installing via direct binary download..."
-            # Get latest version
-            PNPM_VERSION=$(curl -s https://api.github.com/repos/pnpm/pnpm/releases/latest | grep '"tag_name"' | cut -d'"' -f4 | sed 's/^v//')
-            if [ -n "$PNPM_VERSION" ]; then
-              # Download for Linux x64
-              curl -fsSL --connect-timeout 15 --max-time 60 -o /tmp/pnpm.tar.gz https://github.com/pnpm/pnpm/releases/download/v${PNPM_VERSION}/pnpm-linux-x64.tar.gz
-              if [ $? -eq 0 ] && [ -f /tmp/pnpm.tar.gz ]; then
-                mkdir -p $HOME/.local/bin
-                tar -xzf /tmp/pnpm.tar.gz -C $HOME/.local/bin --strip-components=1
-                export PATH="$HOME/.local/bin:$PATH"
-                if command -v pnpm &> /dev/null; then
-                  echo "✅ pnpm installed successfully via direct binary"
-                  PNPM_INSTALLED=true
-                fi
-              fi
-            fi
-          fi
-
-          # Method 4: Direct binary download
-          if [ "$PNPM_INSTALLED" = false ]; then
-            echo "🔄 Attempt 4/6: Installing via direct binary download..."
-            # Download latest pnpm binary
-            curl -fsSL --connect-timeout 15 --max-time 60 -o /tmp/pnpm.tar.gz https://github.com/pnpm/pnpm/releases/latest/download/pnpm-linux-x64.tar.gz
-            if [ $? -eq 0 ] && [ -f /tmp/pnpm.tar.gz ]; then
-              mkdir -p $HOME/.local/bin
-              tar -xzf /tmp/pnpm.tar.gz -C $HOME/.local/bin --strip-components=1
-              export PATH="$HOME/.local/bin:$PATH"
-              if command -v pnpm &> /dev/null; then
-                echo "✅ pnpm installed successfully via direct binary"
-                PNPM_INSTALLED=true
-              fi
-            fi
-          fi
-
-          # Method 5: npm fallback (enterprise environments)
-          if [ "$PNPM_INSTALLED" = false ]; then
-            echo "🔄 Attempt 5/6: Installing via npm fallback..."
-            if npm install -g pnpm; then
-              export PATH="$(npm config get prefix)/bin:$PATH"
-              if command -v pnpm &> /dev/null; then
-                echo "✅ pnpm installed successfully via npm"
-                PNPM_INSTALLED=true
-              fi
-            fi
-          fi
-
-          # Method 6: Offline/Local installation (enterprise fallback)
-          if [ "$PNPM_INSTALLED" = false ]; then
-            echo "🔄 Attempt 6/6: Attempting offline installation..."
-            # Try to use system pnpm if available
-            if command -v pnpm &> /dev/null; then
-              echo "✅ Using system pnpm installation"
-              PNPM_INSTALLED=true
-            else
-              # Create minimal pnpm wrapper script
-              mkdir -p $HOME/.local/bin
-              cat > $HOME/.local/bin/pnpm << 'EOF'
-          #!/bin/bash
-          # Minimal pnpm wrapper for enterprise environments
-          echo "⚠️ Using minimal pnpm wrapper - limited functionality"
-          case "$1" in
-            "--version"|"-v")
-              echo "pnpm wrapper 1.0.0"
-              ;;
-            "install")
-              echo "📦 Running npm install (pnpm wrapper mode)..."
-              shift
-              npm install "$@"
-              ;;
-            *)
-              echo "⚠️ pnpm command '$1' not supported in wrapper mode"
-              exit 1
-              ;;
-          esac
-          EOF
-              chmod +x $HOME/.local/bin/pnpm
-              export PATH="$HOME/.local/bin:$PATH"
-              if command -v pnpm &> /dev/null; then
-                echo "✅ pnpm wrapper created successfully (limited functionality)"
-                PNPM_INSTALLED=true
-              fi
-            fi
-          fi
-
-          # Final verification and configuration
-          if [ "$PNPM_INSTALLED" = true ]; then
-            echo "🎉 pnpm installation completed successfully!"
-            pnpm --version
-
-            # Configure pnpm for enterprise environment
-            pnpm config set registry https://registry.npmjs.org/
-            pnpm config set fetch-timeout 60000
-            pnpm config set network-timeout 300000
-
-            # Enable corepack for proper pnpm version management
-            corepack enable
-
-            # Clear problematic registry configurations
-            pnpm config delete @jsr:registry 2>/dev/null || true
-            pnpm config delete //npm.jsr.io/:_authToken 2>/dev/null || true
-          else
-            echo "💥 CRITICAL: All pnpm installation methods failed"
-            echo "🔍 Network diagnostics:"
-            curl -I --connect-timeout 5 --max-time 10 https://get.pnpm.io/ || echo "❌ Cannot reach get.pnpm.io"
-            curl -I --connect-timeout 5 --max-time 10 https://registry.npmjs.org/ || echo "❌ Cannot reach npm registry"
-            exit 1
-          fi
+          set -euo pipefail
+          echo "📦 Enabling Corepack and activating pnpm ${{ env.PNPM_VERSION }}"
+          corepack enable
+          corepack prepare pnpm@${{ env.PNPM_VERSION }} --activate
+          pnpm --version
+          # Configure pnpm for enterprise environment
+          pnpm config set registry https://registry.npmjs.org/
+          pnpm config set fetch-timeout 60000
+          pnpm config set network-timeout 300000
+          # Clear problematic registry configurations
+          pnpm config delete @jsr:registry 2>/dev/null || true
+          pnpm config delete //npm.jsr.io/:_authToken 2>/dev/null || true
 
       - name: 📚 Install Dependencies
         run: |
@@ -369,152 +237,20 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: "https://registry.npmjs.org"
 
-      - name: 📦 Install pnpm (Enterprise-Grade with Network Resilience)
+      - name: 📦 Setup pnpm via Corepack (pinned)
         run: |
-          echo "📦 Installing pnpm with enterprise-grade network resilience..."
-
-          # Network diagnostics
-          echo "🔍 Checking network connectivity..."
-          if curl -fs --connect-timeout 5 --max-time 10 https://registry.npmjs.org/ &> /dev/null; then
-            echo "✅ NPM registry accessible"
-          else
-            echo "⚠️ NPM registry not accessible, will use offline methods"
-          fi
-
-          # Enterprise-grade installation with multiple fallbacks
-          PNPM_INSTALLED=false
-
-          # Method 1: Direct npm installation
-          echo "🔄 Attempt 1/6: Installing via npm..."
-          if npm install -g pnpm@10.14.0; then
-            export PATH="$(npm config get prefix)/bin:$PATH"
-            if command -v pnpm &> /dev/null; then
-              echo "✅ pnpm installed successfully via npm"
-              PNPM_INSTALLED=true
-            fi
-          fi
-
-          # Method 2: Corepack (Node.js built-in)
-          if [ "$PNPM_INSTALLED" = false ]; then
-            echo "🔄 Attempt 2/6: Installing via corepack..."
-            if corepack enable && corepack prepare pnpm@10.14.0 --activate; then
-              export PATH="$HOME/.local/bin:$PATH"
-              if command -v pnpm &> /dev/null; then
-                echo "✅ pnpm installed successfully via corepack"
-                PNPM_INSTALLED=true
-              fi
-            fi
-          fi
-
-          # Method 3: Direct binary download (GitHub releases)
-          if [ "$PNPM_INSTALLED" = false ]; then
-            echo "🔄 Attempt 3/6: Installing via direct binary download..."
-            # Get latest version
-            PNPM_VERSION=$(curl -s https://api.github.com/repos/pnpm/pnpm/releases/latest | grep '"tag_name"' | cut -d'"' -f4 | sed 's/^v//')
-            if [ -n "$PNPM_VERSION" ]; then
-              # Download for Linux x64
-              curl -fsSL --connect-timeout 15 --max-time 60 -o /tmp/pnpm.tar.gz https://github.com/pnpm/pnpm/releases/download/v${PNPM_VERSION}/pnpm-linux-x64.tar.gz
-              if [ $? -eq 0 ] && [ -f /tmp/pnpm.tar.gz ]; then
-                mkdir -p $HOME/.local/bin
-                tar -xzf /tmp/pnpm.tar.gz -C $HOME/.local/bin --strip-components=1
-                export PATH="$HOME/.local/bin:$PATH"
-                if command -v pnpm &> /dev/null; then
-                  echo "✅ pnpm installed successfully via direct binary"
-                  PNPM_INSTALLED=true
-                fi
-              fi
-            fi
-          fi
-
-          # Method 4: Direct binary download
-          if [ "$PNPM_INSTALLED" = false ]; then
-            echo "🔄 Attempt 4/6: Installing via direct binary download..."
-            # Download latest pnpm binary
-            curl -fsSL --connect-timeout 15 --max-time 60 -o /tmp/pnpm.tar.gz https://github.com/pnpm/pnpm/releases/latest/download/pnpm-linux-x64.tar.gz
-            if [ $? -eq 0 ] && [ -f /tmp/pnpm.tar.gz ]; then
-              mkdir -p $HOME/.local/bin
-              tar -xzf /tmp/pnpm.tar.gz -C $HOME/.local/bin --strip-components=1
-              export PATH="$HOME/.local/bin:$PATH"
-              if command -v pnpm &> /dev/null; then
-                echo "✅ pnpm installed successfully via direct binary"
-                PNPM_INSTALLED=true
-              fi
-            fi
-          fi
-
-          # Method 5: npm fallback (enterprise environments)
-          if [ "$PNPM_INSTALLED" = false ]; then
-            echo "🔄 Attempt 5/6: Installing via npm fallback..."
-            if npm install -g pnpm; then
-              export PATH="$(npm config get prefix)/bin:$PATH"
-              if command -v pnpm &> /dev/null; then
-                echo "✅ pnpm installed successfully via npm"
-                PNPM_INSTALLED=true
-              fi
-            fi
-          fi
-
-          # Method 6: Offline/Local installation (enterprise fallback)
-          if [ "$PNPM_INSTALLED" = false ]; then
-            echo "🔄 Attempt 6/6: Attempting offline installation..."
-            # Try to use system pnpm if available
-            if command -v pnpm &> /dev/null; then
-              echo "✅ Using system pnpm installation"
-              PNPM_INSTALLED=true
-            else
-              # Create minimal pnpm wrapper script
-              mkdir -p $HOME/.local/bin
-              cat > $HOME/.local/bin/pnpm << 'EOF'
-          #!/bin/bash
-          # Minimal pnpm wrapper for enterprise environments
-          echo "⚠️ Using minimal pnpm wrapper - limited functionality"
-          case "$1" in
-            "--version"|"-v")
-              echo "pnpm wrapper 1.0.0"
-              ;;
-            "install")
-              echo "📦 Running npm install (pnpm wrapper mode)..."
-              shift
-              npm install "$@"
-              ;;
-            *)
-              echo "⚠️ pnpm command '$1' not supported in wrapper mode"
-              exit 1
-              ;;
-          esac
-          EOF
-              chmod +x $HOME/.local/bin/pnpm
-              export PATH="$HOME/.local/bin:$PATH"
-              if command -v pnpm &> /dev/null; then
-                echo "✅ pnpm wrapper created successfully (limited functionality)"
-                PNPM_INSTALLED=true
-              fi
-            fi
-          fi
-
-          # Final verification and configuration
-          if [ "$PNPM_INSTALLED" = true ]; then
-            echo "🎉 pnpm installation completed successfully!"
-            pnpm --version
-
-            # Configure pnpm for enterprise environment
-            pnpm config set registry https://registry.npmjs.org/
-            pnpm config set fetch-timeout 60000
-            pnpm config set network-timeout 300000
-
-            # Enable corepack for proper pnpm version management
-            corepack enable
-
-            # Clear problematic registry configurations
-            pnpm config delete @jsr:registry 2>/dev/null || true
-            pnpm config delete //npm.jsr.io/:_authToken 2>/dev/null || true
-          else
-            echo "💥 CRITICAL: All pnpm installation methods failed"
-            echo "🔍 Network diagnostics:"
-            curl -I --connect-timeout 5 --max-time 10 https://get.pnpm.io/ || echo "❌ Cannot reach get.pnpm.io"
-            curl -I --connect-timeout 5 --max-time 10 https://registry.npmjs.org/ || echo "❌ Cannot reach npm registry"
-            exit 1
-          fi
+          set -euo pipefail
+          echo "📦 Enabling Corepack and activating pnpm ${{ env.PNPM_VERSION }}"
+          corepack enable
+          corepack prepare pnpm@${{ env.PNPM_VERSION }} --activate
+          pnpm --version
+          # Configure pnpm for enterprise environment
+          pnpm config set registry https://registry.npmjs.org/
+          pnpm config set fetch-timeout 60000
+          pnpm config set network-timeout 300000
+          # Clear problematic registry configurations
+          pnpm config delete @jsr:registry 2>/dev/null || true
+          pnpm config delete //npm.jsr.io/:_authToken 2>/dev/null || true
 
       - name: 📚 Install Dependencies
         run: |
