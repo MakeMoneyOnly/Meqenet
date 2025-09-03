@@ -1,0 +1,73 @@
+{
+  "results": [
+    {
+      "rule_id": "AVD-AWS-0057",
+      "long_id": "aws-iam-no-policy-wildcards",
+      "rule_description": "IAM policy should avoid use of wildcards and instead apply the principle of least privilege",
+      "rule_provider": "aws",
+      "rule_service": "iam",
+      "impact": "Overly permissive policies may grant access to sensitive resources",
+      "resolution": "Specify the exact permissions required, and to which resources they should apply instead of using wildcards.",
+      "links": [
+        "https://aquasecurity.github.io/tfsec/v1.28.14/checks/aws/iam/no-policy-wildcards/",
+        "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document"
+      ],
+      "description": "IAM policy document uses sensitive action 'ec2:CreateNetworkInterfacePermission' on wildcarded resource 'arn:aws:ec2:*:*:network-interface/*'",
+      "severity": "HIGH",
+      "warning": false,
+      "status": 0,
+      "resource": "aws_iam_role_policy.lambda_rotation",
+      "location": {
+        "filename": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\infrastructure\\database.tf",
+        "start_line": 238,
+        "end_line": 238
+      }
+    },
+    {
+      "rule_id": "AVD-AWS-0057",
+      "long_id": "aws-iam-no-policy-wildcards",
+      "rule_description": "IAM policy should avoid use of wildcards and instead apply the principle of least privilege",
+      "rule_provider": "aws",
+      "rule_service": "iam",
+      "impact": "Overly permissive policies may grant access to sensitive resources",
+      "resolution": "Specify the exact permissions required, and to which resources they should apply instead of using wildcards.",
+      "links": [
+        "https://aquasecurity.github.io/tfsec/v1.28.14/checks/aws/iam/no-policy-wildcards/",
+        "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document"
+      ],
+      "description": "IAM policy document uses sensitive action 'logs:CreateLogGroup' on wildcarded resource 'arn:aws:logs:*:*:log-group:/aws/lambda/meqenet-rotate-db-secret*'",
+      "severity": "HIGH",
+      "warning": false,
+      "status": 0,
+      "resource": "aws_iam_role_policy.lambda_rotation",
+      "location": {
+        "filename": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\infrastructure\\database.tf",
+        "start_line": 238,
+        "end_line": 238
+      }
+    },
+    {
+      "rule_id": "AVD-AWS-0057",
+      "long_id": "aws-iam-no-policy-wildcards",
+      "rule_description": "IAM policy should avoid use of wildcards and instead apply the principle of least privilege",
+      "rule_provider": "aws",
+      "rule_service": "iam",
+      "impact": "Overly permissive policies may grant access to sensitive resources",
+      "resolution": "Specify the exact permissions required, and to which resources they should apply instead of using wildcards.",
+      "links": [
+        "https://aquasecurity.github.io/tfsec/v1.28.14/checks/aws/iam/no-policy-wildcards/",
+        "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document"
+      ],
+      "description": "IAM policy document uses sensitive action 'ec2:CreateNetworkInterface' on wildcarded resource '*'",
+      "severity": "HIGH",
+      "warning": false,
+      "status": 0,
+      "resource": "aws_iam_role_policy.lambda_rotation",
+      "location": {
+        "filename": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\infrastructure\\database.tf",
+        "start_line": 238,
+        "end_line": 238
+      }
+    }
+  ]
+}

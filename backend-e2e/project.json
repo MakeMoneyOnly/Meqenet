@@ -4,6 +4,13 @@
   "projectType": "application",
   "implicitDependencies": ["api-gateway"],
   "targets": {
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "options": {
+        "lintFilePatterns": ["backend-e2e/**/*.ts"],
+        "eslintConfig": "backend-e2e/eslint.config.js"
+      }
+    },
     "e2e": {
       "executor": "@nx/vite:test",
       "outputs": ["{workspaceRoot}/coverage/{e2eProjectRoot}"],

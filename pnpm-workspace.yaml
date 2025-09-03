@@ -6,3 +6,5 @@ packages:
   # The root frontend application
   - "frontend"
   - "frontend/apps/*"
+  # Tools
+  - "tools/*"

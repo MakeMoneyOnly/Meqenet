@@ -268,6 +268,7 @@ module.exports = [
       '**/*.test.tsx',
       '**/*.spec.ts',
       '**/*.spec.tsx',
+      '**/*.e2e-spec.ts',
       '**/test/**/*.ts',
       '**/test/**/*.tsx',
       '**/test/setup.ts',

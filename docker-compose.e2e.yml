@@ -11,11 +11,22 @@ services:
       - "5433:5432"
     volumes:
       - postgres_test_data:/var/lib/postgresql/data
+      - ./test/db/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U testuser -d meqenet_test"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   redis_test:
     image: redis:7-alpine
     ports:
       - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   api_gateway:
     build:
@@ -24,8 +35,10 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      - auth_service
-      - payments_service
+      auth_service:
+        condition: service_healthy
+      payments_service:
+        condition: service_healthy
 
   auth_service:
     build:
@@ -34,9 +47,19 @@ services:
     environment:
       DATABASE_URL: postgresql://testuser:testpassword@postgres_test:5432/meqenet_test
       REDIS_HOST: redis_test
+      REDIS_PORT: 6379
+      E2E_DB_ENCRYPTION_KEY: ${E2E_DB_ENCRYPTION_KEY}
     depends_on:
-      - postgres_test
-      - redis_test
+      postgres_test:
+        condition: service_healthy
+      redis_test:
+        condition: service_healthy
+    healthcheck:
+      # This assumes the service exposes a health check endpoint on port 3001
+      test: ["CMD", "wget", "--spider", "http://localhost:3001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   payments_service:
     build:
@@ -45,7 +68,14 @@ services:
     environment:
       DATABASE_URL: postgresql://testuser:testpassword@postgres_test:5432/meqenet_test
     depends_on:
-      - postgres_test
+      postgres_test:
+        condition: service_healthy
+    healthcheck:
+      # This assumes the service exposes a health check endpoint on port 3002
+      test: ["CMD", "wget", "--spider", "http://localhost:3002/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres_test_data:

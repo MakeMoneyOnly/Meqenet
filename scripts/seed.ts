@@ -1,33 +1,151 @@
+import { PrismaClient, UserRole, KycStatus, RiskLevel } from '@prisma/client';
 import { faker } from '@faker-js/faker';
-import { PrismaClient } from '@prisma/client';
+import * as argon2 from 'argon2';
+import { createCipheriv, randomBytes, scryptSync } from 'crypto';
+import { ConfigService } from '../backend/shared/src/config/config.service';
+
+// Constants
+const MIN_ENCRYPTION_KEY_LENGTH = 32;
+const SCRYPT_KEY_LENGTH = 32;
+const SAMPLE_USERS_COUNT = 50;
+const FAYDA_ID_PREFIX = '1234567890';
+const FAYDA_ID_PADDING_LENGTH = 2;
+const FAYDA_ID_PADDING_CHAR = '0';
+const AES_IV_LENGTH = 16;
+
+// Custom locale for Ethiopian data
+interface EthiopianLocale {
+  name: {
+    firstName: string[];
+    lastName: string[];
+  };
+  phone: {
+    formats: string[];
+  };
+}
+
+const ethiopianLocale: EthiopianLocale = {
+  name: {
+    firstName: [
+      'Abebe',
+      'Chala',
+      'Desta',
+      'Fikre',
+      'Gebre',
+      'Haile',
+      'Ibrahim',
+      'Jemal',
+      'Kaleb',
+      'Lidet',
+      'Mekonnen',
+      'Negasi',
+      'Oli',
+      'Paulos',
+      'Qetsela',
+      'Robel',
+      'Samuel',
+      'Tadesse',
+      'Umar',
+      'Yonas',
+    ],
+    lastName: [
+      'Bekele',
+      'Demissie',
+      'Girma',
+      'Hailemariam',
+      'Kebede',
+      'Lemma',
+      'Mamo',
+      'Nigussie',
+      'Ojera',
+      'Petros',
+      'Regassa',
+      'Sisay',
+      'Tsegaye',
+      'Woldemichael',
+      'Zewde',
+    ],
+  },
+  phone: {
+    formats: ['09########', '+2519########'],
+  },
+};
+
+faker.locale = 'en'; // Base locale
+faker.locales.et = ethiopianLocale;
+faker.locale = 'et';
 
 const prisma = new PrismaClient();
+const configService = new ConfigService();
+
+// Encryption setup
+const encryptionKey = configService.get('E2E_DB_ENCRYPTION_KEY');
+if (!encryptionKey || encryptionKey.length < MIN_ENCRYPTION_KEY_LENGTH) {
+  throw new Error(
+    'E2E_DB_ENCRYPTION_KEY must be set and be at least 32 characters long.'
+  );
+}
+const algorithm = 'aes-256-cbc';
+const key = scryptSync(encryptionKey, 'salt', SCRYPT_KEY_LENGTH);
+
+function encrypt(text: string): Buffer {
+  const iv = randomBytes(AES_IV_LENGTH);
+  const cipher = createCipheriv(algorithm, key, iv);
+  const encrypted = Buffer.concat([cipher.update(text), cipher.final()]);
+  return Buffer.concat([iv, encrypted]);
+}
 
 async function main(): Promise<void> {
-  // eslint-disable-next-line no-console
-  console.log(`Start seeding ...`);
+  const password = await argon2.hash('Password123!');
 
-  // Create Users - FinTech compliance: Seed data for testing
-  const SEED_USER_COUNT = 10;
-  for (let i = 0; i < SEED_USER_COUNT; i++) {
-    await prisma.user.create({
-      data: {
-        email: faker.internet.email(),
-        name: faker.person.fullName(),
-        // Add other user fields as necessary
-      },
+  // Create Roles
+  const roles = Object.values(UserRole);
+  for (const role of roles) {
+    await prisma.role.upsert({
+      where: { name: role },
+      update: {},
+      create: { name: role },
     });
   }
 
-  // eslint-disable-next-line no-console
-  console.log(`Seeding finished.`);
+  // Create Users
+  for (let i = 0; i < SAMPLE_USERS_COUNT; i++) {
+    const firstName = faker.name.firstName();
+    const lastName = faker.name.lastName();
+    const email = faker.internet
+      .email(firstName, lastName, 'meqenet.et')
+      .toLowerCase();
+    const faydaId = `${FAYDA_ID_PREFIX}${i.toString().padStart(FAYDA_ID_PADDING_LENGTH, FAYDA_ID_PADDING_CHAR)}`;
+
+    await prisma.user.create({
+      data: {
+        email: email,
+        passwordHash: password,
+        firstName: firstName,
+        lastName: lastName,
+        displayName: `${firstName} ${lastName}`,
+        phone: faker.phone.number(),
+        emailVerified: faker.datatype.boolean(),
+        phoneVerified: faker.datatype.boolean(),
+        kycStatus: faker.helpers.arrayElement(Object.values(KycStatus)),
+        status: 'ACTIVE',
+        role: faker.helpers.arrayElement([
+          UserRole.CUSTOMER,
+          UserRole.MERCHANT,
+        ]),
+        riskLevel: faker.helpers.arrayElement(Object.values(RiskLevel)),
+        faydaIdHash: encrypt(faydaId),
+        createdAt: faker.date.past(),
+      },
+    });
+  }
 }
 
 main()
-  .catch(e => {
-    // eslint-disable-next-line no-console
-    console.error(e);
-    process.exit(1);
+  .catch((e: unknown) => {
+    throw new Error(
+      `Seeding failed: ${e instanceof Error ? e.message : String(e)}`
+    );
   })
   .finally(async () => {
     await prisma.$disconnect();

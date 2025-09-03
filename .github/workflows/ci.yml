@@ -200,9 +200,9 @@ jobs:
           pnpm config set registry https://registry.npmjs.org/
 
           # Configure retry settings for rate limiting
-                      pnpm config set fetch-retry-mintimeout 30000
-            pnpm config set fetch-retry-maxtimeout 180000
-            pnpm config set fetch-timeout 120000
+          pnpm config set fetch-retry-mintimeout 30000
+          pnpm config set fetch-retry-maxtimeout 180000
+          pnpm config set fetch-timeout 120000
 
           # Set auth token if available and valid
           if [ -n "${{ secrets.NPM_TOKEN }}" ] && [ "${{ secrets.NPM_TOKEN }}" != "XXXX[hidden]" ] && [ "${{ secrets.NPM_TOKEN }}" != "" ]; then
@@ -353,7 +353,7 @@ jobs:
 
           # Method 1: Primary CDN (get.pnpm.io)
           echo "🔄 Attempt 1/6: Installing via primary CDN..."
-                      if curl -fsSL --connect-timeout 30 --max-time 120 https://get.pnpm.io/install.sh | sh -; then
+          if curl -fsSL --connect-timeout 30 --max-time 120 https://get.pnpm.io/install.sh | sh -; then
               export PNPM_HOME="$HOME/.local/share/pnpm"
               export PATH="$PNPM_HOME:$PATH"
               if command -v pnpm &> /dev/null; then
@@ -503,9 +503,9 @@ jobs:
           pnpm config set registry https://registry.npmjs.org/
 
           # Configure retry settings for rate limiting
-                      pnpm config set fetch-retry-mintimeout 30000
-            pnpm config set fetch-retry-maxtimeout 180000
-            pnpm config set fetch-timeout 120000
+          pnpm config set fetch-retry-mintimeout 30000
+          pnpm config set fetch-retry-maxtimeout 180000
+          pnpm config set fetch-timeout 120000
 
           # Set auth token if available and valid
           if [ -n "${{ secrets.NPM_TOKEN }}" ] && [ "${{ secrets.NPM_TOKEN }}" != "XXXX[hidden]" ] && [ "${{ secrets.NPM_TOKEN }}" != "" ]; then
@@ -641,7 +641,7 @@ jobs:
 
           # Method 1: Primary CDN (get.pnpm.io)
           echo "🔄 Attempt 1/6: Installing via primary CDN..."
-                      if curl -fsSL --connect-timeout 30 --max-time 120 https://get.pnpm.io/install.sh | sh -; then
+          if curl -fsSL --connect-timeout 30 --max-time 120 https://get.pnpm.io/install.sh | sh -; then
               export PNPM_HOME="$HOME/.local/share/pnpm"
               export PATH="$PNPM_HOME:$PATH"
               if command -v pnpm &> /dev/null; then
@@ -791,9 +791,9 @@ jobs:
           pnpm config set registry https://registry.npmjs.org/
 
           # Configure retry settings for rate limiting
-                      pnpm config set fetch-retry-mintimeout 30000
-            pnpm config set fetch-retry-maxtimeout 180000
-            pnpm config set fetch-timeout 120000
+          pnpm config set fetch-retry-mintimeout 30000
+          pnpm config set fetch-retry-maxtimeout 180000
+          pnpm config set fetch-timeout 120000
 
           # Set auth token if available and valid
           if [ -n "${{ secrets.NPM_TOKEN }}" ] && [ "${{ secrets.NPM_TOKEN }}" != "XXXX[hidden]" ] && [ "${{ secrets.NPM_TOKEN }}" != "" ]; then
@@ -1037,7 +1037,7 @@ jobs:
 
           # Method 1: Primary CDN (get.pnpm.io)
           echo "🔄 Attempt 1/6: Installing via primary CDN..."
-                      if curl -fsSL --connect-timeout 30 --max-time 120 https://get.pnpm.io/install.sh | sh -; then
+          if curl -fsSL --connect-timeout 30 --max-time 120 https://get.pnpm.io/install.sh | sh -; then
               export PNPM_HOME="$HOME/.local/share/pnpm"
               export PATH="$PNPM_HOME:$PATH"
               if command -v pnpm &> /dev/null; then
@@ -1207,9 +1207,9 @@ jobs:
           pnpm config set registry https://registry.npmjs.org/
 
           # Configure retry settings for rate limiting
-                      pnpm config set fetch-retry-mintimeout 30000
-            pnpm config set fetch-retry-maxtimeout 180000
-            pnpm config set fetch-timeout 120000
+          pnpm config set fetch-retry-mintimeout 30000
+          pnpm config set fetch-retry-maxtimeout 180000
+          pnpm config set fetch-timeout 120000
 
           # Set auth token if available and valid
           if [ -n "${{ secrets.NPM_TOKEN }}" ] && [ "${{ secrets.NPM_TOKEN }}" != "XXXX[hidden]" ] && [ "${{ secrets.NPM_TOKEN }}" != "" ]; then
@@ -1390,7 +1390,7 @@ jobs:
 
           # Method 1: Primary CDN (get.pnpm.io)
           echo "🔄 Attempt 1/6: Installing via primary CDN..."
-                      if curl -fsSL --connect-timeout 30 --max-time 120 https://get.pnpm.io/install.sh | sh -; then
+          if curl -fsSL --connect-timeout 30 --max-time 120 https://get.pnpm.io/install.sh | sh -; then
               export PNPM_HOME="$HOME/.local/share/pnpm"
               export PATH="$PNPM_HOME:$PATH"
               if command -v pnpm &> /dev/null; then
@@ -1540,9 +1540,9 @@ jobs:
           pnpm config set registry https://registry.npmjs.org/
 
           # Configure retry settings for rate limiting
-                      pnpm config set fetch-retry-mintimeout 30000
-            pnpm config set fetch-retry-maxtimeout 180000
-            pnpm config set fetch-timeout 120000
+          pnpm config set fetch-retry-mintimeout 30000
+          pnpm config set fetch-retry-maxtimeout 180000
+          pnpm config set fetch-timeout 120000
 
           # Set auth token if available and valid
           if [ -n "${{ secrets.NPM_TOKEN }}" ] && [ "${{ secrets.NPM_TOKEN }}" != "XXXX[hidden]" ] && [ "${{ secrets.NPM_TOKEN }}" != "" ]; then
@@ -1749,7 +1749,7 @@ jobs:
 
           # Method 1: Primary CDN (get.pnpm.io)
           echo "🔄 Attempt 1/6: Installing via primary CDN..."
-                      if curl -fsSL --connect-timeout 30 --max-time 120 https://get.pnpm.io/install.sh | sh -; then
+          if curl -fsSL --connect-timeout 30 --max-time 120 https://get.pnpm.io/install.sh | sh -; then
               export PNPM_HOME="$HOME/.local/share/pnpm"
               export PATH="$PNPM_HOME:$PATH"
               if command -v pnpm &> /dev/null; then
@@ -1899,9 +1899,9 @@ jobs:
           pnpm config set registry https://registry.npmjs.org/
 
           # Configure retry settings for rate limiting
-                      pnpm config set fetch-retry-mintimeout 30000
-            pnpm config set fetch-retry-maxtimeout 180000
-            pnpm config set fetch-timeout 120000
+          pnpm config set fetch-retry-mintimeout 30000
+          pnpm config set fetch-retry-maxtimeout 180000
+          pnpm config set fetch-timeout 120000
 
           # Set auth token if available and valid
           if [ -n "${{ secrets.NPM_TOKEN }}" ] && [ "${{ secrets.NPM_TOKEN }}" != "XXXX[hidden]" ] && [ "${{ secrets.NPM_TOKEN }}" != "" ]; then
@@ -2136,7 +2136,7 @@ jobs:
 
           # Method 1: Primary CDN (get.pnpm.io)
           echo "🔄 Attempt 1/6: Installing via primary CDN..."
-                      if curl -fsSL --connect-timeout 30 --max-time 120 https://get.pnpm.io/install.sh | sh -; then
+          if curl -fsSL --connect-timeout 30 --max-time 120 https://get.pnpm.io/install.sh | sh -; then
               export PNPM_HOME="$HOME/.local/share/pnpm"
               export PATH="$PNPM_HOME:$PATH"
               if command -v pnpm &> /dev/null; then
@@ -2378,7 +2378,6 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           pull: true
-
           no-cache: true
 
       - name: 🔍 Scan Docker Image for Vulnerabilities
@@ -2445,7 +2444,7 @@ jobs:
 
           # Method 1: Primary CDN (get.pnpm.io)
           echo "🔄 Attempt 1/6: Installing via primary CDN..."
-                      if curl -fsSL --connect-timeout 30 --max-time 120 https://get.pnpm.io/install.sh | sh -; then
+          if curl -fsSL --connect-timeout 30 --max-time 120 https://get.pnpm.io/install.sh | sh -; then
               export PNPM_HOME="$HOME/.local/share/pnpm"
               export PATH="$PNPM_HOME:$PATH"
               if command -v pnpm &> /dev/null; then

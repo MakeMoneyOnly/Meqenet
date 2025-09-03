@@ -30,6 +30,8 @@ coverage/
 !jest.config.js
 !webpack.config.js
 !eslint.config.js
+!eslint.config.staged.js
+!.lintstagedrc.js
 !scripts/*.js
 
 # =============================================================================
