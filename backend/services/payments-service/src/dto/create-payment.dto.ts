@@ -1,8 +1,8 @@
 import {
   IsString,
   IsNotEmpty,
-  IsNumber,
-  IsPositive,
+  IsInt,
+  Min,
   MinLength,
   MaxLength,
   IsIn,
@@ -22,9 +22,13 @@ const PAYMENT_VALIDATION = {
 } as const;
 
 export class CreatePaymentDto {
-  @IsNumber()
-  @IsPositive()
-  amount: number;
+  /**
+   * Monetary amount in minor units (e.g., santim for ETB)
+   * FinTech best practice: avoid floating point for money
+   */
+  @IsInt()
+  @Min(1)
+  amountMinor: number;
 
   @IsString()
   @IsNotEmpty()
