@@ -9,10 +9,7 @@ import {
 } from '@nestjs/common';
 import { Response, Request } from 'express';
 import { v4 as uuidv4 } from 'uuid';
-import {
-  createBilingualAuthErrorResponse,
-  getAuthErrorMessage,
-} from '../i18n/error-messages';
+import { getAuthErrorMessage } from '../i18n/error-messages';
 
 /**
  * Global Exception Filter for Authentication Service
@@ -33,7 +30,8 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
     // Determine preferred language from Accept-Language header
     const acceptLanguage = request.headers['accept-language'] as string;
-    const language = (acceptLanguage?.includes('am') ? 'am' : 'en') as
+    // Language determination for future bilingual error responses
+    const _language = (acceptLanguage?.includes('am') ? 'am' : 'en') as
       | 'en'
       | 'am';
 
@@ -50,7 +48,8 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         typeof exceptionResponse === 'object' &&
         'message' in exceptionResponse
       ) {
-        const validationErrors = (exceptionResponse as any).message;
+        const validationErrors = (exceptionResponse as Record<string, unknown>)
+          .message;
 
         // Handle validation error messages
         if (Array.isArray(validationErrors) && validationErrors.length > 0) {
@@ -91,7 +90,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
           typeof responseObj.errorCode === 'string'
         ) {
           errorCode = responseObj.errorCode;
-          const errorMessage = getAuthErrorMessage(errorCode, language);
+          // Get bilingual error message for the specific error code
           message = {
             en: getAuthErrorMessage(errorCode, 'en'),
             am: getAuthErrorMessage(errorCode, 'am'),
@@ -103,7 +102,10 @@ export class GlobalExceptionFilter implements ExceptionFilter {
               am: 'ስህተት ተፈጥሯል።',
             };
           } else {
-            message = responseObj.message as any;
+            message = responseObj.message as
+              | string
+              | string[]
+              | Record<string, unknown>;
           }
           errorCode = this.getErrorCodeFromStatus(status);
         }

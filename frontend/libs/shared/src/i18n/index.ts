@@ -32,7 +32,7 @@ export const supportedLanguages = {
 export type SupportedLanguageCode = keyof typeof supportedLanguages;
 
 // Configure i18n
-const initI18n = (isClient: boolean = true) => {
+const initI18n = (isClient = true) => {
   const i18nInstance = i18n.use(initReactI18next);
 
   // Use language detector and backend only on client

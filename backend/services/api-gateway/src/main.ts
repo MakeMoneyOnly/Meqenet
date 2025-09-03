@@ -59,7 +59,13 @@ async function bootstrap(): Promise<void> {
       }
     },
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Request-ID'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'Accept',
+      'X-Request-ID',
+      'Idempotency-Key',
+    ],
     credentials: true,
   });
   const port = configService.get<number>('app.port') ?? DEFAULT_PORT;

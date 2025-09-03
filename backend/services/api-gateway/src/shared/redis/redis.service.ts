@@ -33,21 +33,14 @@ export class RedisService implements OnModuleDestroy {
     ttlSeconds?: number,
     mode?: 'NX' | 'XX'
   ): Promise<'OK' | null> {
-    // Handle TTL with setex for simplicity
-    if (ttlSeconds) {
-      await this.redisClient.setex(key, ttlSeconds, value);
-      return 'OK';
+    const args: (string | number)[] = [];
+    if (ttlSeconds && ttlSeconds > 0) {
+      args.push('EX', ttlSeconds);
     }
-
-    // Handle mode with conditional set
-    if (mode === 'NX') {
-      const exists = await this.redisClient.exists(key);
-      if (exists) return null;
-    } else if (mode === 'XX') {
-      const exists = await this.redisClient.exists(key);
-      if (!exists) return null;
+    if (mode) {
+      args.push(mode);
     }
-
-    return this.redisClient.set(key, value);
+    const result = await this.redisClient.set(key, value, ...args);
+    return result === 'OK' ? 'OK' : null;
   }
 }

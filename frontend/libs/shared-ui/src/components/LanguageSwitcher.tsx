@@ -56,6 +56,17 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
     small: 'text-sm px-2 py-1',
     medium: 'text-base px-3 py-2',
     large: 'text-lg px-4 py-3',
+  } as const;
+
+  // Safely construct className to avoid object injection
+  const getButtonClasses = (size: keyof typeof sizeClasses) => {
+    const sizeClass =
+      size === 'small'
+        ? sizeClasses.small
+        : size === 'medium'
+          ? sizeClasses.medium
+          : sizeClasses.large;
+    return `inline-flex items-center justify-between w-full rounded-md border border-gray-300 bg-white shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 ${sizeClass}`;
   };
 
   // Dropdown variant
@@ -69,12 +80,7 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
           type="button"
           onClick={() => setIsOpen(!isOpen)}
           disabled={isLoading}
-          className={`
-            inline-flex items-center justify-between w-full rounded-md border border-gray-300
-            bg-white shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2
-            focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50
-            ${sizeClasses[size]}
-          `}
+          className={getButtonClasses(size)}
           aria-expanded={isOpen}
           aria-haspopup="listbox"
           aria-label={t('accessibility.languageSelector')}
@@ -82,8 +88,7 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
           <span className="flex items-center">
             <span
               className="mr-2 text-lg"
-              role="img"
-              aria-label={currentLanguage?.name}
+              aria-label={`${currentLanguage?.name} flag`}
             >
               {language === 'am' ? '🇪🇹' : '🇬🇧'}
             </span>
@@ -108,52 +113,43 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
 
         {isOpen && (
           <div className="absolute right-0 mt-2 w-full rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
-            <ul
-              className="py-1"
-              role="listbox"
-              aria-labelledby="language-selector"
-            >
+            <div className="py-1">
               {languages.map((lang) => (
-                <li
+                <button
                   key={lang.code}
-                  role="option"
-                  aria-selected={lang.code === language}
+                  onClick={() => handleLanguageChange(lang.code)}
+                  className={`
+                    w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center
+                    ${lang.code === language ? 'bg-gray-50 font-semibold' : ''}
+                  `}
+                  disabled={isLoading}
+                  role="menuitem"
                 >
-                  <button
-                    onClick={() => handleLanguageChange(lang.code)}
-                    className={`
-                      w-full text-left px-4 py-2 text-sm hover:bg-gray-100 flex items-center
-                      ${lang.code === language ? 'bg-gray-50 font-semibold' : ''}
-                    `}
-                    disabled={isLoading}
+                  <span
+                    className="mr-2 text-lg"
+                    aria-label={`${lang.name} flag`}
                   >
-                    <span
-                      className="mr-2 text-lg"
-                      role="img"
-                      aria-label={lang.name}
+                    {lang.code === 'am' ? '🇪🇹' : '🇬🇧'}
+                  </span>
+                  <span>{lang.name}</span>
+                  {lang.code === language && (
+                    <svg
+                      className="ml-auto h-4 w-4 text-green-600"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                      aria-hidden="true"
                     >
-                      {lang.code === 'am' ? '🇪🇹' : '🇬🇧'}
-                    </span>
-                    <span>{lang.name}</span>
-                    {lang.code === language && (
-                      <svg
-                        className="ml-auto h-4 w-4 text-green-600"
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                        aria-hidden="true"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    )}
-                  </button>
-                </li>
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  )}
+                </button>
               ))}
-            </ul>
+            </div>
           </div>
         )}
       </div>
@@ -163,33 +159,38 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
   // Buttons variant
   if (variant === 'buttons') {
     return (
-      <div
-        className={`inline-flex rounded-md shadow-sm ${className}`}
-        role="group"
-      >
+      <div className={`inline-flex rounded-md shadow-sm ${className}`}>
         {languages.map((lang, index) => (
           <button
             key={lang.code}
             onClick={() => handleLanguageChange(lang.code)}
             disabled={isLoading}
-            className={`
-              ${sizeClasses[size]}
-              ${index === 0 ? 'rounded-l-md' : ''}
-              ${index === languages.length - 1 ? 'rounded-r-md' : ''}
-              ${
+            className={(() => {
+              const sizeClass =
+                size === 'small'
+                  ? sizeClasses.small
+                  : size === 'medium'
+                    ? sizeClasses.medium
+                    : sizeClasses.large;
+              const baseClasses = `${sizeClass} border border-gray-300 font-medium focus:z-10 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 transition-colors`;
+              const positionClasses =
+                index === 0
+                  ? 'rounded-l-md'
+                  : index === languages.length - 1
+                    ? 'rounded-r-md'
+                    : '';
+              const stateClasses =
                 lang.code === language
                   ? 'bg-indigo-600 text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-50'
-              }
-              border border-gray-300 font-medium focus:z-10 focus:outline-none
-              focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500
-              disabled:opacity-50 transition-colors
-            `}
+                  : 'bg-white text-gray-700 hover:bg-gray-50';
+
+              return `${baseClasses} ${positionClasses} ${stateClasses}`;
+            })()}
             aria-pressed={lang.code === language}
             aria-label={`Switch to ${lang.name}`}
           >
             <span className="flex items-center">
-              <span className="mr-2" role="img" aria-label={lang.name}>
+              <span className="mr-2" aria-label={`${lang.name} flag`}>
                 {lang.code === 'am' ? '🇪🇹' : '🇬🇧'}
               </span>
               {showLabel && lang.name}
@@ -220,7 +221,7 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
             `}
             aria-pressed={lang.code === language}
           >
-            <span className="mr-3 text-lg" role="img" aria-label={lang.name}>
+            <span className="mr-3 text-lg" aria-label={`${lang.name} flag`}>
               {lang.code === 'am' ? '🇪🇹' : '🇬🇧'}
             </span>
             <span>{lang.name}</span>

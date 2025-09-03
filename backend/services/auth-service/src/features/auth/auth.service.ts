@@ -25,7 +25,7 @@ export class AuthService {
 
   async register(
     registerUserDto: RegisterUserDto,
-    context?: { language?: string }
+    _context?: { language?: string }
   ): Promise<{ accessToken: string }> {
     const { email, password } = registerUserDto;
 
@@ -64,7 +64,7 @@ export class AuthService {
 
   async login(
     loginUserDto: LoginUserDto,
-    context?: { language?: string }
+    _context?: { language?: string }
   ): Promise<{ accessToken: string }> {
     const { email, password } = loginUserDto;
 
