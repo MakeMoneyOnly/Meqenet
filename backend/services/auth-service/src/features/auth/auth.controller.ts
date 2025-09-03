@@ -6,12 +6,15 @@ import {
   HttpStatus,
   UseFilters,
   Headers,
+  UseGuards,
 } from '@nestjs/common';
 
 import { AuthService } from './auth.service';
 import { LoginUserDto } from './dto/login-user.dto';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { GlobalExceptionFilter } from '../../shared/filters/global-exception.filter';
+import { Public } from '../../shared/decorators/public.decorator';
+import { AdaptiveRateLimitGuard } from '../../shared/guards/adaptive-rate-limit.guard';
 
 @Controller('auth')
 @UseFilters(GlobalExceptionFilter)
@@ -20,6 +23,8 @@ export class AuthController {
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
+  @Public()
+  @UseGuards(AdaptiveRateLimitGuard)
   async register(
     @Body() registerUserDto: RegisterUserDto,
     @Headers('accept-language') acceptLanguage?: string
@@ -33,6 +38,8 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
+  @Public()
+  @UseGuards(AdaptiveRateLimitGuard)
   async login(
     @Body() loginUserDto: LoginUserDto,
     @Headers('accept-language') acceptLanguage?: string
