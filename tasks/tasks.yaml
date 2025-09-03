@@ -1033,7 +1033,7 @@ stages:
             description:
               Use `bcrypt` with a configurable salt round count for all password
               hashing.
-            status: To Do
+            status: Completed
             context: [docs/Stage 1 - Foundation/07-Security.md]
             personas: [
                 Senior Backend Developer,
@@ -1043,7 +1043,7 @@ stages:
               ]
           - id: AUTH-BE-API-02
             description: Implement `/auth/login` endpoint and protect it with rate limiting.
-            status: To Do
+            status: Completed
             context: [docs/Stage 1 - Foundation/07-Security.md]
             personas: [
                 Senior Backend Developer,

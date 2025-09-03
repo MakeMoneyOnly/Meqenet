@@ -12,6 +12,7 @@ import { AuthService } from './auth.service';
 import { LoginUserDto } from './dto/login-user.dto';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { GlobalExceptionFilter } from '../../shared/filters/global-exception.filter';
+import { Public } from '../../shared/decorators/public.decorator';
 
 @Controller('auth')
 @UseFilters(GlobalExceptionFilter)
@@ -19,6 +20,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
+  @Public()
   @HttpCode(HttpStatus.CREATED)
   async register(
     @Body() registerUserDto: RegisterUserDto,
@@ -32,6 +34,7 @@ export class AuthController {
   }
 
   @Post('login')
+  @Public()
   @HttpCode(HttpStatus.OK)
   async login(
     @Body() loginUserDto: LoginUserDto,
