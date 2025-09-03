@@ -3862,6 +3862,19 @@ stages:
                 Product Manager,
                 Analytics & Business Intelligence Specialist,
               ]
+          - id: GOV-SUPPLY-CHAIN-01
+            description: "[Gov/Supply-Chain] Enforce policy to disallow deprecated i18n backends; review and remediate vulnerable transitive dependencies quarterly."
+            status: To Do
+            context:
+              [
+                docs/Stage 1 - Foundation/ADR-2025-09-03-i18n-backend-remediation.md,
+              ]
+            personas:
+              [
+                Data Security Specialist,
+                FinTech DevOps Engineer,
+                Senior Backend Developer,
+              ]
 
   - stage: "Stage 12: Accessibility & Inclusion"
     tasks:
