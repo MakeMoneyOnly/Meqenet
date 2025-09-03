@@ -7,6 +7,18 @@ function redactQuery(url: string): string {
   return qIndex === -1 ? url : url.slice(0, qIndex) + '?[REDACTED]';
 }
 
+function parseRouteSampling(input?: string): Record<string, number> {
+  const map: Record<string, number> = {};
+  if (!input) return map;
+  for (const part of input.split(',')) {
+    const [route, rateStr] = part.split(':').map(s => s.trim());
+    if (!route || !rateStr) continue;
+    const rate = parseFloat(rateStr);
+    if (!Number.isNaN(rate) && rate >= 0 && rate <= 1) map[route] = rate;
+  }
+  return map;
+}
+
 @Injectable()
 export class AccessLogMiddleware implements NestMiddleware {
   private readonly logger = new Logger('AccessLog');
@@ -15,10 +27,9 @@ export class AccessLogMiddleware implements NestMiddleware {
 
   constructor(configService: ConfigService) {
     this.samplingRate = configService.get<number>('logger.samplingRate', 1.0);
-    this.routeSampling = {
-      '/health': 0.1,
-      '/metrics': 0.2,
-    };
+    const routeSamplingEnv = configService.get<string>('LOG_ROUTE_SAMPLING');
+    const defaults: Record<string, number> = { '/health': 0.1, '/metrics': 0.2 };
+    this.routeSampling = { ...defaults, ...parseRouteSampling(routeSamplingEnv) };
   }
 
   private shouldLog(path: string): boolean {
