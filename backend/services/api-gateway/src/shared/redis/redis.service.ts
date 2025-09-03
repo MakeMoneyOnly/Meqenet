@@ -32,26 +32,22 @@ export class RedisService implements OnModuleDestroy {
     value: string,
     ttlSeconds?: number,
     mode?: 'NX' | 'XX'
-  ): Promise<'OK' | null> {
-    // Use multiple Redis commands to avoid type complexity
-    const result = await this.redisClient.set(key, value);
+  ): Promise<string | null> {
+    // ioredis 5.x API - use proper parameter objects
+    const options: any = {};
 
-    if (result === 'OK') {
-      // Set TTL if specified
-      if (ttlSeconds && ttlSeconds > 0) {
-        await this.redisClient.expire(key, ttlSeconds);
-      }
+    if (ttlSeconds && ttlSeconds > 0) {
+      options.EX = ttlSeconds;
+    }
 
-      // Handle NX/XX modes by checking if key exists
+    if (mode) {
       if (mode === 'NX') {
-        // If NX mode and TTL was set, we need to check if it was actually set
-        // For simplicity, we'll just return OK since basic set succeeded
+        options.NX = true;
       } else if (mode === 'XX') {
-        // XX mode - only set if key exists (which it does now)
-        // This is a simplified implementation
+        options.XX = true;
       }
     }
 
-    return result;
+    return this.redisClient.set(key, value, options);
   }
 }

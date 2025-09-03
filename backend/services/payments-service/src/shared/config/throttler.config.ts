@@ -1,4 +1,6 @@
 import { ThrottlerModuleAsyncOptions } from '@nestjs/throttler';
+import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
+import Redis from 'ioredis';
 
 // Constants for magic numbers - FinTech compliance
 const MILLISECONDS_PER_SECOND = 1000;
@@ -36,8 +38,14 @@ export const throttlerConfig: ThrottlerModuleAsyncOptions = {
     );
 
     return {
-      ttl: ttl * MILLISECONDS_PER_SECOND, // Convert to milliseconds
-      limit,
+      throttlers: [
+        {
+          ttl: ttl * MILLISECONDS_PER_SECOND, // ms
+          limit,
+        },
+        // Example stricter throttler for payments can be applied via decorators if needed
+        // { ttl: _paymentTtl * MILLISECONDS_PER_SECOND, limit: _paymentLimit },
+      ],
       ignoreUserAgents: [
         // Allow monitoring tools to bypass throttling
         /GoogleHC/i,
@@ -50,16 +58,14 @@ export const throttlerConfig: ThrottlerModuleAsyncOptions = {
         const request = context.switchToHttp().getRequest();
         return request.url === '/health' || request.url === '/ready';
       },
-      // Custom storage configuration for distributed rate limiting
-      storage: {
-        type: 'redis',
-        options: {
+      // Redis-backed storage provider for distributed rate limiting
+      storage: new ThrottlerStorageRedisService(
+        new Redis({
           host: process.env.REDIS_HOST || 'localhost',
           port: parseInt(process.env.REDIS_PORT || '6379', 10),
           password: process.env.REDIS_PASSWORD,
-          keyPrefix: 'throttle:payments-service:',
-        },
-      },
+        })
+      ),
     };
   },
   inject: [],
