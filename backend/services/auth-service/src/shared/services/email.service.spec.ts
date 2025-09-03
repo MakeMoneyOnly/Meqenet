@@ -128,11 +128,13 @@ describe('EmailService', () => {
       delete process.env.FRONTEND_RESET_URL;
 
       try {
-        const result = (service as any).buildResetUrl('token', 'client');
+        // Create a new service instance to pick up the new env
+        const testService = new (EmailService as any)();
+        const result = (testService as any).buildResetUrl('token', 'client');
 
         expect(result).toContain('https://app.meqenet.et/reset-password');
       } finally {
-        // Restore env var
+        // Restore original env
         process.env.FRONTEND_RESET_URL = originalUrl;
       }
     });

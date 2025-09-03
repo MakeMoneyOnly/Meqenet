@@ -9,6 +9,7 @@ import { PrismaService } from '../../shared/prisma/prisma.service';
 import { EventService } from '../../shared/services/event.service';
 import { PasswordResetTokenService } from '../../shared/services/password-reset-token.service';
 import { EmailService } from '../../shared/services/email.service';
+import { SecurityMonitoringService } from '../../shared/services/security-monitoring.service';
 import { PasswordResetRequestDto } from './dto/password-reset-request.dto';
 import { PasswordResetConfirmDto } from './dto/password-reset-confirm.dto';
 
@@ -29,6 +30,17 @@ describe('AuthService', () => {
     user: {
       findUnique: vi.fn(),
       create: vi.fn(),
+      update: vi.fn(),
+      findFirst: vi.fn(),
+    },
+    passwordReset: {
+      upsert: vi.fn(),
+      findFirst: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+      deleteMany: vi.fn(),
+      updateMany: vi.fn(),
     },
     $transaction: vi.fn(),
   };
@@ -56,7 +68,15 @@ describe('AuthService', () => {
     sendPasswordResetEmail: vi.fn(),
   };
 
+  const mockSecurityMonitoringService = {
+    recordRegister: vi.fn(),
+    recordLogin: vi.fn(),
+  };
+
   beforeEach(async () => {
+    // Reset all mocks to clear call history
+    vi.clearAllMocks();
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
@@ -88,6 +108,10 @@ describe('AuthService', () => {
           provide: EmailService,
           useValue: mockEmailService,
         },
+        {
+          provide: SecurityMonitoringService,
+          useValue: mockSecurityMonitoringService,
+        },
       ],
     }).compile();
 
@@ -99,6 +123,7 @@ describe('AuthService', () => {
     (service as any).eventService = mockEventService;
     (service as any).passwordResetTokenService = mockPasswordResetTokenService;
     (service as any).emailService = mockEmailService;
+    (service as any).securityMonitoring = mockSecurityMonitoringService;
   });
 
   it('should be defined', () => {
@@ -265,18 +290,12 @@ describe('AuthService', () => {
       );
 
       expect(result).toEqual({
-        message: 'Password reset link has been sent to your email.',
+        message:
+          'If an account with this email exists, a password reset link has been sent.',
       });
 
       expect(mockPrismaService.user.findUnique).toHaveBeenCalledWith({
         where: { email: mockPasswordResetRequestDto.email },
-        select: {
-          id: true,
-          email: true,
-          preferredLanguage: true,
-          emailVerified: true,
-          status: true,
-        },
       });
 
       expect(mockPasswordResetTokenService.hasActiveToken).toHaveBeenCalledWith(
@@ -318,13 +337,24 @@ describe('AuthService', () => {
       expect(mockEmailService.sendPasswordResetEmail).not.toHaveBeenCalled();
     });
 
-    it('should throw error for inactive user account', async () => {
+    it('should return generic message for inactive user account (security)', async () => {
       const inactiveUser = { ...mockUser, status: 'INACTIVE' };
       mockPrismaService.user.findUnique.mockResolvedValue(inactiveUser);
 
-      await expect(
-        service.requestPasswordReset(mockPasswordResetRequestDto)
-      ).rejects.toThrow('Account is not active.');
+      const result = await service.requestPasswordReset(
+        mockPasswordResetRequestDto,
+        {}
+      );
+
+      expect(result).toEqual({
+        message:
+          'If an account with this email exists, a password reset link has been sent.',
+      });
+
+      expect(
+        mockPasswordResetTokenService.generateToken
+      ).not.toHaveBeenCalled();
+      expect(mockEmailService.sendPasswordResetEmail).not.toHaveBeenCalled();
     });
 
     it('should return message when user already has active token', async () => {
@@ -366,7 +396,8 @@ describe('AuthService', () => {
       );
 
       expect(result).toEqual({
-        message: 'የይለፍ ቃል ያዋቂ መልዕክት ወደ ኢሜይልዎ ተልኳል።',
+        message:
+          'If an account with this email exists, a password reset link has been sent.',
       });
 
       expect(mockEmailService.sendPasswordResetEmail).toHaveBeenCalledWith(
@@ -385,7 +416,7 @@ describe('AuthService', () => {
       mockEmailService.sendPasswordResetEmail.mockResolvedValue(false);
 
       await expect(
-        service.requestPasswordReset(mockPasswordResetRequestDto)
+        service.requestPasswordReset(mockPasswordResetRequestDto, {})
       ).rejects.toThrow(
         'Failed to send password reset email. Please try again.'
       );
@@ -396,7 +427,7 @@ describe('AuthService', () => {
       mockPrismaService.user.findUnique.mockRejectedValue(dbError);
 
       await expect(
-        service.requestPasswordReset(mockPasswordResetRequestDto)
+        service.requestPasswordReset(mockPasswordResetRequestDto, {})
       ).rejects.toThrow('Database connection failed');
     });
 
@@ -407,7 +438,7 @@ describe('AuthService', () => {
       mockPasswordResetTokenService.generateToken.mockRejectedValue(tokenError);
 
       await expect(
-        service.requestPasswordReset(mockPasswordResetRequestDto)
+        service.requestPasswordReset(mockPasswordResetRequestDto, {})
       ).rejects.toThrow(
         'Failed to send password reset email. Please try again.'
       );
@@ -421,7 +452,7 @@ describe('AuthService', () => {
       );
       mockEmailService.sendPasswordResetEmail.mockResolvedValue(true);
 
-      await service.requestPasswordReset(mockPasswordResetRequestDto);
+      await service.requestPasswordReset(mockPasswordResetRequestDto, {});
 
       expect(mockPasswordResetTokenService.generateToken).toHaveBeenCalledWith(
         mockUser.id,
@@ -452,16 +483,27 @@ describe('AuthService', () => {
         isValid: true,
       });
       mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
-      mockPrismaService.user.update.mockResolvedValue({
+      const updatedUser = {
         ...mockUser,
         passwordHash: 'new-hashed-password',
+        loginAttempts: 0,
+        lockoutUntil: null,
         updatedAt: new Date(),
-      });
+      };
+      mockPrismaService.user.update.mockResolvedValue(updatedUser);
       mockPasswordResetTokenService.consumeToken.mockResolvedValue(true);
 
       // Mock bcrypt.hash
       const bcryptHashMock = vi.mocked(bcrypt.hash);
-      bcryptHashMock.mockResolvedValue('new-hashed-password');
+      bcryptHashMock.mockImplementation(async (password, saltRounds) => {
+        if (
+          password === mockPasswordResetConfirmDto.newPassword &&
+          saltRounds === 12
+        ) {
+          return 'new-hashed-password';
+        }
+        return 'password123'; // fallback for other calls
+      });
 
       const result = await service.confirmPasswordReset(
         mockPasswordResetConfirmDto
@@ -478,6 +520,8 @@ describe('AuthService', () => {
         where: { id: mockUserId },
         data: {
           passwordHash: 'new-hashed-password',
+          loginAttempts: 0,
+          lockoutUntil: null,
           updatedAt: expect.any(Date),
         },
       });
@@ -494,7 +538,7 @@ describe('AuthService', () => {
       );
       expect(bcryptHashMock).toHaveBeenCalledWith(
         mockPasswordResetConfirmDto.newPassword,
-        (service as any).bcryptSaltRounds
+        12
       );
     });
 
@@ -517,7 +561,7 @@ describe('AuthService', () => {
 
       await expect(
         service.confirmPasswordReset(mockPasswordResetConfirmDto)
-      ).rejects.toThrow('Invalid or expired reset token.');
+      ).rejects.toThrow('Invalid or expired password reset token.');
     });
 
     it('should throw error when token consumption fails', async () => {
@@ -587,8 +631,15 @@ describe('AuthService', () => {
       mockPrismaService.user.update.mockResolvedValue({
         ...mockUser,
         passwordHash: 'new-hashed-password',
+        loginAttempts: 0,
+        lockoutUntil: null,
+        updatedAt: new Date(),
       });
       mockPasswordResetTokenService.consumeToken.mockResolvedValue(true);
+
+      // Mock bcrypt.hash
+      const bcryptHashMock = vi.mocked(bcrypt.hash);
+      bcryptHashMock.mockResolvedValue('new-hashed-password');
 
       const result = await service.confirmPasswordReset(
         mockPasswordResetConfirmDto
@@ -615,8 +666,15 @@ describe('AuthService', () => {
       mockPrismaService.user.update.mockResolvedValue({
         ...mockUser,
         passwordHash: 'hashed-long-password',
+        loginAttempts: 0,
+        lockoutUntil: null,
+        updatedAt: new Date(),
       });
       mockPasswordResetTokenService.consumeToken.mockResolvedValue(true);
+
+      // Mock bcrypt.hash for long password
+      const bcryptHashMock = vi.mocked(bcrypt.hash);
+      bcryptHashMock.mockResolvedValue('hashed-long-password');
 
       const result = await service.confirmPasswordReset(longPasswordDto);
 
@@ -659,6 +717,9 @@ describe('AuthService', () => {
 
     it('should update user updatedAt timestamp', async () => {
       const beforeCall = new Date();
+      const bcryptHashMock = vi.mocked(bcrypt.hash);
+      bcryptHashMock.mockResolvedValue('new-hash');
+
       mockPasswordResetTokenService.validateToken.mockResolvedValue({
         userId: 'user-123',
         isValid: true,
@@ -668,11 +729,14 @@ describe('AuthService', () => {
         email: 'user@example.com',
         passwordHash: 'old-hash',
       });
+      const updatedAt = new Date();
       mockPrismaService.user.update.mockResolvedValue({
         id: 'user-123',
         email: 'user@example.com',
         passwordHash: 'new-hash',
-        updatedAt: new Date(),
+        loginAttempts: 0,
+        lockoutUntil: null,
+        updatedAt,
       });
       mockPasswordResetTokenService.consumeToken.mockResolvedValue(true);
 
@@ -757,7 +821,7 @@ describe('AuthService', () => {
           newPassword: 'ValidP@ssw0rd123',
           confirmPassword: 'ValidP@ssw0rd123',
         })
-      ).rejects.toThrow('Invalid or expired reset token.');
+      ).rejects.toThrow('Invalid or expired password reset token.');
     });
 
     it('should handle concurrent password reset attempts', async () => {

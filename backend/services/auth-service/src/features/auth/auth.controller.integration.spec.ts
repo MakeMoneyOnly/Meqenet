@@ -12,10 +12,12 @@ import { EmailService } from '../../shared/services/email.service';
 import { AdaptiveRateLimitGuard } from '../../shared/guards/adaptive-rate-limit.guard';
 import { EventService } from '../../shared/services/event.service';
 import { SecretManagerService } from '../../shared/services/secret-manager.service';
+import { AdaptiveRateLimitingService } from '../../shared/services/adaptive-rate-limiting.service';
 
 // Mock external services
 vi.mock('../../shared/services/secret-manager.service');
 vi.mock('../../shared/services/adaptive-rate-limiting.service');
+vi.mock('../../infrastructure/database/prisma.service');
 
 const mockSecretManagerService = {
   getCurrentJwtPrivateKey: vi.fn().mockReturnValue('mock-private-key'),
@@ -28,6 +30,25 @@ const mockAdaptiveRateLimitingService = {
     allowed: true,
     remainingRequests: 99,
   }),
+};
+
+const mockPrismaService = {
+  user: {
+    findUnique: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    deleteMany: vi.fn(),
+    findFirst: vi.fn(),
+  },
+  passwordReset: {
+    create: vi.fn(),
+    findFirst: vi.fn(),
+    update: vi.fn(),
+    deleteMany: vi.fn(),
+    upsert: vi.fn(),
+  },
+  $disconnect: vi.fn(),
+  $connect: vi.fn(),
 };
 
 describe('AuthController (Integration)', () => {
@@ -88,6 +109,8 @@ describe('AuthController (Integration)', () => {
       .useValue(mockSecretManagerService)
       .overrideProvider(AdaptiveRateLimitingService)
       .useValue(mockAdaptiveRateLimitingService)
+      .overrideProvider(PrismaService)
+      .useValue(mockPrismaService)
       .compile();
 
     app = moduleFixture.createNestApplication();
@@ -112,18 +135,17 @@ describe('AuthController (Integration)', () => {
   });
 
   beforeEach(async () => {
-    // Clean up database before each test
-    await prismaService.passwordReset.deleteMany();
-    await prismaService.user.deleteMany();
+    // Clear all mocks before each test
+    vi.clearAllMocks();
 
-    // Create test user
-    await prismaService.user.create({
-      data: testUser,
-    });
+    // Setup default mock behaviors
+    mockPrismaService.user.findUnique.mockResolvedValue(testUser);
+    mockPrismaService.user.create.mockResolvedValue(testUser);
+    mockPrismaService.passwordReset.create.mockResolvedValue(testTokenData);
+    mockPrismaService.passwordReset.findFirst.mockResolvedValue(null);
   });
 
   afterAll(async () => {
-    await prismaService.$disconnect();
     await app.close();
   });
 

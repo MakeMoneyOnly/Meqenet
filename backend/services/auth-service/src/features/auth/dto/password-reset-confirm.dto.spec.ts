@@ -148,8 +148,8 @@ describe('PasswordResetConfirmDto', () => {
 
     it('should pass validation with password at minimum length', async () => {
       dto.token = 'valid-token';
-      dto.newPassword = 'Str0ngP@ss'; // Exactly 12 characters
-      dto.confirmPassword = 'Str0ngP@ss';
+      dto.newPassword = 'Str0ngP@ss12'; // Exactly 12 characters
+      dto.confirmPassword = 'Str0ngP@ss12';
 
       const errors = await validate(dto);
       expect(errors.length).toBe(0);
