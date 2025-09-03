@@ -10,6 +10,17 @@ export const pinoConfig = {
     return {
       pinoHttp: {
         level: logLevel,
+        // Do not log request/response bodies by default for PII safety
+        redact: {
+          paths: [
+            'req.headers.authorization',
+            'req.headers.cookie',
+            'res.headers.set-cookie',
+            'req.headers.x-api-key',
+            'req.headers.x-auth-token',
+          ],
+          censor: '[REDACTED]',
+        },
         formatters: {
           level: (label: string): { level: string } => {
             return { level: label };
@@ -101,7 +112,7 @@ export const pinoConfig = {
               },
             }),
       },
-    };
+    } as Params;
   },
   inject: [ConfigService],
 };

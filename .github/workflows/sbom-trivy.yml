@@ -1,0 +1,57 @@
+name: SBOM and Trivy Security
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  sbom-trivy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate CycloneDX SBOM (Node)
+        run: |
+          npm i -g @cyclonedx/cyclonedx-npm
+          cyclonedx-npm --omit dev --output-file bom.json
+
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: bom.json
+
+      - name: Run Trivy FS (IaC & source)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          format: sarif
+          output: trivy-fs.sarif
+          ignore-unfixed: true
+          severity: HIGH,CRITICAL
+
+      - name: Run Trivy Config (IaC misconfig)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: config
+          scan-ref: .
+          format: sarif
+          output: trivy-config.sarif
+          severity: HIGH,CRITICAL
+
+      - name: Upload Trivy Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-reports
+          path: |
+            trivy-fs.sarif
+            trivy-config.sarif
+
+      - name: Fail on findings
+        run: |
+          for f in trivy-fs.sarif trivy-config.sarif; do
+            if grep -q '"level": "error"' "$f" || grep -q '"ruleId"' "$f"; then
+              echo "Trivy detected issues: $f"; exit 1; fi
+          done
