@@ -40,7 +40,26 @@ export class RedisService implements OnModuleDestroy {
     if (mode) {
       args.push(mode);
     }
-    const result = await this.redisClient.set(key, value, ...args);
-    return result === 'OK' ? 'OK' : null;
+
+    // Use explicit Redis commands to avoid type issues
+    if (ttlSeconds && ttlSeconds > 0 && mode) {
+      const result = await this.redisClient.set(
+        key,
+        value,
+        'EX',
+        ttlSeconds,
+        mode
+      );
+      return result === 'OK' ? 'OK' : null;
+    } else if (ttlSeconds && ttlSeconds > 0) {
+      const result = await this.redisClient.set(key, value, 'EX', ttlSeconds);
+      return result === 'OK' ? 'OK' : null;
+    } else if (mode) {
+      const result = await this.redisClient.set(key, value, mode);
+      return result === 'OK' ? 'OK' : null;
+    } else {
+      const result = await this.redisClient.set(key, value);
+      return result === 'OK' ? 'OK' : null;
+    }
   }
 }
