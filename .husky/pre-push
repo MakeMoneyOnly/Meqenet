@@ -21,32 +21,73 @@ fi
 
 # 1. Run all tests
 echo "🧪 Running all tests..."
-if ! CI=true pnpm run test > /dev/null 2>&1; then
+# Capture test output in a temporary file to show on failure
+# Use cross-platform temporary file creation
+if command -v mktemp >/dev/null 2>&1; then
+  TEST_OUTPUT_FILE=$(mktemp)
+else
+  # Fallback for systems without mktemp (like some Windows bash environments)
+  TEST_OUTPUT_FILE="/tmp/pre-push-test-output.$$"
+  touch "$TEST_OUTPUT_FILE"
+fi
+
+# Set CI environment variable properly for cross-platform compatibility
+export CI=true
+if ! pnpm run test 2>&1 | tee "$TEST_OUTPUT_FILE"; then
   echo "❌ Tests failed! Cannot push to remote."
+  echo ""
+  echo "📋 Test Output (last 50 lines):"
+  echo "=================================="
+  tail -n 50 "$TEST_OUTPUT_FILE" 2>/dev/null || cat "$TEST_OUTPUT_FILE"
+  echo "=================================="
+  echo ""
+  echo "💡 To run tests manually and see full output: pnpm test"
+  echo "💡 To skip pre-push checks (emergency only): git push --no-verify"
+  rm -f "$TEST_OUTPUT_FILE"
   exit 1
 fi
+rm -f "$TEST_OUTPUT_FILE"
 
 # 2. Run Secret Scan
 echo "🛡️  Running security scan for secrets..."
-if ! pnpm run security:secrets; then
+if ! pnpm run security:secrets 2>&1; then
     echo "❌ Secret scan failed! Hardcoded secrets may be present."
+    echo "💡 Run 'pnpm run security:secrets' manually to see detailed output."
     exit 1
 fi
 
 # 3. Check for critical vulnerabilities in dependencies
 echo "🔍 Checking for dependency vulnerabilities..."
-if ! pnpm run security:audit; then
+if ! pnpm run security:audit 2>&1; then
   echo "❌ Dependency vulnerabilities found! Must be fixed before push."
-  echo "Run 'pnpm audit' for details."
+  echo "💡 Run 'pnpm audit' for details or 'pnpm audit fix' to attempt auto-fix."
   exit 1
 fi
 
 # 4. Build check
 echo "🏗️  Running build check..."
-if ! pnpm run build > /dev/null 2>&1; then
+# Use cross-platform temporary file creation
+if command -v mktemp >/dev/null 2>&1; then
+  BUILD_OUTPUT_FILE=$(mktemp)
+else
+  # Fallback for systems without mktemp (like some Windows bash environments)
+  BUILD_OUTPUT_FILE="/tmp/pre-push-build-output.$$"
+  touch "$BUILD_OUTPUT_FILE"
+fi
+
+if ! pnpm run build 2>&1 | tee "$BUILD_OUTPUT_FILE"; then
   echo "❌ Build failed! Cannot push to remote."
+  echo ""
+  echo "📋 Build Output (last 30 lines):"
+  echo "==============================="
+  tail -n 30 "$BUILD_OUTPUT_FILE" 2>/dev/null || cat "$BUILD_OUTPUT_FILE"
+  echo "==============================="
+  echo ""
+  echo "💡 To run build manually and see full output: pnpm run build"
+  rm -f "$BUILD_OUTPUT_FILE"
   exit 1
 fi
+rm -f "$BUILD_OUTPUT_FILE"
 
 # 5. Ethiopian FinTech specific checks
 echo "🇪🇹 Running Ethiopian FinTech compliance checks..."
@@ -87,9 +128,11 @@ fi
 
 # 7. Final dependency check
 echo "📦 Final dependency validation..."
-if ! pnpm install --no-frozen-lockfile --silent > /dev/null 2>&1; then
+if ! pnpm install --no-frozen-lockfile --silent 2>&1; then
   echo "❌ Dependency installation failed!"
   echo "This indicates there are issues with package installation."
+  echo "💡 Try running 'pnpm install' manually to see detailed error messages."
+  echo "💡 Check if pnpm-lock.yaml is corrupted or if there are network issues."
   exit 1
 fi
 

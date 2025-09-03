@@ -21,10 +21,9 @@ describe('PaymentsService', () => {
   describe('createPayment', () => {
     it('should create a payment successfully', async () => {
       const createPaymentDto: CreatePaymentDto = {
-        amount: 1000,
+        amountMinor: 1000,
         currency: 'ETB',
-        description: 'Test payment',
-        customerId: 'customer-123',
+        merchantId: 'merchant-12345',
         paymentMethod: 'telebirr',
       };
 
@@ -33,16 +32,15 @@ describe('PaymentsService', () => {
       expect(result).toBeDefined();
       expect(result.id).toBeDefined();
       expect(result.status).toBe('completed'); // Matches actual implementation
-      expect(result.amount).toBe(createPaymentDto.amount);
+      expect((result as any).amountMinor).toBe(createPaymentDto.amountMinor);
       expect(result.currency).toBe(createPaymentDto.currency);
     });
 
     it('should log payment creation', async () => {
       const createPaymentDto: CreatePaymentDto = {
-        amount: 1000,
+        amountMinor: 1000,
         currency: 'ETB',
-        description: 'Test payment',
-        customerId: 'customer-123',
+        merchantId: 'merchant-12345',
         paymentMethod: 'telebirr',
       };
 

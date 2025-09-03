@@ -20,23 +20,19 @@ export default defineConfig({
       '**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*',
     ],
     testTimeout: 10000,
-    // Reduce verbosity for CI/pre-push hooks
+    // Maximum silence for clean test output
     silent: true,
-    logLevel: 'error',
-    reporters: process.env.CI ? ['basic'] : ['verbose'],
-    coverage: {
-      provider: 'v8',
-      reporter: ['text', 'json', 'html'],
-      exclude: [
-        'coverage/**',
-        'dist/**',
-        '**/node_modules/**',
-        '**/test/**',
-        '**/*.d.ts',
-        '**/*.config.*',
-        '**/main.ts',
-      ],
-    },
+    // Use the recommended default reporter with summary disabled for clean output
+    reporters: [
+      [
+        'default',
+        {
+          summary: false
+        }
+      ]
+    ],
+    // Suppress all console output noise
+    logLevel: 'silent',
     typecheck: {
       tsconfig: './tsconfig.json',
     },
