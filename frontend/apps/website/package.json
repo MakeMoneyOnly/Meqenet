@@ -21,6 +21,10 @@
     "tailwindcss": "^4.1.12"
   },
   "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start -p 3000",
+    "lint": "next lint",
     "storybook": "nx serve:storybook -p 6006",
     "build-storybook": "nx build:storybook"
   }

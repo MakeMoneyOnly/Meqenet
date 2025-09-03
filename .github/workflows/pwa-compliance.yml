@@ -334,12 +334,12 @@ jobs:
       - name: 🏗️ Build Website
         run: |
           cd frontend/apps/website
-          npm run build
+          pnpm run build
 
       - name: 🚀 Start Development Server
         run: |
           cd frontend/apps/website
-          npm start &
+          pnpm start &
           sleep 10
 
       - name: 🌊 Run Lighthouse PWA Audit
