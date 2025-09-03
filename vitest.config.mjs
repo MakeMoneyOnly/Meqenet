@@ -20,6 +20,10 @@ export default defineConfig({
       '**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*',
     ],
     testTimeout: 10000,
+    // Reduce verbosity for CI/pre-push hooks
+    silent: true,
+    logLevel: 'error',
+    reporters: process.env.CI ? ['basic'] : ['verbose'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

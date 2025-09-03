@@ -21,7 +21,7 @@ fi
 
 # 1. Run all tests
 echo "🧪 Running all tests..."
-if ! pnpm run test; then
+if ! CI=true pnpm run test > /dev/null 2>&1; then
   echo "❌ Tests failed! Cannot push to remote."
   exit 1
 fi
@@ -43,7 +43,7 @@ fi
 
 # 4. Build check
 echo "🏗️  Running build check..."
-if ! pnpm run build; then
+if ! pnpm run build > /dev/null 2>&1; then
   echo "❌ Build failed! Cannot push to remote."
   exit 1
 fi
@@ -87,7 +87,7 @@ fi
 
 # 7. Final dependency check
 echo "📦 Final dependency validation..."
-if ! pnpm install --no-frozen-lockfile --silent; then
+if ! pnpm install --no-frozen-lockfile --silent > /dev/null 2>&1; then
   echo "❌ Dependency installation failed!"
   echo "This indicates there are issues with package installation."
   exit 1
