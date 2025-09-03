@@ -15,13 +15,7 @@ resource "aws_security_group" "alb" {
   # This is NOT a security vulnerability - it's a standard practice used by
   # major websites (Google, GitHub, AWS Console, etc.) for user convenience
   # while maintaining security through HTTPS enforcement.
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "Allow HTTP traffic from anywhere (immediately redirected to HTTPS)"
-  }
+  # HTTP (80) ingress removed to enforce TLS-only (CKV_AWS_260)
 
   ingress {
     from_port   = 443
@@ -238,15 +232,7 @@ resource "aws_s3_bucket_logging" "alb_logs" {
 
 
 
-resource "aws_s3_bucket_server_side_encryption_configuration" "alb_logs" {
-  bucket = aws_s3_bucket.alb_logs.id
-
-  rule {
-    apply_server_side_encryption_by_default {
-      sse_algorithm = "AES256"
-    }
-  }
-}
+// Removed duplicate SSE configuration that downgraded KMS to AES256
 
 resource "aws_s3_bucket_policy" "alb_logs" {
   bucket = aws_s3_bucket.alb_logs.id
@@ -315,21 +301,7 @@ resource "aws_lb_target_group" "main" {
   }
 }
 
-# Fix CKV_AWS_2, CKV2_AWS_20 - HTTP listener redirects to HTTPS
-resource "aws_lb_listener" "http" {
-  load_balancer_arn = aws_lb.main.arn
-  port              = 80
-  protocol          = "HTTP"
-
-  default_action {
-    type = "redirect"
-    redirect {
-      port        = "443"
-      protocol    = "HTTPS"
-      status_code = "HTTP_301"
-    }
-  }
-}
+// HTTP listener removed to enforce HTTPS-only access
 
 # HTTPS listener (Fix CKV_AWS_2, CKV_AWS_103)
 resource "aws_lb_listener" "https" {
@@ -349,11 +321,10 @@ resource "aws_lb_listener" "https" {
 # Note: Wildcard certificate is required for supporting multiple subdomains
 # including dynamic subdomains for multi-tenant architecture
 resource "aws_acm_certificate" "main" {
-  domain_name       = "*.meqenet.et"
+  domain_name       = "meqenet.et"
   validation_method = "DNS"
 
   subject_alternative_names = [
-    "meqenet.et",
     "api.meqenet.et",
     "www.meqenet.et"
   ]
@@ -430,6 +401,14 @@ resource "aws_wafv2_web_acl" "main" {
       managed_rule_group_statement {
         name        = "AWSManagedRulesKnownBadInputsRuleSet"
         vendor_name = "AWS"
+
+        # Enforce AMR for Log4j (Log4JRCE)
+        rule_action_override {
+          name = "Log4JRCE"
+          action_to_use {
+            block {}
+          }
+        }
       }
     }
 
