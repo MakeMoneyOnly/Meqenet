@@ -1,4 +1,4 @@
-import { Logger, ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
@@ -6,10 +6,20 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import compression from 'compression';
 import helmet from 'helmet';
 import { PinoLogger } from 'nestjs-pino';
+import {
+  context as otContext,
+  trace as otTrace,
+  ROOT_CONTEXT,
+  Span,
+  SpanKind,
+} from '@opentelemetry/api';
+import { randomUUID } from 'crypto';
 
 import { AppModule } from './app/app.module';
 import { initializeOpenTelemetry } from './shared/observability/otel';
 import { GlobalExceptionFilter } from './shared/filters/global-exception.filter';
+import { LatencyMetricsInterceptor } from './shared/interceptors/latency-metrics.interceptor';
+import { AccessLogMiddleware } from './shared/middleware/access-log.middleware';
 
 const DEFAULT_PORT = 3001;
 const DEFAULT_GRPC_URL = 'localhost:5000';
@@ -44,10 +54,90 @@ async function bootstrap(): Promise<void> {
 
     initializeOpenTelemetry(otelConfig);
 
-    // Security middleware
-    app.use(helmet());
+    // Request ID middleware and OTel correlation
+    app.use((req, res, next) => {
+      const incoming = req.headers['x-request-id'] as string | undefined;
+      const requestId = incoming || randomUUID();
+      res.setHeader('X-Request-ID', requestId);
+      const tracer = otTrace.getTracer('meqenet-auth');
+      const span: Span = tracer.startSpan('http.request', {
+        kind: SpanKind.SERVER,
+      });
+      const ctx = otTrace.setSpan(otContext.active() || ROOT_CONTEXT, span);
+      res.on('finish', () => {
+        span.setAttribute('http.request_id', requestId);
+        span.setAttribute('http.status_code', res.statusCode);
+        span.end();
+      });
+      otContext.with(ctx, next);
+    });
+
+    // Access log middleware with sampling
+    app.use(
+      new AccessLogMiddleware(configService).use.bind(
+        new AccessLogMiddleware(configService)
+      )
+    );
+
+    // Express hardening
+    const http = app.getHttpAdapter().getInstance();
+    http.disable('x-powered-by');
+
+    // Security: derive Helmet options from security config
+    const hstsMaxAge = configService.get<number>(
+      'security.hstsMaxAge',
+      31536000
+    );
+    const cspDefault = configService.get<string>(
+      'security.csp.defaultSrc',
+      "'self'"
+    );
+    const cspScript = configService.get<string>(
+      'security.csp.scriptSrc',
+      "'self'"
+    );
+    const cspStyle = configService.get<string>(
+      'security.csp.styleSrc',
+      "'self' 'unsafe-inline'"
+    );
+
+    // Security middleware - central Helmet configuration
+    app.use(
+      helmet({
+        hsts: {
+          maxAge: hstsMaxAge,
+          includeSubDomains: true,
+          preload: false,
+        },
+        contentSecurityPolicy: {
+          useDefaults: true,
+          directives: {
+            defaultSrc: [cspDefault],
+            scriptSrc: [cspScript],
+            styleSrc: [cspStyle],
+            imgSrc: ["'self'", 'data:'],
+            connectSrc: ["'self'"],
+          },
+        },
+        referrerPolicy: { policy: 'no-referrer' },
+        crossOriginEmbedderPolicy: false,
+      })
+    );
+
+    // Set Permissions-Policy header if provided in config
+    const permissionsPolicy = configService.get<string>(
+      'security.permissionsPolicy'
+    );
+    if (permissionsPolicy) {
+      app.use((req, res, next) => {
+        res.setHeader('Permissions-Policy', permissionsPolicy);
+        next();
+      });
+    }
+
     app.use(compression());
 
+    // Global class-validator ValidationPipe with bilingual errors
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
@@ -56,27 +146,77 @@ async function bootstrap(): Promise<void> {
         transformOptions: {
           enableImplicitConversion: true,
         },
+        exceptionFactory: validationErrors => {
+          const messages = validationErrors.map(err => {
+            const constraints = err.constraints || {};
+            const firstMessage = Object.values(constraints)[0] as
+              | string
+              | undefined;
+            if (firstMessage) {
+              try {
+                const parsed = JSON.parse(firstMessage) as {
+                  en?: string;
+                  am?: string;
+                };
+                return {
+                  en: parsed.en || 'Validation failed',
+                  am: parsed.am || 'ማረጋገጥ አልተሳካም።',
+                };
+              } catch {
+                return {
+                  en: firstMessage,
+                  am: 'የማረጋገጫ ስህተት ተፈጥሯል።',
+                };
+              }
+            }
+            return {
+              en: 'Validation failed',
+              am: 'ማረጋገጥ አልተሳካም።',
+            };
+          });
+          return new BadRequestException({ message: messages });
+        },
       })
     );
 
     // Global exception filter for bilingual error responses (NBE compliance)
     app.useGlobalFilters(new GlobalExceptionFilter());
 
+    // Global latency metrics interceptor
+    app.useGlobalInterceptors(new LatencyMetricsInterceptor());
+
+    // CORS from config
+    const corsOrigins = configService.get<string[]>('cors.origins', []);
+    const corsCredentials = configService.get<boolean>(
+      'cors.credentials',
+      true
+    );
+
+    // Centralized CORS configuration
     app.enableCors({
-      origin: [
-        'https://nbe.gov.et',
-        'https://cbe.com.et',
-        'https://meqenet.et',
-      ],
-      credentials: true,
-      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+      origin: (origin, callback) => {
+        if (!origin || corsOrigins.includes(origin)) {
+          return callback(null, true);
+        }
+        return callback(new Error('CORS blocked'));
+      },
+      credentials: corsCredentials,
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
       allowedHeaders: [
         'Content-Type',
         'Authorization',
         'Accept',
-        'Accept-Language', // Added for bilingual support
+        'Accept-Language',
         'X-Request-ID',
       ],
+      exposedHeaders: ['X-Request-ID'],
+      preflightContinue: false,
+      optionsSuccessStatus: 204,
+    });
+
+    app.use((req, res, next) => {
+      res.vary('Origin');
+      next();
     });
 
     if (configService.get<string>('NODE_ENV') !== 'production') {
@@ -93,7 +233,6 @@ async function bootstrap(): Promise<void> {
 
     const grpcUrl = configService.get<string>('GRPC_URL') ?? DEFAULT_GRPC_URL;
 
-    // Connect the gRPC microservice
     app.connectMicroservice<MicroserviceOptions>({
       transport: Transport.GRPC,
       options: {

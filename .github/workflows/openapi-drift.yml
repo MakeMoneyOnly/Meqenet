@@ -1,0 +1,33 @@
+name: OpenAPI Drift Check
+
+on:
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  openapi-drift:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install tools
+        run: |
+          npm i -g @apidevtools/swagger-cli openapi-diff
+
+      - name: Validate central OpenAPI
+        run: swagger-cli validate backend/openapi.yaml
+
+      - name: Compare central vs auth-service spec
+        run: |
+          if [ ! -f backend/services/auth-service/java-openapi.json ]; then
+            echo 'Service OpenAPI spec missing: backend/services/auth-service/java-openapi.json';
+            exit 1;
+          fi
+          # Fail on breaking changes
+          openapi-diff --fail-on-changed backend/openapi.yaml backend/services/auth-service/java-openapi.json

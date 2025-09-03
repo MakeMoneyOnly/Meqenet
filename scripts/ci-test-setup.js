@@ -185,24 +185,63 @@ try {
 try {
   log('🔍 Verifying test setup...');
 
-  // Check if Prisma client was generated
-  const prismaClientPath = path.join(
+  // Determine Prisma client output from schema and check common workspace locations
+  const authServicePath = path.join(
     __dirname,
     '..',
     'backend',
     'services',
-    'auth-service',
-    'node_modules',
-    '.prisma',
-    'client'
+    'auth-service'
   );
+  const schemaPath = path.join(authServicePath, 'prisma', 'schema.prisma');
 
-  if (!fs.existsSync(prismaClientPath)) {
-    error(`Prisma client not found at: ${prismaClientPath}`);
+  let schemaOutputPathAbs = null;
+  try {
+    const schemaContent = fs.readFileSync(schemaPath, 'utf8');
+    const outputMatch = schemaContent.match(
+      /generator\s+client\s*\{[\s\S]*?output\s*=\s*"([^"]+)"/
+    );
+    if (outputMatch && outputMatch[1]) {
+      schemaOutputPathAbs = path.resolve(
+        path.dirname(schemaPath),
+        outputMatch[1]
+      );
+    }
+  } catch (schemaErr) {
+    warning(`Could not read Prisma schema output path: ${schemaErr.message}`);
+  }
+
+  const candidatePaths = [
+    // Explicit path from schema if available
+    ...(schemaOutputPathAbs ? [schemaOutputPathAbs] : []),
+    // Service-local node_modules
+    path.join(authServicePath, 'node_modules', '.prisma', 'client'),
+    // Workspace root node_modules
+    path.join(__dirname, '..', 'node_modules', '.prisma', 'client'),
+    // Backend package node_modules
+    path.join(__dirname, '..', 'backend', 'node_modules', '.prisma', 'client'),
+    // Backend/services package node_modules (relative to schema output ../../../)
+    path.join(
+      __dirname,
+      '..',
+      'backend',
+      'services',
+      'node_modules',
+      '.prisma',
+      'client'
+    ),
+  ];
+
+  const verifiedPath = candidatePaths.find(p => fs.existsSync(p));
+
+  if (!verifiedPath) {
+    error(
+      `Prisma client not found. Checked:\n- ${candidatePaths.join('\n- ')}`
+    );
     process.exit(1);
   }
 
-  success('Prisma client verified');
+  success(`Prisma client verified at: ${verifiedPath}`);
 
   // Note: We don't test database connection here since it's expected to fail
   // in local development without a running test database

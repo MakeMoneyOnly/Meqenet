@@ -98,7 +98,10 @@ describe('GlobalExceptionFilter - Security Tests', () => {
         error: {
           category: 'VALIDATION',
           code: 'BAD_REQUEST',
-          message: ['Field validation failed'],
+          message: {
+            en: 'Field validation failed',
+            am: 'ስህተት ተፈጥሯል።',
+          },
         },
         method: 'POST',
         path: '/api/auth/login',

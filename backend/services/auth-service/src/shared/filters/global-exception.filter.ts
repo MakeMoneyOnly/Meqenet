@@ -28,45 +28,59 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     // Generate unique request ID for NBE compliance and tracking
     const requestId = (request.headers['x-request-id'] as string) || uuidv4();
 
-    // Accept-Language header available for future bilingual support
+    // Determine language preference
+    const acceptLanguage =
+      (request.headers['accept-language'] as string) || 'en';
+    const preferredLang = acceptLanguage.includes('am') ? 'am' : 'en';
 
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let errorCode = 'INTERNAL_ERROR';
-    let message: string | { en: string; am: string } = 'Internal server error';
+    let message: { en: string; am: string } = {
+      en: 'Internal server error',
+      am: 'የውስጥ ስህተት ተፈጥሯል።',
+    };
+    let details: unknown = undefined;
 
     // Handle validation errors from class-validator
     if (exception instanceof BadRequestException) {
       status = HttpStatus.BAD_REQUEST;
       const exceptionResponse = exception.getResponse();
 
-      if (
-        typeof exceptionResponse === 'object' &&
-        'message' in exceptionResponse
-      ) {
-        const validationErrors = (exceptionResponse as Record<string, unknown>)
-          .message;
+      if (typeof exceptionResponse === 'object' && exceptionResponse !== null) {
+        const resp = exceptionResponse as Record<string, unknown>;
+        details = resp.message; // array of bilingual messages or structured map if provided
 
-        // Handle validation error messages
-        if (Array.isArray(validationErrors) && validationErrors.length > 0) {
-          const firstError = validationErrors[0];
-
-          // Try to parse bilingual message from validator
-          try {
-            message = JSON.parse(firstError);
-          } catch {
-            // If not JSON, use the message as-is
+        if (Array.isArray(resp.message) && resp.message.length > 0) {
+          const first = resp.message[0] as
+            | { en?: string; am?: string }
+            | string;
+          if (typeof first === 'string') {
+            try {
+              const parsed = JSON.parse(first) as { en?: string; am?: string };
+              message = {
+                en: parsed.en || 'Validation failed',
+                am: parsed.am || 'ማረጋገጥ አልተሳካም።',
+              };
+            } catch {
+              message = {
+                en: first,
+                am: 'የማረጋገጫ ስህተት ተፈጥሯል።',
+              } as unknown as { en: string; am: string };
+            }
+          } else if (typeof first === 'object' && first) {
+            const obj = first as { en?: string; am?: string };
             message = {
-              en: firstError,
-              am: 'የማረጋገጫ ስህተት ተፈጥሯል።',
+              en: obj.en || 'Validation failed',
+              am: obj.am || 'ማረጋገጥ አልተሳካም።',
             };
           }
-
           errorCode = 'VALIDATION_ERROR';
         } else {
           message = {
             en: 'Validation failed. Please check your input.',
             am: 'ማረጋገጥ አልተሳካም። እባክዎ ግብዓትዎን ይመልከቱ።',
           };
+          errorCode = 'VALIDATION_ERROR';
         }
       }
     }
@@ -75,116 +89,93 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       status = exception.getStatus();
       const exceptionResponse = exception.getResponse();
 
-      // Extract error details from exception
       if (typeof exceptionResponse === 'object' && exceptionResponse !== null) {
         const responseObj = exceptionResponse as Record<string, unknown>;
 
-        // Check for custom error code
         if (
           responseObj.errorCode &&
           typeof responseObj.errorCode === 'string'
         ) {
           errorCode = responseObj.errorCode;
-          // Get bilingual error message for the specific error code
           message = {
             en: getAuthErrorMessage(errorCode, 'en'),
             am: getAuthErrorMessage(errorCode, 'am'),
           };
         } else if (responseObj.message) {
           if (typeof responseObj.message === 'string') {
+            const en = responseObj.message;
             message = {
-              en: responseObj.message,
-              am: 'ስህተት ተፈጥሯል።',
+              en,
+              am:
+                preferredLang === 'am'
+                  ? getAuthErrorMessage(
+                      this.getErrorCodeFromStatus(status),
+                      'am'
+                    )
+                  : 'ስህተት ተፈጥሯል።',
             };
+          } else if (
+            typeof responseObj.message === 'object' &&
+            responseObj.message !== null
+          ) {
+            const msgObj = responseObj.message as Record<string, unknown>;
+            const en =
+              typeof msgObj.en === 'string'
+                ? (msgObj.en as string)
+                : 'An error occurred';
+            const am =
+              typeof msgObj.am === 'string'
+                ? (msgObj.am as string)
+                : getAuthErrorMessage(
+                    this.getErrorCodeFromStatus(status),
+                    'am'
+                  );
+            message = { en, am };
           } else {
-            // Handle different message types safely
-            const msg = responseObj.message as unknown;
-            if (typeof msg === 'string') {
-              message = {
-                en: msg,
-                am: 'ስህተት ተፈጥሯል።',
-              };
-            } else if (Array.isArray(msg)) {
-              const first = msg[0];
-              if (typeof first === 'string') {
-                try {
-                  const parsed = JSON.parse(first);
-                  if (
-                    parsed &&
-                    typeof parsed.en === 'string' &&
-                    typeof parsed.am === 'string'
-                  ) {
-                    message = parsed as { en: string; am: string };
-                  } else {
-                    message = {
-                      en: first,
-                      am: 'ስህተት ተፈጥሯል።',
-                    };
-                  }
-                } catch {
-                  message = {
-                    en: first,
-                    am: 'ስህተት ተፈጥሯል።',
-                  };
-                }
-              } else {
-                message = 'Unknown error occurred';
-              }
-            } else if (typeof msg === 'object' && msg !== null) {
-              // Check if it has the expected bilingual structure
-              const msgObj = msg as Record<string, unknown>;
-              if (
-                typeof msgObj.en === 'string' &&
-                typeof msgObj.am === 'string'
-              ) {
-                message = msgObj as { en: string; am: string };
-              } else {
-                message = 'Invalid error message format';
-              }
-            } else {
-              message = 'Unknown error occurred';
-            }
+            message = {
+              en: 'Unknown error occurred',
+              am: 'ያልታወቀ ስህተት ተፈጥሯል።',
+            };
           }
           errorCode = this.getErrorCodeFromStatus(status);
         }
-      } else if (typeof exceptionResponse === 'string') {
-        message = {
-          en: exceptionResponse,
-          am: 'ስህተት ተፈጥሯል።',
-        };
-        errorCode = this.getErrorCodeFromStatus(status);
-      }
 
-      // Map specific status codes to error codes
-      switch (status) {
-        case HttpStatus.UNAUTHORIZED:
-          if (errorCode === 'UNAUTHORIZED') {
-            errorCode = 'INVALID_CREDENTIALS';
+        // Map specific status codes to error codes/messages
+        switch (status) {
+          case HttpStatus.UNAUTHORIZED:
+            if (errorCode === 'UNAUTHORIZED') {
+              errorCode = 'INVALID_CREDENTIALS';
+              message = {
+                en: getAuthErrorMessage(errorCode, 'en'),
+                am: getAuthErrorMessage(errorCode, 'am'),
+              };
+            }
+            break;
+          case HttpStatus.FORBIDDEN:
+            errorCode = 'FORBIDDEN';
             message = {
               en: getAuthErrorMessage(errorCode, 'en'),
               am: getAuthErrorMessage(errorCode, 'am'),
             };
-          }
-          break;
-        case HttpStatus.FORBIDDEN:
-          errorCode = 'FORBIDDEN';
-          message = {
-            en: getAuthErrorMessage(errorCode, 'en'),
-            am: getAuthErrorMessage(errorCode, 'am'),
-          };
-          break;
-        case HttpStatus.TOO_MANY_REQUESTS:
-          errorCode = 'TOO_MANY_REQUESTS';
-          message = {
-            en: getAuthErrorMessage(errorCode, 'en'),
-            am: getAuthErrorMessage(errorCode, 'am'),
-          };
-          break;
+            break;
+          case HttpStatus.TOO_MANY_REQUESTS:
+            errorCode = 'TOO_MANY_REQUESTS';
+            message = {
+              en: getAuthErrorMessage(errorCode, 'en'),
+              am: getAuthErrorMessage(errorCode, 'am'),
+            };
+            break;
+        }
+      } else if (typeof exceptionResponse === 'string') {
+        message = {
+          en: exceptionResponse,
+          am: getAuthErrorMessage(this.getErrorCodeFromStatus(status), 'am'),
+        };
+        errorCode = this.getErrorCodeFromStatus(status);
       }
     }
     // Handle generic errors
     else if (exception instanceof Error) {
-      // Log the actual error for debugging (never expose to client)
       this.logger.error('Unhandled exception', {
         error: exception.message,
         stack: exception.stack,
@@ -201,7 +192,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       };
     }
 
-    // Log security-relevant errors for audit
+    // Audit logs
     if (status === HttpStatus.UNAUTHORIZED || status === HttpStatus.FORBIDDEN) {
       this.logger.warn('Security-related error', {
         status,
@@ -214,7 +205,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       });
     }
 
-    // Log authentication failures for compliance
     if (errorCode === 'INVALID_CREDENTIALS' || errorCode === 'ACCOUNT_LOCKED') {
       this.logger.error('Authentication failure', {
         errorCode,
@@ -227,28 +217,27 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       });
     }
 
-    // Create standardized error response
+    // Set response correlation header and standardized error
+    response.setHeader('X-Request-ID', requestId);
+
     const errorResponse = {
       statusCode: status,
       timestamp: new Date().toISOString(),
       path: request.url,
       method: request.method,
       requestId, // NBE compliance requirement
+      language: preferredLang,
       error: {
         code: errorCode,
-        message: message, // Bilingual message object
+        message, // Always bilingual
         category: this.getErrorCategory(errorCode),
+        details,
       },
     };
 
     response.status(status).json(errorResponse);
   }
 
-  /**
-   * Get error code from HTTP status
-   * @param status HTTP status code
-   * @returns Error code string
-   */
   private getErrorCodeFromStatus(status: number): string {
     const statusMap: Record<number, string> = {
       400: 'BAD_REQUEST',
@@ -266,13 +255,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     return statusMap[status] || 'UNKNOWN_ERROR';
   }
 
-  /**
-   * Get error category from error code
-   * @param errorCode Error code
-   * @returns Error category
-   */
   private getErrorCategory(errorCode: string): string {
-    // Map error codes to categories
     const categoryMap: Record<string, string> = {
       INVALID_CREDENTIALS: 'AUTH',
       USER_NOT_FOUND: 'AUTH',

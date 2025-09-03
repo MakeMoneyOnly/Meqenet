@@ -88,6 +88,9 @@ export class SecurityMonitoringService
   private rateLimitHitsCounter!: Counter<string>;
   private encryptionOperationsCounter!: Counter<string>;
   private anomalyDetectionCounter!: Counter<string>;
+  private authLoginCounter!: Counter<string>;
+  private authRegisterCounter!: Counter<string>;
+  private jwtRotationCounter!: Counter<string>;
 
   private threatIndicators: Map<string, ThreatIndicator[]> = new Map();
   private securityEvents: SecurityEvent[] = [];
@@ -166,7 +169,40 @@ export class SecurityMonitoringService
       labelNames: ['type', 'confidence', 'user_id'],
     });
 
+    // Business Counters for Auth flows
+    this.authLoginCounter = new Counter({
+      name: 'meqenet_auth_login_total',
+      help: 'Total number of login attempts by outcome',
+      labelNames: ['outcome'], // success|failure
+    });
+
+    this.authRegisterCounter = new Counter({
+      name: 'meqenet_auth_register_total',
+      help: 'Total number of registration attempts by outcome',
+      labelNames: ['outcome'], // success|failure
+    });
+
+    // JWT Rotation Counter
+    this.jwtRotationCounter = new Counter({
+      name: 'meqenet_jwt_rotation_total',
+      help: 'Total number of JWT key rotations by outcome',
+      labelNames: ['outcome'], // success|failure
+    });
+
     this.logger.log('📊 Prometheus metrics initialized successfully');
+  }
+
+  // Business metrics API
+  recordLogin(outcome: 'success' | 'failure'): void {
+    this.authLoginCounter.labels(outcome).inc();
+  }
+
+  recordRegister(outcome: 'success' | 'failure'): void {
+    this.authRegisterCounter.labels(outcome).inc();
+  }
+
+  recordJwtRotation(outcome: 'success' | 'failure'): void {
+    this.jwtRotationCounter.labels(outcome).inc();
   }
 
   /**

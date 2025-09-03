@@ -10,6 +10,7 @@ import {
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { SecurityMonitoringService } from './security-monitoring.service';
 
 // Constants for magic numbers
 const RSA_KEY_SIZE = 2048;
@@ -45,9 +46,17 @@ export class SecretManagerService implements OnModuleInit {
     publicKey: string;
     kid: string;
   };
+  private previousPublicKey?: {
+    kid: string;
+    publicKey: string;
+    rotatedAt?: string;
+  };
   private keyRotationEnabled: boolean;
 
-  constructor(private configService: ConfigService) {
+  constructor(
+    private configService: ConfigService,
+    private securityMonitoring: SecurityMonitoringService
+  ) {
     this.keyRotationEnabled = this.configService.get<boolean>(
       'JWT_KEY_ROTATION_ENABLED',
       true
@@ -88,13 +97,21 @@ export class SecretManagerService implements OnModuleInit {
   private async initializeJwtKeys(): Promise<void> {
     try {
       const keyId = await this.getOrCreateJwtKey();
-      const keys = await this.getJwtKeyPair(keyId);
+      const keys = await this.getJwtKeyPair();
 
       this.currentJwtKeys = {
         privateKey: keys.privateKey,
         publicKey: keys.publicKey,
         kid: keyId,
       };
+
+      if (keys.previousKid && keys.previousPublicKey) {
+        this.previousPublicKey = {
+          kid: keys.previousKid,
+          publicKey: keys.previousPublicKey,
+          rotatedAt: keys.rotatedAt,
+        };
+      }
 
       this.logger.log(`✅ JWT keys initialized with KID: ${keyId}`);
     } catch (error) {
@@ -140,11 +157,15 @@ export class SecretManagerService implements OnModuleInit {
   }
 
   /**
-   * Get JWT key pair from AWS Secrets Manager
+   * Get JWT key data from AWS Secrets Manager
    */
-  private async getJwtKeyPair(
-    kid: string
-  ): Promise<{ privateKey: string; publicKey: string }> {
+  private async getJwtKeyPair(): Promise<{
+    privateKey: string;
+    publicKey: string;
+    previousKid?: string;
+    previousPublicKey?: string;
+    rotatedAt?: string;
+  }> {
     try {
       const command = new GetSecretValueCommand({
         SecretId: `meqenet-jwt-keys`,
@@ -153,16 +174,15 @@ export class SecretManagerService implements OnModuleInit {
       const response = await this.secretsManagerClient.send(command);
       const secretValue = JSON.parse(response.SecretString ?? '{}');
 
-      if (secretValue.kid === kid) {
-        return {
-          privateKey: secretValue.privateKey,
-          publicKey: secretValue.publicKey,
-        };
-      }
-
-      throw new Error(`Key pair not found for KID: ${kid}`);
+      return {
+        privateKey: secretValue.privateKey,
+        publicKey: secretValue.publicKey,
+        previousKid: secretValue.previousKid,
+        previousPublicKey: secretValue.previousPublicKey,
+        rotatedAt: secretValue.rotatedAt,
+      };
     } catch (error) {
-      this.logger.error(`❌ Failed to get JWT key pair for KID ${kid}:`, error);
+      this.logger.error(`❌ Failed to get JWT keys:`, error);
       throw error;
     }
   }
@@ -174,8 +194,6 @@ export class SecretManagerService implements OnModuleInit {
     privateKey: string;
     publicKey: string;
   }> {
-    // Note: In production, use a proper cryptographic library
-    // This is a simplified implementation for demonstration
     const { generateKeyPairSync } = await import('crypto');
 
     const { privateKey, publicKey } = generateKeyPairSync('rsa', {
@@ -312,82 +330,69 @@ export class SecretManagerService implements OnModuleInit {
     }
   }
 
-  /**
-   * Get current JWT private key for signing
-   */
   getCurrentJwtPrivateKey(): string {
     return this.currentJwtKeys.privateKey;
   }
 
-  /**
-   * Get current JWT public key for verification
-   */
   getCurrentJwtPublicKey(): string {
     return this.currentJwtKeys.publicKey;
   }
 
-  /**
-   * Get current JWT key ID
-   */
   getCurrentJwtKeyId(): string {
     return this.currentJwtKeys.kid;
   }
 
-  /**
-   * Generate JWKS response
-   */
   async getJWKS(): Promise<JWKSResponse> {
     try {
-      const publicKey = this.getCurrentJwtPublicKey();
-      const kid = this.getCurrentJwtKeyId();
+      const keys: JWKSKey[] = [];
 
-      // Extract modulus and exponent from RSA public key
-      const keyDetails = await this.extractRSAKeyDetails(publicKey);
-
-      const jwk: JWKSKey = {
+      // Current key
+      const currentKeyDetails = await this.extractRSAKeyDetails(
+        this.getCurrentJwtPublicKey()
+      );
+      keys.push({
         kty: 'RSA',
         use: 'sig',
-        kid,
-        n: keyDetails.modulus,
-        e: keyDetails.exponent,
+        kid: this.getCurrentJwtKeyId(),
+        n: currentKeyDetails.modulus,
+        e: currentKeyDetails.exponent,
         alg: 'RS256',
-      };
+      });
 
-      return { keys: [jwk] };
+      // Previous key within grace period
+      const graceDays = Number(
+        this.configService.get<string>('JWKS_GRACE_DAYS', '7')
+      );
+      if (this.previousPublicKey && this.previousPublicKey.publicKey) {
+        const rotatedAt = this.previousPublicKey.rotatedAt
+          ? new Date(this.previousPublicKey.rotatedAt)
+          : undefined;
+        const withinGrace = rotatedAt
+          ? (Date.now() - rotatedAt.getTime()) / (1000 * 60 * 60 * 24) <=
+            graceDays
+          : true;
+        if (withinGrace) {
+          const prevDetails = await this.extractRSAKeyDetails(
+            this.previousPublicKey.publicKey
+          );
+          keys.push({
+            kty: 'RSA',
+            use: 'sig',
+            kid: this.previousPublicKey.kid,
+            n: prevDetails.modulus,
+            e: prevDetails.exponent,
+            alg: 'RS256',
+          });
+        }
+      }
+
+      return { keys };
     } catch (error) {
       this.logger.error('❌ Failed to generate JWKS:', error);
       throw error;
     }
   }
 
-  /**
-   * Extract RSA key details for JWKS
-   */
-  private async extractRSAKeyDetails(
-    publicKeyPem: string
-  ): Promise<{ modulus: string; exponent: string }> {
-    const { createPublicKey } = await import('crypto');
-    const publicKey = createPublicKey(publicKeyPem);
-
-    // Get key details
-    const keyDetails = publicKey.export({ type: 'spki', format: 'der' });
-
-    // For JWKS, we need to extract n (modulus) and e (exponent) from the DER encoded key
-    // This is a simplified implementation - in production, use a proper JWKS library
-    const modulus = keyDetails
-      .slice(MODULUS_START, MODULUS_START + MODULUS_SIZE)
-      .toString('base64url');
-    const exponent = keyDetails
-      .slice(EXPONENT_START, EXPONENT_START + EXPONENT_SIZE)
-      .readUIntBE(0, EXPONENT_SIZE)
-      .toString();
-
-    return { modulus, exponent };
-  }
-
-  /**
-   * Rotate JWT keys (scheduled task)
-   */
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async rotateJwtKeys(): Promise<void> {
     if (!this.keyRotationEnabled) {
@@ -402,7 +407,7 @@ export class SecretManagerService implements OnModuleInit {
       const newKeyPair = await this.generateJwtKeyPair();
       const newKid = this.generateKeyId();
 
-      // Store new keys
+      // Store new keys keeping previous keys for grace period
       const secretName = 'meqenet-jwt-keys';
       await this.updateSecret(secretName, {
         kid: newKid,
@@ -410,29 +415,29 @@ export class SecretManagerService implements OnModuleInit {
         publicKey: newKeyPair.publicKey,
         rotatedAt: new Date().toISOString(),
         previousKid: this.currentJwtKeys.kid,
+        previousPublicKey: this.currentJwtKeys.publicKey,
       });
 
-      // Update current keys
+      // Update in-memory state
+      this.previousPublicKey = {
+        kid: this.currentJwtKeys.kid,
+        publicKey: this.currentJwtKeys.publicKey,
+        rotatedAt: new Date().toISOString(),
+      };
       this.currentJwtKeys = {
         privateKey: newKeyPair.privateKey,
         publicKey: newKeyPair.publicKey,
         kid: newKid,
       };
 
+      this.securityMonitoring.recordJwtRotation('success');
       this.logger.log(`✅ JWT keys rotated successfully. New KID: ${newKid}`);
-
-      // In production, you would also:
-      // 1. Update any cached JWKS responses
-      // 2. Notify other services about key rotation
-      // 3. Keep old keys for a grace period
     } catch (error) {
+      this.securityMonitoring.recordJwtRotation('failure');
       this.logger.error('❌ JWT key rotation failed:', error);
     }
   }
 
-  /**
-   * List all secrets (for monitoring)
-   */
   async listSecrets(): Promise<Record<string, unknown>[]> {
     try {
       const command = new ListSecretsCommand({
