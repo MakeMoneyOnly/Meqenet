@@ -8,9 +8,20 @@ resource "aws_vpc" "main" {
   }
 }
 
+# Fix CKV2_AWS_12 - Ensure default security group restricts all traffic
+resource "aws_default_security_group" "default" {
+  vpc_id = aws_vpc.main.id
+
+  # Remove all ingress and egress rules - making it completely restrictive
+  # This ensures the default security group blocks all traffic
+  tags = {
+    Name = "meqenet-default-sg-restrictive"
+  }
+}
+
 resource "aws_cloudwatch_log_group" "vpc_flow_logs" {
   name              = "/aws/vpc/flowlogs/meqenet-main-vpc"
-  retention_in_days = 30
+  retention_in_days = 365  # Fix CKV_AWS_338 - Retain logs for at least 1 year
   kms_key_id        = aws_kms_key.vpc_flow_logs.arn
 
   tags = {

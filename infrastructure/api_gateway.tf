@@ -5,6 +5,11 @@ resource "aws_api_gateway_rest_api" "main" {
   endpoint_configuration {
     types = ["REGIONAL"]
   }
+  
+  # Fix CKV_AWS_237 - Enable create_before_destroy for API Gateway
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 # Create a VPC link to connect API Gateway to the internal ALB
@@ -23,7 +28,14 @@ resource "aws_api_gateway_method" "proxy" {
   rest_api_id   = aws_api_gateway_rest_api.main.id
   resource_id   = aws_api_gateway_resource.proxy.id
   http_method   = "ANY"
-  authorization = "NONE" # In a real-world scenario, you would use a custom authorizer or AWS_IAM
+  authorization = "AWS_IAM" # Fix CKV_AWS_59 - Use AWS_IAM authorization
+  
+  # Fix CKV2_AWS_53 - Add request validation
+  request_validator_id = aws_api_gateway_request_validator.main.id
+  
+  request_parameters = {
+    "method.request.path.proxy" = true
+  }
 }
 
 resource "aws_api_gateway_integration" "proxy" {
@@ -45,9 +57,25 @@ resource "aws_api_gateway_integration" "proxy" {
   }
 }
 
+# Add request validator for CKV2_AWS_53
+resource "aws_api_gateway_request_validator" "main" {
+  name                        = "meqenet-api-validator"
+  rest_api_id                 = aws_api_gateway_rest_api.main.id
+  validate_request_body       = true
+  validate_request_parameters = true
+}
+
 resource "aws_api_gateway_deployment" "main" {
-  depends_on = [aws_api_gateway_integration.proxy]
+  depends_on = [
+    aws_api_gateway_integration.proxy,
+    aws_api_gateway_request_validator.main
+  ]
 
   rest_api_id = aws_api_gateway_rest_api.main.id
   stage_name  = "v1"
+  
+  # Fix CKV_AWS_217 - Enable create_before_destroy for API deployment
+  lifecycle {
+    create_before_destroy = true
+  }
 }
