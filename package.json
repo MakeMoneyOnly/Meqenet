@@ -282,6 +282,9 @@
       "oxc-resolver",
       "sharp",
       "utf-8-validate"
-    ]
+    ],
+    "overrides": {
+      "json5": "^2.2.3"
+    }
   }
 }

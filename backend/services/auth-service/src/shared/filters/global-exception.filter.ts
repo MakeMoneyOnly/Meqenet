@@ -96,25 +96,54 @@ export class GlobalExceptionFilter implements ExceptionFilter {
               en: responseObj.message,
               am: 'ስህተት ተፈጥሯል።',
             };
-          } else if (Array.isArray(responseObj.message)) {
-            // Handle array messages (maintain original format for compatibility)
-            message = responseObj.message;
-          } else if (
-            typeof responseObj.message === 'object' &&
-            responseObj.message !== null
-          ) {
-            // Check if it has the expected bilingual structure
-            const msgObj = responseObj.message as Record<string, unknown>;
-            if (
-              typeof msgObj.en === 'string' &&
-              typeof msgObj.am === 'string'
-            ) {
-              message = msgObj as { en: string; am: string };
-            } else {
-              message = 'Invalid error message format';
-            }
           } else {
-            message = 'Unknown error occurred';
+            // Handle different message types safely
+            const msg = responseObj.message as unknown;
+            if (typeof msg === 'string') {
+              message = {
+                en: msg,
+                am: 'ስህተት ተፈጥሯል።',
+              };
+            } else if (Array.isArray(msg)) {
+              const first = msg[0];
+              if (typeof first === 'string') {
+                try {
+                  const parsed = JSON.parse(first);
+                  if (
+                    parsed &&
+                    typeof parsed.en === 'string' &&
+                    typeof parsed.am === 'string'
+                  ) {
+                    message = parsed as { en: string; am: string };
+                  } else {
+                    message = {
+                      en: first,
+                      am: 'ስህተት ተፈጥሯል።',
+                    };
+                  }
+                } catch {
+                  message = {
+                    en: first,
+                    am: 'ስህተት ተፈጥሯል።',
+                  };
+                }
+              } else {
+                message = 'Unknown error occurred';
+              }
+            } else if (typeof msg === 'object' && msg !== null) {
+              // Check if it has the expected bilingual structure
+              const msgObj = msg as Record<string, unknown>;
+              if (
+                typeof msgObj.en === 'string' &&
+                typeof msgObj.am === 'string'
+              ) {
+                message = msgObj as { en: string; am: string };
+              } else {
+                message = 'Invalid error message format';
+              }
+            } else {
+              message = 'Unknown error occurred';
+            }
           }
           errorCode = this.getErrorCodeFromStatus(status);
         }
