@@ -1020,7 +1020,7 @@ stages:
             description:
               Implement `/auth/register` endpoint with robust DTO validation
               for incoming data.
-            status: To Do
+            status: Completed
             context:
               [docs/Stage 1 - Foundation/02-API_Specification_and_Governance.md]
             personas: [
