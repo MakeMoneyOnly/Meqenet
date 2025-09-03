@@ -16,36 +16,48 @@ export const Button: React.FC<ButtonProps> = ({
   const baseStyles =
     'font-semibold rounded focus:outline-none focus:ring-2 focus:ring-offset-2';
 
-  // Security: Use a type-safe approach to prevent object injection attacks
-  const getVariantStyles = (v: string): string => {
+  const variantStyles = {
+    primary: 'bg-blue-500 hover:bg-blue-600 text-white focus:ring-blue-500',
+    secondary: 'bg-gray-500 hover:bg-gray-600 text-white focus:ring-gray-500',
+    danger: 'bg-red-500 hover:bg-red-600 text-white focus:ring-red-500',
+  };
+
+  const sizeStyles = {
+    small: 'px-3 py-1 text-sm',
+    medium: 'px-4 py-2 text-base',
+    large: 'px-6 py-3 text-lg',
+  };
+
+  // Safe property access to avoid object injection vulnerabilities
+  const getVariantStyle = (v: typeof variant): string => {
     switch (v) {
       case 'primary':
-        return 'bg-blue-500 hover:bg-blue-600 text-white focus:ring-blue-500';
+        return variantStyles.primary;
       case 'secondary':
-        return 'bg-gray-500 hover:bg-gray-600 text-white focus:ring-gray-500';
+        return variantStyles.secondary;
       case 'danger':
-        return 'bg-red-500 hover:bg-red-600 text-white focus:ring-red-500';
+        return variantStyles.danger;
       default:
-        return 'bg-blue-500 hover:bg-blue-600 text-white focus:ring-blue-500';
+        return variantStyles.primary;
     }
   };
 
-  const getSizeStyles = (s: string): string => {
+  const getSizeStyle = (s: typeof size): string => {
     switch (s) {
       case 'small':
-        return 'px-3 py-1 text-sm';
+        return sizeStyles.small;
       case 'medium':
-        return 'px-4 py-2 text-base';
+        return sizeStyles.medium;
       case 'large':
-        return 'px-6 py-3 text-lg';
+        return sizeStyles.large;
       default:
-        return 'px-4 py-2 text-base';
+        return sizeStyles.medium;
     }
   };
 
   return (
     <button
-      className={`${baseStyles} ${getVariantStyles(variant)} ${getSizeStyles(size)}`}
+      className={`${baseStyles} ${getVariantStyle(variant)} ${getSizeStyle(size)}`}
       onClick={onClick}
     >
       {children}
