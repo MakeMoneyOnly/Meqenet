@@ -8,6 +8,7 @@ import {
   Body,
   HttpCode,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -16,11 +17,9 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 
-// Temporarily comment out missing imports until guards/decorators are implemented
-// import { UserRole } from '../../../shared/enums/user-role.enum';
-// import { Roles } from '../../decorators/roles.decorator';
-// import { JwtAuthGuard } from '../../guards/jwt-auth.guard';
-// import { RolesGuard } from '../../guards/roles.guard';
+import { Roles } from '../decorators/roles.decorator';
+import { JwtAuthGuard } from '../guards/jwt-auth.guard';
+import { RolesGuard } from '../guards/roles.guard';
 
 import { DLQService, DLQAction } from './dlq.service';
 
@@ -30,8 +29,8 @@ const DEFAULT_PAGE_SIZE = 50;
 @ApiTags('DLQ Management')
 @ApiBearerAuth()
 @Controller('dlq')
-// @UseGuards(JwtAuthGuard, RolesGuard)
-// @Roles(UserRole.ADMIN, UserRole.COMPLIANCE)
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('ADMIN', 'COMPLIANCE')
 export class DLQController {
   constructor(private readonly dlqService: DLQService) {}
 

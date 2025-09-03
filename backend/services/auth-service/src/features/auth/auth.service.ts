@@ -4,6 +4,7 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 
 import { PrismaService } from '../../infrastructure/database/prisma.service';
@@ -20,7 +21,8 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
-    private readonly eventService: EventService
+    private readonly eventService: EventService,
+    private readonly configService: ConfigService
   ) {}
 
   async register(
@@ -56,8 +58,14 @@ export class AuthService {
     };
     await this.eventService.publish(AuthEvent.USER_REGISTERED, eventPayload);
 
-    const payload = { sub: createdUser.id, email: createdUser.email };
-    const accessToken = this.jwtService.sign(payload);
+    const payload = {
+      sub: createdUser.id,
+      email: createdUser.email,
+      role: (createdUser as unknown as { role?: string })?.role,
+    };
+    const issuer = this.configService.get<string>('JWT_ISSUER') || undefined;
+    const audience = this.configService.get<string>('JWT_AUDIENCE') || undefined;
+    const accessToken = this.jwtService.sign(payload, { issuer, audience });
 
     return { accessToken };
   }
@@ -87,8 +95,10 @@ export class AuthService {
       });
     }
 
-    const payload = { sub: user.id, email: user.email };
-    const accessToken = this.jwtService.sign(payload);
+    const payload = { sub: user.id, email: user.email, role: (user as any)?.role };
+    const issuer = this.configService.get<string>('JWT_ISSUER') || undefined;
+    const audience = this.configService.get<string>('JWT_AUDIENCE') || undefined;
+    const accessToken = this.jwtService.sign(payload, { issuer, audience });
 
     return { accessToken };
   }
