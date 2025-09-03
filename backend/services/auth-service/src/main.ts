@@ -6,6 +6,8 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import compression from 'compression';
 import helmet from 'helmet';
 import { PinoLogger } from 'nestjs-pino';
+import { context as otContext, trace as otTrace, ROOT_CONTEXT, Span, SpanKind } from '@opentelemetry/api';
+import { randomUUID } from 'crypto';
 
 import { AppModule } from './app/app.module';
 import { initializeOpenTelemetry } from './shared/observability/otel';
@@ -44,6 +46,24 @@ async function bootstrap(): Promise<void> {
     }
 
     initializeOpenTelemetry(otelConfig);
+
+    // Request ID middleware and OTel correlation
+    app.use((req, res, next) => {
+      const incoming = req.headers['x-request-id'] as string | undefined;
+      const requestId = incoming || randomUUID();
+      res.setHeader('X-Request-ID', requestId);
+      // Create a span context scope if none
+      const tracer = otTrace.getTracer('meqenet-auth');
+      const span: Span = tracer.startSpan('http.request', { kind: SpanKind.SERVER });
+      const ctx = otTrace.setSpan(otContext.active() || ROOT_CONTEXT, span);
+      // Attach requestId on response finish and end span
+      res.on('finish', () => {
+        span.setAttribute('http.request_id', requestId);
+        span.setAttribute('http.status_code', res.statusCode);
+        span.end();
+      });
+      otContext.with(ctx, next);
+    });
 
     // Express hardening
     const http = app.getHttpAdapter().getInstance();

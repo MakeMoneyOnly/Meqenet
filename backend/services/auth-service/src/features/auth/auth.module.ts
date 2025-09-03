@@ -4,6 +4,7 @@ import { JwtModule } from '@nestjs/jwt';
 
 import { PrismaModule } from '../../shared/prisma/prisma.module';
 import { EventService } from '../../shared/services/event.service';
+import { SecretManagerService } from '../../shared/services/secret-manager.service';
 
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
@@ -14,26 +15,31 @@ import { AuthService } from './auth.service';
     ConfigModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => {
-        const secret = configService.get<string>('JWT_SECRET');
-        const expiresIn = configService.get<string>('JWT_EXPIRES_IN');
+      useFactory: async (
+        _configService: ConfigService,
+        secretManager: SecretManagerService
+      ) => {
+        const privateKey = secretManager.getCurrentJwtPrivateKey();
+        const kid = secretManager.getCurrentJwtKeyId();
 
-        if (!secret) {
-          throw new Error('JWT_SECRET environment variable is required');
+        if (!privateKey || !kid) {
+          throw new Error('JWT private key or kid is not initialized');
         }
 
         return {
-          secret,
+          privateKey,
           signOptions: {
-            expiresIn: expiresIn || '1h',
+            algorithm: 'RS256',
+            header: { kid },
+            expiresIn: '1h',
           },
-        };
+        } as unknown as Record<string, unknown>;
       },
-      inject: [ConfigService],
+      inject: [ConfigService, SecretManagerService],
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, EventService],
+  providers: [AuthService, EventService, SecretManagerService],
   exports: [AuthService],
 })
 export class AuthModule {}
