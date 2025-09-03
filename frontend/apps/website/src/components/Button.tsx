@@ -28,9 +28,36 @@ export const Button: React.FC<ButtonProps> = ({
     large: 'px-6 py-3 text-lg',
   };
 
+  // Safe property access to avoid object injection vulnerabilities
+  const getVariantStyle = (v: typeof variant): string => {
+    switch (v) {
+      case 'primary':
+        return variantStyles.primary;
+      case 'secondary':
+        return variantStyles.secondary;
+      case 'danger':
+        return variantStyles.danger;
+      default:
+        return variantStyles.primary;
+    }
+  };
+
+  const getSizeStyle = (s: typeof size): string => {
+    switch (s) {
+      case 'small':
+        return sizeStyles.small;
+      case 'medium':
+        return sizeStyles.medium;
+      case 'large':
+        return sizeStyles.large;
+      default:
+        return sizeStyles.medium;
+    }
+  };
+
   return (
     <button
-      className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]}`}
+      className={`${baseStyles} ${getVariantStyle(variant)} ${getSizeStyle(size)}`}
       onClick={onClick}
     >
       {children}
