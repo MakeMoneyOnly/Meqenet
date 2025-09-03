@@ -6,9 +6,7 @@ import {
   HttpStatus,
   UseFilters,
   Headers,
-  Req,
 } from '@nestjs/common';
-import { Request } from 'express';
 
 import { AuthService } from './auth.service';
 import { LoginUserDto } from './dto/login-user.dto';
@@ -24,8 +22,7 @@ export class AuthController {
   @HttpCode(HttpStatus.CREATED)
   async register(
     @Body() registerUserDto: RegisterUserDto,
-    @Headers('accept-language') acceptLanguage?: string,
-    @Req() request?: Request
+    @Headers('accept-language') acceptLanguage?: string
   ): Promise<{ accessToken: string }> {
     // Language preference for error messages
     const language = acceptLanguage?.includes('am') ? 'am' : 'en';
@@ -38,8 +35,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async login(
     @Body() loginUserDto: LoginUserDto,
-    @Headers('accept-language') acceptLanguage?: string,
-    @Req() request?: Request
+    @Headers('accept-language') acceptLanguage?: string
   ): Promise<{ accessToken: string }> {
     // Language preference for error messages
     const language = acceptLanguage?.includes('am') ? 'am' : 'en';

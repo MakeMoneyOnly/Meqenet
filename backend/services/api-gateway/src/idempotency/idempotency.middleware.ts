@@ -5,6 +5,7 @@ import { RedisService } from '../shared/redis/redis.service';
 
 const IDEMPOTENCY_KEY_HEADER = 'Idempotency-Key';
 const PENDING_RESPONSE_MARKER = 'pending';
+const KEY_PREFIX = 'idemp:api-gateway:';
 const LOCK_TTL_SECONDS = 10; // Short TTL for the lock
 const HOURS_IN_DAY = 24;
 const MINUTES_IN_HOUR = 60;
@@ -25,14 +26,22 @@ export class IdempotencyMiddleware implements NestMiddleware {
       return next();
     }
 
+    // Namespace key with method and url to avoid collisions across endpoints
+    const cacheKey = `${KEY_PREFIX}${req.method}:${req.originalUrl}:${idempotencyKey}`;
+
     // 2. Check for an existing response or lock
-    const existingData = await this.redisService.get(idempotencyKey);
+    const existingData = await this.redisService.get(cacheKey);
 
     if (existingData) {
       // 2a. If it's a final response, return it
       if (existingData !== PENDING_RESPONSE_MARKER) {
-        const parsedResponse = JSON.parse(existingData);
-        res.status(parsedResponse.status).json(parsedResponse.body);
+        try {
+          const parsedResponse = JSON.parse(existingData);
+          res.status(parsedResponse.status).json(parsedResponse.body);
+        } catch {
+          // Legacy fallback: if cached data wasn't wrapped, send as-is
+          res.status(200).send(existingData);
+        }
         return;
       }
       // 2b. If it's locked, throw a conflict error
@@ -43,7 +52,7 @@ export class IdempotencyMiddleware implements NestMiddleware {
 
     // 3. If no existing data, acquire a lock
     const lockAcquired = await this.redisService.set(
-      idempotencyKey,
+      cacheKey,
       PENDING_RESPONSE_MARKER,
       LOCK_TTL_SECONDS,
       'NX' // Only set if the key does not exist
@@ -58,35 +67,40 @@ export class IdempotencyMiddleware implements NestMiddleware {
     }
 
     // 4. Monkey-patch res.send to cache the real response when it's ready
-    const originalSend = res.send;
-    res.send = (body: unknown): Response => {
-      // Ensure body is a string before trying to parse
+    const originalJson = res.json.bind(res);
+    const originalSend = res.send.bind(res);
+    let cached = false;
+    const cacheFinal = (bodyObj: unknown): void => {
+      if (cached) return;
+      cached = true;
+      const responseToCache = {
+        status: res.statusCode,
+        body: bodyObj,
+      };
+      this.redisService.set(
+        cacheKey,
+        JSON.stringify(responseToCache),
+        RESPONSE_TTL_SECONDS
+      );
+    };
+
+    res.json = ((body: unknown): Response => {
+      cacheFinal(body);
+      return originalJson(body);
+    }) as typeof res.json;
+
+    res.send = ((body: unknown): Response => {
       const bodyAsString =
         typeof body === 'string' ? body : JSON.stringify(body);
-
+      let parsed: unknown = bodyAsString;
       try {
-        const responseToCache = {
-          status: res.statusCode,
-          body: JSON.parse(bodyAsString),
-        };
-
-        // Store the final response with a longer TTL
-        this.redisService.set(
-          idempotencyKey,
-          JSON.stringify(responseToCache),
-          RESPONSE_TTL_SECONDS
-        );
+        parsed = JSON.parse(bodyAsString);
       } catch {
-        // If body is not valid JSON, cache it as is.
-        this.redisService.set(
-          idempotencyKey,
-          bodyAsString,
-          RESPONSE_TTL_SECONDS
-        );
+        // keep as string
       }
-
-      return originalSend.call(res, body);
-    };
+      cacheFinal(parsed);
+      return originalSend(body as string);
+    }) as typeof res.send;
 
     // 5. If lock is acquired, proceed to the next middleware/handler
     next();

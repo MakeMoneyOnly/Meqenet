@@ -121,7 +121,7 @@ async function bootstrap(): Promise<void> {
       .setContact(
         'Meqenet Development Team',
         'https://meqenet.et',
-        'development-team@meqenet.et[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[D[C'
+        'development-team@meqenet.et'
       )
       .setLicense('UNLICENSED', '')
       .build();
@@ -155,15 +155,15 @@ async function bootstrap(): Promise<void> {
   await app.listen(port, host);
 
   logger.log(
-    `🚀 payments-service is running on: http://${host}:${port}`,
+    ` payments-service is running on: http://${host}:${port}`,
     'Bootstrap'
   );
   logger.log(
-    `📚 API Documentation: http://${host}:${port}/api/docs`,
+    ` API Documentation: http://${host}:${port}/api/docs`,
     'Bootstrap'
   );
-  logger.log(`📊 Health Check: http://${host}:${port}/health`, 'Bootstrap');
-  logger.log(`📈 Metrics: http://${host}:${port}/metrics`, 'Bootstrap');
+  logger.log(` Health Check: http://${host}:${port}/health`, 'Bootstrap');
+  logger.log(` Metrics: http://${host}:${port}/metrics`, 'Bootstrap');
 }
 
 bootstrap().catch((error: unknown) => {

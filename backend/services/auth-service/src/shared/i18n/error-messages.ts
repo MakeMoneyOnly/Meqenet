@@ -221,7 +221,7 @@ export function createBilingualAuthErrorResponse(
     };
     httpStatus: number;
     timestamp: string;
-    requestId?: string;
+    requestId: string | undefined;
   };
 } {
   const error = AuthErrorMessages[errorCode];
@@ -247,6 +247,26 @@ export function createBilingualAuthErrorResponse(
       requestId,
     },
   };
+}
+
+/**
+ * Error messages map for validation
+ */
+const ErrorMessagesMap = new Map(
+  Object.keys(AuthErrorMessages).map(key => [key, true])
+);
+
+/**
+ * Validate error code format
+ * @param errorCode - The error code to validate
+ */
+function validateErrorCode(errorCode: unknown): void {
+  if (typeof errorCode !== 'string') {
+    throw new Error('Error code must be a string');
+  }
+  if (errorCode.trim().length === 0) {
+    throw new Error('Error code cannot be empty');
+  }
 }
 
 /**
