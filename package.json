@@ -10,15 +10,22 @@
     "lint:enterprise": "pnpm run lint:all && pnpm run security:audit && echo '✅ Enterprise-grade linting and security audit completed'",
     "lint:fix": "eslint . --fix",
     "lint:security": "eslint . --config eslint.config.js",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:ui": "vitest --ui",
-    "test:coverage": "vitest run --coverage",
+    "test": "pnpm run test:setup && vitest run",
+    "test:watch": "pnpm run test:setup && vitest",
+    "test:ui": "pnpm run test:setup && vitest --ui",
+    "test:coverage": "pnpm run test:setup && vitest run --coverage",
+    "db:migrate": "prisma migrate dev",
+    "db:reset": "prisma migrate reset --force",
     "db:seed": "ts-node scripts/seed.ts",
+    "prisma:generate": "cd backend/services/auth-service && pnpm prisma generate",
+    "test:setup": "node scripts/ci-test-setup.js",
+    "test:db:setup": "cd backend/services/auth-service && pnpm prisma migrate reset --force --skip-generate",
     "test:frontend": "pnpm --filter @frontend/source run test",
     "typecheck:frontend": "pnpm --filter @frontend/source run typecheck",
     "test:integration": "vitest run integration",
     "test:e2e": "pnpm vitest run --config backend-e2e/vite.config.ts",
+    "e2e:setup": "sh scripts/e2e-setup.sh",
+    "e2e:teardown": "sh scripts/e2e-teardown.sh",
     "test:mocks:telebirr": "json-server --watch test/mocks/telebirr-db.json --port 3001",
     "build": "pnpm -r --if-present build",
     "security:audit": "pnpm audit --audit-level moderate",
@@ -199,14 +206,6 @@
     "vite": "^5.4.19",
     "vitest": "^3.2.4",
     "webpack-cli": "^6.0.1"
-  },
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx,json,md,yml,yaml}": [
-      "prettier --write"
-    ],
-    "*.{js,jsx,ts,tsx}": [
-      "eslint --fix --config eslint.config.js"
-    ]
   },
   "repository": {
     "type": "git",

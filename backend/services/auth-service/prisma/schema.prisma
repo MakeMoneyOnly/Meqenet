@@ -73,8 +73,8 @@ model User {
   kycStatus       KycStatus   @default(PENDING)
   /// @classification: Internal
   kycCompletedAt  DateTime?
-  /// @classification: Sensitive
-  faydaIdHash     String?     @unique
+  /// @classification: Sensitive @encrypted
+  faydaIdHash     Bytes?     @unique
   /// @classification: Internal
   kycDocuments    Json?
   /// @classification: Internal
@@ -206,4 +206,78 @@ model PasswordReset {
   /// @classification: Internal
   createdAt  DateTime @default(now())
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model OutboxMessage {
+  /// @classification: Internal
+  id             String   @id @default(cuid())
+  /// @classification: Internal
+  messageId      String   @unique
+  /// @classification: Internal
+  aggregateType  String
+  /// @classification: Internal
+  aggregateId    String
+  /// @classification: Internal
+  eventType      String
+  /// @classification: Confidential
+  payload        Json
+  /// @classification: Internal
+  metadata       Json?
+  /// @classification: Internal
+  status         String   @default("PENDING")
+  /// @classification: Internal
+  retryCount     Int      @default(0)
+  /// @classification: Internal
+  maxRetries     Int      @default(3)
+  /// @classification: Internal
+  errorMessage   String?
+  /// @classification: Internal
+  nextRetryAt    DateTime?
+  /// @classification: Internal
+  createdAt      DateTime @default(now())
+  /// @classification: Internal
+  processedAt    DateTime?
+  /// @classification: Internal
+  dlqAt          DateTime?
+  /// @classification: Internal
+  dlqReason      String?
+}
+
+model AuditLog {
+  /// @classification: Internal
+  id                  String   @id @default(cuid())
+  /// @classification: Internal
+  eventType           String
+  /// @classification: Internal
+  entityType          String
+  /// @classification: Internal
+  entityId            String?
+  /// @classification: Internal
+  userId              String?
+  /// @classification: PII
+  userEmail           String?
+  /// @classification: Internal
+  userRole            String?
+  /// @classification: PII
+  ipAddress           String
+  /// @classification: Internal
+  userAgent           String?
+  /// @classification: Internal
+  sessionId           String?
+  /// @classification: Internal
+  location            String?
+  /// @classification: Internal
+  deviceFingerprint   String?
+  /// @classification: Confidential
+  eventData           Json?
+  /// @classification: Confidential
+  previousValues      Json?
+  /// @classification: Confidential
+  newValues           Json?
+  /// @classification: Internal
+  riskScore           Float?
+  /// @classification: Internal
+  complianceFlags     String[]
+  /// @classification: Internal
+  createdAt           DateTime @default(now())
 }

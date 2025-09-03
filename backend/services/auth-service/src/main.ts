@@ -9,6 +9,7 @@ import { PinoLogger } from 'nestjs-pino';
 
 import { AppModule } from './app/app.module';
 import { initializeOpenTelemetry } from './shared/observability/otel';
+import { GlobalExceptionFilter } from './shared/filters/global-exception.filter';
 
 const DEFAULT_PORT = 3001;
 const DEFAULT_GRPC_URL = 'localhost:5000';
@@ -58,6 +59,9 @@ async function bootstrap(): Promise<void> {
       })
     );
 
+    // Global exception filter for bilingual error responses (NBE compliance)
+    app.useGlobalFilters(new GlobalExceptionFilter());
+
     app.enableCors({
       origin: [
         'https://nbe.gov.et',
@@ -70,6 +74,7 @@ async function bootstrap(): Promise<void> {
         'Content-Type',
         'Authorization',
         'Accept',
+        'Accept-Language', // Added for bilingual support
         'X-Request-ID',
       ],
     });

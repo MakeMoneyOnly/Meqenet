@@ -8,9 +8,20 @@ resource "aws_vpc" "main" {
   }
 }
 
+# Fix CKV2_AWS_12 - Ensure default security group restricts all traffic
+resource "aws_default_security_group" "default" {
+  vpc_id = aws_vpc.main.id
+
+  # Remove all ingress and egress rules - making it completely restrictive
+  # This ensures the default security group blocks all traffic
+  tags = {
+    Name = "meqenet-default-sg-restrictive"
+  }
+}
+
 resource "aws_cloudwatch_log_group" "vpc_flow_logs" {
   name              = "/aws/vpc/flowlogs/meqenet-main-vpc"
-  retention_in_days = 30
+  retention_in_days = 365  # Fix CKV_AWS_338 - Retain logs for at least 1 year
   kms_key_id        = aws_kms_key.vpc_flow_logs.arn
 
   tags = {
@@ -307,48 +318,7 @@ resource "aws_route_table_association" "private_b" {
   route_table_id = aws_route_table.private.id
 }
 
-resource "aws_security_group" "default" {
-  name        = "meqenet-default-sg"
-  description = "Default security group for all instances"
-  vpc_id      = aws_vpc.main.id
-
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["10.0.0.0/16"]
-    description = "Allow HTTP traffic from VPC"
-  }
-
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["10.0.0.0/16"]
-    description = "Allow HTTPS traffic from VPC"
-  }
-
-  # VPC ENDPOINTS ENABLED - NO PUBLIC EGRESS NEEDED
-  # All AWS service traffic now flows through secure VPC endpoints
-  # Only DNS required for service discovery within VPC
-
-  egress {
-    from_port   = 53
-    to_port     = 53
-    protocol    = "tcp"
-    cidr_blocks = ["172.16.0.0/12"]  # AWS VPC DNS only
-    description = "Allow DNS outbound traffic to VPC DNS only"
-  }
-
-  egress {
-    from_port   = 53
-    to_port     = 53
-    protocol    = "udp"
-    cidr_blocks = ["172.16.0.0/12"]  # AWS VPC DNS only
-    description = "Allow DNS outbound traffic (UDP) to VPC DNS only"
-  }
-
-  tags = {
-    Name = "meqenet-default-sg"
-  }
+# Fix CKV2_AWS_12 - Restrict the default security group
+resource "aws_default_security_group" "default" {
+  vpc_id = aws_vpc.main.id
 }

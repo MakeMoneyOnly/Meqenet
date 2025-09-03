@@ -1,0 +1,165 @@
+{
+  "results": [
+    {
+      "rule_id": "AVD-AWS-0107",
+      "long_id": "aws-ec2-no-public-ingress-sgr",
+      "rule_description": "An ingress security group rule allows traffic from /0.",
+      "rule_provider": "aws",
+      "rule_service": "ec2",
+      "impact": "Your port exposed to the internet",
+      "resolution": "Set a more restrictive cidr range",
+      "links": [
+        "https://aquasecurity.github.io/tfsec/v1.28.14/checks/aws/ec2/no-public-ingress-sgr/",
+        "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group_rule#cidr_blocks"
+      ],
+      "description": "Security group rule allows ingress from public internet.",
+      "severity": "CRITICAL",
+      "warning": false,
+      "status": 0,
+      "resource": "aws_security_group.alb",
+      "location": {
+        "filename": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\infrastructure\\load_balancer.tf",
+        "start_line": 29,
+        "end_line": 29
+      }
+    },
+    {
+      "rule_id": "AVD-AWS-0107",
+      "long_id": "aws-ec2-no-public-ingress-sgr",
+      "rule_description": "An ingress security group rule allows traffic from /0.",
+      "rule_provider": "aws",
+      "rule_service": "ec2",
+      "impact": "Your port exposed to the internet",
+      "resolution": "Set a more restrictive cidr range",
+      "links": [
+        "https://aquasecurity.github.io/tfsec/v1.28.14/checks/aws/ec2/no-public-ingress-sgr/",
+        "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group_rule#cidr_blocks"
+      ],
+      "description": "Security group rule allows ingress from public internet.",
+      "severity": "CRITICAL",
+      "warning": false,
+      "status": 0,
+      "resource": "aws_security_group.alb",
+      "location": {
+        "filename": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\infrastructure\\load_balancer.tf",
+        "start_line": 21,
+        "end_line": 21
+      }
+    },
+    {
+      "rule_id": "AVD-AWS-0053",
+      "long_id": "aws-elb-alb-not-public",
+      "rule_description": "Load balancer is exposed to the internet.",
+      "rule_provider": "aws",
+      "rule_service": "elb",
+      "impact": "The load balancer is exposed on the internet",
+      "resolution": "Switch to an internal load balancer or add a tfsec ignore",
+      "links": [
+        "https://aquasecurity.github.io/tfsec/v1.28.14/checks/aws/elb/alb-not-public/",
+        "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb"
+      ],
+      "description": "Load balancer is exposed publicly.",
+      "severity": "HIGH",
+      "warning": false,
+      "status": 0,
+      "resource": "aws_lb.main",
+      "location": {
+        "filename": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\infrastructure\\load_balancer.tf",
+        "start_line": 261,
+        "end_line": 261
+      }
+    },
+    {
+      "rule_id": "AVD-AWS-0057",
+      "long_id": "aws-iam-no-policy-wildcards",
+      "rule_description": "IAM policy should avoid use of wildcards and instead apply the principle of least privilege",
+      "rule_provider": "aws",
+      "rule_service": "iam",
+      "impact": "Overly permissive policies may grant access to sensitive resources",
+      "resolution": "Specify the exact permissions required, and to which resources they should apply instead of using wildcards.",
+      "links": [
+        "https://aquasecurity.github.io/tfsec/v1.28.14/checks/aws/iam/no-policy-wildcards/",
+        "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document"
+      ],
+      "description": "IAM policy document uses sensitive action 'logs:CreateLogGroup' on wildcarded resource 'arn:aws:logs:*:*:*'",
+      "severity": "HIGH",
+      "warning": false,
+      "status": 0,
+      "resource": "aws_iam_role_policy.lambda_rotation",
+      "location": {
+        "filename": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\infrastructure\\database.tf",
+        "start_line": 238,
+        "end_line": 238
+      }
+    },
+    {
+      "rule_id": "AVD-AWS-0057",
+      "long_id": "aws-iam-no-policy-wildcards",
+      "rule_description": "IAM policy should avoid use of wildcards and instead apply the principle of least privilege",
+      "rule_provider": "aws",
+      "rule_service": "iam",
+      "impact": "Overly permissive policies may grant access to sensitive resources",
+      "resolution": "Specify the exact permissions required, and to which resources they should apply instead of using wildcards.",
+      "links": [
+        "https://aquasecurity.github.io/tfsec/v1.28.14/checks/aws/iam/no-policy-wildcards/",
+        "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document"
+      ],
+      "description": "IAM policy document uses sensitive action 'ec2:CreateNetworkInterface' on wildcarded resource '*'",
+      "severity": "HIGH",
+      "warning": false,
+      "status": 0,
+      "resource": "aws_iam_role_policy.lambda_rotation",
+      "location": {
+        "filename": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\infrastructure\\database.tf",
+        "start_line": 238,
+        "end_line": 238
+      }
+    },
+    {
+      "rule_id": "AVD-AWS-0089",
+      "long_id": "aws-s3-enable-bucket-logging",
+      "rule_description": "S3 Bucket does not have logging enabled.",
+      "rule_provider": "aws",
+      "rule_service": "s3",
+      "impact": "There is no way to determine the access to this bucket",
+      "resolution": "Add a logging block to the resource to enable access logging",
+      "links": [
+        "https://aquasecurity.github.io/tfsec/v1.28.14/checks/aws/s3/enable-bucket-logging/",
+        "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket"
+      ],
+      "description": "Bucket does not have logging enabled",
+      "severity": "MEDIUM",
+      "warning": false,
+      "status": 0,
+      "resource": "aws_s3_bucket.cloudtrail_access_logs_replica",
+      "location": {
+        "filename": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\infrastructure\\main.tf",
+        "start_line": 359,
+        "end_line": 366
+      }
+    },
+    {
+      "rule_id": "AVD-AWS-0089",
+      "long_id": "aws-s3-enable-bucket-logging",
+      "rule_description": "S3 Bucket does not have logging enabled.",
+      "rule_provider": "aws",
+      "rule_service": "s3",
+      "impact": "There is no way to determine the access to this bucket",
+      "resolution": "Add a logging block to the resource to enable access logging",
+      "links": [
+        "https://aquasecurity.github.io/tfsec/v1.28.14/checks/aws/s3/enable-bucket-logging/",
+        "https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket"
+      ],
+      "description": "Bucket does not have logging enabled",
+      "severity": "MEDIUM",
+      "warning": false,
+      "status": 0,
+      "resource": "aws_s3_bucket.alb_logs_replica",
+      "location": {
+        "filename": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\infrastructure\\load_balancer.tf",
+        "start_line": 144,
+        "end_line": 151
+      }
+    }
+  ]
+}

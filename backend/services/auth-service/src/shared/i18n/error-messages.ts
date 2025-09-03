@@ -1,292 +1,214 @@
 /**
- * Bilingual Error Messages for Ethiopian FinTech Compliance
+ * Bilingual Error Messages for Authentication Service
  *
  * This module provides error messages in both English and Amharic (አማርኛ)
  * as required by Ethiopian financial regulations and NBE consumer protection directives.
- *
- * All financial error messages must be provided in both languages to ensure
- * consumer understanding and regulatory compliance.
  */
 
 export interface BilingualErrorMessage {
-  readonly en: string;
-  readonly am: string;
-  readonly code: string;
-  readonly category:
-    | 'FINANCIAL'
-    | 'SECURITY'
-    | 'VALIDATION'
-    | 'SYSTEM'
-    | 'COMPLIANCE';
+  en: string;
+  am: string;
+  code: string;
+  category: 'AUTH' | 'VALIDATION' | 'SECURITY' | 'SYSTEM' | 'COMPLIANCE';
 }
 
-// Using a Map is safer than a plain object for lookups with external input.
-export const ErrorMessagesMap = new Map<string, BilingualErrorMessage>([
-  // Financial Errors (NBE Compliance)
-  [
-    'INSUFFICIENT_FUNDS',
-    {
-      en: 'Insufficient funds in your account to complete this transaction.',
-      am: 'ይህንን ግብይት ለመጨረስ በሒሳብዎ ውስጥ በቂ ገንዘብ የለም።',
-      code: 'ERR_INSUFFICIENT_FUNDS',
-      category: 'FINANCIAL',
-    },
-  ],
-  [
-    'CREDIT_LIMIT_EXCEEDED',
-    {
-      en: 'Credit limit exceeded. Please make a payment or contact customer service.',
-      am: 'የብድር ገደብ ተሻሽቷል። እባክዎ ክፍያ ያድርጉ ወይም የደንበኞች አገልግሎት ያነጋግሩ።',
-      code: 'ERR_CREDIT_LIMIT_EXCEEDED',
-      category: 'FINANCIAL',
-    },
-  ],
-  [
-    'INVALID_INTEREST_RATE',
-    {
-      en: 'Interest rate exceeds NBE maximum limit of 22% per annum.',
-      am: 'የወለድ መጠን ከኤን.ቢ.ኢ የከፍተኛ ገደብ 22% በዓመት ተሻሽቷል።',
-      code: 'ERR_INVALID_INTEREST_RATE',
-      category: 'FINANCIAL',
-    },
-  ],
-  [
-    'TRANSACTION_LIMIT_EXCEEDED',
-    {
-      en: 'Transaction amount exceeds daily limit. Please try a smaller amount.',
-      am: 'የግብይት መጠን ከቀናዊ ገደብ ይበልጣል። እባክዎ ያነሰ መጠን ይሞክሩ።',
-      code: 'ERR_TRANSACTION_LIMIT_EXCEEDED',
-      category: 'FINANCIAL',
-    },
-  ],
-
-  // KYC/Identity Verification Errors
-  [
-    'INVALID_FAYDA_ID',
-    {
-      en: 'Invalid Fayda National ID format. Please check and try again.',
-      am: 'ልክ ያልሆነ የፋይዳ ብሔራዊ መታወቂያ ቅርጸት። እባክዎ ይመልከቱና እንደገና ይሞክሩ።',
-      code: 'ERR_INVALID_FAYDA_ID',
-      category: 'VALIDATION',
-    },
-  ],
-  [
-    'FAYDA_ID_NOT_VERIFIED',
-    {
-      en: 'Fayda National ID could not be verified. Please contact customer service.',
-      am: 'የፋይዳ ብሔራዊ መታወቂያ ማረጋገጥ አልተቻለም። እባክዎ የደንበኞች አገልግሎት ያነጋግሩ።',
-      code: 'ERR_FAYDA_ID_NOT_VERIFIED',
-      category: 'VALIDATION',
-    },
-  ],
-  [
-    'KYC_INCOMPLETE',
-    {
-      en: 'KYC verification incomplete. Please complete your profile verification.',
-      am: 'የKYC ማረጋገጫ ያልተጠናቀቀ። እባክዎ የፕሮፋይልዎን ማረጋገጫ ያጠናቅቁ።',
-      code: 'ERR_KYC_INCOMPLETE',
-      category: 'COMPLIANCE',
-    },
-  ],
-
-  // Payment Provider Errors
-  [
-    'TELEBIRR_PAYMENT_FAILED',
-    {
-      en: 'TeleBirr payment failed. Please try again or use a different payment method.',
-      am: 'የቴሌብር ክፍያ አልተሳካም። እባክዎ እንደገና ይሞክሩ ወይም የተለየ የክፍያ መንገድ ይጠቀሙ።',
-      code: 'ERR_TELEBIRR_PAYMENT_FAILED',
-      category: 'FINANCIAL',
-    },
-  ],
-  [
-    'MPESA_PAYMENT_FAILED',
-    {
-      en: 'M-Pesa payment failed. Please check your M-Pesa balance and try again.',
-      am: 'የM-Pesa ክፍያ አልተሳካም። እባክዎ የM-Pesa ሂሳብዎን ይመልከቱና እንደገና ይሞክሩ።',
-      code: 'ERR_MPESA_PAYMENT_FAILED',
-      category: 'FINANCIAL',
-    },
-  ],
-  [
-    'CBE_BIRR_PAYMENT_FAILED',
-    {
-      en: 'CBE Birr payment failed. Please contact CBE customer service.',
-      am: 'የCBE ብር ክፍያ አልተሳካም። እባክዎ የCBE የደንበኞች አገልግሎት ያነጋግሩ።',
-      code: 'ERR_CBE_BIRR_PAYMENT_FAILED',
-      category: 'FINANCIAL',
-    },
-  ],
-
-  // Security Errors
-  [
-    'UNAUTHORIZED_ACCESS',
-    {
-      en: 'Unauthorized access attempt. Please log in again.',
-      am: 'ያልተፈቀደ የመዳረሻ ሙከራ። እባክዎ እንደገና ይግቡ።',
-      code: 'ERR_UNAUTHORIZED_ACCESS',
-      category: 'SECURITY',
-    },
-  ],
-  [
-    'SESSION_EXPIRED',
-    {
-      en: 'Your session has expired. Please log in again.',
-      am: 'የእርስዎ ክፍለ-ጊዜ አብቅቷል። እባክዎ እንደገና ይግቡ።',
-      code: 'ERR_SESSION_EXPIRED',
-      category: 'SECURITY',
-    },
-  ],
-  [
-    'ACCOUNT_SUSPENDED',
-    {
-      en: 'Your account has been suspended due to security concerns. Please contact customer service.',
-      am: 'በደህንነት ስጋቶች ምክንያት መለያዎ ታግዷል። እባክዎ የደንበኞች አገልግሎት ያነጋግሩ።',
-      code: 'ERR_ACCOUNT_SUSPENDED',
-      category: 'SECURITY',
-    },
-  ],
-
-  // NBE Compliance Errors
-  [
-    'NBE_REPORTING_FAILED',
-    {
-      en: 'Failed to report transaction to NBE. Transaction may be delayed.',
-      am: 'ግብይቱን ለኤን.ቢ.ኢ ሪፖርት ማድረግ አልተሳካም። ግብይቱ ሊዘገይ ይችላል።',
-      code: 'ERR_NBE_REPORTING_FAILED',
-      category: 'COMPLIANCE',
-    },
-  ],
-  [
-    'DATA_RESIDENCY_VIOLATION',
-    {
-      en: 'Data residency requirements violated. Data must remain in Ethiopia.',
-      am: 'የመረጃ ነዋሪነት መስፈርቶች ተጥሰዋል። መረጃው በኢትዮጵያ ውስጥ መቆየት አለበት።',
-      code: 'ERR_DATA_RESIDENCY_VIOLATION',
-      category: 'COMPLIANCE',
-    },
-  ],
-
-  // System Errors
-  [
-    'SERVICE_UNAVAILABLE',
-    {
-      en: 'Service temporarily unavailable. Please try again later.',
-      am: 'አገልግሎቱ ለጊዜው አይገኝም። እባክዎ ቆየት ገምተው እንደገና ይሞክሩ።',
-      code: 'ERR_SERVICE_UNAVAILABLE',
-      category: 'SYSTEM',
-    },
-  ],
-  [
-    'DATABASE_CONNECTION_FAILED',
-    {
-      en: 'Database connection failed. Please try again later.',
-      am: 'የመረጃ ቋት ግንኙነት አልተሳካም። እባክዎ ቆየት ገምተው እንደገና ይሞክሩ።',
-      code: 'ERR_DATABASE_CONNECTION_FAILED',
-      category: 'SYSTEM',
-    },
-  ],
+export const AuthErrorMessages: Record<string, BilingualErrorMessage> = {
+  // Authentication Errors
+  INVALID_CREDENTIALS: {
+    en: 'Invalid email or password. Please check and try again.',
+    am: 'ልክ ያልሆነ ኢሜይል ወይም የይለፍ ቃል። እባክዎ ይመልከቱና እንደገና ይሞክሩ።',
+    code: 'ERR_INVALID_CREDENTIALS',
+    category: 'AUTH',
+  },
+  USER_NOT_FOUND: {
+    en: 'User account not found. Please register first.',
+    am: 'የተጠቃሚ መለያ አልተገኘም። እባክዎ መጀመሪያ ይመዝገቡ።',
+    code: 'ERR_USER_NOT_FOUND',
+    category: 'AUTH',
+  },
+  USER_ALREADY_EXISTS: {
+    en: 'User with this email already exists. Please login or use a different email.',
+    am: 'በዚህ ኢሜይል ያለ ተጠቃሚ አስቀድሞ አለ። እባክዎ ይግቡ ወይም የተለየ ኢሜይል ይጠቀሙ።',
+    code: 'ERR_USER_ALREADY_EXISTS',
+    category: 'AUTH',
+  },
+  ACCOUNT_LOCKED: {
+    en: 'Account has been locked due to multiple failed login attempts. Please reset your password.',
+    am: 'በተደጋጋሚ ያልተሳካ የመግቢያ ሙከራ ምክንያት መለያው ተቆልፏል። እባክዎ የይለፍ ቃልዎን ያስተካክሉ።',
+    code: 'ERR_ACCOUNT_LOCKED',
+    category: 'SECURITY',
+  },
+  TOKEN_EXPIRED: {
+    en: 'Your session has expired. Please login again.',
+    am: 'የእርስዎ ክፍለ-ጊዜ አብቅቷል። እባክዎ እንደገና ይግቡ።',
+    code: 'ERR_TOKEN_EXPIRED',
+    category: 'AUTH',
+  },
+  INVALID_TOKEN: {
+    en: 'Invalid authentication token. Please login again.',
+    am: 'ልክ ያልሆነ የማረጋገጫ ቶከን። እባክዎ እንደገና ይግቡ።',
+    code: 'ERR_INVALID_TOKEN',
+    category: 'AUTH',
+  },
+  REFRESH_TOKEN_EXPIRED: {
+    en: 'Refresh token has expired. Please login again.',
+    am: 'የማደስ ቶከን አብቅቷል። እባክዎ እንደገና ይግቡ።',
+    code: 'ERR_REFRESH_TOKEN_EXPIRED',
+    category: 'AUTH',
+  },
 
   // Validation Errors
-  [
-    'INVALID_PHONE_NUMBER',
-    {
-      en: 'Invalid Ethiopian phone number format. Please use format: +251XXXXXXXXX',
-      am: 'ልክ ያልሆነ የኢትዮጵያ ስልክ ቁጥር ቅርጸት። እባክዎ ይህንን ቅርጸት ይጠቀሙ: +251XXXXXXXXX',
-      code: 'ERR_INVALID_PHONE_NUMBER',
-      category: 'VALIDATION',
-    },
-  ],
-  [
-    'INVALID_ETB_AMOUNT',
-    {
-      en: 'Invalid Ethiopian Birr amount. Must be positive with maximum 2 decimal places.',
-      am: 'ልክ ያልሆነ የኢትዮጵያ ብር መጠን። አዎንታዊ እና ከ2 ዴሲማል ስፍራዎች ዝቅተኛ መሆን አለበት።',
-      code: 'ERR_INVALID_ETB_AMOUNT',
-      category: 'VALIDATION',
-    },
-  ],
-]);
+  EMAIL_REQUIRED: {
+    en: 'Email address is required.',
+    am: 'የኢሜይል አድራሻ ያስፈልጋል።',
+    code: 'ERR_EMAIL_REQUIRED',
+    category: 'VALIDATION',
+  },
+  EMAIL_INVALID: {
+    en: 'Please provide a valid email address.',
+    am: 'እባክዎ ትክክለኛ የኢሜይል አድራሻ ያቅርቡ።',
+    code: 'ERR_EMAIL_INVALID',
+    category: 'VALIDATION',
+  },
+  PASSWORD_REQUIRED: {
+    en: 'Password is required.',
+    am: 'የይለፍ ቃል ያስፈልጋል።',
+    code: 'ERR_PASSWORD_REQUIRED',
+    category: 'VALIDATION',
+  },
+  PASSWORD_TOO_SHORT: {
+    en: 'Password must be at least 12 characters long.',
+    am: 'የይለፍ ቃል ቢያንስ 12 ቁምፊዎች መሆን አለበት።',
+    code: 'ERR_PASSWORD_TOO_SHORT',
+    category: 'VALIDATION',
+  },
+  PASSWORD_TOO_WEAK: {
+    en: 'Password must contain uppercase, lowercase, numbers and special characters.',
+    am: 'የይለፍ ቃል ካፒታል፣ ትንንሽ ፊደሎች፣ ቁጥሮች እና ልዩ ቁምፊዎች መያዝ አለበት።',
+    code: 'ERR_PASSWORD_TOO_WEAK',
+    category: 'VALIDATION',
+  },
+  PHONE_REQUIRED: {
+    en: 'Phone number is required.',
+    am: 'የስልክ ቁጥር ያስፈልጋል።',
+    code: 'ERR_PHONE_REQUIRED',
+    category: 'VALIDATION',
+  },
+  PHONE_INVALID: {
+    en: 'Invalid Ethiopian phone number format. Please use format: +251XXXXXXXXX',
+    am: 'ልክ ያልሆነ የኢትዮጵያ ስልክ ቁጥር ቅርጸት። እባክዎ ይህንን ቅርጸት ይጠቀሙ: +251XXXXXXXXX',
+    code: 'ERR_PHONE_INVALID',
+    category: 'VALIDATION',
+  },
+  FAYDA_ID_REQUIRED: {
+    en: 'Fayda National ID is required for registration.',
+    am: 'ለምዝገባ የፋይዳ ብሔራዊ መታወቂያ ያስፈልጋል።',
+    code: 'ERR_FAYDA_ID_REQUIRED',
+    category: 'VALIDATION',
+  },
+  FAYDA_ID_INVALID: {
+    en: 'Invalid Fayda National ID format. Must be 12 digits.',
+    am: 'ልክ ያልሆነ የፋይዳ ብሔራዊ መታወቂያ ቅርጸት። 12 አሃዞች መሆን አለበት።',
+    code: 'ERR_FAYDA_ID_INVALID',
+    category: 'VALIDATION',
+  },
 
-const MIN_HTTP_STATUS_CODE = 100;
-const MAX_HTTP_STATUS_CODE = 599;
+  // Password Reset Errors
+  RESET_TOKEN_INVALID: {
+    en: 'Invalid or expired password reset token.',
+    am: 'ልክ ያልሆነ ወይም ያለፈ የይለፍ ቃል ማስተካከያ ቶከን።',
+    code: 'ERR_RESET_TOKEN_INVALID',
+    category: 'AUTH',
+  },
+  RESET_TOKEN_EXPIRED: {
+    en: 'Password reset token has expired. Please request a new one.',
+    am: 'የይለፍ ቃል ማስተካከያ ቶከን አብቅቷል። እባክዎ አዲስ ይጠይቁ።',
+    code: 'ERR_RESET_TOKEN_EXPIRED',
+    category: 'AUTH',
+  },
+
+  // Security Errors
+  UNAUTHORIZED: {
+    en: 'You are not authorized to access this resource.',
+    am: 'ይህንን ሀብት ለመድረስ ፈቃድ የለዎትም።',
+    code: 'ERR_UNAUTHORIZED',
+    category: 'SECURITY',
+  },
+  FORBIDDEN: {
+    en: 'Access to this resource is forbidden.',
+    am: 'ወደዚህ ሀብት መድረስ ክልክል ነው።',
+    code: 'ERR_FORBIDDEN',
+    category: 'SECURITY',
+  },
+  INSUFFICIENT_PERMISSIONS: {
+    en: 'You do not have sufficient permissions to perform this action.',
+    am: 'ይህንን ተግባር ለማከናወን በቂ ፈቃድ የለዎትም።',
+    code: 'ERR_INSUFFICIENT_PERMISSIONS',
+    category: 'SECURITY',
+  },
+
+  // Rate Limiting
+  TOO_MANY_REQUESTS: {
+    en: 'Too many requests. Please try again later.',
+    am: 'በጣም ብዙ ጥያቄዎች። እባክዎ ቆየት ብለው ይሞክሩ።',
+    code: 'ERR_TOO_MANY_REQUESTS',
+    category: 'SECURITY',
+  },
+
+  // System Errors
+  INTERNAL_ERROR: {
+    en: 'An internal error occurred. Please try again later.',
+    am: 'የውስጥ ስህተት ተፈጥሯል። እባክዎ ቆየት ብለው ይሞክሩ።',
+    code: 'ERR_INTERNAL_ERROR',
+    category: 'SYSTEM',
+  },
+  SERVICE_UNAVAILABLE: {
+    en: 'Authentication service is temporarily unavailable. Please try again later.',
+    am: 'የማረጋገጫ አገልግሎት ለጊዜው አይገኝም። እባክዎ ቆየት ብለው ይሞክሩ።',
+    code: 'ERR_SERVICE_UNAVAILABLE',
+    category: 'SYSTEM',
+  },
+};
 
 /**
- * Validates error code to prevent injection attacks
- * @param errorCode - The error code to validate
- * @returns True if valid, throws error if invalid
- */
-function validateErrorCode(errorCode: unknown): errorCode is string {
-  if (typeof errorCode !== 'string') {
-    throw new Error('Error code must be a string');
-  }
-
-  // Check for potential injection patterns
-  if (
-    errorCode.includes('..') ||
-    errorCode.includes('/') ||
-    errorCode.includes('\\')
-  ) {
-    throw new Error('Invalid error code: contains unsafe characters');
-  }
-
-  // Limit length to prevent buffer overflow attacks
-  if (errorCode.length > 100) {
-    throw new Error('Error code too long');
-  }
-
-  return true;
-}
-
-/**
- * Gets a bilingual error message by code
+ * Get bilingual error message by code
  * @param errorCode - The error code to lookup
  * @param language - The preferred language (defaults to 'en')
  * @returns The error message in the specified language
  */
-export function getErrorMessage(
-  errorCode: unknown,
+export function getAuthErrorMessage(
+  errorCode: string,
   language: 'en' | 'am' = 'en'
 ): string {
-  // Validate inputs to prevent injection attacks
-  validateErrorCode(errorCode);
-
-  if (language !== 'en' && language !== 'am') {
-    throw new Error('Invalid language: must be "en" or "am"');
-  }
-
-  const error = ErrorMessagesMap.get(errorCode as string);
+  const error = AuthErrorMessages[errorCode];
   if (!error) {
-    // Fallback error message - no user input is used here
     return language === 'am'
       ? 'ያልታወቀ ስህተት ተፈጥሯል።'
       : 'An unknown error occurred.';
   }
-  // Access properties directly to avoid injection warnings
-  return language === 'am' ? error.am : error.en;
+  return error[language];
 }
 
 /**
- * Gets the full bilingual error object
+ * Get the full bilingual error object
  * @param errorCode - The error code to lookup
  * @returns The complete bilingual error object
  */
-export function getBilingualError(
-  errorCode: unknown
+export function getBilingualAuthError(
+  errorCode: string
 ): BilingualErrorMessage | null {
-  validateErrorCode(errorCode);
-  return ErrorMessagesMap.get(errorCode as string) ?? null;
+  return AuthErrorMessages[errorCode] || null;
 }
 
 /**
- * Creates a standardized error response with bilingual messages
+ * Create a standardized bilingual error response
  * @param errorCode - The error code
  * @param httpStatus - HTTP status code
  * @param requestId - Unique request identifier for tracking
  * @returns Standardized error response
  */
-export function createBilingualErrorResponse(
-  errorCode: unknown,
+export function createBilingualAuthErrorResponse(
+  errorCode: string,
   httpStatus: number,
   requestId?: string
 ): {
@@ -302,23 +224,7 @@ export function createBilingualErrorResponse(
     requestId?: string;
   };
 } {
-  validateErrorCode(errorCode);
-
-  // Validate HTTP status code
-  if (
-    typeof httpStatus !== 'number' ||
-    httpStatus < MIN_HTTP_STATUS_CODE ||
-    httpStatus > MAX_HTTP_STATUS_CODE
-  ) {
-    throw new Error('Invalid HTTP status code');
-  }
-
-  // Validate request ID if provided
-  if (requestId !== undefined && typeof requestId !== 'string') {
-    throw new Error('Request ID must be a string');
-  }
-
-  const error = ErrorMessagesMap.get(errorCode as string);
+  const error = AuthErrorMessages[errorCode];
   const fallbackError: BilingualErrorMessage = {
     en: 'An unknown error occurred.',
     am: 'ያልታወቀ ስህተት ተፈጥሯል።',
@@ -326,7 +232,7 @@ export function createBilingualErrorResponse(
     category: 'SYSTEM',
   };
 
-  const errorData = error ?? fallbackError;
+  const errorData = error || fallbackError;
 
   return {
     error: {
@@ -338,13 +244,13 @@ export function createBilingualErrorResponse(
       },
       httpStatus,
       timestamp: new Date().toISOString(),
-      ...(requestId && { requestId }),
+      requestId,
     },
   };
 }
 
 /**
- * Validates if an error code exists
+ * Validate if an error code exists
  * @param errorCode - The error code to validate
  * @returns True if the error code exists
  */
@@ -355,4 +261,13 @@ export function isValidErrorCode(errorCode: unknown): boolean {
   } catch {
     return false;
   }
+}
+
+/**
+ * Validate if an auth error code exists
+ * @param errorCode - The auth error code to validate
+ * @returns True if the auth error code exists
+ */
+export function isValidAuthErrorCode(errorCode: string): boolean {
+  return errorCode in AuthErrorMessages;
 }

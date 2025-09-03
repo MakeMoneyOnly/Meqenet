@@ -24,7 +24,8 @@ export class AuthService {
   ) {}
 
   async register(
-    registerUserDto: RegisterUserDto
+    registerUserDto: RegisterUserDto,
+    context?: { language?: string }
   ): Promise<{ accessToken: string }> {
     const { email, password } = registerUserDto;
 
@@ -32,7 +33,10 @@ export class AuthService {
       where: { email },
     });
     if (existingUser) {
-      throw new ConflictException('User with this email already exists');
+      throw new ConflictException({
+        errorCode: 'USER_ALREADY_EXISTS',
+        message: 'User with this email already exists',
+      });
     }
 
     const hashedPassword = await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
@@ -58,7 +62,10 @@ export class AuthService {
     return { accessToken };
   }
 
-  async login(loginUserDto: LoginUserDto): Promise<{ accessToken: string }> {
+  async login(
+    loginUserDto: LoginUserDto,
+    context?: { language?: string }
+  ): Promise<{ accessToken: string }> {
     const { email, password } = loginUserDto;
 
     const user = await this.prisma.user.findUnique({
@@ -66,12 +73,18 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException({
+        errorCode: 'INVALID_CREDENTIALS',
+        message: 'Invalid email or password',
+      });
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException({
+        errorCode: 'INVALID_CREDENTIALS',
+        message: 'Invalid email or password',
+      });
     }
 
     const payload = { sub: user.id, email: user.email };

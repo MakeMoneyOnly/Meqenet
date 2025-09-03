@@ -8,7 +8,11 @@ pluginManagement {
         maven { url = "https://repo1.maven.org/maven2/" }
         // Windows-compatible path handling for React Native gradle plugin
         maven {
-            def pluginPath = new File(settingsDir, "../../../../node_modules/@react-native/gradle-plugin")
+            // Path from frontend/apps/app/android/ to frontend/node_modules/@react-native/gradle-plugin
+            def ciPath = System.getenv('CI') || System.getenv('GITHUB_ACTIONS') ? 
+                "../../node_modules/@react-native/gradle-plugin" : 
+                "../../../node_modules/@react-native/gradle-plugin"
+            def pluginPath = new File(settingsDir, ciPath)
             if (pluginPath.exists()) {
                 // Convert to URI for Windows compatibility
                 url = pluginPath.toURI().toURL()
@@ -28,8 +32,9 @@ pluginManagement {
     }
 
     // React Native gradle plugin resolution for all environments
+    // Path from frontend/apps/app/android/ to frontend/node_modules/@react-native/gradle-plugin
     def rnPluginPath = System.getenv('CI') || System.getenv('GITHUB_ACTIONS') ?
-        '../../../../node_modules/@react-native/gradle-plugin' :
+        '../../node_modules/@react-native/gradle-plugin' :
         '../../../node_modules/@react-native/gradle-plugin'
 
     def rnPluginDir = new File(settingsDir, rnPluginPath)

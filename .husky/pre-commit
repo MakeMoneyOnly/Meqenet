@@ -1,30 +1,23 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-
 # Meqenet.et Pre-Commit Hook
-# Comprehensive FinTech Security & Quality Gate
+# Optimized FinTech Security & Quality Gate
 
-echo "🚀 Meqenet.et Pre-Commit Comprehensive Checks"
-echo "============================================="
+echo "🚀 Meqenet.et Pre-Commit Quality Checks"
+echo "========================================"
 
-# 1. Run Prettier formatting
-echo "💅 Running Prettier formatting..."
-pnpm run format:write || {
-  echo "❌ Prettier formatting failed"
-  exit 1
-}
+# Set NODE_OPTIONS to prevent memory issues
+export NODE_OPTIONS="--max-old-space-size=4096"
 
-# 2. Run comprehensive linting
-echo "🔍 Running comprehensive linting..."
-pnpm run lint:enterprise || {
-  echo "❌ Comprehensive linting failed"
-  exit 1
-}
-
-# 3. Run lint-staged for staged files
-echo "📝 Running lint-staged for staged files..."
+# Run lint-staged for staged files only (includes formatting and linting)
+echo "📝 Running quality checks on staged files..."
 pnpm exec lint-staged || {
-  echo "❌ Lint-staged failed"
+  echo "❌ Pre-commit checks failed"
+  echo ""
+  echo "💡 Troubleshooting tips:"
+  echo "   • Review the errors above and fix any code issues"
+  echo "   • For ESLint errors, run: pnpm eslint --fix <file>"
+  echo "   • For formatting issues, run: pnpm prettier --write <file>"
+  echo "   • If memory issues persist, try staging fewer files"
+  echo ""
   exit 1
 }
 

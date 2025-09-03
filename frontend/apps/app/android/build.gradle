@@ -1,8 +1,4 @@
-// Apply versions plugin using modern syntax - must be the first block
-plugins {
-    id "com.github.ben-manes.versions" version "0.50.0"
-}
-
+// buildscript block must appear before any plugins blocks
 buildscript {
     ext {
         buildToolsVersion = "36.0.0"
@@ -26,6 +22,11 @@ buildscript {
         // Note: gradle-versions-plugin is now managed via plugins block
         // React Native gradle plugin is resolved locally via settings.gradle, not as classpath dependency
     }
+}
+
+// Apply versions plugin using modern syntax - must come after buildscript
+plugins {
+    id "com.github.ben-manes.versions" version "0.50.0"
 }
 
 // Enterprise Configuration Includes
