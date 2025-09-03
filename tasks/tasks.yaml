@@ -901,7 +901,17 @@ stages:
             description:
               "[BE/FE] Implement a robust internationalization (i18n) framework
               (e.g., `react-i18next`) across both frontends and for backend error messages."
-            status: To Do
+            status: Completed
+            completed_date: "2025-01-05"
+            deliverables:
+              [
+                frontend/libs/shared/src/i18n/index.ts,
+                frontend/libs/shared/src/i18n/useI18n.tsx,
+                backend/shared/src/i18n/i18n.module.ts,
+                backend/shared/src/i18n/i18n.service.ts,
+                backend/shared/src/i18n/i18n.middleware.ts,
+                backend/shared/src/i18n/i18n.interceptor.ts,
+              ]
             context: [
                 docs/Stage 2 -Development/19-API_Documentation_Strategy.md,
                 docs/Stage
@@ -913,7 +923,16 @@ stages:
             description:
               "[FE] Create centralized i18n resource files for UI text and error
               messages, with initial translations for Amharic and English."
-            status: To Do
+            status: Completed
+            completed_date: "2025-01-05"
+            deliverables:
+              [
+                frontend/libs/shared/src/i18n/locales/en.json,
+                frontend/libs/shared/src/i18n/locales/am.json,
+                backend/shared/src/locales/en.json,
+                backend/shared/src/locales/am.json,
+                frontend/libs/shared-ui/src/components/LanguageSwitcher.tsx,
+              ]
             context: [docs/Stage 2 -Development/20-Error_Handling.md]
             personas: [Senior Mobile Developer, UX Designer, Product Manager]
           - id: FND-DOCS-01

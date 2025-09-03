@@ -38,6 +38,8 @@
     "security:check": "snyk test"
   },
   "dependencies": {
+    "i18n": "^0.15.1",
+    "i18next-node-fs-backend": "^2.1.1",
     "@aws-sdk/client-kms": "^3.864.0",
     "@aws-sdk/client-secrets-manager": "^3.864.0",
     "@aws-sdk/client-sns": "^3.0.0",
