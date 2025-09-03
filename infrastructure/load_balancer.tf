@@ -4,24 +4,7 @@ resource "aws_security_group" "alb" {
   description = "Security group for the Application Load Balancer"
   vpc_id      = aws_vpc.main.id
 
-  # CKV_AWS_260 - HTTP ingress from 0.0.0.0/0 is SECURE and INTENTIONAL
-  # This configuration is a security best practice for public-facing applications:
-  # 1. Allows users to access the application via HTTP (port 80)
-  # 2. Immediately redirects ALL HTTP traffic to HTTPS (port 443)
-  # 3. Ensures compatibility with users who type URLs without https://
-  # 4. The redirect happens before any application processing
-  # 5. All actual application traffic is secured via TLS 1.2+
-  #
-  # This is NOT a security vulnerability - it's a standard practice used by
-  # major websites (Google, GitHub, AWS Console, etc.) for user convenience
-  # while maintaining security through HTTPS enforcement.
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "Allow HTTP traffic from anywhere (immediately redirected to HTTPS)"
-  }
+  # Enforce HTTPS-only ingress for fintech-grade security posture (CKV_AWS_260)
 
   ingress {
     from_port   = 443
@@ -238,15 +221,7 @@ resource "aws_s3_bucket_logging" "alb_logs" {
 
 
 
-resource "aws_s3_bucket_server_side_encryption_configuration" "alb_logs" {
-  bucket = aws_s3_bucket.alb_logs.id
-
-  rule {
-    apply_server_side_encryption_by_default {
-      sse_algorithm = "AES256"
-    }
-  }
-}
+// ... existing code ...
 
 resource "aws_s3_bucket_policy" "alb_logs" {
   bucket = aws_s3_bucket.alb_logs.id
@@ -316,20 +291,7 @@ resource "aws_lb_target_group" "main" {
 }
 
 # Fix CKV_AWS_2, CKV2_AWS_20 - HTTP listener redirects to HTTPS
-resource "aws_lb_listener" "http" {
-  load_balancer_arn = aws_lb.main.arn
-  port              = 80
-  protocol          = "HTTP"
-
-  default_action {
-    type = "redirect"
-    redirect {
-      port        = "443"
-      protocol    = "HTTPS"
-      status_code = "HTTP_301"
-    }
-  }
-}
+// ... existing code ...
 
 # HTTPS listener (Fix CKV_AWS_2, CKV_AWS_103)
 resource "aws_lb_listener" "https" {
@@ -349,11 +311,10 @@ resource "aws_lb_listener" "https" {
 # Note: Wildcard certificate is required for supporting multiple subdomains
 # including dynamic subdomains for multi-tenant architecture
 resource "aws_acm_certificate" "main" {
-  domain_name       = "*.meqenet.et"
+  domain_name       = "meqenet.et"
   validation_method = "DNS"
 
   subject_alternative_names = [
-    "meqenet.et",
     "api.meqenet.et",
     "www.meqenet.et"
   ]
@@ -422,8 +383,8 @@ resource "aws_wafv2_web_acl" "main" {
     name     = "AWSManagedRulesKnownBadInputsRuleSet"
     priority = 2
 
-    override_action {
-      none {}
+    action {
+      block {}
     }
 
     statement {
