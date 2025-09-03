@@ -9,6 +9,7 @@ import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../infrastructure/database/prisma.service';
 import { AuthEvent, UserRegisteredPayload } from '../../shared/events';
 import { EventService } from '../../shared/services/event.service';
+import { SecurityMonitoringService } from '../../shared/services/security-monitoring.service';
 
 import { LoginUserDto } from './dto/login-user.dto';
 import { RegisterUserDto } from './dto/register-user.dto';
@@ -20,7 +21,8 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
-    private readonly eventService: EventService
+    private readonly eventService: EventService,
+    private readonly securityMonitoring: SecurityMonitoringService
   ) {}
 
   async register(
@@ -33,6 +35,7 @@ export class AuthService {
       where: { email },
     });
     if (existingUser) {
+      this.securityMonitoring.recordRegister('failure');
       throw new ConflictException({
         errorCode: 'USER_ALREADY_EXISTS',
         message: 'User with this email already exists',
@@ -59,6 +62,7 @@ export class AuthService {
     const payload = { sub: createdUser.id, email: createdUser.email };
     const accessToken = this.jwtService.sign(payload);
 
+    this.securityMonitoring.recordRegister('success');
     return { accessToken };
   }
 
@@ -73,6 +77,7 @@ export class AuthService {
     });
 
     if (!user) {
+      this.securityMonitoring.recordLogin('failure');
       throw new UnauthorizedException({
         errorCode: 'INVALID_CREDENTIALS',
         message: 'Invalid email or password',
@@ -81,6 +86,7 @@ export class AuthService {
 
     const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
     if (!isPasswordValid) {
+      this.securityMonitoring.recordLogin('failure');
       throw new UnauthorizedException({
         errorCode: 'INVALID_CREDENTIALS',
         message: 'Invalid email or password',
@@ -90,6 +96,7 @@ export class AuthService {
     const payload = { sub: user.id, email: user.email };
     const accessToken = this.jwtService.sign(payload);
 
+    this.securityMonitoring.recordLogin('success');
     return { accessToken };
   }
 }
