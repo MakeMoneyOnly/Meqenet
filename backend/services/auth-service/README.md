@@ -100,6 +100,21 @@ src/
 | `GRPC_URL`     | gRPC server URL              | localhost:5000 |
 | `LOG_LEVEL`    | Logging level                | info           |
 
+### Config-driven Settings (Zod validated)
+
+- App (`shared/config/app.config.ts`)
+  - `PORT`, `NODE_ENV`, `OTEL_SERVICE_NAME`, `OTEL_EXPORTER_JAEGER_ENDPOINT`, `OTEL_EXPORTER_OTLP_ENDPOINT`
+- Security (`shared/config/security.config.ts`)
+  - `HSTS_MAX_AGE` (default 31536000), `CSP_DEFAULT_SRC`, `CSP_SCRIPT_SRC`, `CSP_STYLE_SRC`, `PERMISSIONS_POLICY`
+  - Rate limit: `RATE_LIMIT_TTL`, `RATE_LIMIT_LIMIT`
+- CORS (`shared/config/cors.config.ts`)
+  - `CORS_ORIGINS` (comma-separated), `CORS_CREDENTIALS` (true/false)
+- Logger (`shared/config/logger.config.ts`)
+  - `LOG_LEVEL` (fatal|error|warn|info|debug|trace)
+  - `LOG_SAMPLING_RATE` (0..1), `LOG_ROUTE_SAMPLING` (e.g. `/health:0.05,/metrics:0.1`)
+
+These configs fail fast at boot if invalid, and drive Helmet, CORS, and access-log sampling.
+
 ## 📚 API Documentation
 
 When running in development mode, API documentation is available at:
@@ -172,11 +187,9 @@ Language can be set via:
 # Build image
 yarn docker:build
 
-# Run container
-yarn docker:run
+# Run containeryarn docker:run
 
-# Or use Docker Compose
-docker-compose up auth-service
+# Or use Docker Composedocker-compose up auth-service
 ```
 
 ### Production Deployment
