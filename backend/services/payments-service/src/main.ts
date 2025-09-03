@@ -22,6 +22,13 @@ async function bootstrap(): Promise<void> {
     origin: configService.get<string>('ALLOWED_ORIGINS')?.split(',') || [
       'http://localhost:3000',
     ],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'Accept',
+      'X-Request-ID',
+      'Idempotency-Key',
+    ],
     credentials: true,
   });
 

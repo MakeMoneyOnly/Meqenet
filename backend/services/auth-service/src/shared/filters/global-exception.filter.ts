@@ -28,12 +28,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     // Generate unique request ID for NBE compliance and tracking
     const requestId = (request.headers['x-request-id'] as string) || uuidv4();
 
-    // Determine preferred language from Accept-Language header
-    const acceptLanguage = request.headers['accept-language'] as string;
-    // Language determination for future bilingual error responses
-    const _language = (acceptLanguage?.includes('am') ? 'am' : 'en') as
-      | 'en'
-      | 'am';
+    // Accept-Language header available for future bilingual support
 
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let errorCode = 'INTERNAL_ERROR';
@@ -102,10 +97,27 @@ export class GlobalExceptionFilter implements ExceptionFilter {
               am: 'ስህተት ተፈጥሯል።',
             };
           } else {
-            message = responseObj.message as
-              | string
-              | string[]
-              | Record<string, unknown>;
+            // Handle different message types safely
+            const msg = responseObj.message;
+            if (typeof msg === 'string') {
+              message = {
+                en: msg,
+                am: 'ስህተት ተፈጥሯል።',
+              };
+            } else if (typeof msg === 'object' && msg !== null) {
+              // Check if it has the expected bilingual structure
+              const msgObj = msg as Record<string, unknown>;
+              if (
+                typeof msgObj.en === 'string' &&
+                typeof msgObj.am === 'string'
+              ) {
+                message = msgObj as { en: string; am: string };
+              } else {
+                message = 'Invalid error message format';
+              }
+            } else {
+              message = 'Unknown error occurred';
+            }
           }
           errorCode = this.getErrorCodeFromStatus(status);
         }
