@@ -6,7 +6,7 @@ import * as request from 'supertest';
 import { vi } from 'vitest';
 
 import { AuthModule } from './auth.module';
-import { PrismaService } from '../../infrastructure/database/prisma.service';
+import { PrismaService } from '../../shared/prisma/prisma.service';
 import { PasswordResetTokenService } from '../../shared/services/password-reset-token.service';
 import { EmailService } from '../../shared/services/email.service';
 import { AdaptiveRateLimitGuard } from '../../shared/guards/adaptive-rate-limit.guard';
@@ -14,10 +14,14 @@ import { EventService } from '../../shared/services/event.service';
 import { SecretManagerService } from '../../shared/services/secret-manager.service';
 import { AdaptiveRateLimitingService } from '../../shared/services/adaptive-rate-limiting.service';
 
+// Set test environment variables to prevent Prisma constructor from failing
+process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/test_db';
+process.env.NODE_ENV = 'test';
+
 // Mock external services
 vi.mock('../../shared/services/secret-manager.service');
 vi.mock('../../shared/services/adaptive-rate-limiting.service');
-vi.mock('../../infrastructure/database/prisma.service');
+vi.mock('../../shared/prisma/prisma.service');
 
 const mockSecretManagerService = {
   getCurrentJwtPrivateKey: vi.fn().mockReturnValue('mock-private-key'),
@@ -82,27 +86,47 @@ describe('AuthController (Integration)', () => {
           isGlobal: true,
           load: [],
         }),
-        JwtModule.registerAsync({
-          imports: [ConfigModule],
-          useFactory: async (configService: ConfigService) => ({
-            privateKey: 'mock-private-key',
-            publicKey: 'mock-public-key',
-            signOptions: {
-              algorithm: 'RS256',
-              expiresIn: '15m',
-              issuer: 'meqenet-auth',
-              audience: 'meqenet-clients',
-              keyid: 'kid-123',
-            },
-            verifyOptions: {
-              algorithms: ['RS256'],
-              issuer: 'meqenet-auth',
-              audience: 'meqenet-clients',
-            },
-          }),
-          inject: [ConfigService],
+        JwtModule.register({
+          privateKey: 'mock-private-key',
+          publicKey: 'mock-public-key',
+          signOptions: {
+            algorithm: 'RS256',
+            expiresIn: '15m',
+            issuer: 'meqenet-auth',
+            audience: 'meqenet-clients',
+            keyid: 'kid-123',
+          },
+          verifyOptions: {
+            algorithms: ['RS256'],
+            issuer: 'meqenet-auth',
+            audience: 'meqenet-clients',
+          },
         }),
-        AuthModule,
+        // Override AuthModule to avoid JWT async configuration issues
+        {
+          module: AuthModule,
+          providers: [
+            {
+              provide: 'JWT_MODULE_OPTIONS',
+              useValue: {
+                privateKey: 'mock-private-key',
+                publicKey: 'mock-public-key',
+                signOptions: {
+                  algorithm: 'RS256',
+                  expiresIn: '15m',
+                  issuer: 'meqenet-auth',
+                  audience: 'meqenet-clients',
+                  keyid: 'kid-123',
+                },
+                verifyOptions: {
+                  algorithms: ['RS256'],
+                  issuer: 'meqenet-auth',
+                  audience: 'meqenet-clients',
+                },
+              },
+            },
+          ],
+        },
       ],
     })
       .overrideProvider(SecretManagerService)
@@ -146,7 +170,9 @@ describe('AuthController (Integration)', () => {
   });
 
   afterAll(async () => {
-    await app.close();
+    if (app) {
+      await app.close();
+    }
   });
 
   describe('POST /auth/password-reset-request', () => {
