@@ -8,29 +8,14 @@ import {
   Headers,
   Req,
 } from '@nestjs/common';
-import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
 import { Request } from 'express';
 
 import { AuthService } from './auth.service';
 import { LoginUserDto } from './dto/login-user.dto';
 import { RegisterUserDto } from './dto/register-user.dto';
+import { PasswordResetRequestDto } from './dto/password-reset-request.dto';
+import { PasswordResetConfirmDto } from './dto/password-reset-confirm.dto';
 import { GlobalExceptionFilter } from '../../shared/filters/global-exception.filter';
-
-class PasswordResetRequestDto {
-  @IsEmail()
-  @IsNotEmpty()
-  email!: string;
-}
-
-class PasswordResetConfirmDto {
-  @IsString()
-  @IsNotEmpty()
-  token!: string;
-
-  @IsString()
-  @MinLength(12)
-  newPassword!: string;
-}
 
 @Controller('auth')
 @UseFilters(GlobalExceptionFilter)
@@ -58,23 +43,22 @@ export class AuthController {
   }
 
   @Post('password-reset-request')
-  @HttpCode(HttpStatus.NO_CONTENT)
+  @HttpCode(HttpStatus.OK)
   async passwordResetRequest(
     @Body() dto: PasswordResetRequestDto,
     @Req() req: Request
-  ): Promise<void> {
-    await this.authService.requestPasswordReset(
-      dto.email,
-      req.ip || 'unknown',
-      (req.headers['user-agent'] as string) || undefined
-    );
+  ): Promise<{ message: string }> {
+    return this.authService.requestPasswordReset(dto, {
+      ipAddress: req.ip || 'unknown',
+      userAgent: (req.headers['user-agent'] as string) || undefined,
+    });
   }
 
   @Post('password-reset-confirm')
-  @HttpCode(HttpStatus.NO_CONTENT)
+  @HttpCode(HttpStatus.OK)
   async passwordResetConfirm(
     @Body() dto: PasswordResetConfirmDto
-  ): Promise<void> {
-    await this.authService.confirmPasswordReset(dto.token, dto.newPassword);
+  ): Promise<{ message: string }> {
+    return this.authService.confirmPasswordReset(dto);
   }
 }
