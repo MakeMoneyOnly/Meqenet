@@ -32,6 +32,8 @@ trufflehog_report.json
 *.zip
 *.jar
 *.war
+**/*.min.js
+**/*.min.css
 prisma-engines.zip
 tfsec.exe
 

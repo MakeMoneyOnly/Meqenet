@@ -47,7 +47,11 @@ export default registerAs('app', (): AppConfig => {
     redisPort: parseInt(env.REDIS_PORT, 10),
     nodeEnv: env.NODE_ENV,
     otelServiceName: env.OTEL_SERVICE_NAME,
-    otelExporterJaegerEndpoint: env.OTEL_EXPORTER_JAEGER_ENDPOINT,
-    otelExporterOtlpEndpoint: env.OTEL_EXPORTER_OTLP_ENDPOINT,
+    ...(env.OTEL_EXPORTER_JAEGER_ENDPOINT && {
+      otelExporterJaegerEndpoint: env.OTEL_EXPORTER_JAEGER_ENDPOINT,
+    }),
+    ...(env.OTEL_EXPORTER_OTLP_ENDPOINT && {
+      otelExporterOtlpEndpoint: env.OTEL_EXPORTER_OTLP_ENDPOINT,
+    }),
   };
 });

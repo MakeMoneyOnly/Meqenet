@@ -34,7 +34,9 @@ export default registerAs('security', (): SecurityConfig => {
       scriptSrc: env.CSP_SCRIPT_SRC,
       styleSrc: env.CSP_STYLE_SRC,
     },
-    permissionsPolicy: env.PERMISSIONS_POLICY,
+    ...(env.PERMISSIONS_POLICY && {
+      permissionsPolicy: env.PERMISSIONS_POLICY,
+    }),
     rateLimit: {
       ttlSeconds: parseInt(env.RATE_LIMIT_TTL, 10),
       limit: parseInt(env.RATE_LIMIT_LIMIT, 10),

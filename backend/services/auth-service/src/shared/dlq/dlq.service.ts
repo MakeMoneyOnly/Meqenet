@@ -23,7 +23,7 @@ interface PrismaOutboxMessage {
   aggregateType: string;
   aggregateId: string;
   eventType: string;
-  payload: Record<string, unknown>;
+  payload: Record<string, unknown>; // JsonValue from Prisma
   errorMessage: string | null;
   dlqReason: string | null;
   retryCount: number;
@@ -95,7 +95,7 @@ export class DLQService {
 
     return {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      messages: messages.map((msg: any) => this.mapToDLQMessage(msg)),
+      messages: messages.map(msg => this.mapToDLQMessage(msg)),
       total,
       page,
       totalPages: Math.ceil(total / limit),
@@ -224,16 +224,14 @@ export class DLQService {
     return {
       total,
       byEventType: byEventType.reduce(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (acc: Record<string, number>, item: any) => {
+        (acc: Record<string, number>, item) => {
           acc[item.eventType] = item._count.id;
           return acc;
         },
         {} as Record<string, number>
       ),
       byAggregateType: byAggregateType.reduce(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (acc: Record<string, number>, item: any) => {
+        (acc: Record<string, number>, item) => {
           acc[item.aggregateType] = item._count.id;
           return acc;
         },
@@ -293,7 +291,7 @@ export class DLQService {
 
     return {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      messages: messages.map((msg: any) => this.mapToDLQMessage(msg)),
+      messages: messages.map(msg => this.mapToDLQMessage(msg)),
       total,
       page,
       totalPages: Math.ceil(total / limit),
@@ -335,7 +333,7 @@ export class DLQService {
       aggregateType: message.aggregateType,
       aggregateId: message.aggregateId,
       eventType: message.eventType,
-      payload: message.payload,
+      payload: (message.payload as Record<string, unknown>) || {},
       errorMessage: message.errorMessage,
       dlqReason: message.dlqReason ?? 'Unknown reason',
       retryCount: message.retryCount,
@@ -380,7 +378,7 @@ export class DLQService {
     await this.prisma.outboxMessage.update({
       where: { id: message.id },
       data: {
-        payload: {},
+        payload: {} as Record<string, unknown>,
         errorMessage: notes ?? 'Archived from DLQ',
       },
     });

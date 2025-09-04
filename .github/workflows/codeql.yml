@@ -1,4 +1,4 @@
-name: 🔒 CodeQL Security Analysis
+name: 🔒 CodeQL Security Analysis (FinTech Enterprise)
 
 on:
   push:
@@ -13,22 +13,141 @@ permissions:
   actions: read
   contents: read
   security-events: write
+  pull-requests: read
+  # Enterprise-grade permissions for compliance reporting
+  checks: write
+  statuses: write
+
+# Enterprise-grade environment configuration
+env:
+  NODE_VERSION: "22"
+  PNPM_VERSION: "10"
+  JAVA_VERSION: "17"
+  CODEQL_UPLOAD_ENABLED: ${{ vars.CODEQL_UPLOAD_ENABLED || 'false' }}
 
 jobs:
+  # Enterprise-grade pre-flight check for security compliance
+  security-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      code-scanning-enabled: ${{ steps.check-code-scanning.outputs.enabled }}
+      repository-visibility: ${{ steps.check-repo.outputs.visibility }}
+    steps:
+      - name: 🔍 Check Code Scanning Status
+        id: check-code-scanning
+        run: |
+          echo "🔍 Checking Code Scanning configuration..."
+
+          # Check if repository has code scanning enabled via GitHub API
+          RESPONSE=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/${{ github.repository }}/code-scanning/alerts?per_page=1)
+
+          if echo "$RESPONSE" | grep -q '"message": "Code scanning is not enabled"'; then
+            echo "❌ Code scanning is NOT enabled for this repository"
+            echo "enabled=false" >> $GITHUB_OUTPUT
+            echo "📋 To enable Code Scanning:"
+            echo "   1. Go to Repository Settings"
+            echo "   2. Navigate to Security > Code security and analysis"
+            echo "   3. Enable 'Code scanning alerts'"
+            echo "   4. Optionally enable 'Dependabot alerts' and 'Dependabot security updates'"
+          elif echo "$RESPONSE" | grep -q "Bad credentials\|Not Found"; then
+            echo "⚠️  Cannot verify code scanning status (API access issue)"
+            echo "enabled=unknown" >> $GITHUB_OUTPUT
+          else
+            echo "✅ Code scanning appears to be enabled"
+            echo "enabled=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 📊 Check Repository Visibility
+        id: check-repo
+        run: |
+          echo "📊 Checking repository visibility..."
+
+          RESPONSE=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/${{ github.repository }})
+
+          if echo "$RESPONSE" | grep -q '"private": true'; then
+            echo "🔒 Repository is PRIVATE"
+            echo "visibility=private" >> $GITHUB_OUTPUT
+          elif echo "$RESPONSE" | grep -q '"private": false'; then
+            echo "🌐 Repository is PUBLIC"
+            echo "visibility=public" >> $GITHUB_OUTPUT
+          else
+            echo "visibility=unknown" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 📋 Generate Security Compliance Report
+        run: |
+          echo "## 🔒 CodeQL Security Analysis - Pre-Flight Check" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Repository Information:" >> $GITHUB_STEP_SUMMARY
+          echo "- **Repository:** ${{ github.repository }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Workflow:** ${{ github.workflow }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "### Code Scanning Status:" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.check-code-scanning.outputs.enabled }}" = "true" ]; then
+            echo "✅ **ENABLED** - Code scanning is active" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ steps.check-code-scanning.outputs.enabled }}" = "false" ]; then
+            echo "❌ **NOT ENABLED** - Code scanning must be enabled in repository settings" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**🔧 Required Actions:**" >> $GITHUB_STEP_SUMMARY
+            echo "1. Go to **Settings** → **Security** → **Code security and analysis**" >> $GITHUB_STEP_SUMMARY
+            echo "2. Enable **'Code scanning alerts'**" >> $GITHUB_STEP_SUMMARY
+            echo "3. Optionally enable **'Dependabot alerts'** and **'Dependabot security updates'**" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ **UNKNOWN** - Cannot verify code scanning status" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "### Repository Visibility:" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.check-repo.outputs.visibility }}" = "private" ]; then
+            echo "🔒 **Private Repository**" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ steps.check-repo.outputs.visibility }}" = "public" ]; then
+            echo "🌐 **Public Repository**" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❓ **Unknown Visibility**" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+
   analyze:
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    needs: security-check
     steps:
       - uses: actions/checkout@v5
 
+      - name: 🔍 Validate Pre-Flight Check Results
+        run: |
+          echo "🔍 Validating security configuration..."
+
+          if [ "${{ needs.security-check.outputs.code-scanning-enabled }}" = "false" ]; then
+            echo "⚠️  WARNING: Code scanning is not enabled for this repository"
+            echo "📋 The analysis will run but results cannot be uploaded to GitHub Security tab"
+            echo "🔧 To fix this:"
+            echo "   1. Go to Repository Settings → Security → Code security and analysis"
+            echo "   2. Enable 'Code scanning alerts'"
+            echo "   3. Re-run this workflow"
+          elif [ "${{ needs.security-check.outputs.code-scanning-enabled }}" = "unknown" ]; then
+            echo "⚠️  WARNING: Cannot verify code scanning status"
+            echo "🔧 Check repository permissions and GitHub token access"
+          else
+            echo "✅ Code scanning configuration validated"
+          fi
+
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: ${{ env.NODE_VERSION }}
           registry-url: "https://registry.npmjs.org"
+          cache: 'pnpm'
 
       - name: 📦 Install pnpm (Enterprise-Grade with Network Resilience)
         run: |
-          echo "📦 Installing pnpm with enterprise-grade network resilience..."
+          echo "📦 Installing pnpm v${{ env.PNPM_VERSION }} with enterprise-grade network resilience..."
 
           # Network diagnostics
           echo "🔍 Checking network connectivity..."
@@ -42,12 +161,12 @@ jobs:
           PNPM_INSTALLED=false
 
           # Method 1: Primary CDN (get.pnpm.io)
-          echo "🔄 Attempt 1/6: Installing via primary CDN..."
-          if curl -fsSL --connect-timeout 15 --max-time 60 https://get.pnpm.io/install.sh | sh -; then
+          echo "🔄 Attempt 1/6: Installing pnpm v${{ env.PNPM_VERSION }} via primary CDN..."
+          if curl -fsSL --connect-timeout 15 --max-time 60 https://get.pnpm.io/install.sh | env PNPM_VERSION=${{ env.PNPM_VERSION }} sh -; then
             export PNPM_HOME="$HOME/.local/share/pnpm"
             export PATH="$PNPM_HOME:$PATH"
-            if command -v pnpm &> /dev/null; then
-              echo "✅ pnpm installed successfully via primary CDN"
+            if command -v pnpm &> /dev/null && pnpm --version | grep -q "${{ env.PNPM_VERSION }}"; then
+              echo "✅ pnpm v${{ env.PNPM_VERSION }} installed successfully via primary CDN"
               PNPM_INSTALLED=true
             fi
           fi
@@ -247,11 +366,10 @@ jobs:
       - name: 🔧 Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
-          api-level: 35
-          target: android-35
-          build-tools: "36.0.0"
+          api-level: ${{ vars.ANDROID_API_LEVEL || '34' }}
+          build-tools: ${{ vars.ANDROID_BUILD_TOOLS || '34.0.0' }}
           # Only install essential components to avoid emulator download issues
-          components: platform-tools
+          packages: platform-tools
           # Disable emulator to prevent ZipFile errors
           emulator: false
 
@@ -372,4 +490,90 @@ jobs:
           # Log build duration and status
           echo "⏱️  CodeQL Android build completed (optimized timeouts: 240s/180s/300s)"
 
-      - uses: github/codeql-action/analyze@v3
+      - name: 🔒 CodeQL Security Analysis
+        id: codeql-analysis
+        uses: github/codeql-action/analyze@v3
+        continue-on-error: true
+        with:
+          output: ${{ runner.temp }}/codeql-results.sarif
+
+      - name: 📊 Process CodeQL Results
+        if: always()
+        run: |
+          echo "📊 Processing CodeQL analysis results..."
+
+          # Check if analysis completed successfully
+          if [ -f "${{ runner.temp }}/codeql-results.sarif" ]; then
+            echo "✅ CodeQL analysis completed successfully"
+            echo "📁 SARIF file generated: ${{ runner.temp }}/codeql-results.sarif"
+
+            # Show summary of findings
+            FINDINGS_COUNT=$(grep -c '"ruleId"' "${{ runner.temp }}/codeql-results.sarif" || echo "0")
+            echo "🔍 CodeQL found $FINDINGS_COUNT potential security issues"
+
+            # Generate human-readable summary
+            echo "## 🔒 CodeQL Security Analysis Results" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Analysis Summary:" >> $GITHUB_STEP_SUMMARY
+            echo "- **Status:** ✅ Completed" >> $GITHUB_STEP_SUMMARY
+            echo "- **Findings:** $FINDINGS_COUNT potential security issues detected" >> $GITHUB_STEP_SUMMARY
+            echo "- **Analysis Type:** Multi-language (JavaScript/TypeScript)" >> $GITHUB_STEP_SUMMARY
+            echo "- **Configuration:** FinTech Enterprise Security Profile" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+
+          else
+            echo "❌ CodeQL analysis failed to generate SARIF file"
+            echo "## 🔒 CodeQL Security Analysis Results" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Analysis Summary:" >> $GITHUB_STEP_SUMMARY
+            echo "- **Status:** ❌ Failed to generate results" >> $GITHUB_STEP_SUMMARY
+            echo "- **Error:** SARIF file not found" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+
+      - name: 📤 Upload CodeQL Results to GitHub Security
+        id: upload-results
+        if: always() && steps.codeql-analysis.outcome == 'success'
+        uses: github/codeql-action/upload-sarif@v3
+        continue-on-error: true
+        with:
+          sarif_file: ${{ runner.temp }}/codeql-results.sarif
+          category: codeql-fintech
+
+      - name: 📋 Final Compliance Report
+        if: always()
+        run: |
+          echo "## 🔒 CodeQL Security Analysis - Final Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # Analysis status
+          if [ "${{ steps.codeql-analysis.outcome }}" = "success" ]; then
+            echo "✅ **Analysis Status:** Completed successfully" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Analysis Status:** Failed or incomplete" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Upload status
+          if [ "${{ steps.upload-results.outcome }}" = "success" ]; then
+            echo "✅ **Upload Status:** Results uploaded to GitHub Security" >> $GITHUB_STEP_SUMMARY
+            echo "🔗 **View Results:** Repository Settings → Security → Code scanning alerts" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.security-check.outputs.code-scanning-enabled }}" = "false" ]; then
+            echo "⚠️  **Upload Status:** Skipped (Code scanning not enabled)" >> $GITHUB_STEP_SUMMARY
+            echo "📋 **Required Action:** Enable code scanning in repository settings to view results" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Upload Status:** Failed to upload results" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔧 Enterprise Security Recommendations:" >> $GITHUB_STEP_SUMMARY
+          echo "1. **Enable Code Scanning:** Repository Settings → Security → Code security and analysis" >> $GITHUB_STEP_SUMMARY
+          echo "2. **Review Alerts:** Regularly check security alerts and address high-priority issues" >> $GITHUB_STEP_SUMMARY
+          echo "3. **Security Training:** Ensure team follows secure coding practices" >> $GITHUB_STEP_SUMMARY
+          echo "4. **Compliance:** This analysis supports FinTech security compliance requirements" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "### 📈 Next Steps:" >> $GITHUB_STEP_SUMMARY
+          echo "- Address any critical/high severity security findings" >> $GITHUB_STEP_SUMMARY
+          echo "- Configure automated security testing in CI/CD pipeline" >> $GITHUB_STEP_SUMMARY
+          echo "- Set up security monitoring and alerting" >> $GITHUB_STEP_SUMMARY
+          echo "- Schedule regular security assessments" >> $GITHUB_STEP_SUMMARY

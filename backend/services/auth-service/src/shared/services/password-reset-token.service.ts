@@ -47,7 +47,7 @@ export class PasswordResetTokenService {
           token: hashedToken, // Store hashed token
           hashedToken, // Redundant for validation but explicit
           ipAddress,
-          userAgent,
+          userAgent: userAgent || null,
           expiresAt,
         },
       });
@@ -202,7 +202,7 @@ export class PasswordResetTokenService {
         },
       });
 
-      return !!activeToken;
+      return Boolean(activeToken);
     } catch (error) {
       this.logger.error(
         `Failed to check active tokens for user ${userId}`,

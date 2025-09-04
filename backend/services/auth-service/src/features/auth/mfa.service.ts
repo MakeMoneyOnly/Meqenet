@@ -25,7 +25,7 @@ export class MfaService {
     // Rate limit OTP requests per user/channel
     await this.rateLimiter.checkRateLimit(
       userId,
-      undefined,
+      'unknown',
       `mfa:${channel}`,
       'REQUEST'
     );
