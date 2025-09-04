@@ -2,10 +2,11 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
-import * as request from 'supertest';
+import request from 'supertest';
 import { vi } from 'vitest';
 
-import { AuthModule } from './auth.module';
+import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
 import { PrismaService } from '../../infrastructure/database/prisma.service';
 import { PasswordResetTokenService } from '../../shared/services/password-reset-token.service';
 import { EmailService } from '../../shared/services/email.service';
@@ -13,6 +14,8 @@ import { AdaptiveRateLimitGuard } from '../../shared/guards/adaptive-rate-limit.
 import { EventService } from '../../shared/services/event.service';
 import { SecretManagerService } from '../../shared/services/secret-manager.service';
 import { AdaptiveRateLimitingService } from '../../shared/services/adaptive-rate-limiting.service';
+import { SecurityMonitoringService } from '../../shared/services/security-monitoring.service';
+import { JwtService } from '@nestjs/jwt';
 
 // Mock external services
 vi.mock('../../shared/services/secret-manager.service');
@@ -32,6 +35,15 @@ const mockAdaptiveRateLimitingService = {
   }),
 };
 
+const mockJwtService = {
+  sign: vi.fn().mockReturnValue('mock-jwt-token'),
+};
+
+const mockSecurityMonitoringService = {
+  recordRegister: vi.fn(),
+  recordLogin: vi.fn(),
+};
+
 const mockPrismaService = {
   user: {
     findUnique: vi.fn(),
@@ -39,6 +51,7 @@ const mockPrismaService = {
     update: vi.fn(),
     deleteMany: vi.fn(),
     findFirst: vi.fn(),
+    count: vi.fn(),
   },
   passwordReset: {
     create: vi.fn(),
@@ -46,6 +59,7 @@ const mockPrismaService = {
     update: vi.fn(),
     deleteMany: vi.fn(),
     upsert: vi.fn(),
+    count: vi.fn(),
   },
   $disconnect: vi.fn(),
   $connect: vi.fn(),
@@ -82,36 +96,51 @@ describe('AuthController (Integration)', () => {
           isGlobal: true,
           load: [],
         }),
-        JwtModule.registerAsync({
-          imports: [ConfigModule],
-          useFactory: async (configService: ConfigService) => ({
-            privateKey: 'mock-private-key',
-            publicKey: 'mock-public-key',
-            signOptions: {
-              algorithm: 'RS256',
-              expiresIn: '15m',
-              issuer: 'meqenet-auth',
-              audience: 'meqenet-clients',
-              keyid: 'kid-123',
-            },
-            verifyOptions: {
-              algorithms: ['RS256'],
-              issuer: 'meqenet-auth',
-              audience: 'meqenet-clients',
-            },
-          }),
-          inject: [ConfigService],
+        JwtModule.register({
+          privateKey: 'mock-private-key',
+          publicKey: 'mock-public-key',
+          signOptions: {
+            algorithm: 'RS256',
+            expiresIn: '15m',
+            issuer: 'meqenet-auth',
+            audience: 'meqenet-clients',
+            keyid: 'kid-123',
+          },
+          verifyOptions: {
+            algorithms: ['RS256'],
+            issuer: 'meqenet-auth',
+            audience: 'meqenet-clients',
+          },
         }),
-        AuthModule,
       ],
-    })
-      .overrideProvider(SecretManagerService)
-      .useValue(mockSecretManagerService)
-      .overrideProvider(AdaptiveRateLimitingService)
-      .useValue(mockAdaptiveRateLimitingService)
-      .overrideProvider(PrismaService)
-      .useValue(mockPrismaService)
-      .compile();
+      controllers: [AuthController],
+      providers: [
+        AuthService,
+        PasswordResetTokenService,
+        EmailService,
+        EventService,
+        {
+          provide: SecretManagerService,
+          useValue: mockSecretManagerService,
+        },
+        {
+          provide: AdaptiveRateLimitingService,
+          useValue: mockAdaptiveRateLimitingService,
+        },
+        {
+          provide: PrismaService,
+          useValue: mockPrismaService,
+        },
+        {
+          provide: JwtService,
+          useValue: mockJwtService,
+        },
+        {
+          provide: SecurityMonitoringService,
+          useValue: mockSecurityMonitoringService,
+        },
+      ],
+    }).compile();
 
     app = moduleFixture.createNestApplication();
 
@@ -146,7 +175,9 @@ describe('AuthController (Integration)', () => {
   });
 
   afterAll(async () => {
-    await app.close();
+    if (app) {
+      await app.close();
+    }
   });
 
   describe('POST /auth/password-reset-request', () => {

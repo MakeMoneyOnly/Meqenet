@@ -141,7 +141,7 @@ export class AuthService {
     context?: { ipAddress?: string; userAgent?: string; language?: string }
   ): Promise<{ message: string }> {
     const { email, clientId } = dto;
-    const { ipAddress = 'unknown', userAgent, language = 'en' } = context || {};
+    const { ipAddress = 'unknown', userAgent } = context || {};
 
     const user = await this.prisma.user.findUnique({ where: { email } });
 
@@ -187,7 +187,7 @@ export class AuthService {
         email: user.email,
         resetToken: tokenData.token,
         clientId,
-        language: user.preferredLanguage || language,
+        language: user.preferredLanguage || 'en',
       });
 
       // If email service fails, throw error
