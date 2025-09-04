@@ -16,9 +16,7 @@ export class UserController {
    */
   @Get('me')
   @ApiOkResponse({ description: 'Current user profile' })
-  async getMe(
-    @Req() req: Request
-  ): Promise<{
+  async getMe(@Req() req: Request): Promise<{
     id: string;
     email: string;
     role?: string;

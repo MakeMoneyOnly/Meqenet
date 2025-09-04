@@ -9,9 +9,7 @@ export class UserService {
   /**
    * Returns a safe user profile by id with non-sensitive fields only.
    */
-  async getSafeProfileById(
-    userId: string
-  ): Promise<{
+  async getSafeProfileById(userId: string): Promise<{
     id: string;
     email: string;
     role?: string;

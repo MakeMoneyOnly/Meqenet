@@ -547,7 +547,17 @@ jobs:
         run: |
           export PNPM_HOME="$HOME/.local/share/pnpm"
           export PATH="$PNPM_HOME:$PATH"
-          pnpm run format:check
+
+          echo "🔍 Checking code formatting with enterprise-grade memory management..."
+          echo "💾 Node.js memory limit: $(node -e 'console.log(Math.round(process.memoryUsage().heapTotal / 1024 / 1024) + \"MB\")')"
+
+          # Run formatting check with enhanced error handling
+          if NODE_OPTIONS="--max-old-space-size=4096" pnpm run format:check; then
+            echo "✅ Code formatting check passed"
+          else
+            echo "❌ Code formatting check failed - please run 'pnpm run format:write' to fix"
+            exit 1
+          fi
 
       - name: 🔍 ESLint Analysis
         run: |
@@ -593,9 +603,9 @@ jobs:
       postgres:
         image: postgres:15-alpine
         env:
-          POSTGRES_PASSWORD: test_password
-          POSTGRES_USER: test_user
-          POSTGRES_DB: meqenet_test
+          POSTGRES_PASSWORD: ${{ secrets.TEST_DB_PASSWORD || 'test_password_secure_fallback' }}
+          POSTGRES_USER: ${{ secrets.TEST_DB_USER || 'test_user' }}
+          POSTGRES_DB: ${{ secrets.TEST_DB_NAME || 'meqenet_test' }}
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -873,7 +883,7 @@ jobs:
           export PATH="$PNPM_HOME:$PATH"
           pnpm run test
         env:
-          DATABASE_URL: postgresql://test_user:test_password@localhost:5432/meqenet_test
+          DATABASE_URL: postgresql://${{ secrets.TEST_DB_USER || 'test_user' }}:${{ secrets.TEST_DB_PASSWORD || 'test_password_secure_fallback' }}@localhost:5432/${{ secrets.TEST_DB_NAME || 'meqenet_test' }}
           REDIS_URL: redis://localhost:6379
 
       - name: 🔄 Run Integration Tests
@@ -882,7 +892,7 @@ jobs:
           export PATH="$PNPM_HOME:$PATH"
           pnpm run test:integration
         env:
-          DATABASE_URL: postgresql://test_user:test_password@localhost:5432/meqenet_test
+          DATABASE_URL: postgresql://${{ secrets.TEST_DB_USER || 'test_user' }}:${{ secrets.TEST_DB_PASSWORD || 'test_password_secure_fallback' }}@localhost:5432/${{ secrets.TEST_DB_NAME || 'meqenet_test' }}
           REDIS_URL: redis://localhost:6379
 
       - name: 🚀 Start Backend Services for E2E Tests
@@ -924,7 +934,7 @@ jobs:
             --network meqenet-test-network \
             -e DATABASE_URL=postgresql://test:test@postgres-test:5432/test \
             -e REDIS_URL=redis://redis-test:6379 \
-            -e JWT_SECRET=test-jwt-secret \
+            -e JWT_SECRET=${{ secrets.TEST_JWT_SECRET || 'test-jwt-secret-secure-fallback-for-ci-only' }} \
             -e NODE_ENV=test \
             -p 3001:3001 \
             auth-service-test
@@ -954,7 +964,7 @@ jobs:
           export PATH="$PNPM_HOME:$PATH"
           pnpm run test:e2e
         env:
-          DATABASE_URL: postgresql://test_user:test_password@localhost:5432/meqenet_test
+          DATABASE_URL: postgresql://${{ secrets.TEST_DB_USER || 'test_user' }}:${{ secrets.TEST_DB_PASSWORD || 'test_password_secure_fallback' }}@localhost:5432/${{ secrets.TEST_DB_NAME || 'meqenet_test' }}
           REDIS_URL: redis://localhost:6379
 
       - name: 🧹 Stop Backend Services
