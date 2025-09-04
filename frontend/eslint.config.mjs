@@ -56,6 +56,7 @@ export default [
       ],
       '@typescript-eslint/no-explicit-any': 'warn',
       'prefer-const': 'error',
+      'no-alert': 'error',
     },
   },
   {

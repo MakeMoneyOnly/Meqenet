@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { vi } from 'vitest';
+import { vi as _vi } from 'vitest';
 
 import { EmailService } from './email.service';
 

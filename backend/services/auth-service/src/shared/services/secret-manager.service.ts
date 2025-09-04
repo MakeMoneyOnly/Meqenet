@@ -23,6 +23,12 @@ const EXPONENT_START = 265;
 const EXPONENT_SIZE = 3;
 const SUBSTR_START_INDEX = 2;
 
+// Time conversion constants
+const MILLISECONDS_PER_SECOND = 1000;
+const SECONDS_PER_MINUTE = 60;
+const MINUTES_PER_HOUR = 60;
+const HOURS_PER_DAY = 24;
+
 export interface JWKSKey {
   kty: string;
   use: string;
@@ -369,7 +375,7 @@ export class SecretManagerService implements OnModuleInit {
           ? new Date(this.previousPublicKey.rotatedAt)
           : undefined;
         const withinGrace = rotatedAt
-          ? (Date.now() - rotatedAt.getTime()) / (1000 * 60 * 60 * 24) <=
+          ? (Date.now() - rotatedAt.getTime()) / (MILLISECONDS_PER_SECOND * SECONDS_PER_MINUTE * MINUTES_PER_HOUR * HOURS_PER_DAY) <=
             graceDays
           : true;
         if (withinGrace) {

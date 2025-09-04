@@ -1,8 +1,14 @@
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import Redis from 'ioredis';
+import Redis, { SetOptions } from 'ioredis';
 
 import { AppConfig } from '../config/app.config';
+
+interface RedisSetOptions extends SetOptions {
+  EX?: number; // Expire time in seconds
+  NX?: boolean; // Only set if key doesn't exist
+  XX?: boolean; // Only set if key exists
+}
 
 @Injectable()
 export class RedisService implements OnModuleDestroy {
@@ -34,7 +40,7 @@ export class RedisService implements OnModuleDestroy {
     mode?: 'NX' | 'XX'
   ): Promise<string | null> {
     // ioredis 5.x API - use proper parameter objects
-    const options: any = {};
+    const options: RedisSetOptions = {};
 
     if (ttlSeconds && ttlSeconds > 0) {
       options.EX = ttlSeconds;

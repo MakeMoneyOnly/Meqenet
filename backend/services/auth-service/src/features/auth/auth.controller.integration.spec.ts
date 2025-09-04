@@ -1,22 +1,56 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { INestApplication, ValidationPipe, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import * as request from 'supertest';
 import { vi } from 'vitest';
 
-import { AuthModule } from './auth.module';
+import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
 import { PrismaService } from '../../infrastructure/database/prisma.service';
 import { PasswordResetTokenService } from '../../shared/services/password-reset-token.service';
 import { EmailService } from '../../shared/services/email.service';
-import { AdaptiveRateLimitGuard } from '../../shared/guards/adaptive-rate-limit.guard';
 import { EventService } from '../../shared/services/event.service';
 import { SecretManagerService } from '../../shared/services/secret-manager.service';
 import { AdaptiveRateLimitingService } from '../../shared/services/adaptive-rate-limiting.service';
+import { AuditLoggingService } from '../../shared/services/audit-logging.service';
+import { PrismaModule } from '../../shared/prisma/prisma.module';
+
+// Test module to avoid JWT dependency issues
+@Module({
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    PrismaModule,
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (_configService: ConfigService) => ({
+        privateKey: 'mock-private-key',
+        publicKey: 'mock-public-key',
+        signOptions: {
+          algorithm: 'RS256',
+          expiresIn: '15m',
+          issuer: 'meqenet-auth',
+          audience: 'meqenet-clients',
+          keyid: 'kid-123',
+        },
+        verifyOptions: {
+          algorithms: ['RS256'],
+          issuer: 'meqenet-auth',
+          audience: 'meqenet-clients',
+        },
+      }),
+      inject: [ConfigService],
+    }),
+  ],
+  controllers: [AuthController],
+  providers: [AuthService, EventService],
+})
+class TestAuthModule {}
 
 // Mock external services
 vi.mock('../../shared/services/secret-manager.service');
 vi.mock('../../shared/services/adaptive-rate-limiting.service');
+vi.mock('../../shared/services/audit-logging.service');
 vi.mock('../../infrastructure/database/prisma.service');
 
 const mockSecretManagerService = {
@@ -25,11 +59,21 @@ const mockSecretManagerService = {
   getCurrentJwtKeyId: vi.fn().mockReturnValue('kid-123'),
 };
 
-const mockAdaptiveRateLimitingService = {
+  const _mockAdaptiveRateLimitingService = {
   checkRateLimit: vi.fn().mockResolvedValue({
     allowed: true,
     remainingRequests: 99,
   }),
+};
+
+const mockAuditLoggingService = {
+  logRegistration: vi.fn(),
+  logLoginSuccess: vi.fn(),
+  logLoginFailure: vi.fn(),
+  logPasswordResetRequest: vi.fn(),
+  logPasswordResetSuccess: vi.fn(),
+  logPasswordResetFailure: vi.fn(),
+  logAccountLockout: vi.fn(),
 };
 
 const mockPrismaService = {
@@ -78,37 +122,15 @@ describe('AuthController (Integration)', () => {
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [
-        ConfigModule.forRoot({
-          isGlobal: true,
-          load: [],
-        }),
-        JwtModule.registerAsync({
-          imports: [ConfigModule],
-          useFactory: async (configService: ConfigService) => ({
-            privateKey: 'mock-private-key',
-            publicKey: 'mock-public-key',
-            signOptions: {
-              algorithm: 'RS256',
-              expiresIn: '15m',
-              issuer: 'meqenet-auth',
-              audience: 'meqenet-clients',
-              keyid: 'kid-123',
-            },
-            verifyOptions: {
-              algorithms: ['RS256'],
-              issuer: 'meqenet-auth',
-              audience: 'meqenet-clients',
-            },
-          }),
-          inject: [ConfigService],
-        }),
-        AuthModule,
+        TestAuthModule,
       ],
     })
       .overrideProvider(SecretManagerService)
       .useValue(mockSecretManagerService)
       .overrideProvider(AdaptiveRateLimitingService)
-      .useValue(mockAdaptiveRateLimitingService)
+      .useValue(_mockAdaptiveRateLimitingService)
+      .overrideProvider(AuditLoggingService)
+      .useValue(mockAuditLoggingService)
       .overrideProvider(PrismaService)
       .useValue(mockPrismaService)
       .compile();
@@ -146,7 +168,9 @@ describe('AuthController (Integration)', () => {
   });
 
   afterAll(async () => {
-    await app.close();
+    if (app) {
+      await app.close();
+    }
   });
 
   describe('POST /auth/password-reset-request', () => {
@@ -171,7 +195,7 @@ describe('AuthController (Integration)', () => {
       mockGenerateToken.mockResolvedValue(testTokenData);
       mockSendEmail.mockResolvedValue(true);
 
-      const response = await request(app.getHttpServer())
+      const _response = await request(app.getHttpServer())
         .post('/auth/password-reset-request')
         .send(validRequest)
         .set('Accept-Language', 'en')
@@ -179,7 +203,7 @@ describe('AuthController (Integration)', () => {
         .set('X-Forwarded-For', '192.168.1.1')
         .expect(200);
 
-      expect(response.body).toEqual({
+      expect(_response.body).toEqual({
         message: 'Password reset link has been sent to your email.',
       });
 
@@ -203,12 +227,12 @@ describe('AuthController (Integration)', () => {
         clientId: 'web-app',
       };
 
-      const response = await request(app.getHttpServer())
+      const _response = await request(app.getHttpServer())
         .post('/auth/password-reset-request')
         .send(nonExistentEmailRequest)
         .expect(200);
 
-      expect(response.body).toEqual({
+      expect(_response.body).toEqual({
         message:
           'If an account with this email exists, a password reset link has been sent.',
       });
@@ -229,13 +253,13 @@ describe('AuthController (Integration)', () => {
       mockGenerateToken.mockResolvedValue(testTokenData);
       mockSendEmail.mockResolvedValue(true);
 
-      const response = await request(app.getHttpServer())
+      const _response = await request(app.getHttpServer())
         .post('/auth/password-reset-request')
         .send(validRequest)
         .set('Accept-Language', 'am')
         .expect(200);
 
-      expect(response.body).toEqual({
+      expect(_response.body).toEqual({
         message: 'የይለፍ ቃል ያዋቂ መልዕክት ወደ ኢሜይልዎ ተልኳል።',
       });
 
@@ -252,14 +276,14 @@ describe('AuthController (Integration)', () => {
         clientId: 'web-app',
       };
 
-      const response = await request(app.getHttpServer())
+      const _response = await request(app.getHttpServer())
         .post('/auth/password-reset-request')
         .send(invalidEmailRequest)
         .expect(400);
 
-      expect(response.body).toHaveProperty('statusCode', 400);
-      expect(response.body).toHaveProperty('message');
-      expect(Array.isArray(response.body.message)).toBe(true);
+      expect(_response.body).toHaveProperty('statusCode', 400);
+      expect(_response.body).toHaveProperty('message');
+      expect(Array.isArray(_response.body.message)).toBe(true);
     });
 
     it('should reject request with missing email', async () => {
@@ -267,13 +291,13 @@ describe('AuthController (Integration)', () => {
         clientId: 'web-app',
       };
 
-      const response = await request(app.getHttpServer())
+      const _response = await request(app.getHttpServer())
         .post('/auth/password-reset-request')
         .send(missingEmailRequest)
         .expect(400);
 
-      expect(response.body).toHaveProperty('statusCode', 400);
-      expect(response.body.message).toContain('email');
+      expect(_response.body).toHaveProperty('statusCode', 400);
+      expect(_response.body.message).toContain('email');
     });
 
     it('should reject request with missing clientId', async () => {
@@ -281,13 +305,13 @@ describe('AuthController (Integration)', () => {
         email: testUser.email,
       };
 
-      const response = await request(app.getHttpServer())
+      const _response = await request(app.getHttpServer())
         .post('/auth/password-reset-request')
         .send(missingClientIdRequest)
         .expect(400);
 
-      expect(response.body).toHaveProperty('statusCode', 400);
-      expect(response.body.message).toContain('clientId');
+      expect(_response.body).toHaveProperty('statusCode', 400);
+      expect(_response.body.message).toContain('clientId');
     });
 
     it('should handle inactive user accounts', async () => {
@@ -297,12 +321,12 @@ describe('AuthController (Integration)', () => {
         data: { status: 'INACTIVE' },
       });
 
-      const response = await request(app.getHttpServer())
+      const _response = await request(app.getHttpServer())
         .post('/auth/password-reset-request')
         .send(validRequest)
         .expect(400);
 
-      expect(response.body).toHaveProperty('errorCode', 'ACCOUNT_INACTIVE');
+      expect(_response.body).toHaveProperty('errorCode', 'ACCOUNT_INACTIVE');
     });
 
     it('should handle existing active tokens', async () => {
@@ -312,12 +336,12 @@ describe('AuthController (Integration)', () => {
       );
       mockHasActiveToken.mockResolvedValue(true);
 
-      const response = await request(app.getHttpServer())
+      const _response = await request(app.getHttpServer())
         .post('/auth/password-reset-request')
         .send(validRequest)
         .expect(200);
 
-      expect(response.body).toEqual({
+      expect(_response.body).toEqual({
         message:
           'A password reset link has already been sent. Please check your email.',
       });
@@ -338,12 +362,12 @@ describe('AuthController (Integration)', () => {
       mockGenerateToken.mockResolvedValue(testTokenData);
       mockSendEmail.mockResolvedValue(false);
 
-      const response = await request(app.getHttpServer())
+      const _response = await request(app.getHttpServer())
         .post('/auth/password-reset-request')
         .send(validRequest)
         .expect(400);
 
-      expect(response.body).toHaveProperty(
+      expect(_response.body).toHaveProperty(
         'errorCode',
         'PASSWORD_RESET_FAILED'
       );
@@ -457,13 +481,13 @@ describe('AuthController (Integration)', () => {
       });
       mockConsumeToken.mockResolvedValue(true);
 
-      const response = await request(app.getHttpServer())
+      const _response = await request(app.getHttpServer())
         .post('/auth/password-reset-confirm')
         .send(validConfirmRequest)
         .set('Accept-Language', 'en')
         .expect(200);
 
-      expect(response.body).toEqual({
+      expect(_response.body).toEqual({
         message: 'Password has been successfully reset.',
       });
 
@@ -486,12 +510,12 @@ describe('AuthController (Integration)', () => {
         confirmPassword: 'DifferentPassword123!',
       };
 
-      const response = await request(app.getHttpServer())
+      const _response = await request(app.getHttpServer())
         .post('/auth/password-reset-confirm')
         .send(mismatchedRequest)
         .expect(400);
 
-      expect(response.body).toHaveProperty(
+      expect(_response.body).toHaveProperty(
         'errorCode',
         'PASSWORDS_DO_NOT_MATCH'
       );
@@ -507,12 +531,12 @@ describe('AuthController (Integration)', () => {
         isValid: false,
       });
 
-      const response = await request(app.getHttpServer())
+      const _response = await request(app.getHttpServer())
         .post('/auth/password-reset-confirm')
         .send(validConfirmRequest)
         .expect(400);
 
-      expect(response.body).toHaveProperty('errorCode', 'INVALID_RESET_TOKEN');
+      expect(_response.body).toHaveProperty('errorCode', 'INVALID_RESET_TOKEN');
     });
 
     it('should reject request with missing token', async () => {
@@ -521,13 +545,13 @@ describe('AuthController (Integration)', () => {
         confirmPassword: 'NewStrongP@ssw0rd123',
       };
 
-      const response = await request(app.getHttpServer())
+      const _response = await request(app.getHttpServer())
         .post('/auth/password-reset-confirm')
         .send(missingTokenRequest)
         .expect(400);
 
-      expect(response.body).toHaveProperty('statusCode', 400);
-      expect(response.body.message).toContain('token');
+      expect(_response.body).toHaveProperty('statusCode', 400);
+      expect(_response.body.message).toContain('token');
     });
 
     it('should reject request with missing newPassword', async () => {
@@ -536,13 +560,13 @@ describe('AuthController (Integration)', () => {
         confirmPassword: 'NewStrongP@ssw0rd123',
       };
 
-      const response = await request(app.getHttpServer())
+      const _response = await request(app.getHttpServer())
         .post('/auth/password-reset-confirm')
         .send(missingPasswordRequest)
         .expect(400);
 
-      expect(response.body).toHaveProperty('statusCode', 400);
-      expect(response.body.message).toContain('newPassword');
+      expect(_response.body).toHaveProperty('statusCode', 400);
+      expect(_response.body.message).toContain('newPassword');
     });
 
     it('should reject request with missing confirmPassword', async () => {
@@ -551,13 +575,13 @@ describe('AuthController (Integration)', () => {
         newPassword: 'NewStrongP@ssw0rd123',
       };
 
-      const response = await request(app.getHttpServer())
+      const _response = await request(app.getHttpServer())
         .post('/auth/password-reset-confirm')
         .send(missingConfirmRequest)
         .expect(400);
 
-      expect(response.body).toHaveProperty('statusCode', 400);
-      expect(response.body.message).toContain('confirmPassword');
+      expect(_response.body).toHaveProperty('statusCode', 400);
+      expect(_response.body.message).toContain('confirmPassword');
     });
 
     it('should reject request with weak password', async () => {
@@ -567,13 +591,13 @@ describe('AuthController (Integration)', () => {
         confirmPassword: 'weak',
       };
 
-      const response = await request(app.getHttpServer())
+      const _response = await request(app.getHttpServer())
         .post('/auth/password-reset-confirm')
         .send(weakPasswordRequest)
         .expect(400);
 
-      expect(response.body).toHaveProperty('statusCode', 400);
-      expect(response.body.message).toContain('minLength');
+      expect(_response.body).toHaveProperty('statusCode', 400);
+      expect(_response.body.message).toContain('minLength');
     });
 
     it('should reject request with password missing required characters', async () => {
@@ -583,13 +607,13 @@ describe('AuthController (Integration)', () => {
         confirmPassword: 'passwordwithoutspecialchars123',
       };
 
-      const response = await request(app.getHttpServer())
+      const _response = await request(app.getHttpServer())
         .post('/auth/password-reset-confirm')
         .send(invalidPasswordRequest)
         .expect(400);
 
-      expect(response.body).toHaveProperty('statusCode', 400);
-      expect(response.body.message).toContain('matches');
+      expect(_response.body).toHaveProperty('statusCode', 400);
+      expect(_response.body.message).toContain('matches');
     });
 
     it('should handle Amharic error messages', async () => {
@@ -598,13 +622,13 @@ describe('AuthController (Integration)', () => {
         confirmPassword: 'DifferentPassword123!',
       };
 
-      const response = await request(app.getHttpServer())
+      const _response = await request(app.getHttpServer())
         .post('/auth/password-reset-confirm')
         .send(mismatchedRequest)
         .set('Accept-Language', 'am')
         .expect(400);
 
-      expect(response.body.message).toContain(
+      expect(_response.body.message).toContain(
         'አዲስ የይለፍ ቃል እና ማስተያወቂያ አይመሳሰሉም።'
       );
     });
@@ -628,12 +652,12 @@ describe('AuthController (Integration)', () => {
         token: 'expired-token',
       };
 
-      const response = await request(app.getHttpServer())
+      const _response = await request(app.getHttpServer())
         .post('/auth/password-reset-confirm')
         .send(expiredTokenRequest)
         .expect(400);
 
-      expect(response.body).toHaveProperty('errorCode', 'INVALID_RESET_TOKEN');
+      expect(_response.body).toHaveProperty('errorCode', 'INVALID_RESET_TOKEN');
     });
 
     it('should handle used tokens', async () => {
@@ -657,12 +681,12 @@ describe('AuthController (Integration)', () => {
         token: 'used-token',
       };
 
-      const response = await request(app.getHttpServer())
+      const _response = await request(app.getHttpServer())
         .post('/auth/password-reset-confirm')
         .send(usedTokenRequest)
         .expect(400);
 
-      expect(response.body).toHaveProperty('errorCode', 'INVALID_RESET_TOKEN');
+      expect(_response.body).toHaveProperty('errorCode', 'INVALID_RESET_TOKEN');
     });
 
     it('should handle token consumption failures', async () => {
@@ -681,12 +705,12 @@ describe('AuthController (Integration)', () => {
       });
       mockConsumeToken.mockResolvedValue(false);
 
-      const response = await request(app.getHttpServer())
+      const _response = await request(app.getHttpServer())
         .post('/auth/password-reset-confirm')
         .send(validConfirmRequest)
         .expect(400);
 
-      expect(response.body).toHaveProperty(
+      expect(_response.body).toHaveProperty(
         'errorCode',
         'PASSWORD_RESET_FAILED'
       );
@@ -715,12 +739,12 @@ describe('AuthController (Integration)', () => {
       });
       mockConsumeToken.mockResolvedValue(true);
 
-      const response = await request(app.getHttpServer())
+      const _response = await request(app.getHttpServer())
         .post('/auth/password-reset-confirm')
         .send(longPasswordRequest)
         .expect(200);
 
-      expect(response.body).toEqual({
+      expect(_response.body).toEqual({
         message: 'Password has been successfully reset.',
       });
     });
@@ -729,14 +753,14 @@ describe('AuthController (Integration)', () => {
   describe('Rate Limiting Integration', () => {
     it('should apply rate limiting to password reset endpoints', async () => {
       const mockCheckRateLimit = vi.mocked(
-        mockAdaptiveRateLimitingService.checkRateLimit
+        _mockAdaptiveRateLimitingService.checkRateLimit
       );
       mockCheckRateLimit.mockResolvedValue({
         allowed: false,
         remainingRequests: 0,
       });
 
-      const response = await request(app.getHttpServer())
+      const _response = await request(app.getHttpServer())
         .post('/auth/password-reset-request')
         .send({
           email: testUser.email,
@@ -749,7 +773,7 @@ describe('AuthController (Integration)', () => {
 
     it('should allow requests within rate limits', async () => {
       const mockCheckRateLimit = vi.mocked(
-        mockAdaptiveRateLimitingService.checkRateLimit
+        _mockAdaptiveRateLimitingService.checkRateLimit
       );
       mockCheckRateLimit.mockResolvedValue({
         allowed: true,
@@ -762,7 +786,7 @@ describe('AuthController (Integration)', () => {
       );
       mockHasActiveToken.mockResolvedValue(true); // Skip token generation
 
-      const response = await request(app.getHttpServer())
+      const _response = await request(app.getHttpServer())
         .post('/auth/password-reset-request')
         .send({
           email: testUser.email,
@@ -771,7 +795,7 @@ describe('AuthController (Integration)', () => {
         .expect(200);
 
       expect(mockCheckRateLimit).toHaveBeenCalled();
-      expect(response.body).toEqual({
+      expect(_response.body).toEqual({
         message:
           'A password reset link has already been sent. Please check your email.',
       });
@@ -781,7 +805,7 @@ describe('AuthController (Integration)', () => {
   describe('Security Headers', () => {
     it('should not leak sensitive information in responses', async () => {
       // Test non-existent email doesn't reveal information
-      const response = await request(app.getHttpServer())
+      const _response = await request(app.getHttpServer())
         .post('/auth/password-reset-request')
         .send({
           email: 'nonexistent@example.com',
@@ -789,20 +813,20 @@ describe('AuthController (Integration)', () => {
         })
         .expect(200);
 
-      expect(response.body.message).toContain(
+      expect(_response.body.message).toContain(
         'If an account with this email exists'
       );
-      expect(response.body.message).not.toContain('nonexistent@example.com');
+      expect(_response.body.message).not.toContain('nonexistent@example.com');
     });
 
     it('should handle malformed JSON gracefully', async () => {
-      const response = await request(app.getHttpServer())
+      const _response = await request(app.getHttpServer())
         .post('/auth/password-reset-request')
         .set('Content-Type', 'application/json')
         .send('{invalid json')
         .expect(400);
 
-      expect(response.body).toHaveProperty('statusCode', 400);
+      expect(_response.body).toHaveProperty('statusCode', 400);
     });
 
     it('should handle oversized payloads', async () => {
@@ -811,12 +835,12 @@ describe('AuthController (Integration)', () => {
         clientId: 'web-app',
       };
 
-      const response = await request(app.getHttpServer())
+      const _response = await request(app.getHttpServer())
         .post('/auth/password-reset-request')
         .send(largePayload)
         .expect(400);
 
-      expect(response.body).toHaveProperty('statusCode', 400);
+      expect(_response.body).toHaveProperty('statusCode', 400);
     });
   });
 
@@ -836,7 +860,7 @@ describe('AuthController (Integration)', () => {
       const mockFindUnique = vi.spyOn(prismaService.user, 'findUnique');
       mockFindUnique.mockRejectedValue(new Error('Database connection failed'));
 
-      const response = await request(app.getHttpServer())
+      const _response = await request(app.getHttpServer())
         .post('/auth/password-reset-request')
         .send({
           email: testUser.email,
@@ -844,7 +868,7 @@ describe('AuthController (Integration)', () => {
         })
         .expect(500);
 
-      expect(response.body).toHaveProperty('statusCode', 500);
+      expect(_response.body).toHaveProperty('statusCode', 500);
     });
 
     it('should commit database transactions correctly on success', async () => {
@@ -877,6 +901,437 @@ describe('AuthController (Integration)', () => {
         where: { id: testUser.id },
       });
       expect(updatedUser?.passwordHash).not.toBe(testUser.passwordHash);
+    });
+  });
+
+  describe('Audit Logging Integration', () => {
+    describe('POST /auth/register', () => {
+      const validRegistrationRequest = {
+        email: 'newuser@example.com',
+        password: 'SecureP@ssw0rd123',
+      };
+
+      beforeEach(() => {
+        mockPrismaService.user.findUnique.mockResolvedValue(null);
+        mockPrismaService.user.create.mockResolvedValue({
+          ...testUser,
+          email: validRegistrationRequest.email,
+        });
+      });
+
+      it('should log successful registration with audit context', async () => {
+        await request(app.getHttpServer())
+          .post('/auth/register')
+          .send(validRegistrationRequest)
+          .set('User-Agent', 'TestBrowser/1.0')
+          .set('X-Forwarded-For', '192.168.1.100')
+          .set('Accept-Language', 'en')
+          .expect(201);
+
+        expect(mockAuditLoggingService.logRegistration).toHaveBeenCalledWith(
+          true,
+          {
+            userId: testUser.id,
+            userEmail: validRegistrationRequest.email,
+            userRole: 'CUSTOMER',
+            ipAddress: '192.168.1.100',
+            userAgent: 'TestBrowser/1.0',
+            location: undefined,
+            deviceFingerprint: expect.any(String),
+          },
+          expect.objectContaining({
+            registrationMethod: 'EMAIL_PASSWORD',
+          })
+        );
+      });
+
+      it('should log failed registration when user already exists', async () => {
+        const existingUser = {
+          id: 'existing-123',
+          email: validRegistrationRequest.email,
+          createdAt: new Date(),
+        };
+
+        mockPrismaService.user.findUnique.mockResolvedValue(existingUser);
+
+        await request(app.getHttpServer())
+          .post('/auth/register')
+          .send(validRegistrationRequest)
+          .expect(409);
+
+        expect(mockAuditLoggingService.logRegistration).toHaveBeenCalledWith(
+          false,
+          {
+            userEmail: validRegistrationRequest.email,
+            ipAddress: 'unknown',
+            userAgent: undefined,
+            location: undefined,
+            deviceFingerprint: expect.any(String),
+          },
+          {
+            reason: 'EMAIL_ALREADY_EXISTS',
+            existingUserId: existingUser.id,
+          }
+        );
+      });
+
+      it('should extract device fingerprint from headers', async () => {
+        await request(app.getHttpServer())
+          .post('/auth/register')
+          .send(validRegistrationRequest)
+          .set('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36')
+          .set('Accept-Language', 'en-US,en;q=0.9')
+          .set('Sec-Ch-Ua-Platform', '"Windows"')
+          .expect(201);
+
+        expect(mockAuditLoggingService.logRegistration).toHaveBeenCalledWith(
+          true,
+          expect.objectContaining({
+            deviceFingerprint: expect.any(String),
+          }),
+          expect.any(Object)
+        );
+      });
+    });
+
+    describe('POST /auth/login', () => {
+      const validLoginRequest = {
+        email: testUser.email,
+        password: 'ValidP@ssw0rd123',
+      };
+
+      beforeEach(() => {
+        mockPrismaService.user.findUnique.mockResolvedValue(testUser);
+        mockPrismaService.user.update.mockResolvedValue({
+          ...testUser,
+          loginAttempts: 0,
+          lockoutUntil: null,
+        });
+      });
+
+      it('should log successful login with audit context', async () => {
+        await request(app.getHttpServer())
+          .post('/auth/login')
+          .send(validLoginRequest)
+          .set('User-Agent', 'TestBrowser/1.0')
+          .set('X-Forwarded-For', '192.168.1.100')
+          .set('Accept-Language', 'en')
+          .expect(200);
+
+        expect(mockAuditLoggingService.logLoginSuccess).toHaveBeenCalledWith({
+          userId: testUser.id,
+          userEmail: testUser.email,
+          userRole: 'CUSTOMER',
+          ipAddress: '192.168.1.100',
+          userAgent: 'TestBrowser/1.0',
+          location: undefined,
+          deviceFingerprint: expect.any(String),
+        });
+      });
+
+      it('should log failed login with specific failure reasons', async () => {
+        const invalidLoginRequest = {
+          email: testUser.email,
+          password: 'WrongPassword123',
+        };
+
+        mockPrismaService.user.findUnique.mockResolvedValue(testUser);
+
+        await request(app.getHttpServer())
+          .post('/auth/login')
+          .send(invalidLoginRequest)
+          .set('User-Agent', 'TestBrowser/1.0')
+          .set('X-Forwarded-For', '192.168.1.100')
+          .expect(401);
+
+        expect(mockAuditLoggingService.logLoginFailure).toHaveBeenCalledWith(
+          'INVALID_PASSWORD',
+          {
+            userId: testUser.id,
+            userEmail: testUser.email,
+            userRole: 'CUSTOMER',
+            ipAddress: '192.168.1.100',
+            userAgent: 'TestBrowser/1.0',
+            location: undefined,
+            deviceFingerprint: expect.any(String),
+          },
+          {
+            attemptNumber: 1,
+            maxAttempts: 5,
+            accountLocked: false,
+          }
+        );
+      });
+
+      it('should log account lockout when max attempts reached', async () => {
+        const userWithMaxAttempts = {
+          ...testUser,
+          loginAttempts: 4,
+        };
+
+        mockPrismaService.user.findUnique.mockResolvedValue(userWithMaxAttempts);
+        mockPrismaService.user.update.mockResolvedValue({
+          ...userWithMaxAttempts,
+          loginAttempts: 5,
+          lockoutUntil: new Date(Date.now() + 15 * 60 * 1000),
+        });
+
+        await request(app.getHttpServer())
+          .post('/auth/login')
+          .send({
+            email: testUser.email,
+            password: 'WrongPassword123',
+          })
+          .set('User-Agent', 'TestBrowser/1.0')
+          .set('X-Forwarded-For', '192.168.1.100')
+          .expect(401);
+
+        expect(mockAuditLoggingService.logAccountLockout).toHaveBeenCalledWith(
+          {
+            userId: testUser.id,
+            userEmail: testUser.email,
+            userRole: 'CUSTOMER',
+            ipAddress: '192.168.1.100',
+            userAgent: 'TestBrowser/1.0',
+            location: undefined,
+            deviceFingerprint: expect.any(String),
+          },
+          15
+        );
+      });
+
+      it('should log failed login for non-existent user', async () => {
+        const nonExistentUserRequest = {
+          email: 'nonexistent@example.com',
+          password: 'AnyPassword123',
+        };
+
+        mockPrismaService.user.findUnique.mockResolvedValue(null);
+
+        await request(app.getHttpServer())
+          .post('/auth/login')
+          .send(nonExistentUserRequest)
+          .set('User-Agent', 'TestBrowser/1.0')
+          .set('X-Forwarded-For', '192.168.1.100')
+          .expect(401);
+
+        expect(mockAuditLoggingService.logLoginFailure).toHaveBeenCalledWith(
+          'USER_NOT_FOUND',
+          {
+            userEmail: nonExistentUserRequest.email,
+            ipAddress: '192.168.1.100',
+            userAgent: 'TestBrowser/1.0',
+            location: undefined,
+            deviceFingerprint: expect.any(String),
+          }
+        );
+      });
+    });
+
+    describe('Password Reset Audit Logging', () => {
+      const validPasswordResetRequest = {
+        email: testUser.email,
+        clientId: 'web-app',
+      };
+
+      beforeEach(() => {
+        mockPrismaService.user.findUnique.mockResolvedValue(testUser);
+      });
+
+      it('should log successful password reset request', async () => {
+        const mockHasActiveToken = vi.spyOn(
+          passwordResetTokenService,
+          'hasActiveToken'
+        );
+        const mockGenerateToken = vi.spyOn(
+          passwordResetTokenService,
+          'generateToken'
+        );
+        const mockSendEmail = vi.spyOn(emailService, 'sendPasswordResetEmail');
+
+        mockHasActiveToken.mockResolvedValue(false);
+        mockGenerateToken.mockResolvedValue(testTokenData);
+        mockSendEmail.mockResolvedValue(true);
+
+        await request(app.getHttpServer())
+          .post('/auth/password-reset-request')
+          .send(validPasswordResetRequest)
+          .set('User-Agent', 'TestBrowser/1.0')
+          .set('X-Forwarded-For', '192.168.1.100')
+          .set('Accept-Language', 'en')
+          .expect(200);
+
+        expect(mockAuditLoggingService.logPasswordResetRequest).toHaveBeenCalledWith({
+          userId: testUser.id,
+          userEmail: testUser.email,
+          userRole: 'CUSTOMER',
+          ipAddress: '192.168.1.100',
+          userAgent: 'TestBrowser/1.0',
+          location: undefined,
+          deviceFingerprint: expect.any(String),
+        });
+      });
+
+      it('should log failed password reset for inactive user', async () => {
+        const inactiveUser = { ...testUser, status: 'INACTIVE' as const };
+        mockPrismaService.user.findUnique.mockResolvedValue(inactiveUser);
+
+        await request(app.getHttpServer())
+          .post('/auth/password-reset-request')
+          .send(validPasswordResetRequest)
+          .set('User-Agent', 'TestBrowser/1.0')
+          .set('X-Forwarded-For', '192.168.1.100')
+          .expect(200);
+
+        expect(mockAuditLoggingService.logPasswordResetFailure).toHaveBeenCalledWith(
+          'USER_INACTIVE',
+          {
+            userId: inactiveUser.id,
+            userEmail: inactiveUser.email,
+            userRole: 'CUSTOMER',
+            ipAddress: '192.168.1.100',
+            userAgent: 'TestBrowser/1.0',
+            location: undefined,
+            deviceFingerprint: expect.any(String),
+          },
+          {
+            userStatus: inactiveUser.status,
+          }
+        );
+      });
+
+      it('should log successful password reset confirmation', async () => {
+        const validConfirmRequest = {
+          token: 'valid-reset-token',
+          newPassword: 'NewStrongP@ssw0rd123',
+          confirmPassword: 'NewStrongP@ssw0rd123',
+        };
+
+        const mockValidateToken = vi.spyOn(
+          passwordResetTokenService,
+          'validateToken'
+        );
+        const mockConsumeToken = vi.spyOn(
+          passwordResetTokenService,
+          'consumeToken'
+        );
+
+        mockValidateToken.mockResolvedValue({
+          userId: testUser.id,
+          isValid: true,
+        });
+        mockConsumeToken.mockResolvedValue(true);
+
+        await request(app.getHttpServer())
+          .post('/auth/password-reset-confirm')
+          .send(validConfirmRequest)
+          .set('User-Agent', 'TestBrowser/1.0')
+          .set('X-Forwarded-For', '192.168.1.100')
+          .set('Accept-Language', 'en')
+          .expect(200);
+
+        expect(mockAuditLoggingService.logPasswordResetSuccess).toHaveBeenCalledWith({
+          userId: testUser.id,
+          userEmail: testUser.email,
+          userRole: 'CUSTOMER',
+          ipAddress: '192.168.1.100',
+          userAgent: 'TestBrowser/1.0',
+          location: undefined,
+          deviceFingerprint: expect.any(String),
+        });
+      });
+
+      it('should log failed password reset confirmation with specific reasons', async () => {
+        const invalidConfirmRequest = {
+          token: 'valid-reset-token',
+          newPassword: 'NewStrongP@ssw0rd123',
+          confirmPassword: 'DifferentPassword123',
+        };
+
+        await request(app.getHttpServer())
+          .post('/auth/password-reset-confirm')
+          .send(invalidConfirmRequest)
+          .set('User-Agent', 'TestBrowser/1.0')
+          .set('X-Forwarded-For', '192.168.1.100')
+          .expect(400);
+
+        expect(mockAuditLoggingService.logPasswordResetFailure).toHaveBeenCalledWith(
+          'PASSWORDS_DO_NOT_MATCH',
+          {
+            ipAddress: '192.168.1.100',
+            userAgent: 'TestBrowser/1.0',
+            location: undefined,
+            deviceFingerprint: expect.any(String),
+          }
+        );
+      });
+    });
+
+    describe('Location and Device Fingerprint Extraction', () => {
+      it('should extract location from various headers', async () => {
+        await request(app.getHttpServer())
+          .post('/auth/login')
+          .send({
+            email: testUser.email,
+            password: 'ValidP@ssw0rd123',
+          })
+          .set('X-Forwarded-For', '192.168.1.100')
+          .set('CF-IPCountry', 'ET')
+          .expect(200);
+
+        expect(mockAuditLoggingService.logLoginSuccess).toHaveBeenCalledWith(
+          expect.objectContaining({
+            location: 'ET',
+          })
+        );
+      });
+
+      it('should handle multiple X-Forwarded-For values', async () => {
+        await request(app.getHttpServer())
+          .post('/auth/login')
+          .send({
+            email: testUser.email,
+            password: 'ValidP@ssw0rd123',
+          })
+          .set('X-Forwarded-For', '192.168.1.100, 10.0.0.1, 203.0.113.1')
+          .expect(200);
+
+        expect(mockAuditLoggingService.logLoginSuccess).toHaveBeenCalledWith(
+          expect.objectContaining({
+            ipAddress: '192.168.1.100',
+          })
+        );
+      });
+
+      it('should create consistent device fingerprints', async () => {
+              const _fingerprint1 = 'test-fingerprint-1';
+      const _fingerprint2 = 'test-fingerprint-2';
+
+        // First request
+        await request(app.getHttpServer())
+          .post('/auth/login')
+          .send({
+            email: testUser.email,
+            password: 'ValidP@ssw0rd123',
+          })
+          .set('User-Agent', 'TestBrowser/1.0')
+          .set('Accept-Language', 'en-US,en;q=0.9')
+          .expect(200);
+
+        // Second request with same headers
+        await request(app.getHttpServer())
+          .post('/auth/login')
+          .send({
+            email: testUser.email,
+            password: 'ValidP@ssw0rd123',
+          })
+          .set('User-Agent', 'TestBrowser/1.0')
+          .set('Accept-Language', 'en-US,en;q=0.9')
+          .expect(200);
+
+        const calls = mockAuditLoggingService.logLoginSuccess.mock.calls;
+        expect(calls[0][0].deviceFingerprint).toBe(calls[1][0].deviceFingerprint);
+      });
     });
   });
 });

@@ -21,7 +21,7 @@ import { I18nRequest } from './i18n.middleware';
 export class I18nInterceptor implements NestInterceptor {
   constructor(private readonly i18nService: I18nService) {}
 
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const request = context.switchToHttp().getRequest<I18nRequest>();
     const language = request.language || 'en';
 

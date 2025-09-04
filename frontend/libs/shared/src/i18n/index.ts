@@ -32,7 +32,7 @@ export const supportedLanguages = {
 export type SupportedLanguageCode = keyof typeof supportedLanguages;
 
 // Configure i18n
-const initI18n = (isClient = true) => {
+const initI18n = (isClient = true): typeof i18n => {
   const i18nInstance = i18n.use(initReactI18next);
 
   // Use language detector and backend only on client
@@ -144,7 +144,7 @@ export const getLanguageDirection = (lng: string): 'ltr' | 'rtl' => {
 };
 
 // Language change handler
-export const changeLanguage = async (lng: SupportedLanguageCode) => {
+export const changeLanguage = async (lng: SupportedLanguageCode): Promise<void> => {
   await i18n.changeLanguage(lng);
   // Update HTML dir attribute for proper text direction
   if (typeof document !== 'undefined') {
@@ -154,7 +154,7 @@ export const changeLanguage = async (lng: SupportedLanguageCode) => {
 };
 
 // Get all available languages for language switcher
-export const getAvailableLanguages = () => {
+export const getAvailableLanguages = (): Array<{ code: string; name: string; dir: string }> => {
   return Object.values(supportedLanguages);
 };
 

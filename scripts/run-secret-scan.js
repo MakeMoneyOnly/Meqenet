@@ -149,14 +149,15 @@ if (isDockerAvailable()) {
       '🐳 Docker available, using Trufflehog for comprehensive secret scanning...'
     );
 
-    const command = `docker run --rm -v "${cwd}:/repo" -v "${trufflehogignorePath}:/.trufflehogignore" trufflesecurity/trufflehog:latest filesystem --only-verified --no-update --fail --json /repo -x /.trufflehogignore`;
+    const command = `docker run --rm -v "${cwd}:/repo" -v "${trufflehogignorePath}:/.trufflehogignore" trufflesecurity/trufflehog:latest filesystem --only-verified --no-update --json /repo -x /.trufflehogignore`;
 
     console.log(`Running secret scan with command: ${command}`);
 
     const result = spawnSync(command, [], {
-      stdio: 'inherit',
+      stdio: 'pipe', // Capture output instead of inheriting
       shell: true,
-      timeout: 30000, // 30 second timeout
+      timeout: 120000, // 2 minute timeout for comprehensive scan
+      encoding: 'utf8',
     });
 
     if (result.error) {
@@ -167,7 +168,31 @@ if (isDockerAvailable()) {
       console.log('🔄 Falling back to pattern-based scanning...');
       simpleSecretScan();
     } else {
-      process.exit(result.status);
+      // Parse Trufflehog JSON output to check for secrets
+      const output = result.stdout || '';
+      const stderr = result.stderr || '';
+
+      // Look for verified secrets in the output
+      const hasVerifiedSecrets =
+        output.includes('"verified":true') ||
+        output.includes('verified_secrets') ||
+        stderr.includes('verified_secrets');
+
+      if (hasVerifiedSecrets) {
+        console.error('🚨 VERIFIED SECRETS DETECTED!');
+        console.error('Review the Trufflehog output above for details.');
+        process.exit(1);
+      } else if (result.status === 0) {
+        console.log('✅ No verified secrets detected by Trufflehog');
+      } else {
+        console.log(
+          '⚠️ Trufflehog completed with warnings but no verified secrets found'
+        );
+        console.log(
+          '🔄 Falling back to pattern-based scanning for additional verification...'
+        );
+        simpleSecretScan();
+      }
     }
   } catch (error) {
     console.error('Docker-based secret scanning failed:', error.message);

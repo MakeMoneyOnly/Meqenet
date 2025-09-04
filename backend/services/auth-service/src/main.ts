@@ -1,4 +1,5 @@
 import { Logger, ValidationPipe, BadRequestException } from '@nestjs/common';
+import { ValidationError } from 'class-validator';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
@@ -14,6 +15,9 @@ import {
   Span,
   SpanKind,
 } from '@opentelemetry/api';
+
+// Security constants
+const HSTS_MAX_AGE_ONE_YEAR_SECONDS = 31536000; // 365 days in seconds
 import { randomUUID } from 'crypto';
 
 import { AppModule } from './app/app.module';
@@ -87,7 +91,7 @@ async function bootstrap(): Promise<void> {
     // Security: derive Helmet options from security config
     const hstsMaxAge = configService.get<number>(
       'security.hstsMaxAge',
-      31536000
+      HSTS_MAX_AGE_ONE_YEAR_SECONDS
     );
     const cspDefault = configService.get<string>(
       'security.csp.defaultSrc',
@@ -147,7 +151,7 @@ async function bootstrap(): Promise<void> {
         transformOptions: {
           enableImplicitConversion: true,
         },
-        exceptionFactory: validationErrors => {
+        exceptionFactory: (validationErrors: ValidationError[]): ValidationError[] => {
           const messages = validationErrors.map(err => {
             const constraints = err.constraints || {};
             const firstMessage = Object.values(constraints)[0] as

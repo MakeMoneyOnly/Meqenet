@@ -1,0 +1,64 @@
+{
+  "defaults": {
+    "timeout": 1000,
+    "wait": 500,
+    "viewport": {
+      "width": 1280,
+      "height": 1024
+    },
+    "userAgent": "Meqenet Accessibility Tester",
+    "standard": "WCAG2AA",
+    "level": "error",
+    "runners": ["axe", "htmlcs"],
+    "ignore": [
+      "WCAG2AA.Principle1.Guideline1_3.1_3_1.H49.*",
+      "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail"
+    ],
+    "hideElements": ".sr-only, .visually-hidden, [aria-hidden='true']",
+    "rules": {
+      "Principle1.Guideline1_1.1_1_1": "error",
+      "Principle1.Guideline1_3.1_3_1": "error",
+      "Principle1.Guideline1_4.1_4_3": "warning",
+      "Principle2.Guideline2_1.2_1_1": "error",
+      "Principle2.Guideline2_4.2_4_2": "error",
+      "Principle3.Guideline3_1.3_1_1": "warning",
+      "Principle4.Guideline4_1.4_1_2": "error"
+    }
+  },
+  "urls": [
+    {
+      "url": "http://localhost:3000",
+      "name": "Meqenet Homepage",
+      "threshold": 5
+    },
+    {
+      "url": "http://localhost:3000/login",
+      "name": "Login Page",
+      "threshold": 3,
+      "actions": [
+        "set field #email to test@example.com",
+        "set field #password to password123",
+        "click element #submit-btn",
+        "wait 1000"
+      ]
+    },
+    {
+      "url": "http://localhost:3000/dashboard",
+      "name": "Dashboard Page",
+      "threshold": 5,
+      "headers": {
+        "Authorization": "Bearer test-token"
+      }
+    },
+    {
+      "url": "http://localhost:3000/payments",
+      "name": "Payments Page",
+      "threshold": 3
+    },
+    {
+      "url": "http://localhost:3000/profile",
+      "name": "Profile Page",
+      "threshold": 3
+    }
+  ]
+}

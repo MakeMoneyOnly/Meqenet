@@ -20,7 +20,7 @@ export interface I18nRequest extends Request {
 export class I18nMiddleware implements NestMiddleware {
   constructor(private readonly i18nService: I18nService) {}
 
-  use(req: I18nRequest, res: Response, next: NextFunction) {
+  use(req: I18nRequest, res: Response, next: NextFunction): void {
     // Priority order for language detection:
     // 1. Query parameter (?lang=am)
     // 2. Cookie (lang=am)

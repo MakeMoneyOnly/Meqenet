@@ -10,10 +10,40 @@ import Redis from 'ioredis';
 // Redis-backed Idempotency Middleware (shared across services)
 const IDEMPOTENCY_KEY_HEADER = 'Idempotency-Key';
 const PENDING_RESPONSE_MARKER = 'pending';
-const SERVICE_NAMESPACE = process.env.SERVICE_NAME || 'payments-service';
-const KEY_PREFIX = `idemp:${SERVICE_NAMESPACE}:`;
+const DEFAULT_SERVICE_NAME = 'payments-service';
+const DEFAULT_REDIS_HOST = 'localhost';
+const DEFAULT_REDIS_PORT = 6379;
 const LOCK_TTL_SECONDS = 10; // Short TTL for the lock
-const RESPONSE_TTL_SECONDS = 24 * 60 * 60; // 24 hours for the final response
+const HOURS_IN_DAY = 24;
+const MINUTES_IN_HOUR = 60;
+const SECONDS_IN_MINUTE = 60;
+const RESPONSE_TTL_SECONDS = HOURS_IN_DAY * MINUTES_IN_HOUR * SECONDS_IN_MINUTE; // 24 hours for the final response
+const HTTP_STATUS_OK = 200;
+
+// Configuration utility for shared middleware (cannot use DI)
+/* eslint-disable internal/no-process-env-outside-config */
+class IdempotencyConfig {
+  static get serviceName(): string {
+    return process.env.SERVICE_NAME || DEFAULT_SERVICE_NAME;
+  }
+
+  static get redisHost(): string {
+    return process.env.REDIS_HOST || DEFAULT_REDIS_HOST;
+  }
+
+  static get redisPort(): number {
+    const port = process.env.REDIS_PORT;
+    return port ? parseInt(port, 10) : DEFAULT_REDIS_PORT;
+  }
+
+  static get redisPassword(): string | undefined {
+    return process.env.REDIS_PASSWORD;
+  }
+}
+/* eslint-enable internal/no-process-env-outside-config */
+
+const SERVICE_NAMESPACE = IdempotencyConfig.serviceName;
+const KEY_PREFIX = `idemp:${SERVICE_NAMESPACE}:`;
 
 @Injectable()
 export class IdempotencyMiddleware implements NestMiddleware {
@@ -22,9 +52,9 @@ export class IdempotencyMiddleware implements NestMiddleware {
 
   constructor() {
     this.redisClient = new Redis({
-      host: process.env.REDIS_HOST || 'localhost',
-      port: parseInt(process.env.REDIS_PORT || '6379', 10),
-      password: process.env.REDIS_PASSWORD,
+      host: IdempotencyConfig.redisHost,
+      port: IdempotencyConfig.redisPort,
+      password: IdempotencyConfig.redisPassword,
     });
   }
 
@@ -52,7 +82,7 @@ export class IdempotencyMiddleware implements NestMiddleware {
           res.status(parsedResponse.status).json(parsedResponse.body);
         } catch {
           // Legacy fallback: if cached data wasn't wrapped, send as-is
-          res.status(200).send(existingData);
+          res.status(HTTP_STATUS_OK).send(existingData);
         }
         return;
       }

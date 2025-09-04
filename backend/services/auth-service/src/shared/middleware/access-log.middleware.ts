@@ -2,6 +2,9 @@ import { Injectable, Logger, NestMiddleware } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 import { ConfigService } from '@nestjs/config';
 
+// Time conversion constants
+const NANOSECONDS_PER_MILLISECOND = 1_000_000;
+
 function redactQuery(url: string): string {
   const qIndex = url.indexOf('?');
   return qIndex === -1 ? url : url.slice(0, qIndex) + '?[REDACTED]';
@@ -53,7 +56,7 @@ export class AccessLogMiddleware implements NestMiddleware {
     const requestId = (req.headers['x-request-id'] as string) || 'unknown';
 
     res.on('finish', () => {
-      const durationMs = Number(process.hrtime.bigint() - start) / 1_000_000;
+      const durationMs = Number(process.hrtime.bigint() - start) / NANOSECONDS_PER_MILLISECOND;
       const statusCode = res.statusCode;
       this.logger.log(
         `${method} ${safeUrl} ${statusCode} ${durationMs.toFixed(1)}ms [reqId=${requestId}]`

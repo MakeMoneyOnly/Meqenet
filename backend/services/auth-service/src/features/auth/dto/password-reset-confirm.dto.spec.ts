@@ -390,19 +390,23 @@ describe('PasswordResetConfirmDto', () => {
       ];
 
       for (const password of shortPasswords) {
-        dto.newPassword = password;
-        dto.confirmPassword = password;
+        const testDto = new PasswordResetConfirmDto();
+        testDto.token = 'valid-token';
+        testDto.newPassword = password;
+        testDto.confirmPassword = password;
 
-        const errors = await validate(dto);
+        const errors = await validate(testDto);
         expect(errors.length).toBeGreaterThan(0);
         expect(errors[0].constraints).toHaveProperty('minLength');
       }
 
       // Test valid minimum length
-      dto.newPassword = 'TwelveChars1!'; // 14 chars
-      dto.confirmPassword = 'TwelveChars1!';
+      const validDto = new PasswordResetConfirmDto();
+      validDto.token = 'valid-token';
+      validDto.newPassword = 'TwelveChars1!'; // 14 chars
+      validDto.confirmPassword = 'TwelveChars1!';
 
-      const errors = await validate(dto);
+      const errors = await validate(validDto);
       expect(errors.length).toBe(0);
     });
 

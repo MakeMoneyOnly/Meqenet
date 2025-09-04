@@ -5,9 +5,14 @@ import { randomInt } from 'crypto';
 
 import { AdaptiveRateLimitingService } from '../../shared/services/adaptive-rate-limiting.service';
 
-function generateOtp(length = 6): string {
-  const min = 10 ** (length - 1);
-  const max = 10 ** length - 1;
+// MFA constants
+const DEFAULT_OTP_LENGTH = 6;
+const BASE_TEN = 10;
+const OTP_CACHE_TTL_SECONDS = 300; // 5 minutes
+
+function generateOtp(length = DEFAULT_OTP_LENGTH): string {
+  const min = BASE_TEN ** (length - 1);
+  const max = BASE_TEN ** length - 1;
   return String(randomInt(min, max));
 }
 
@@ -30,9 +35,9 @@ export class MfaService {
       'REQUEST'
     );
 
-    const code = generateOtp(6);
+    const code = generateOtp(DEFAULT_OTP_LENGTH);
     const key = `otp:${channel}:${userId}`;
-    await this.cache.set(key, JSON.stringify({ code }), 300); // 5 minutes TTL
+    await this.cache.set(key, JSON.stringify({ code }), OTP_CACHE_TTL_SECONDS); // 5 minutes TTL
 
     // Real implementation would enqueue SMS/Email using provider integration
     return { message: 'OTP sent' };

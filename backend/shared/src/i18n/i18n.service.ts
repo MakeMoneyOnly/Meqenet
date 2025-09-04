@@ -26,7 +26,7 @@ export class I18nService {
     this.initializeI18n();
   }
 
-  private initializeI18n() {
+  private initializeI18n(): void {
     this.i18nInstance.configure({
       locales: this.options.supportedLanguages || ['en', 'am'],
       defaultLocale: this.options.defaultLanguage || 'en',

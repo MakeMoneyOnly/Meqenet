@@ -12,8 +12,10 @@ export interface PasswordResetTokenData {
 @Injectable()
 export class PasswordResetTokenService {
   private readonly logger = new Logger(PasswordResetTokenService.name);
-  private readonly TOKEN_EXPIRY_HOURS = 24; // Tokens expire after 24 hours
-  private readonly TOKEN_LENGTH = 32; // 32 bytes = 64 hex characters
+  // eslint-disable-next-line no-magic-numbers
+  private readonly TOKEN_EXPIRY_HOURS = 24; // Tokens expire after 24 hours (1 day)
+  // eslint-disable-next-line no-magic-numbers
+  private readonly TOKEN_LENGTH = 256 / 8; // 256 bits = 32 bytes = 64 hex characters for secure token
 
   constructor(private readonly prisma: PrismaService) {}
 
@@ -47,7 +49,7 @@ export class PasswordResetTokenService {
           token: hashedToken, // Store hashed token
           hashedToken, // Redundant for validation but explicit
           ipAddress,
-          userAgent: userAgent || null,
+          userAgent,
           expiresAt,
         },
       });
