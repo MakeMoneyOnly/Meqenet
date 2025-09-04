@@ -84,7 +84,7 @@ const mockPrismaService = {
 describe.skip('AuthService (E2E) - Password Reset Flow', () => {
   let app: INestApplication;
   let prismaService: PrismaService;
-  let emailService: EmailService;
+  let _emailService: EmailService;
   let tokenService: PasswordResetTokenService;
 
   const testUser = {
@@ -108,7 +108,7 @@ describe.skip('AuthService (E2E) - Password Reset Flow', () => {
         JwtModule.registerAsync({
           imports: [ConfigModule],
           useFactory: async (
-            configService: ConfigService,
+            _configService: ConfigService,
             secretManager: SecretManagerService
           ) => ({
             privateKey: secretManager.getCurrentJwtPrivateKey(),
@@ -149,7 +149,7 @@ describe.skip('AuthService (E2E) - Password Reset Flow', () => {
     await app.init();
 
     prismaService = moduleFixture.get<PrismaService>(PrismaService);
-    emailService = moduleFixture.get<EmailService>(EmailService);
+    _emailService = moduleFixture.get<EmailService>(EmailService);
     tokenService = moduleFixture.get<PasswordResetTokenService>(
       PasswordResetTokenService
     );
@@ -322,7 +322,7 @@ describe.skip('AuthService (E2E) - Password Reset Flow', () => {
 
     it('should handle expired tokens correctly', async () => {
       // Create an expired token directly in database
-      const expiredToken = await prismaService.passwordReset.create({
+      const _expiredToken = await prismaService.passwordReset.create({
         data: {
           userId: testUser.id,
           token: 'hashed-expired',
@@ -557,7 +557,7 @@ describe.skip('AuthService (E2E) - Password Reset Flow', () => {
         remainingRequests: 0,
       });
 
-      const response = await request(app.getHttpServer())
+      const _response = await request(app.getHttpServer())
         .post('/auth/password-reset-request')
         .send({
           email: testUser.email,
