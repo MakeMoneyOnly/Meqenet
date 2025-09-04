@@ -43,15 +43,15 @@ echo "🔐 Phase 2: Enterprise security validation..."
 
 # 2. Secret Scanning - Critical for FinTech
 echo "  • Scanning for hardcoded secrets..."
-if ! timeout 30 pnpm run security:secrets >/dev/null 2>&1; then
+if ! timeout 30 pnpm run security:secrets 2>&1; then
   echo "❌ SECRET SCANNING FAILED!"
   echo ""
   echo "🚨 CRITICAL: Potential hardcoded secrets detected!"
-  echo "   • API keys, passwords, or tokens may be exposed"
-  echo "   • Review the output above and remove any sensitive data"
+  echo "   • Check the output above for specific files and issues found"
+  echo "   • Review and remove any hardcoded API keys, passwords, or tokens"
   echo "   • Use environment variables or secure vaults instead"
   echo ""
-  echo "🔧 To bypass if false positive: git commit --no-verify"
+  echo "🔧 To bypass: git commit --no-verify"
   exit 1
 fi
 

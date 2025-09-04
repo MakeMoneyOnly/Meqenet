@@ -1029,7 +1029,7 @@ describe('AuthService', () => {
 
         expect(bcryptCompareMock).toHaveBeenCalledWith(
           loginUserDto.password,
-          mockUser.passwordHash
+          loginMockUser.passwordHash
         );
       });
     });

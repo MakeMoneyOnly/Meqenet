@@ -34,10 +34,15 @@ services:
       dockerfile: backend/services/api-gateway/Dockerfile
     ports:
       - "3000:3000"
+    environment:
+      REDIS_HOST: redis_test
+      REDIS_PORT: 6379
     depends_on:
       auth_service:
         condition: service_healthy
       payments_service:
+        condition: service_healthy
+      redis_test:
         condition: service_healthy
 
   auth_service:
@@ -67,8 +72,12 @@ services:
       dockerfile: backend/services/payments-service/Dockerfile
     environment:
       DATABASE_URL: postgresql://testuser:testpassword@postgres_test:5432/meqenet_test
+      REDIS_HOST: redis_test
+      REDIS_PORT: 6379
     depends_on:
       postgres_test:
+        condition: service_healthy
+      redis_test:
         condition: service_healthy
     healthcheck:
       # This assumes the service exposes a health check endpoint on port 3002

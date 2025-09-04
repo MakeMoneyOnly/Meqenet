@@ -1,27 +1,53 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { vi as _vi } from 'vitest';
+import { ConfigService } from '@nestjs/config';
+import { vi } from 'vitest';
 
 import { EmailService } from './email.service';
 
-// Mock environment variables
-const mockEnv = {
-  FRONTEND_RESET_URL: 'https://app.meqenet.et/reset-password',
-};
-
-Object.defineProperty(process, 'env', {
-  value: mockEnv,
-  writable: true,
-});
-
 describe('EmailService', () => {
   let service: EmailService;
+  let configService: ConfigService;
+  let module: TestingModule;
+
+  const mockEnv = {
+    FRONTEND_RESET_URL: 'https://app.meqenet.et/reset-password',
+  };
+
+  beforeAll(() => {
+    // Set environment variable for ConfigService
+    process.env.FRONTEND_RESET_URL = mockEnv.FRONTEND_RESET_URL;
+  });
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [EmailService],
+    // Create a mock ConfigService that returns the FRONTEND_RESET_URL
+    const mockConfigService = {
+      get: vi.fn().mockImplementation((key: string, defaultValue?: string) => {
+        if (key === 'FRONTEND_RESET_URL') {
+          return process.env.FRONTEND_RESET_URL || defaultValue || mockEnv.FRONTEND_RESET_URL;
+        }
+        return defaultValue;
+      }),
+    };
+
+    module = await Test.createTestingModule({
+      providers: [
+        EmailService,
+        {
+          provide: ConfigService,
+          useValue: mockConfigService,
+        },
+      ],
     }).compile();
 
     service = module.get<EmailService>(EmailService);
+    configService = module.get<ConfigService>(ConfigService);
+  });
+
+  afterEach(async () => {
+    // Clean up module after each test
+    if (module) {
+      await module.close();
+    }
   });
 
   it('should be defined', () => {
@@ -75,14 +101,27 @@ describe('EmailService', () => {
 
     it('should use correct frontend reset URL from environment', async () => {
       const customUrl = 'https://custom-domain.com/reset-password';
-      Object.defineProperty(process.env, 'FRONTEND_RESET_URL', {
-        value: customUrl,
-        writable: true,
-      });
+      const originalUrl = process.env.FRONTEND_RESET_URL;
 
-      // Create new instance to pick up env changes
+      // Temporarily change the environment variable
+      process.env.FRONTEND_RESET_URL = customUrl;
+
+      // Create new service instance with updated config
       const newModule: TestingModule = await Test.createTestingModule({
-        providers: [EmailService],
+        providers: [
+          EmailService,
+          {
+            provide: ConfigService,
+            useValue: {
+              get: vi.fn().mockImplementation((key: string, defaultValue?: string) => {
+                if (key === 'FRONTEND_RESET_URL') {
+                  return process.env.FRONTEND_RESET_URL || defaultValue;
+                }
+                return defaultValue;
+              }),
+            },
+          },
+        ],
       }).compile();
 
       const newService = newModule.get<EmailService>(EmailService);
@@ -92,10 +131,10 @@ describe('EmailService', () => {
       expect(result).toBe(true);
 
       // Reset to original value
-      Object.defineProperty(process.env, 'FRONTEND_RESET_URL', {
-        value: mockEnv.FRONTEND_RESET_URL,
-        writable: true,
-      });
+      process.env.FRONTEND_RESET_URL = originalUrl;
+
+      // Clean up new module
+      await newModule.close();
     });
   });
 
@@ -122,17 +161,37 @@ describe('EmailService', () => {
       expect(result).toContain('mobile-app%40v1.0'); // URL encoded
     });
 
-    it('should use default frontend URL when env var is not set', () => {
+    it('should use default frontend URL when env var is not set', async () => {
       // Temporarily remove env var
       const originalUrl = process.env.FRONTEND_RESET_URL;
       delete process.env.FRONTEND_RESET_URL;
 
       try {
-        // Create a new service instance to pick up the new env
-        const testService = new (EmailService as any)();
+        // Create a new module instance to pick up the new env
+        const testModule: TestingModule = await Test.createTestingModule({
+          providers: [
+            EmailService,
+            {
+              provide: ConfigService,
+              useValue: {
+                get: vi.fn().mockImplementation((key: string, defaultValue?: string) => {
+                  if (key === 'FRONTEND_RESET_URL') {
+                    return process.env.FRONTEND_RESET_URL || defaultValue;
+                  }
+                  return defaultValue;
+                }),
+              },
+            },
+          ],
+        }).compile();
+
+        const testService = testModule.get<EmailService>(EmailService);
         const result = (testService as any).buildResetUrl('token', 'client');
 
         expect(result).toContain('https://app.meqenet.et/reset-password');
+
+        // Clean up test module
+        await testModule.close();
       } finally {
         // Restore original env
         process.env.FRONTEND_RESET_URL = originalUrl;

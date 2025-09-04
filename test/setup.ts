@@ -9,9 +9,9 @@ process.env.NODE_ENV = 'test';
 // Use a mock database URL for tests that don't need real DB connectivity
 process.env.DATABASE_URL =
   process.env.TEST_DATABASE_URL ||
-  'postgresql://test:test@localhost:5432/meqenet_test';
+  'postgresql://meqenet:password@localhost:5433/staging_auth_db';
 process.env.JWT_SECRET = 'test-jwt-secret-key-for-testing-only';
-process.env.REDIS_URL = 'redis://localhost:6379';
+process.env.REDIS_URL = 'redis://localhost:6380';
 
 // Mock Fayda ID encryption for testing
 process.env.FAYDA_ENCRYPTION_KEY = 'test-fayda-encryption-key-32-chars';
@@ -26,6 +26,26 @@ process.env.PINO_LEVEL = 'silent';
 
 // Suppress NestJS built-in logging
 process.env.NESTJS_LOGGER = 'false';
+
+// Temporarily enable some output for debugging
+console.log = vi.fn((...args) => {
+  // Allow test results and errors through
+  if (
+    typeof args[0] === 'string' &&
+    (args[0].includes('✓') ||
+      args[0].includes('✗') ||
+      args[0].includes('Test Files') ||
+      args[0].includes('Tests') ||
+      args[0].includes('Duration') ||
+      args[0].includes('Start at') ||
+      args[0].includes('RUN') ||
+      args[0].includes('Error') ||
+      args[0].includes('FAIL') ||
+      args[0].includes('PASS'))
+  ) {
+    originalStdoutWrite.apply(process.stdout, args);
+  }
+});
 
 // Completely suppress console output during tests
 const _originalConsole = { ...console };

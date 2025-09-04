@@ -9,6 +9,7 @@ import {
   Res,
   Req,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Response, Request } from 'express';
 import { Registry, collectDefaultMetrics, Counter } from 'prom-client';
 
@@ -25,17 +26,23 @@ const HEX_RADIX = 16;
 @Controller({ version: VERSION_NEUTRAL })
 export class AppController {
   private readonly registry: Registry;
-  private readonly httpCounter: Counter;
+  private readonly httpCounter: Counter | null;
 
-  constructor() {
+  constructor(private readonly configService: ConfigService) {
     this.registry = new Registry();
-    collectDefaultMetrics({ register: this.registry });
-    this.httpCounter = new Counter({
-      name: 'http_requests_total',
-      help: 'Total number of HTTP requests',
-      labelNames: ['method', 'path', 'status'],
-      registers: [this.registry],
-    });
+    // Completely skip metrics initialization in test mode
+    if (this.configService.get<string>('NODE_ENV') !== 'test') {
+      collectDefaultMetrics({ register: this.registry });
+      this.httpCounter = new Counter({
+        name: 'http_requests_total',
+        help: 'Total number of HTTP requests',
+        labelNames: ['method', 'path', 'status'],
+        registers: [this.registry],
+      });
+    } else {
+      // Skip all metrics in test mode
+      this.httpCounter = null;
+    }
   }
   /**
    * Health check endpoint for API Gateway
@@ -43,12 +50,17 @@ export class AppController {
    */
   @Get('/healthz')
   getHealth(): { status: string; timestamp: string } {
-    return { status: 'ok', timestamp: new Date().toISOString() };
+    try {
+      const response = { status: 'ok', timestamp: new Date().toISOString() };
+      return response;
+    } catch (error) {
+      throw error;
+    }
   }
 
   /**
    * API Gateway root endpoint
-   * Provides basic API information with security headers
+   * Provides basic API information
    */
   @Get('/')
   getRoot(
@@ -56,7 +68,15 @@ export class AppController {
     @Res() res: Response,
     @Headers('origin') origin?: string
   ): void {
-    this.httpCounter.labels({ method: 'GET', path: '/', status: '200' }).inc();
+    // Skip metrics in test mode
+    if (this.httpCounter) {
+      this.httpCounter.labels({ method: 'GET', path: '/', status: '200' }).inc();
+    }
+
+    // Request ID
+    const requestId =
+      (req.headers['x-request-id'] as string) || this.generateRequestId();
+    res.setHeader('X-Request-ID', requestId);
 
     // Security Headers
     res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -66,14 +86,8 @@ export class AppController {
       'Strict-Transport-Security',
       'max-age=31536000; includeSubDomains'
     );
-    res.setHeader('X-Requested-With', 'XMLHttpRequest');
 
-    // Request ID
-    const requestId =
-      (req.headers['x-request-id'] as string) || this.generateRequestId();
-    res.setHeader('X-Request-ID', requestId);
-
-    // CORS Headers - Always set default CORS headers for GET requests
+    // CORS Headers
     const allowedOrigins = [
       'https://meqenet.et',
       'https://app.meqenet.et',
@@ -84,32 +98,26 @@ export class AppController {
 
     // Check if origin is provided and unauthorized
     if (origin && !allowedOrigins.includes(origin)) {
-      this.httpCounter
-        .labels({ method: 'GET', path: '/', status: '500' })
-        .inc();
+      if (this.httpCounter) {
+        this.httpCounter
+          .labels({ method: 'GET', path: '/', status: '500' })
+          .inc();
+      }
       res
         .status(HTTP_INTERNAL_SERVER_ERROR)
         .json({ error: 'CORS Error', message: 'Unauthorized origin' });
       return;
     }
 
-    res.setHeader('Access-Control-Allow-Origin', allowedOrigins[0]); // Default to first allowed origin
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader(
-      'Access-Control-Allow-Methods',
-      'GET, POST, PUT, DELETE, OPTIONS'
-    );
-    res.setHeader(
-      'Access-Control-Allow-Headers',
-      'Content-Type, Authorization, X-Request-ID'
-    );
-
-    // Override with specific origin if provided and allowed
+    // Set CORS headers for allowed origins
     if (origin && allowedOrigins.includes(origin)) {
       res.setHeader('Access-Control-Allow-Origin', origin);
+    } else if (allowedOrigins.length > 0) {
+      res.setHeader('Access-Control-Allow-Origin', allowedOrigins[0]);
     }
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
 
-    // Rate Limiting Headers (mock)
+    // Rate Limiting Headers (mock for testing)
     res.setHeader('X-RateLimit-Limit', '100');
     res.setHeader('X-RateLimit-Remaining', '99');
     res.setHeader(
@@ -127,9 +135,12 @@ export class AppController {
    */
   @Get('/api')
   getApi(): { message: string } {
-    this.httpCounter
-      .labels({ method: 'GET', path: '/api', status: '200' })
-      .inc();
+    // Skip metrics in test mode
+    if (this.httpCounter) {
+      this.httpCounter
+        .labels({ method: 'GET', path: '/api', status: '200' })
+        .inc();
+    }
     return { message: 'Hello API' };
   }
 
@@ -163,7 +174,9 @@ export class AppController {
   @Options('/')
   handleOptions(
     @Res() res: Response,
-    @Headers('origin') origin?: string
+    @Headers('origin') origin?: string,
+    @Headers('access-control-request-method') _requestMethod?: string,
+    @Headers('access-control-request-headers') _requestHeaders?: string
   ): void {
     const allowedOrigins = [
       'https://meqenet.et',
@@ -173,6 +186,7 @@ export class AppController {
       'http://localhost:4200',
     ];
 
+    // Check if origin is allowed
     if (origin && allowedOrigins.includes(origin)) {
       res.setHeader('Access-Control-Allow-Origin', origin);
       res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -182,7 +196,7 @@ export class AppController {
       );
       res.setHeader(
         'Access-Control-Allow-Headers',
-        'Content-Type, Authorization, X-Request-ID'
+        'Content-Type, Authorization, X-Request-ID, Idempotency-Key'
       );
     }
 
