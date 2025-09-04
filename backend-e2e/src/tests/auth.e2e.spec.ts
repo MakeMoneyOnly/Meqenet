@@ -1,5 +1,4 @@
 import request from 'supertest';
-import { randomUUID } from 'node:crypto';
 
 // This assumes the API Gateway is running on localhost:3000
 const api = request('http://localhost:3000');

@@ -27,7 +27,8 @@ const ethiopianLastNames = [
 
 const prisma = new PrismaClient();
 
-// Encryption setup
+// Encryption setup - using direct process.env for script-level configuration
+// eslint-disable-next-line no-process-env
 const encryptionKey = process.env.E2E_DB_ENCRYPTION_KEY;
 if (!encryptionKey || encryptionKey.length < MIN_ENCRYPTION_KEY_LENGTH) {
   throw new Error(

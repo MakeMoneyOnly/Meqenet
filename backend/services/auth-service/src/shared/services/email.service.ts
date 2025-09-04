@@ -18,7 +18,6 @@ export class EmailService {
     // may not be emitted by the transformer. Fallback to env var and a sane default.
     this.FRONTEND_RESET_URL =
       this.configService?.get<string>('FRONTEND_RESET_URL') ??
-      process.env.FRONTEND_RESET_URL ??
       'https://app.meqenet.et/reset-password';
   }
 

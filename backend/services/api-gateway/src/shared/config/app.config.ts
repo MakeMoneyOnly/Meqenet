@@ -20,6 +20,16 @@ const AppConfigSchema = z.object({
         message: 'PORT must be a valid TCP port number',
       }
     ),
+  nodeEnv: z
+    .string()
+    .optional()
+    .default('development')
+    .refine(
+      (val: string) => ['development', 'production', 'test', 'staging'].includes(val),
+      {
+        message: 'NODE_ENV must be one of: development, production, test, staging',
+      }
+    ),
   authServiceUrl: z
     .string()
     .optional()
@@ -51,6 +61,7 @@ export type AppConfig = z.infer<typeof AppConfigSchema>;
 export default registerAs('app', (): AppConfig => {
   const cfg = {
     port: process.env.PORT,
+    nodeEnv: process.env.NODE_ENV,
     authServiceUrl: process.env.AUTH_SERVICE_URL,
     redisHost: process.env.REDIS_HOST,
     redisPort: process.env.REDIS_PORT,

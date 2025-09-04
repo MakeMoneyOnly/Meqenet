@@ -236,6 +236,18 @@ module.exports = [
     },
   },
 
+  // Files that need direct process.env access for legitimate reasons
+  {
+    files: [
+      'backend/services/api-gateway/src/app/app.module.ts',
+      'backend/services/auth-service/setup.ts',
+      'scripts/seed.ts',
+    ],
+    rules: {
+      'internal/no-process-env-outside-config': 'off',
+    },
+  },
+
   // Temporary overrides for problematic files
   {
     files: [

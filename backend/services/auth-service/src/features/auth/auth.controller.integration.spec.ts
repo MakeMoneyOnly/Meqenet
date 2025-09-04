@@ -116,7 +116,7 @@ describe.skip('AuthController (Integration)', () => {
         JwtModule.registerAsync({
           imports: [ConfigModule],
           useFactory: async (
-            configService: ConfigService,
+            _configService: ConfigService,
             secretManager: SecretManagerService
           ) => ({
             privateKey: secretManager.getCurrentJwtPrivateKey(),
@@ -779,7 +779,7 @@ describe.skip('AuthController (Integration)', () => {
         remainingRequests: 0,
       });
 
-      const response = await request(app.getHttpServer())
+      const _response = await request(app.getHttpServer())
         .post('/auth/password-reset-request')
         .send({
           email: testUser.email,
