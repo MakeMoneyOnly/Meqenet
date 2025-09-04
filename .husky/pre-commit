@@ -32,23 +32,18 @@ pnpm exec lint-staged || {
 
 echo "🔐 Phase 2: FinTech security validation..."
 
-# 2. Secret Scanning - Critical for FinTech (Temporarily disabled for CodeQL implementation)
+# 2. Secret Scanning - Critical for FinTech
 echo "  • Scanning for hardcoded secrets..."
-echo "  ⚠️  Secret scanning temporarily disabled for CodeQL implementation commit"
-echo "  📋 Secret scanning will be re-enabled after this commit"
-# Temporarily skip secret scanning for CodeQL implementation
-# TODO: Re-enable after fixing false positive patterns
-# if ! pnpm run security:secrets >/dev/null 2>&1; then
-#   echo "❌ SECRET SCANNING FAILED!"
-#   echo ""
-#   echo "🚨 CRITICAL: Potential hardcoded secrets detected!"
-#   echo "   • API keys, passwords, or tokens may be exposed"
-#   echo "   • Review the output above and remove any sensitive data"
-#   echo "   • Use environment variables or secure vaults instead"
-#   echo ""
-#   exit 1
-# fi
-echo "  ✅ Secret scanning bypassed for CodeQL implementation"
+if ! pnpm run security:secrets >/dev/null 2>&1; then
+  echo "❌ SECRET SCANNING FAILED!"
+  echo ""
+  echo "🚨 CRITICAL: Potential hardcoded secrets detected!"
+  echo "   • API keys, passwords, or tokens may be exposed"
+  echo "   • Review the output above and remove any sensitive data"
+  echo "   • Use environment variables or secure vaults instead"
+  echo ""
+  exit 1
+fi
 
 # 3. Financial Logic Validation
 echo "  • Validating financial logic integrity..."

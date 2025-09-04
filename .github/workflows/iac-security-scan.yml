@@ -19,6 +19,8 @@ jobs:
     permissions:
       contents: read
       security-events: write
+      id-token: write  # Required for SARIF upload
+      actions: read    # Required for workflow status checks
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -35,10 +37,24 @@ jobs:
           exit-code: "0" # Don't fail the build, just report
 
       - name: Upload SARIF file
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         if: always()
+        continue-on-error: true
         with:
           sarif_file: trivy-terraform-results.sarif
+          category: "trivy-terraform"
+
+      - name: Verify SARIF upload success
+        if: always()
+        run: |
+          echo "🔍 Checking if SARIF file was created..."
+          if [ -f "trivy-terraform-results.sarif" ]; then
+            echo "✅ SARIF file exists"
+            ls -la trivy-terraform-results.sarif
+          else
+            echo "❌ SARIF file not found"
+            exit 1
+          fi
 
   checkov:
     name: "Checkov Security Scan"
@@ -46,6 +62,8 @@ jobs:
     permissions:
       contents: read
       security-events: write
+      id-token: write  # Required for SARIF upload
+      actions: read    # Required for workflow status checks
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -63,10 +81,24 @@ jobs:
           soft_fail: true
 
       - name: Upload SARIF file
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         if: always()
+        continue-on-error: true
         with:
           sarif_file: checkov-results.sarif
+          category: "checkov"
+
+      - name: Verify Checkov SARIF upload success
+        if: always()
+        run: |
+          echo "🔍 Checking if Checkov SARIF file was created..."
+          if [ -f "checkov-results.sarif" ]; then
+            echo "✅ Checkov SARIF file exists"
+            ls -la checkov-results.sarif
+          else
+            echo "❌ Checkov SARIF file not found"
+            exit 1
+          fi
 
   terrascan:
     name: "Terrascan Security Scan"
