@@ -68,6 +68,21 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Verify Terraform files exist
+        run: |
+          echo "🔍 Checking for Terraform files in infrastructure directory..."
+          TERRAFORM_FILES=$(find infrastructure -name "*.tf" -type f | wc -l)
+          echo "Found $TERRAFORM_FILES Terraform files"
+
+          if [ "$TERRAFORM_FILES" -gt 0 ]; then
+            echo "✅ Terraform files found:"
+            find infrastructure -name "*.tf" -type f -exec basename {} \;
+          else
+            echo "❌ No Terraform files found in infrastructure directory"
+            echo "This could cause Checkov to fail"
+            exit 1
+          fi
+
       - name: Run Checkov
         id: checkov
         uses: bridgecrewio/checkov-action@v12
@@ -76,27 +91,60 @@ jobs:
           directory: infrastructure/
           framework: terraform
           output_format: sarif
-          output_file_path: checkov-results.sarif
+          output_file: results.sarif
           quiet: true
           soft_fail: true
+
+      - name: Debug Checkov output
+        if: always()
+        run: |
+          echo "🔍 Checking Checkov execution status..."
+          echo "Checkov exit code: ${{ steps.checkov.outcome }}"
+          echo "Checkov conclusion: ${{ steps.checkov.conclusion }}"
+
+          echo "📁 Listing current directory contents..."
+          ls -la
+
+          echo "🔍 Checking if SARIF file exists..."
+          if [ -f "results.sarif" ]; then
+            echo "✅ Checkov SARIF file found!"
+            ls -la results.sarif
+            echo "📄 First few lines of SARIF file:"
+            head -20 results.sarif
+          else
+            echo "❌ Checkov SARIF file not found"
+            echo "📋 Checking for any SARIF files..."
+            find . -name "*.sarif" -type f 2>/dev/null || echo "No SARIF files found"
+          fi
 
       - name: Upload SARIF file
         uses: github/codeql-action/upload-sarif@v3
         if: always()
         continue-on-error: true
         with:
-          sarif_file: checkov-results.sarif
+          sarif_file: results.sarif
           category: "checkov"
 
       - name: Verify Checkov SARIF upload success
         if: always()
         run: |
           echo "🔍 Checking if Checkov SARIF file was created..."
-          if [ -f "checkov-results.sarif" ]; then
+          if [ -f "results.sarif" ]; then
             echo "✅ Checkov SARIF file exists"
-            ls -la checkov-results.sarif
+            ls -la results.sarif
+            # Check if SARIF file has content (not empty)
+            if [ -s "results.sarif" ]; then
+              echo "✅ SARIF file has content"
+            else
+              echo "⚠️ SARIF file exists but is empty (no findings)"
+            fi
           else
             echo "❌ Checkov SARIF file not found"
+            echo "This could indicate:"
+            echo "  - Checkov failed to run"
+            echo "  - No Terraform files found to scan"
+            echo "  - Configuration error in Checkov action"
+            echo "Check the debug output above for more details"
             exit 1
           fi
 
@@ -119,7 +167,7 @@ jobs:
           policy_type: "aws"
           only_warn: true
           sarif_upload: true
-          working_directory: infrastructure/
+          iac_dir: infrastructure/
 
   kics:
     name: "KICS Security Scan"
