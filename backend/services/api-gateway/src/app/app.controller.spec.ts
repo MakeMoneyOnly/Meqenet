@@ -1,8 +1,10 @@
 import { INestApplication } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 
 import { AppController } from './app.controller';
+import appConfig from '../shared/config/app.config';
 
 describe('AppController (Security Headers Validation)', () => {
   let app: INestApplication;
@@ -10,6 +12,13 @@ describe('AppController (Security Headers Validation)', () => {
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       controllers: [AppController],
+      imports: [
+        ConfigModule.forRoot({
+          isGlobal: true,
+          load: [appConfig],
+          envFilePath: ['.env.test', '.env'],
+        }),
+      ],
     }).compile();
 
     app = moduleFixture.createNestApplication();
@@ -17,7 +26,9 @@ describe('AppController (Security Headers Validation)', () => {
   });
 
   afterEach(async () => {
-    await app.close();
+    if (app) {
+      await app.close();
+    }
   });
 
   describe('Security Headers Validation', () => {
