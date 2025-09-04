@@ -1,14 +1,11 @@
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import Redis, { SetOptions } from 'ioredis';
+import Redis from 'ioredis';
+import RedisMock from 'ioredis-mock';
 
 import { AppConfig } from '../config/app.config';
 
-interface RedisSetOptions extends SetOptions {
-  EX?: number; // Expire time in seconds
-  NX?: boolean; // Only set if key doesn't exist
-  XX?: boolean; // Only set if key exists
-}
+// no-op
 
 @Injectable()
 export class RedisService implements OnModuleDestroy {
@@ -18,11 +15,27 @@ export class RedisService implements OnModuleDestroy {
     const redisHost = this.configService.get('redisHost', { infer: true });
     const redisPort = this.configService.get('redisPort', { infer: true });
 
-    this.redisClient = new Redis({
-      host: redisHost,
-      port: redisPort,
-      // Add any other Redis options here, like password or db
-    });
+    const useMock =
+      this.configService.get<string>('USE_REDIS_MOCK') === 'true' || this.configService.get<string>('NODE_ENV') === 'test';
+
+    if (useMock) {
+      try {
+        // Use in-memory Redis mock for tests/E2E to avoid external dependency
+        // Cast to align with ioredis Redis type interface usage
+        this.redisClient = new (RedisMock as unknown as typeof Redis)();
+      } catch (error) {
+        throw error;
+      }
+    } else {
+      this.redisClient = new Redis({
+        host: redisHost,
+        port: redisPort,
+        retryDelayOnFailover: 100,
+        maxRetriesPerRequest: 3,
+        lazyConnect: true,
+        // Add any other Redis options here, like password or db
+      });
+    }
   }
 
   onModuleDestroy(): void {
@@ -39,21 +52,15 @@ export class RedisService implements OnModuleDestroy {
     ttlSeconds?: number,
     mode?: 'NX' | 'XX'
   ): Promise<string | null> {
-    // ioredis 5.x API - use proper parameter objects
-    const options: RedisSetOptions = {};
-
+    // Build varargs for ioredis: set key value [EX seconds] [NX|XX]
+    const args: Array<string | number> = [key, value];
     if (ttlSeconds && ttlSeconds > 0) {
-      options.EX = ttlSeconds;
+      args.push('EX', ttlSeconds);
     }
-
     if (mode) {
-      if (mode === 'NX') {
-        options.NX = true;
-      } else if (mode === 'XX') {
-        options.XX = true;
-      }
+      args.push(mode);
     }
-
-    return this.redisClient.set(key, value, options);
+    const res = await this.redisClient.set(...args);
+    return res;
   }
 }

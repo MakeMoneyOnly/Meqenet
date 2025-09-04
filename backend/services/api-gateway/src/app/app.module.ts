@@ -26,15 +26,16 @@ import { AppController } from './app.controller';
       isGlobal: true,
       load: [appConfig],
     }),
-    ThrottlerModule.forRoot([
+    // Disable ThrottlerModule in test mode to avoid Redis dependency
+    ...(process.env.NODE_ENV === 'test' ? [] : [ThrottlerModule.forRoot([
       {
         ttl: 60_000,
         limit: 100,
       },
-    ]),
+    ])]),
     LoggerModule.forRootAsync(pinoConfig),
-    IdempotencyModule,
-    RedisModule,
+    // Disable Redis-dependent modules in test mode
+    ...(process.env.NODE_ENV === 'test' ? [] : [IdempotencyModule, RedisModule]),
   ],
   controllers: [AppController],
   providers: [
@@ -42,28 +43,34 @@ import { AppController } from './app.controller';
       provide: APP_FILTER,
       useClass: GlobalExceptionFilter,
     },
-    {
+    // Disable ThrottlerGuard in test mode
+    ...(process.env.NODE_ENV === 'test' ? [] : [{
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
-    },
+    }]),
     {
       provide: APP_INTERCEPTOR,
       useClass: LoggingInterceptor,
     },
-    {
+    // Disable CachingInterceptor in test mode since Redis is not available
+    ...(process.env.NODE_ENV === 'test' ? [] : [{
       provide: APP_INTERCEPTOR,
       useClass: CachingInterceptor,
-    },
+    }]),
   ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
-    consumer
-      .apply(IdempotencyMiddleware)
-      .forRoutes(
-        { path: '*', method: RequestMethod.POST },
-        { path: '*', method: RequestMethod.PUT },
-        { path: '*', method: RequestMethod.PATCH }
-      );
+    // IdempotencyMiddleware is disabled in test mode since RedisModule is not loaded
+    const isTest = process.env.NODE_ENV === 'test';
+    if (!isTest) {
+      consumer
+        .apply(IdempotencyMiddleware)
+        .forRoutes(
+          { path: '*', method: RequestMethod.POST },
+          { path: '*', method: RequestMethod.PUT },
+          { path: '*', method: RequestMethod.PATCH }
+        );
+    }
   }
 }

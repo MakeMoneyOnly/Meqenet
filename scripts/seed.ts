@@ -2,7 +2,6 @@ import { PrismaClient, UserRole, KycStatus, RiskLevel } from '@prisma/client';
 import { faker } from '@faker-js/faker';
 import * as argon2 from 'argon2';
 import { createCipheriv, randomBytes, scryptSync } from 'crypto';
-import { ConfigService } from '../backend/shared/src/config/config.service';
 
 // Constants
 const MIN_ENCRYPTION_KEY_LENGTH = 32;
@@ -13,73 +12,23 @@ const FAYDA_ID_PADDING_LENGTH = 2;
 const FAYDA_ID_PADDING_CHAR = '0';
 const AES_IV_LENGTH = 16;
 
-// Custom locale for Ethiopian data
-interface EthiopianLocale {
-  name: {
-    firstName: string[];
-    lastName: string[];
-  };
-  phone: {
-    formats: string[];
-  };
-}
+// Ethiopian name arrays for seeding
+const ethiopianFirstNames = [
+  'Abebe', 'Chala', 'Desta', 'Fikre', 'Gebre', 'Haile', 'Ibrahim', 'Jemal',
+  'Kaleb', 'Lidet', 'Mekonnen', 'Negasi', 'Oli', 'Paulos', 'Qetsela',
+  'Robel', 'Samuel', 'Tadesse', 'Umar', 'Yonas',
+];
 
-const ethiopianLocale: EthiopianLocale = {
-  name: {
-    firstName: [
-      'Abebe',
-      'Chala',
-      'Desta',
-      'Fikre',
-      'Gebre',
-      'Haile',
-      'Ibrahim',
-      'Jemal',
-      'Kaleb',
-      'Lidet',
-      'Mekonnen',
-      'Negasi',
-      'Oli',
-      'Paulos',
-      'Qetsela',
-      'Robel',
-      'Samuel',
-      'Tadesse',
-      'Umar',
-      'Yonas',
-    ],
-    lastName: [
-      'Bekele',
-      'Demissie',
-      'Girma',
-      'Hailemariam',
-      'Kebede',
-      'Lemma',
-      'Mamo',
-      'Nigussie',
-      'Ojera',
-      'Petros',
-      'Regassa',
-      'Sisay',
-      'Tsegaye',
-      'Woldemichael',
-      'Zewde',
-    ],
-  },
-  phone: {
-    formats: ['09########', '+2519########'],
-  },
-};
-
-faker.locale = 'en'; // Base locale
-faker.locales.et = ethiopianLocale;
-faker.locale = 'et';
+const ethiopianLastNames = [
+  'Bekele', 'Demissie', 'Girma', 'Hailemariam', 'Kebede', 'Lemma', 'Mamo',
+  'Nigussie', 'Ojera', 'Petros', 'Regassa', 'Sisay', 'Tsegaye',
+  'Woldemichael', 'Zewde',
+];
 
 const prisma = new PrismaClient();
-const configService = new ConfigService();
 
 // Encryption setup
-const encryptionKey = configService.get('E2E_DB_ENCRYPTION_KEY');
+const encryptionKey = process.env.E2E_DB_ENCRYPTION_KEY;
 if (!encryptionKey || encryptionKey.length < MIN_ENCRYPTION_KEY_LENGTH) {
   throw new Error(
     'E2E_DB_ENCRYPTION_KEY must be set and be at least 32 characters long.'
@@ -110,11 +59,13 @@ async function main(): Promise<void> {
 
   // Create Users
   for (let i = 0; i < SAMPLE_USERS_COUNT; i++) {
-    const firstName = faker.name.firstName();
-    const lastName = faker.name.lastName();
-    const email = faker.internet
-      .email(firstName, lastName, 'meqenet.et')
-      .toLowerCase();
+    const firstName = ethiopianFirstNames[i % ethiopianFirstNames.length];
+    const lastName = ethiopianLastNames[i % ethiopianLastNames.length];
+    const email = faker.internet.email({
+      firstName: firstName,
+      lastName: lastName,
+      provider: 'meqenet.et'
+    }).toLowerCase();
     const faydaId = `${FAYDA_ID_PREFIX}${i.toString().padStart(FAYDA_ID_PADDING_LENGTH, FAYDA_ID_PADDING_CHAR)}`;
 
     await prisma.user.create({

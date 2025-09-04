@@ -140,6 +140,7 @@ function simpleSecretScan() {
     process.exit(1);
   } else {
     console.log('✅ No obvious secrets detected with pattern scan');
+    process.exit(0); // Success
   }
 }
 
@@ -168,25 +169,48 @@ if (isDockerAvailable()) {
       console.log('🔄 Falling back to pattern-based scanning...');
       simpleSecretScan();
     } else {
-      // Parse Trufflehog JSON output to check for secrets
+      // Parse the Trufflehog output
       const output = result.stdout || '';
       const stderr = result.stderr || '';
 
-      // Look for verified secrets in the output
-      const hasVerifiedSecrets =
-        output.includes('"verified":true') ||
-        output.includes('verified_secrets') ||
-        stderr.includes('verified_secrets');
+      // Parse the Trufflehog JSON output to check for actual secrets
+      let verifiedSecrets = 0;
+      let unverifiedSecrets = 0;
 
-      if (hasVerifiedSecrets) {
+      try {
+        // Try to parse JSON from stderr (Trufflehog outputs results to stderr)
+        const lines = stderr.split('\n').filter(line => line.trim());
+        for (const line of lines) {
+          if (line.includes('verified_secrets') || line.includes('unverified_secrets')) {
+            try {
+              const data = JSON.parse(line);
+              verifiedSecrets = data.verified_secrets || 0;
+              unverifiedSecrets = data.unverified_secrets || 0;
+              break;
+            } catch (e) {
+              // Not a valid JSON line, continue
+            }
+          }
+        }
+      } catch (e) {
+        console.log('⚠️ Could not parse Trufflehog JSON output');
+      }
+
+      if (verifiedSecrets > 0) {
         console.error('🚨 VERIFIED SECRETS DETECTED!');
+        console.error(`Found ${verifiedSecrets} verified secrets`);
         console.error('Review the Trufflehog output above for details.');
         process.exit(1);
+      } else if (unverifiedSecrets > 0) {
+        console.log(`⚠️ Found ${unverifiedSecrets} unverified secrets - manual review recommended`);
+        console.log('🔄 Falling back to pattern-based scanning for additional verification...');
+        simpleSecretScan();
       } else if (result.status === 0) {
-        console.log('✅ No verified secrets detected by Trufflehog');
+        console.log('✅ No secrets detected by Trufflehog');
+        process.exit(0); // Success
       } else {
         console.log(
-          '⚠️ Trufflehog completed with warnings but no verified secrets found'
+          '⚠️ Trufflehog completed with warnings but no secrets found'
         );
         console.log(
           '🔄 Falling back to pattern-based scanning for additional verification...'

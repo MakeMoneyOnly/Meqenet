@@ -18,9 +18,7 @@
     },
     "e2e-with-server": {
       "executor": "@nx/vite:test",
-      "options": {
-        "devServerTarget": "api-gateway:serve-static"
-      }
+      "options": {}
     }
   }
 }

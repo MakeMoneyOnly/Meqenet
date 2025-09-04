@@ -16,6 +16,9 @@ export default defineConfig({
     },
     globals: true,
     environment: 'node',
+    setupFiles: ['src/support/test-setup.ts'],
+    globalSetup: ['src/support/global-setup.ts'],
+    globalTeardown: ['src/support/global-teardown.ts'],
     include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
   },
 });
