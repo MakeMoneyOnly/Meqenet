@@ -27,17 +27,11 @@ fi
 pnpm exec lint-staged || {
   echo "❌ Code quality checks failed"
   echo ""
-  echo "💡 Troubleshooting tips:"
-  echo "   • For ESLint errors, run: pnpm eslint --fix <file>"
-  echo "   • For formatting issues, run: pnpm prettier --write <file>"
-  echo "   • If memory issues persist, try staging fewer files at once"
-  echo "   • Large commits (>50 files): Consider breaking into smaller commits"
+  echo "📋 Issues found in staged files. Please fix the following:"
+  echo "   • Run: pnpm eslint --fix <problematic-file>"
+  echo "   • Run: pnpm prettier --write <problematic-file>"
   echo ""
-  echo "🔧 Quick fix attempt..."
-  # Try to auto-fix common issues
-  git diff --cached --name-only | head -10 | xargs -I {} sh -c 'echo "Attempting to fix {}"; pnpm eslint --fix "{}" 2>/dev/null || true'
-  echo ""
-  echo "Please review and re-commit, or run: git commit --no-verify"
+  echo "🚫 Commit blocked. Fix issues and try again, or use --no-verify to bypass."
   exit 1
 }
 
