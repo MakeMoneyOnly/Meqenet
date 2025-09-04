@@ -14,6 +14,8 @@ export interface OpenTelemetryConfig {
   serviceName?: string;
   jaegerEndpoint?: string;
   otelEndpoint?: string;
+  otelExporterOtlpEndpoint?: string;
+  npmPackageVersion?: string;
 }
 
 export function initializeOpenTelemetry(config?: OpenTelemetryConfig): void {
@@ -22,6 +24,8 @@ export function initializeOpenTelemetry(config?: OpenTelemetryConfig): void {
 
     const nodeEnv = config?.nodeEnv ?? 'development';
     const serviceName = config?.serviceName ?? 'auth-service';
+    const npmPackageVersion = config?.npmPackageVersion ?? '0.0.0';
+    const otelExporterOtlpEndpoint = config?.otelExporterOtlpEndpoint;
 
     const level =
       nodeEnv === 'production' ? DiagLogLevel.ERROR : DiagLogLevel.INFO;
@@ -31,8 +35,7 @@ export function initializeOpenTelemetry(config?: OpenTelemetryConfig): void {
     const resource = new Resource({
       [SemanticResourceAttributes.SERVICE_NAME]: serviceName,
       [SemanticResourceAttributes.DEPLOYMENT_ENVIRONMENT]: nodeEnv,
-      [SemanticResourceAttributes.SERVICE_VERSION]:
-        process.env.npm_package_version || '0.0.0',
+      [SemanticResourceAttributes.SERVICE_VERSION]: npmPackageVersion,
     });
 
     // Prefer Jaeger exporter if endpoint provided; otherwise try OTLP
@@ -43,34 +46,29 @@ export function initializeOpenTelemetry(config?: OpenTelemetryConfig): void {
           endpoint: config.jaegerEndpoint,
         })
       );
-    } else if (
-      config?.otelEndpoint ||
-      process.env.OTEL_EXPORTER_OTLP_ENDPOINT
-    ) {
+    } else if (config?.otelEndpoint || otelExporterOtlpEndpoint) {
       traceExporters.push(
         new OTLPTraceExporter({
           // grpc endpoint (e.g., http://otel-collector:4317)
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          url: (config?.otelEndpoint ||
-            process.env.OTEL_EXPORTER_OTLP_ENDPOINT)!,
+          url: (config?.otelEndpoint || otelExporterOtlpEndpoint)!,
         })
       );
     }
 
     // Optional: logs exporter via OTLP if available
     const logExporter =
-      config?.otelEndpoint || process.env.OTEL_EXPORTER_OTLP_ENDPOINT
+      config?.otelEndpoint || otelExporterOtlpEndpoint
         ? new OTLPLogExporter({
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            url: (config?.otelEndpoint ||
-              process.env.OTEL_EXPORTER_OTLP_ENDPOINT)!,
+            url: (config?.otelEndpoint || otelExporterOtlpEndpoint)!,
           })
         : undefined;
 
     sdk = new NodeSDK({
       instrumentations: [getNodeAutoInstrumentations()],
-      resource,
-      traceExporter: traceExporters[0] as any, // use first configured exporter
+      resource: resource as Resource,
+      traceExporter: traceExporters[0] as OTLPTraceExporter | JaegerExporter, // use first configured exporter
       // logs are optional; NodeSDK will ignore undefined
       logRecordProcessor: logExporter ? undefined : undefined,
     });

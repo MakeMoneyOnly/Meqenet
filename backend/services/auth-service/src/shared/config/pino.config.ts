@@ -79,8 +79,8 @@ export const pinoConfig = {
             | undefined;
           return {
             correlationId: requestId ?? 'unknown',
-            traceId: spanContext?.traceId,
-            spanId: spanContext?.spanId,
+            ...(spanContext?.traceId && { traceId: spanContext.traceId }),
+            ...(spanContext?.spanId && { spanId: spanContext.spanId }),
           };
         },
         ...(nodeEnv === 'production'

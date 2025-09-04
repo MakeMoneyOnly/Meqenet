@@ -16,6 +16,7 @@ import { SecurityMonitoringService } from './security-monitoring.service';
 const RSA_KEY_SIZE = 2048;
 const TIMESTAMP_BASE = 36;
 const RANDOM_STRING_LENGTH = 9;
+// These constants are used for extracting RSA key components
 const MODULUS_START = 9;
 const MODULUS_SIZE = 256;
 const EXPONENT_START = 265;
@@ -109,7 +110,7 @@ export class SecretManagerService implements OnModuleInit {
         this.previousPublicKey = {
           kid: keys.previousKid,
           publicKey: keys.previousPublicKey,
-          rotatedAt: keys.rotatedAt,
+          rotatedAt: keys.rotatedAt || new Date().toISOString(),
         };
       }
 
@@ -460,6 +461,45 @@ export class SecretManagerService implements OnModuleInit {
     } catch (error) {
       this.logger.error('❌ Failed to list secrets:', error);
       throw error;
+    }
+  }
+
+  /**
+   * Extract modulus and exponent from RSA public key PEM
+   */
+  private async extractRSAKeyDetails(
+    publicKeyPem: string
+  ): Promise<{ modulus: string; exponent: string }> {
+    try {
+      // Remove PEM header/footer and decode base64
+      const base64Key = publicKeyPem
+        .replace(/-----BEGIN PUBLIC KEY-----/, '')
+        .replace(/-----END PUBLIC KEY-----/, '')
+        .replace(/\s/g, '');
+
+      const keyBuffer = Buffer.from(base64Key, 'base64');
+
+      // Extract modulus (big-endian, 256 bytes starting at offset 9)
+      const modulus = keyBuffer.subarray(
+        MODULUS_START,
+        MODULUS_START + MODULUS_SIZE
+      );
+      const modulusB64 = modulus.toString('base64');
+
+      // Extract exponent (big-endian, 3 bytes starting at offset 265)
+      const exponent = keyBuffer.subarray(
+        EXPONENT_START,
+        EXPONENT_START + EXPONENT_SIZE
+      );
+      const exponentB64 = exponent.toString('base64');
+
+      return {
+        modulus: modulusB64,
+        exponent: exponentB64,
+      };
+    } catch (error) {
+      this.logger.error('❌ Failed to extract RSA key details:', error);
+      throw new Error('Failed to extract RSA key components');
     }
   }
 }

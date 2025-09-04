@@ -121,7 +121,7 @@ export class HealthController {
   async readiness(): Promise<HealthCheckResult> {
     return this.health.check([
       // Database must be available
-      (): HealthIndicatorResult => this.checkDatabase(),
+      async (): Promise<HealthIndicatorResult> => this.checkDatabase(),
 
       // Critical external services must be reachable
       (): HealthIndicatorResult => this.checkCriticalServices(),
@@ -140,7 +140,7 @@ export class HealthController {
   @HealthCheck()
   async database(): Promise<HealthCheckResult> {
     return this.health.check([
-      (): HealthIndicatorResult => this.checkDatabase(),
+      async (): Promise<HealthIndicatorResult> => this.checkDatabase(),
     ]);
   }
 
@@ -168,7 +168,7 @@ export class HealthController {
     const health = await this.prisma.healthCheck();
     return {
       database: {
-        status: (health.status === 'healthy' ? 'up' : 'down') as const,
+        status: health.status === 'healthy' ? 'up' : 'down',
         responseTime: `${Date.now() - start}ms`,
         error: health.error,
       },
@@ -181,7 +181,7 @@ export class HealthController {
       const jwks = await this.secrets.getJWKS();
       return {
         secrets_manager: {
-          status: (jwks.keys && jwks.keys.length > 0 ? 'up' : 'down') as const,
+          status: jwks.keys && jwks.keys.length > 0 ? 'up' : 'down',
           keys: jwks.keys.length,
         },
       };
@@ -203,7 +203,7 @@ export class HealthController {
       const ok = plain === 'ping';
       return {
         kms: {
-          status: (ok ? 'up' : 'down') as const,
+          status: ok ? 'up' : 'down',
         },
       };
     } catch (error) {

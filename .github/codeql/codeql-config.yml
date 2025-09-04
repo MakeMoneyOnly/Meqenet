@@ -1,15 +1,38 @@
 ---
-name: "Meqenet CodeQL Configuration"
+name: "Meqenet CodeQL Configuration - FinTech Enterprise"
 
 # CodeQL configuration for fintech-grade security analysis
-# Focused on TypeScript/JavaScript code only (no Java/Kotlin in this project)
+# Enterprise-grade configuration optimized for BNPL and financial services
+# Focused on TypeScript/JavaScript with comprehensive security coverage
 
 # Global settings
 disable-default-queries: false
+
+# Enterprise-grade query suites
 queries:
-  # TypeScript/JavaScript Security Queries (Primary)
+  # Core Security Analysis
   - uses: security-and-quality
   - uses: security-extended
+
+  # FinTech-Specific Security Queries
+  - uses: codeql/javascript-queries:Security/CWE-020-ImproperInputValidation
+  - uses: codeql/javascript-queries:Security/CWE-022-PathTraversal
+  - uses: codeql/javascript-queries:Security/CWE-079-XSS
+  - uses: codeql/javascript-queries:Security/CWE-089-SQLInjection
+  - uses: codeql/javascript-queries:Security/CWE-200-InformationDisclosure
+  - uses: codeql/javascript-queries:Security/CWE-287-ImproperAuthentication
+  - uses: codeql/javascript-queries:Security/CWE-311-CryptographicIssues
+  - uses: codeql/javascript-queries:Security/CWE-327-UseOfRiskyCryptographicAlgorithm
+  - uses: codeql/javascript-queries:Security/CWE-328-UseOfWeakHash
+  - uses: codeql/javascript-queries:Security/CWE-502-DeserializationOfUntrustedData
+  - uses: codeql/javascript-queries:Security/CWE-601-OpenRedirect
+  - uses: codeql/javascript-queries:Security/CWE-918-ServerSideRequestForgery
+
+  # Financial Services Specific
+  - uses: codeql/javascript-queries:Security/CWE-922-InsecureStorageOfSensitiveInformation
+  - uses: codeql/javascript-queries:Security/CWE-319-CleartextTransmissionOfSensitiveInformation
+  - uses: codeql/javascript-queries:Security/CWE-326-UseOfWeakCryptography
+  - uses: codeql/javascript-queries:Security/CWE-338-UseOfCryptographicallyWeakPseudoRandomNumberGenerator
 
 # Multi-language security configuration
 paths:
@@ -66,22 +89,78 @@ typescript:
   - "js/dangerous-permissions"
   - "js/improper-code-sanitization"
 
-# Severity thresholds for fintech compliance
+# Enterprise-grade severity thresholds for fintech compliance
 severity:
-  critical: ["sql-injection", "hardcoded-credentials", "insecure-crypto"]
-  high: ["cleartext-storage", "cleartext-traffic", "dangerous-permissions"]
-  medium: ["webview-javascript-enabled", "overly-permissive-permissions"]
-  low: ["insecure-random", "implicit-pendingintent"]
+  critical:
+    - "sql-injection"
+    - "hardcoded-credentials"
+    - "insecure-crypto"
+    - "cwe-922"  # Insecure storage of sensitive information
+    - "cwe-319"  # Cleartext transmission of sensitive information
+    - "cwe-502"  # Deserialization of untrusted data
+    - "cwe-918"  # Server-side request forgery
+  high:
+    - "cleartext-storage"
+    - "cleartext-traffic"
+    - "dangerous-permissions"
+    - "cwe-020"  # Improper input validation
+    - "cwe-022"  # Path traversal
+    - "cwe-079"  # Cross-site scripting (XSS)
+    - "cwe-287"  # Improper authentication
+    - "cwe-311"  # Cryptographic issues
+    - "cwe-601"  # Open redirect
+  medium:
+    - "webview-javascript-enabled"
+    - "overly-permissive-permissions"
+    - "cwe-200"  # Information disclosure
+    - "cwe-327"  # Use of risky cryptographic algorithm
+    - "cwe-328"  # Use of weak hash
+  low:
+    - "insecure-random"
+    - "implicit-pendingintent"
+    - "cwe-338"  # Weak pseudo-random number generator
 
-# Custom query suites for fintech-specific security (TypeScript/JavaScript only)
+# Enterprise-grade custom query suites for fintech-specific security
 query-suites:
-  - name: "fintech-security"
-    description: "Fintech-specific security queries for Meqenet"
+  - name: "fintech-security-core"
+    description: "Core fintech security queries for Meqenet BNPL platform"
     queries:
+      # Sensitive Data Protection
       - "js/fintech/sensitive-data-exposure"
       - "ts/fintech/sensitive-data-exposure"
+      - "js/fintech/pci-dss-compliance"
+      - "ts/fintech/pci-dss-compliance"
+
+      # Payment Security
       - "js/fintech/insecure-data-transmission"
       - "ts/fintech/insecure-data-transmission"
+      - "js/fintech/payment-data-validation"
+      - "ts/fintech/payment-data-validation"
+
+      # Authentication & Authorization
+      - "js/fintech/session-management"
+      - "ts/fintech/session-management"
+      - "js/fintech/access-control"
+      - "ts/fintech/access-control"
+
+      # Marketplace Security
+      - "js/fintech/marketplace-data-integrity"
+      - "ts/fintech/marketplace-data-integrity"
+
+  - name: "fintech-compliance"
+    description: "Regulatory compliance queries for Ethiopian financial services"
+    queries:
+      # Ethiopian Financial Regulations
+      - "js/compliance/nbe-requirements"
+      - "ts/compliance/nbe-requirements"
+
+      # Data Protection
+      - "js/compliance/data-privacy"
+      - "ts/compliance/data-privacy"
+
+      # Audit Trail Requirements
+      - "js/compliance/audit-logging"
+      - "ts/compliance/audit-logging"
 
 # Exclude false positives for known safe patterns
 exclude:
@@ -102,11 +181,61 @@ exclude:
     - "js/cleartext-transmission" # May be needed for local development
     - "js/insecure-random" # May be acceptable for non-cryptographic purposes
 
-# Performance optimization
-threads: 2
-timeout: 300 # 5 minutes per query
+# Enterprise-grade performance optimization
+threads: 4  # Increased for enterprise CI/CD performance
+timeout: 600  # 10 minutes per query for complex fintech analysis
+ram: 8192  # 8GB RAM allocation for enterprise-grade analysis
 
-# Output configuration
+# Output configuration for enterprise compliance
 output:
   format: sarif-latest
   file: codeql-results.sarif
+
+# Enterprise-grade analysis configuration
+analysis:
+  # Enable incremental analysis for faster subsequent runs
+  incremental: true
+
+  # Configure analysis scope for fintech applications
+  scope:
+    # Analyze all source files, including generated ones for compliance
+    include_generated: true
+
+    # Focus on critical financial services paths
+    prioritize_paths:
+      - "backend/services/auth-service/src"
+      - "backend/services/payment-service/src"
+      - "backend/services/user-service/src"
+      - "frontend/apps/app/src/payment"
+      - "frontend/apps/app/src/auth"
+
+# Compliance reporting configuration
+reporting:
+  # Enable detailed CWE mapping for regulatory compliance
+  cwe_mapping: true
+
+  # Include severity levels in output for compliance dashboards
+  include_severity: true
+
+  # Generate compliance summary for audit purposes
+  compliance_summary: true
+
+  # Ethiopian financial regulations compliance
+  regulatory_compliance:
+    - "NBE-Directives"
+    - "PCI-DSS"
+    - "Data-Protection"
+
+# Quality gates for enterprise CI/CD
+quality_gates:
+  # Block builds with critical security issues
+  fail_on_critical: true
+
+  # Warning threshold for high-severity issues
+  warn_on_high: true
+
+  # Maximum allowed issues before build failure
+  max_issues: 100
+
+  # Require zero false positives for critical issues
+  zero_tolerance_critical: true

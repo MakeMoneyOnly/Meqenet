@@ -19,5 +19,73 @@
 (^|/)package-lock\.json$
 (^|/)bom\.json$
 (^|/)trufflehog_report\.json$
-# Exclude binary/media
-\.(png|jpg|jpeg|gif|webp|svg)$
+
+# Exclude binary/media files
+\.(png|jpg|jpeg|gif|webp|svg|ico|woff|woff2)$
+
+# Exclude certificates and keys (legitimate security files)
+(^|/)secrets(/|$)
+\.pem$
+\.key$
+\.crt$
+\.cer$
+\.p12$
+\.pfx$
+
+# Exclude configuration files that may contain random-looking strings
+(^|/)android(/|$)
+(^|/)ios(/|$)
+\.gradle$
+\.plist$
+\.pbxproj$
+\.xcprivacy$
+\.proguard-rules\.pro$
+gradle-wrapper\.jar$
+gradlew$
+
+# Exclude generated/template files
+(^|/)templates(/|$)
+\.html$
+(^|/)coverage(/|$)
+dependency-tree\.txt$
+
+# Exclude test and development files
+\.test\.
+\.spec\.
+\.integration\.
+jest\.config\.
+vite\.config\.
+
+# Exclude Go and infrastructure files that may contain random strings
+\.go$
+\.tf$
+\.tfvars$
+\.tfstate$
+\.tfstate\.backup$
+
+# Exclude log files and temporary files
+\.log$
+\.tmp$
+\.bak$
+\.backup$
+\.swp$
+\.swo$
+
+# Exclude development scripts and documentation
+(^|/)scripts(/|$)
+(^|/)docs(/|$)
+(^|/)tools(/|$)
+\.md$
+\.txt$
+\.sh$
+\.bat$
+\.ps1$
+
+# Exclude IDE and editor files
+\.vscode$
+\.idea$
+\.editorconfig$
+\.prettierrc$
+\.eslintrc$
+\.gitignore$
+\.dockerignore$

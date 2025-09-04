@@ -6,6 +6,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import compression from 'compression';
 import helmet from 'helmet';
 import { PinoLogger } from 'nestjs-pino';
+import { Request, Response, NextFunction } from 'express';
 import {
   context as otContext,
   trace as otTrace,
@@ -55,7 +56,7 @@ async function bootstrap(): Promise<void> {
     initializeOpenTelemetry(otelConfig);
 
     // Request ID middleware and OTel correlation
-    app.use((req, res, next) => {
+    app.use((req: Request, res: Response, next: NextFunction) => {
       const incoming = req.headers['x-request-id'] as string | undefined;
       const requestId = incoming || randomUUID();
       res.setHeader('X-Request-ID', requestId);
@@ -129,7 +130,7 @@ async function bootstrap(): Promise<void> {
       'security.permissionsPolicy'
     );
     if (permissionsPolicy) {
-      app.use((req, res, next) => {
+      app.use((_req: Request, res: Response, next: NextFunction) => {
         res.setHeader('Permissions-Policy', permissionsPolicy);
         next();
       });
@@ -194,7 +195,10 @@ async function bootstrap(): Promise<void> {
 
     // Centralized CORS configuration
     app.enableCors({
-      origin: (origin, callback) => {
+      origin: (
+        origin: string | undefined,
+        callback: (err: Error | null, allow?: boolean) => void
+      ) => {
         if (!origin || corsOrigins.includes(origin)) {
           return callback(null, true);
         }
@@ -214,7 +218,7 @@ async function bootstrap(): Promise<void> {
       optionsSuccessStatus: 204,
     });
 
-    app.use((req, res, next) => {
+    app.use((_req: Request, res: Response, next: NextFunction) => {
       res.vary('Origin');
       next();
     });

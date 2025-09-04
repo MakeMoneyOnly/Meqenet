@@ -16,13 +16,17 @@ import { LoginUserDto } from './dto/login-user.dto';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { GlobalExceptionFilter } from '../../shared/filters/global-exception.filter';
 
-class PasswordResetRequestDto {
+class PasswordResetRequestDtoInline {
   @IsEmail()
   @IsNotEmpty()
   email!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  clientId!: string;
 }
 
-class PasswordResetConfirmDto {
+class PasswordResetConfirmDtoInline {
   @IsString()
   @IsNotEmpty()
   token!: string;
@@ -30,6 +34,10 @@ class PasswordResetConfirmDto {
   @IsString()
   @MinLength(12)
   newPassword!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  confirmPassword!: string;
 }
 
 @Controller('auth')
@@ -60,21 +68,24 @@ export class AuthController {
   @Post('password-reset-request')
   @HttpCode(HttpStatus.NO_CONTENT)
   async passwordResetRequest(
-    @Body() dto: PasswordResetRequestDto,
+    @Body() dto: PasswordResetRequestDtoInline,
     @Req() req: Request
   ): Promise<void> {
-    await this.authService.requestPasswordReset(
-      dto.email,
-      req.ip || 'unknown',
-      (req.headers['user-agent'] as string) || undefined
-    );
+    const userAgent = Array.isArray(req.headers['user-agent'])
+      ? req.headers['user-agent'][0]
+      : req.headers['user-agent'];
+
+    await this.authService.requestPasswordReset(dto, {
+      ipAddress: req.ip || 'unknown',
+      userAgent: userAgent || undefined,
+    });
   }
 
   @Post('password-reset-confirm')
   @HttpCode(HttpStatus.NO_CONTENT)
   async passwordResetConfirm(
-    @Body() dto: PasswordResetConfirmDto
+    @Body() dto: PasswordResetConfirmDtoInline
   ): Promise<void> {
-    await this.authService.confirmPasswordReset(dto.token, dto.newPassword);
+    await this.authService.confirmPasswordReset(dto);
   }
 }

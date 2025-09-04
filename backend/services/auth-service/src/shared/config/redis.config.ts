@@ -15,7 +15,7 @@ export class RedisConfigService {
 
   get port(): number {
     const port = this.configService.get('redisPort', { infer: true });
-    return port ? parseInt(port, 10) : DEFAULT_REDIS_PORT;
+    return typeof port === 'number' ? port : DEFAULT_REDIS_PORT;
   }
 
   get connection(): { host: string; port: number } {
