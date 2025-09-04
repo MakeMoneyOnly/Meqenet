@@ -58,6 +58,11 @@ export class AppController {
   ): void {
     this.httpCounter.labels({ method: 'GET', path: '/', status: '200' }).inc();
 
+    // Request ID
+    const requestId =
+      (req.headers['x-request-id'] as string) || this.generateRequestId();
+    res.setHeader('X-Request-ID', requestId);
+
     // Security Headers
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('X-Frame-Options', 'DENY');
@@ -66,14 +71,8 @@ export class AppController {
       'Strict-Transport-Security',
       'max-age=31536000; includeSubDomains'
     );
-    res.setHeader('X-Requested-With', 'XMLHttpRequest');
 
-    // Request ID
-    const requestId =
-      (req.headers['x-request-id'] as string) || this.generateRequestId();
-    res.setHeader('X-Request-ID', requestId);
-
-    // CORS Headers - Always set default CORS headers for GET requests
+    // CORS Headers
     const allowedOrigins = [
       'https://meqenet.et',
       'https://app.meqenet.et',
@@ -93,23 +92,15 @@ export class AppController {
       return;
     }
 
-    res.setHeader('Access-Control-Allow-Origin', allowedOrigins[0]); // Default to first allowed origin
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader(
-      'Access-Control-Allow-Methods',
-      'GET, POST, PUT, DELETE, OPTIONS'
-    );
-    res.setHeader(
-      'Access-Control-Allow-Headers',
-      'Content-Type, Authorization, X-Request-ID'
-    );
-
-    // Override with specific origin if provided and allowed
+    // Set CORS headers for allowed origins
     if (origin && allowedOrigins.includes(origin)) {
       res.setHeader('Access-Control-Allow-Origin', origin);
+    } else if (allowedOrigins.length > 0) {
+      res.setHeader('Access-Control-Allow-Origin', allowedOrigins[0]);
     }
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
 
-    // Rate Limiting Headers (mock)
+    // Rate Limiting Headers (mock for testing)
     res.setHeader('X-RateLimit-Limit', '100');
     res.setHeader('X-RateLimit-Remaining', '99');
     res.setHeader(
@@ -163,7 +154,9 @@ export class AppController {
   @Options('/')
   handleOptions(
     @Res() res: Response,
-    @Headers('origin') origin?: string
+    @Headers('origin') origin?: string,
+    @Headers('access-control-request-method') requestMethod?: string,
+    @Headers('access-control-request-headers') requestHeaders?: string
   ): void {
     const allowedOrigins = [
       'https://meqenet.et',
@@ -173,6 +166,7 @@ export class AppController {
       'http://localhost:4200',
     ];
 
+    // Check if origin is allowed
     if (origin && allowedOrigins.includes(origin)) {
       res.setHeader('Access-Control-Allow-Origin', origin);
       res.setHeader('Access-Control-Allow-Credentials', 'true');

@@ -26,12 +26,17 @@ import { AppController } from './app.controller';
       isGlobal: true,
       load: [appConfig],
     }),
-    ThrottlerModule.forRoot([
+    ThrottlerModule.forRoot(
+      [
+        {
+          ttl: 60_000,
+          limit: 100,
+        },
+      ],
       {
-        ttl: 60_000,
-        limit: 100,
-      },
-    ]),
+        ignoreUserAgents: [/test/i], // Ignore test user agents for rate limiting
+      }
+    ),
     LoggerModule.forRootAsync(pinoConfig),
     IdempotencyModule,
     RedisModule,
