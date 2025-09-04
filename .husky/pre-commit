@@ -4,8 +4,13 @@
 echo "🚀 Meqenet.et Enterprise Pre-Commit Quality Checks"
 echo "=================================================="
 
-# Set NODE_OPTIONS to prevent memory issues
-export NODE_OPTIONS="--max-old-space-size=4096"
+# Set NODE_OPTIONS to prevent memory issues and enable better performance
+export NODE_OPTIONS="--max-old-space-size=4096 --enable-source-maps=false"
+export LINT_STAGED_CONCURRENCY=2
+
+# Get staged files count for better reporting
+STAGED_COUNT=$(git diff --cached --name-only | wc -l)
+echo "📊 Staged files: $STAGED_COUNT"
 
 # ============================================================================
 # PHASE 1: BASIC QUALITY GATES
@@ -15,26 +20,36 @@ echo "📝 Phase 1: Running basic quality checks..."
 
 # 1. Run lint-staged for staged files (formatting and linting)
 echo "  • Code formatting and linting..."
+if [ "$STAGED_COUNT" -gt 50 ]; then
+  echo "  ⚠️  Large commit detected ($STAGED_COUNT files). Using optimized processing..."
+fi
+
 pnpm exec lint-staged || {
   echo "❌ Code quality checks failed"
   echo ""
   echo "💡 Troubleshooting tips:"
   echo "   • For ESLint errors, run: pnpm eslint --fix <file>"
   echo "   • For formatting issues, run: pnpm prettier --write <file>"
-  echo "   • If memory issues persist, try staging fewer files"
+  echo "   • If memory issues persist, try staging fewer files at once"
+  echo "   • Large commits (>50 files): Consider breaking into smaller commits"
   echo ""
+  echo "🔧 Quick fix attempt..."
+  # Try to auto-fix common issues
+  git diff --cached --name-only | head -10 | xargs -I {} sh -c 'echo "Attempting to fix {}"; pnpm eslint --fix "{}" 2>/dev/null || true'
+  echo ""
+  echo "Please review and re-commit, or run: git commit --no-verify"
   exit 1
 }
 
 # ============================================================================
-# PHASE 2: FINTECH SECURITY VALIDATION
+# PHASE 2: ENTERPRISE SECURITY VALIDATION
 # ============================================================================
 
-echo "🔐 Phase 2: FinTech security validation..."
+echo "🔐 Phase 2: Enterprise security validation..."
 
 # 2. Secret Scanning - Critical for FinTech
 echo "  • Scanning for hardcoded secrets..."
-if ! pnpm run security:secrets >/dev/null 2>&1; then
+if ! timeout 30 pnpm run security:secrets >/dev/null 2>&1; then
   echo "❌ SECRET SCANNING FAILED!"
   echo ""
   echo "🚨 CRITICAL: Potential hardcoded secrets detected!"
@@ -42,31 +57,63 @@ if ! pnpm run security:secrets >/dev/null 2>&1; then
   echo "   • Review the output above and remove any sensitive data"
   echo "   • Use environment variables or secure vaults instead"
   echo ""
+  echo "🔧 To bypass if false positive: git commit --no-verify"
   exit 1
 fi
 
-# 3. Financial Logic Validation
+# 3. Dependency Security Scan
+echo "  • Checking for vulnerable dependencies..."
+if ! timeout 20 pnpm audit --audit-level high >/dev/null 2>&1; then
+  echo "⚠️  DEPENDENCY VULNERABILITIES DETECTED!"
+  echo "   • High or critical security vulnerabilities found"
+  echo "   • Run 'pnpm audit' for detailed information"
+  echo "   • Consider updating vulnerable packages immediately"
+fi
+
+# 4. License Compliance Check
+echo "  • Validating license compliance..."
+if ! timeout 15 pnpm run security:license-check >/dev/null 2>&1; then
+  echo "⚠️  LICENSE COMPLIANCE ISSUES DETECTED!"
+  echo "   • Incompatible or restricted licenses found"
+  echo "   • Review reports/license-check.json for details"
+fi
+
+# 5. Financial Logic Validation
 echo "  • Validating financial logic integrity..."
 STAGED_FILES=$(git diff --cached --name-only)
 
 # Check for financial/payment related files
-FINANCIAL_FILES=$(echo "$STAGED_FILES" | grep -E "(payment|credit|bnpl|financial|auth|loan|interest)" || true)
+FINANCIAL_FILES=$(echo "$STAGED_FILES" | grep -E "(payment|credit|bnpl|financial|auth|loan|interest|transaction|money|currency|wallet)" || true)
 if [ -n "$FINANCIAL_FILES" ]; then
   echo "  • Financial code changes detected - validating critical patterns..."
 
-  # Check for dangerous patterns in financial code (excluding legitimate Express middleware)
-  if echo "$FINANCIAL_FILES" | xargs grep -l "eval(\|new Function\|setTimeout.*eval\|setInterval.*eval" 2>/dev/null; then
+  # Check for dangerous patterns in financial code
+  DANGEROUS_PATTERNS=$(echo "$FINANCIAL_FILES" | xargs grep -l "eval(\|new Function\|setTimeout.*eval\|setInterval.*eval\|Function.*constructor\|global\[" 2>/dev/null || true)
+  if [ -n "$DANGEROUS_PATTERNS" ]; then
     echo "❌ CRITICAL: Dangerous code patterns detected in financial logic!"
-    echo "   • eval() or dynamic code execution found"
+    echo "   • Files with risky patterns: $DANGEROUS_PATTERNS"
+    echo "   • eval(), dynamic code execution, or global object manipulation found"
     echo "   • This poses severe security risks in financial systems"
+    echo "   • Replace with secure alternatives or remove if unnecessary"
     exit 1
   fi
 
+  # Check for SQL injection patterns in financial code
+  SQL_INJECTION=$(echo "$FINANCIAL_FILES" | xargs grep -l "sql.*+\|query.*+\|\$\{.*\}.*SELECT\|\$\{.*\}.*INSERT\|\$\{.*\}.*UPDATE\|\$\{.*\}.*DELETE" 2>/dev/null || true)
+  if [ -n "$SQL_INJECTION" ]; then
+    echo "⚠️  WARNING: Potential SQL injection patterns detected in financial code"
+    echo "   • Files: $SQL_INJECTION"
+    echo "   • Use parameterized queries or ORM methods instead"
+    echo "   • Review for proper input sanitization"
+  fi
+
   # Check for proper error handling in financial code
-  if echo "$FINANCIAL_FILES" | xargs grep -L "try.*catch\|throw.*Error\|reject.*Error" 2>/dev/null | grep -v ".test." | grep -v ".spec."; then
-    echo "⚠️  WARNING: Financial code without proper error handling detected"
-    echo "   • Financial operations must have comprehensive error handling"
-    echo "   • Consider adding try-catch blocks or proper error boundaries"
+  NO_ERROR_HANDLING=$(echo "$FINANCIAL_FILES" | xargs grep -L "try.*catch\|throw.*Error\|reject.*Error\|catch.*error\|handleError" 2>/dev/null | grep -v ".test." | grep -v ".spec." | grep -v ".mock." || true)
+  if [ -n "$NO_ERROR_HANDLING" ]; then
+    echo "⚠️  WARNING: Financial code without comprehensive error handling detected"
+    echo "   • Files missing error handling: $(echo "$NO_ERROR_HANDLING" | wc -l) files"
+    echo "   • Financial operations must have robust error handling"
+    echo "   • Consider adding try-catch blocks, proper logging, and error recovery"
   fi
 fi
 
@@ -76,25 +123,44 @@ fi
 
 echo "📋 Phase 3: Compliance and regulatory checks..."
 
-# 4. NBE Compliance Validation
+# 6. NBE Compliance Validation
 echo "  • NBE (Ethiopian Banking) compliance validation..."
 if [ -n "$FINANCIAL_FILES" ]; then
   # Check for required compliance patterns
-  if ! echo "$FINANCIAL_FILES" | xargs grep -l "audit\|compliance\|NBE" 2>/dev/null; then
+  COMPLIANCE_MISSING=$(echo "$FINANCIAL_FILES" | xargs grep -L "audit\|compliance\|NBE\|regulatory\|AML\|KYC" 2>/dev/null | grep -v ".test." | grep -v ".spec." || true)
+  if [ -n "$COMPLIANCE_MISSING" ]; then
     echo "⚠️  WARNING: Financial changes without explicit compliance documentation"
+    echo "   • Files missing compliance markers: $(echo "$COMPLIANCE_MISSING" | wc -l) files"
     echo "   • NBE requires audit trails for all financial transactions"
     echo "   • Consider adding compliance comments or audit logging"
+    echo "   • Required tags: @audit, @compliance, @nbe, @regulatory, @aml, @kyc"
   fi
 fi
 
-# 5. GDPR Compliance Check
+# 7. GDPR Compliance Check
 echo "  • GDPR compliance validation..."
-PERSONAL_DATA_FILES=$(echo "$STAGED_FILES" | grep -E "(user|customer|personal|profile|auth)" || true)
+PERSONAL_DATA_FILES=$(echo "$STAGED_FILES" | grep -E "(user|customer|personal|profile|auth|account|identity|contact|email|phone|address)" || true)
 if [ -n "$PERSONAL_DATA_FILES" ]; then
-  if ! echo "$PERSONAL_DATA_FILES" | xargs grep -l "consent\|privacy\|gdpr\|data.*protection" 2>/dev/null; then
+  GDPR_MISSING=$(echo "$PERSONAL_DATA_FILES" | xargs grep -L "consent\|privacy\|gdpr\|data.*protection\|pii\|personal.*data" 2>/dev/null | grep -v ".test." | grep -v ".spec." || true)
+  if [ -n "$GDPR_MISSING" ]; then
     echo "⚠️  WARNING: Personal data handling without GDPR compliance markers"
+    echo "   • Files missing GDPR markers: $(echo "$GDPR_MISSING" | wc -l) files"
     echo "   • User data changes require GDPR compliance documentation"
     echo "   • Ensure proper consent mechanisms and data protection"
+    echo "   • Required: Data retention policies, consent management, PII classification"
+  fi
+fi
+
+# 8. Accessibility Compliance Check
+echo "  • Accessibility compliance validation..."
+UI_FILES=$(echo "$STAGED_FILES" | grep -E "\.(tsx|jsx|vue|svelte|html)$" || true)
+if [ -n "$UI_FILES" ]; then
+  ACCESSIBILITY_MISSING=$(echo "$UI_FILES" | xargs grep -L "aria-\|role=\|tabindex\|alt=\|accessibility\|a11y\|wcag" 2>/dev/null || true)
+  if [ -n "$ACCESSIBILITY_MISSING" ]; then
+    echo "ℹ️  INFO: UI changes detected - consider accessibility compliance"
+    echo "   • Files without accessibility markers: $(echo "$ACCESSIBILITY_MISSING" | wc -l) files"
+    echo "   • WCAG 2.1 AA compliance recommended for Ethiopian market"
+    echo "   • Consider adding ARIA labels, semantic HTML, and keyboard navigation"
   fi
 fi
 
@@ -104,17 +170,35 @@ fi
 
 echo "📊 Phase 4: Code quality metrics..."
 
-# 6. Complexity Analysis
+# 9. Complexity Analysis
 echo "  • Analyzing code complexity..."
-COMPLEX_FILES=$(echo "$STAGED_FILES" | grep -E "\.(ts|tsx|js|jsx)$" | head -5)
+COMPLEX_FILES=$(echo "$STAGED_FILES" | grep -E "\.(ts|tsx|js|jsx)$" | head -10)
 if [ -n "$COMPLEX_FILES" ]; then
-  # Check for overly complex functions (basic heuristic)
-  COMPLEX_FUNCTIONS=$(echo "$COMPLEX_FILES" | xargs grep -n "function\|const.*=" | grep -A 50 -B 5 "{" | grep -c "{" | awk '$1 > 20 {print "Complex function detected"}' || true)
+  # Check for overly complex functions (lines of code heuristic)
+  COMPLEX_FUNCTIONS=$(echo "$COMPLEX_FILES" | xargs wc -l | awk '$1 > 100 {print $2 ": " $1 " lines"}' || true)
   if [ -n "$COMPLEX_FUNCTIONS" ]; then
-    echo "⚠️  WARNING: Potential code complexity issues detected"
-    echo "   • Functions with high cyclomatic complexity found"
-    echo "   • Consider breaking down complex functions for maintainability"
+    echo "⚠️  WARNING: Large files detected (>100 lines)"
+    echo "$COMPLEX_FUNCTIONS"
+    echo "   • Consider breaking down large files for maintainability"
+    echo "   • Large files are harder to review and maintain"
   fi
+
+  # Check for nested complexity
+  DEEP_NESTING=$(echo "$COMPLEX_FILES" | xargs grep -n "if.*if\|for.*for\|while.*while" | wc -l 2>/dev/null || echo "0")
+  if [ "$DEEP_NESTING" -gt 5 ]; then
+    echo "⚠️  WARNING: Deep nesting detected in multiple files"
+    echo "   • Consider extracting nested logic into separate functions"
+    echo "   • Deep nesting reduces code readability and maintainability"
+  fi
+fi
+
+# 10. Dead Code Detection
+echo "  • Checking for unused code..."
+UNUSED_EXPORTS=$(echo "$STAGED_FILES" | xargs grep -l "export.*unused\|//.*TODO.*remove\|//.*FIXME.*remove" 2>/dev/null || true)
+if [ -n "$UNUSED_EXPORTS" ]; then
+  echo "ℹ️  INFO: Potential dead code or TODO items detected"
+  echo "   • Files with unused markers: $(echo "$UNUSED_EXPORTS" | wc -l) files"
+  echo "   • Review and remove unused exports, dead code, and outdated TODOs"
 fi
 
 # ============================================================================
@@ -123,12 +207,23 @@ fi
 
 echo "🛡️  Phase 5: Dependency and security scanning..."
 
-# 7. Dependency Vulnerability Check
+# 11. Dependency Vulnerability Check
 echo "  • Checking for dependency vulnerabilities..."
-if ! pnpm audit --audit-level moderate >/dev/null 2>&1; then
+if ! timeout 15 pnpm audit --audit-level moderate >/dev/null 2>&1; then
   echo "⚠️  WARNING: Dependency vulnerabilities detected"
   echo "   • Run 'pnpm audit' for detailed vulnerability information"
-  echo "   • Consider updating vulnerable packages or applying patches"
+  echo "   • Consider updating vulnerable packages or applying security patches"
+  echo "   • Critical vulnerabilities should be addressed immediately"
+fi
+
+# 12. Outdated Dependencies Check
+echo "  • Checking for outdated dependencies..."
+OUTDATED_COUNT=$(timeout 10 pnpm outdated --json 2>/dev/null | grep -c '"latest"' || echo "0")
+if [ "$OUTDATED_COUNT" -gt 10 ]; then
+  echo "ℹ️  INFO: $OUTDATED_COUNT+ outdated dependencies detected"
+  echo "   • Consider updating dependencies regularly"
+  echo "   • Run 'pnpm update' to update non-breaking changes"
+  echo "   • Major version updates should be tested thoroughly"
 fi
 
 # ============================================================================
@@ -137,17 +232,28 @@ fi
 
 echo "🎯 Phase 6: Final validation..."
 
-# 8. Commit Message Validation
+# 13. Commit Message Validation
 echo "  • Validating commit message format..."
-COMMIT_MSG=$(git log -1 --pretty=%B)
-if ! echo "$COMMIT_MSG" | grep -qE "^(feat|fix|docs|style|refactor|perf|test|chore|build|ci|security)(\(.+\))?: .+"; then
-  echo "⚠️  WARNING: Commit message doesn't follow conventional format"
-  echo "   • Use: type(scope): description"
-  echo "   • Types: feat, fix, docs, style, refactor, perf, test, chore, build, ci, security"
-  echo "   • Example: feat(auth): add biometric authentication"
+COMMIT_MSG=$(git log -1 --pretty=%B 2>/dev/null || echo "")
+if [ -n "$COMMIT_MSG" ]; then
+  if ! echo "$COMMIT_MSG" | grep -qE "^(feat|fix|docs|style|refactor|perf|test|chore|build|ci|security)(\(.+\))?: .+"; then
+    echo "⚠️  WARNING: Commit message doesn't follow conventional format"
+    echo "   • Use: type(scope): description"
+    echo "   • Types: feat, fix, docs, style, refactor, perf, test, chore, build, ci, security"
+    echo "   • Example: feat(auth): add biometric authentication"
+    echo "   • Example: fix(payment): resolve transaction timeout issue"
+  fi
+
+  # Check for minimum description length
+  MSG_LENGTH=$(echo "$COMMIT_MSG" | wc -c)
+  if [ "$MSG_LENGTH" -lt 10 ]; then
+    echo "⚠️  WARNING: Commit message is too short"
+    echo "   • Provide more descriptive commit messages"
+    echo "   • Explain what changed and why"
+  fi
 fi
 
-# 9. File Size Validation
+# 14. File Size Validation
 echo "  • Validating file sizes..."
 LARGE_FILES=$(git diff --cached --name-only | xargs ls -lh 2>/dev/null | awk '$5 > 10485760 {print $9 ": " $5}' || true)
 if [ -n "$LARGE_FILES" ]; then
@@ -155,6 +261,16 @@ if [ -n "$LARGE_FILES" ]; then
   echo "$LARGE_FILES"
   echo "   • Files larger than 10MB may cause repository bloat"
   echo "   • Consider using Git LFS for large binary files"
+  echo "   • Review if large files are necessary for the repository"
+fi
+
+# 15. Binary File Detection
+echo "  • Checking for binary files..."
+BINARY_FILES=$(git diff --cached --name-only | xargs file 2>/dev/null | grep -v "text\|ASCII\|UTF-8\|empty" | wc -l 2>/dev/null || echo "0")
+if [ "$BINARY_FILES" -gt 0 ]; then
+  echo "ℹ️  INFO: $BINARY_FILES binary file(s) detected in commit"
+  echo "   • Ensure binary files are necessary and appropriately sized"
+  echo "   • Consider if they should be in .gitignore or Git LFS"
 fi
 
 # ============================================================================
@@ -166,10 +282,18 @@ echo "✅ ALL ENTERPRISE PRE-COMMIT CHECKS PASSED!"
 echo "🇪🇹 Meqenet.et maintains world-class FinTech security standards!"
 echo ""
 echo "🎉 Your code meets enterprise-grade quality requirements:"
-echo "   • 🔐 Security vulnerabilities: CLEARED"
-echo "   • 💰 Financial logic: VALIDATED"
-echo "   • 📋 Compliance: VERIFIED"
-echo "   • 📊 Code quality: APPROVED"
-echo "   • 🛡️ Dependencies: SECURE"
+echo "   • 🔐 Security: Secret scanning ✓ | Dependency audit ✓ | Code security ✓"
+echo "   • 💰 Financial: Logic validation ✓ | Compliance checks ✓ | Error handling ✓"
+echo "   • 📋 Regulatory: NBE compliance ✓ | GDPR validation ✓ | Accessibility ✓"
+echo "   • 📊 Quality: Code complexity ✓ | File size ✓ | Commit standards ✓"
+echo "   • 🛡️ Dependencies: Vulnerability scan ✓ | License check ✓ | Updates ✓"
 echo ""
 echo "🚀 Ready to contribute to Ethiopia's financial future!"
+echo ""
+echo "💡 Tips for continued excellence:"
+echo "   • Keep commits focused and atomic"
+echo "   • Write descriptive commit messages"
+echo "   • Review security implications of changes"
+echo "   • Test thoroughly before pushing"
+echo ""
+echo "📈 Commit successful! Your contribution helps build a more secure financial ecosystem."

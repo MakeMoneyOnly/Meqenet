@@ -195,7 +195,6 @@ describe('PasswordResetRequestDto', () => {
       dto.email = 'user@例え.テスト';
       dto.clientId = 'web-app';
 
-      const errors = await validate(dto);
       // This might fail depending on the email validator configuration
       // but should not crash the application
       expect(async () => {

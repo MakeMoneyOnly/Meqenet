@@ -7,7 +7,25 @@ import {
 import { Observable, tap } from 'rxjs';
 import { Histogram, Counter } from 'prom-client';
 
-const buckets = [0.1, 0.25, 0.5, 1, 2, 5, 10];
+// Latency histogram bucket constants (seconds)
+const LATENCY_BUCKET_100MS = 0.1;
+const LATENCY_BUCKET_250MS = 0.25;
+const LATENCY_BUCKET_500MS = 0.5;
+const LATENCY_BUCKET_1S = 1;
+const LATENCY_BUCKET_2S = 2;
+const LATENCY_BUCKET_5S = 5;
+const LATENCY_BUCKET_10S = 10;
+const NANOSECONDS_PER_SECOND = 1_000_000_000;
+
+const buckets = [
+  LATENCY_BUCKET_100MS,
+  LATENCY_BUCKET_250MS,
+  LATENCY_BUCKET_500MS,
+  LATENCY_BUCKET_1S,
+  LATENCY_BUCKET_2S,
+  LATENCY_BUCKET_5S,
+  LATENCY_BUCKET_10S,
+];
 
 let httpLatencyHistogram: Histogram<string> | undefined;
 let httpRequestsCounter: Counter<string> | undefined;
@@ -49,7 +67,7 @@ export class LatencyMetricsInterceptor implements NestInterceptor {
     return next.handle().pipe(
       tap(() => {
         const end = process.hrtime.bigint();
-        const durationSeconds = Number(end - start) / 1_000_000_000;
+        const durationSeconds = Number(end - start) / NANOSECONDS_PER_SECOND;
         const statusCode = res.statusCode || 0;
         getHistogram()
           .labels(method, route, String(statusCode))

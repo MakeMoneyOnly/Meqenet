@@ -1148,7 +1148,7 @@ stages:
             description:
               Implement detailed audit logging for all auth events (login success/fail,
               registration, pw_reset, role_change).
-            status: To Do
+            status: Completed
             context:
               [
                 docs/Stage 3 - Deployment & Operations/25-Monitoring_And_Logging.md,
@@ -1164,7 +1164,7 @@ stages:
             description:
               "[Test] Write unit tests for auth service logic (hashing, JWT signing,
               user creation)."
-            status: To Do
+            status: Completed
             context: [docs/Stage 2 -Development/22-Testing_Guidelines.md]
             personas: [
                 Financial QA Specialist,
@@ -1176,7 +1176,7 @@ stages:
             description:
               "[Test] Write integration tests for all authentication endpoints,
               including error cases."
-            status: To Do
+            status: Completed
             context: [docs/Stage 2 -Development/22-Testing_Guidelines.md]
             personas:
               [

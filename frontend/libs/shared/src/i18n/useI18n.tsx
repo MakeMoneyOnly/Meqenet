@@ -58,7 +58,7 @@ export function useI18n(namespace?: string): UseI18nReturn {
     setDirection(getLanguageDirection(i18n.language));
   }, [i18n.language]);
 
-  const handleChangeLanguage = async (lng: SupportedLanguageCode) => {
+  const handleChangeLanguage = async (lng: SupportedLanguageCode): Promise<void> => {
     setIsLoading(true);
     try {
       await changeLanguage(lng);
@@ -68,15 +68,15 @@ export function useI18n(namespace?: string): UseI18nReturn {
     }
   };
 
-  const formatCurrencyWithLocale = (amount: number) => {
+  const formatCurrencyWithLocale = (amount: number): string => {
     return formatCurrency(amount, i18n.language);
   };
 
-  const formatDateWithLocale = (date: Date | string) => {
+  const formatDateWithLocale = (date: Date | string): string => {
     return formatDate(date, i18n.language);
   };
 
-  const formatNumberWithLocale = (value: number) => {
+  const formatNumberWithLocale = (value: number): string => {
     return formatNumber(value, i18n.language);
   };
 
@@ -97,7 +97,10 @@ export function useI18n(namespace?: string): UseI18nReturn {
 /**
  * Hook for error messages translation
  */
-export function useErrorTranslation() {
+export function useErrorTranslation(): {
+  getErrorMessage: (errorCode: string, defaultMessage?: string) => string;
+  getValidationError: (field: string, rule: string, params?: Record<string, unknown>) => string;
+} {
   const { t } = useTranslation();
 
   const getErrorMessage = (
@@ -132,7 +135,9 @@ export function useErrorTranslation() {
 /**
  * Hook for success messages translation
  */
-export function useSuccessTranslation() {
+export function useSuccessTranslation(): {
+  getSuccessMessage: (key: string, params?: Record<string, unknown>) => string;
+} {
   const { t } = useTranslation();
 
   const getSuccessMessage = (

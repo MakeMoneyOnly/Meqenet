@@ -21,8 +21,8 @@ type PrismaOutboxMessage = {
   aggregateType: string;
   aggregateId: string;
   eventType: string;
-  payload: Record<string, unknown>; // JsonValue from Prisma
-  metadata?: Record<string, unknown>; // JsonValue from Prisma
+  payload: Record<string, unknown> | null; // JsonValue from Prisma - can be null or any JSON value
+  metadata?: Record<string, unknown> | null; // JsonValue from Prisma - can be null or any JSON value
   status: string;
   retryCount: number;
   maxRetries: number;
@@ -84,8 +84,8 @@ export class OutboxService implements OnModuleInit {
           aggregateType: message.aggregateType,
           aggregateId: message.aggregateId,
           eventType: message.eventType,
-          payload: (message.payload as Record<string, unknown>) ?? {},
-          metadata: (message.metadata as Record<string, unknown>) ?? {},
+          payload: (message.payload || {}) as Record<string, unknown>,
+          metadata: (message.metadata || {}) as Record<string, unknown>,
           status: OutboxStatus.PENDING,
           maxRetries: this.MAX_RETRIES,
         },

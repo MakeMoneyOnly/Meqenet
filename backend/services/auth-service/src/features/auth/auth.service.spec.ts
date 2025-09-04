@@ -10,8 +10,10 @@ import { EventService } from '../../shared/services/event.service';
 import { PasswordResetTokenService } from '../../shared/services/password-reset-token.service';
 import { EmailService } from '../../shared/services/email.service';
 import { SecurityMonitoringService } from '../../shared/services/security-monitoring.service';
-import { PasswordResetRequestDto } from './dto/password-reset-request.dto';
-import { PasswordResetConfirmDto } from './dto/password-reset-confirm.dto';
+import { AuditLoggingService } from '../../shared/services/audit-logging.service';
+// DTO imports not used in this test suite
+// import { PasswordResetRequestDto } from './dto/password-reset-request.dto';
+// import { PasswordResetConfirmDto } from './dto/password-reset-confirm.dto';
 
 import { AuthService } from './auth.service';
 
@@ -73,6 +75,16 @@ describe('AuthService', () => {
     recordLogin: vi.fn(),
   };
 
+  const mockAuditLoggingService = {
+    logRegistration: vi.fn(),
+    logLoginSuccess: vi.fn(),
+    logLoginFailure: vi.fn(),
+    logPasswordResetRequest: vi.fn(),
+    logPasswordResetSuccess: vi.fn(),
+    logPasswordResetFailure: vi.fn(),
+    logAccountLockout: vi.fn(),
+  };
+
   beforeEach(async () => {
     // Reset all mocks to clear call history
     vi.clearAllMocks();
@@ -112,6 +124,10 @@ describe('AuthService', () => {
           provide: SecurityMonitoringService,
           useValue: mockSecurityMonitoringService,
         },
+        {
+          provide: AuditLoggingService,
+          useValue: mockAuditLoggingService,
+        },
       ],
     }).compile();
 
@@ -124,6 +140,7 @@ describe('AuthService', () => {
     (service as any).passwordResetTokenService = mockPasswordResetTokenService;
     (service as any).emailService = mockEmailService;
     (service as any).securityMonitoring = mockSecurityMonitoringService;
+    (service as any).auditLogging = mockAuditLoggingService;
   });
 
   it('should be defined', () => {
@@ -870,6 +887,151 @@ describe('AuthService', () => {
           confirmPassword: 'NewP@ssw0rd123',
         })
       ).rejects.toThrow('Failed to reset password. Please try again.');
+    });
+  });
+
+  describe('audit logging integration', () => {
+    const mockUser = {
+      id: 'user-123',
+      email: 'test@example.com',
+      role: 'CUSTOMER' as const,
+      loginAttempts: 0,
+      lockoutUntil: null,
+      createdAt: new Date(),
+    };
+
+    describe('registration audit logging', () => {
+      it('should log successful registration with audit context', async () => {
+        const registerUserDto = {
+          email: 'newuser@example.com',
+          password: 'SecureP@ssw0rd123',
+        };
+
+        const bcryptHashMock = vi.mocked(bcrypt.hash);
+        bcryptHashMock.mockResolvedValue('hashed-password');
+
+        mockPrismaService.user.findUnique.mockResolvedValue(null);
+        mockPrismaService.user.create.mockResolvedValue({
+          ...mockUser,
+          email: registerUserDto.email,
+        });
+        mockJwtService.sign.mockReturnValue('jwt-token');
+
+        const auditContext = {
+          ipAddress: '192.168.1.100',
+          userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+          location: 'Addis Ababa, Ethiopia',
+          deviceFingerprint: 'abc123def',
+        };
+
+        await service.register(registerUserDto, auditContext);
+
+        expect(mockAuditLoggingService.logRegistration).toHaveBeenCalledWith(
+          true,
+          {
+            userId: mockUser.id,
+            userEmail: registerUserDto.email,
+            userRole: mockUser.role,
+            ...auditContext,
+          },
+          expect.objectContaining({
+            userAgent: auditContext.userAgent,
+            registrationMethod: 'EMAIL_PASSWORD',
+          })
+        );
+      });
+    });
+
+    describe('JWT signing and token generation', () => {
+      it('should generate JWT with correct payload structure', async () => {
+        const registerUserDto = {
+          email: 'newuser@example.com',
+          password: 'SecureP@ssw0rd123',
+        };
+
+        const bcryptHashMock = vi.mocked(bcrypt.hash);
+        bcryptHashMock.mockResolvedValue('hashed-password');
+
+        mockPrismaService.user.findUnique.mockResolvedValue(null);
+        mockPrismaService.user.create.mockResolvedValue({
+          ...mockUser,
+          email: registerUserDto.email,
+        });
+
+        const expectedToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test-payload.signature';
+        mockJwtService.sign.mockReturnValue(expectedToken);
+
+        const result = await service.register(registerUserDto);
+
+        expect(result.accessToken).toBe(expectedToken);
+        expect(mockJwtService.sign).toHaveBeenCalledWith({
+          sub: mockUser.id,
+          email: registerUserDto.email,
+        });
+      });
+    });
+
+    describe('password hashing security', () => {
+      const BCRYPT_SALT_ROUNDS = 12;
+
+      it('should use configured bcrypt salt rounds for password hashing', async () => {
+        const registerUserDto = {
+          email: 'newuser@example.com',
+          password: 'SecureP@ssw0rd123',
+        };
+
+        const bcryptHashMock = vi.mocked(bcrypt.hash);
+        bcryptHashMock.mockResolvedValue('hashed-password');
+
+        mockPrismaService.user.findUnique.mockResolvedValue(null);
+        mockPrismaService.user.create.mockResolvedValue({
+          id: 'user-123',
+          email: registerUserDto.email,
+          createdAt: new Date(),
+        });
+        mockJwtService.sign.mockReturnValue('jwt-token');
+
+        await service.register(registerUserDto);
+
+        expect(bcryptHashMock).toHaveBeenCalledWith(
+          registerUserDto.password,
+          BCRYPT_SALT_ROUNDS
+        );
+      });
+
+      it('should use bcrypt for password comparison during login', async () => {
+        const loginUserDto = {
+          email: 'test@example.com',
+          password: 'ValidP@ssw0rd123',
+        };
+
+        const loginMockUser = {
+          id: 'user-123',
+          email: 'test@example.com',
+          passwordHash: '$2b$12$hashedpassword',
+          loginAttempts: 0,
+          lockoutUntil: null,
+          createdAt: new Date(),
+        };
+
+        const bcryptCompareMock = vi.mocked(bcrypt.compare);
+        bcryptCompareMock.mockResolvedValue(true);
+
+        mockPrismaService.user.findUnique.mockResolvedValue(loginMockUser);
+        mockPrismaService.user.update.mockResolvedValue({
+          ...loginMockUser,
+          loginAttempts: 0,
+          lockoutUntil: null,
+        });
+        mockJwtService.sign.mockReturnValue('jwt-token');
+
+        await service.login(loginUserDto);
+
+        expect(bcryptCompareMock).toHaveBeenCalledWith(
+          loginUserDto.password,
+          mockUser.passwordHash
+        );
+      });
     });
   });
 });

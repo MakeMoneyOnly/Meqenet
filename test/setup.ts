@@ -28,7 +28,7 @@ process.env.PINO_LEVEL = 'silent';
 process.env.NESTJS_LOGGER = 'false';
 
 // Completely suppress console output during tests
-const originalConsole = { ...console };
+const _originalConsole = { ...console };
 console.log = vi.fn();
 console.info = vi.fn();
 console.warn = vi.fn();

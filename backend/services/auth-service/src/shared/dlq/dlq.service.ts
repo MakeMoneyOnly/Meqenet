@@ -23,7 +23,7 @@ interface PrismaOutboxMessage {
   aggregateType: string;
   aggregateId: string;
   eventType: string;
-  payload: Record<string, unknown>; // JsonValue from Prisma
+  payload: Record<string, unknown> | null; // JsonValue from Prisma - can be null or any JSON value
   errorMessage: string | null;
   dlqReason: string | null;
   retryCount: number;
@@ -94,7 +94,6 @@ export class DLQService {
     ]);
 
     return {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       messages: messages.map(msg => this.mapToDLQMessage(msg)),
       total,
       page,
@@ -290,7 +289,6 @@ export class DLQService {
     ]);
 
     return {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       messages: messages.map(msg => this.mapToDLQMessage(msg)),
       total,
       page,
@@ -333,7 +331,7 @@ export class DLQService {
       aggregateType: message.aggregateType,
       aggregateId: message.aggregateId,
       eventType: message.eventType,
-      payload: (message.payload as Record<string, unknown>) || {},
+      payload: message.payload || {},
       errorMessage: message.errorMessage,
       dlqReason: message.dlqReason ?? 'Unknown reason',
       retryCount: message.retryCount,
@@ -378,7 +376,7 @@ export class DLQService {
     await this.prisma.outboxMessage.update({
       where: { id: message.id },
       data: {
-        payload: {} as Record<string, unknown>,
+        payload: {},
         errorMessage: notes ?? 'Archived from DLQ',
       },
     });

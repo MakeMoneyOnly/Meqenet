@@ -20,6 +20,7 @@ import { SecurityMonitoringService } from './services/security-monitoring.servic
 import { PasswordResetTokenService } from './services/password-reset-token.service';
 import { EmailService } from './services/email.service';
 import { SecurityConfigService } from './services/security-config.service';
+import { AuditLoggingService } from './services/audit-logging.service';
 import { FaydaEncryptionUtil } from './utils/fayda-encryption.util';
 
 /**
@@ -56,6 +57,7 @@ import { FaydaEncryptionUtil } from './utils/fayda-encryption.util';
     AIFraudDetectionService,
     PasswordResetTokenService,
     EmailService,
+    AuditLoggingService,
   ],
   exports: [
     SecurityConfigService,
@@ -70,6 +72,7 @@ import { FaydaEncryptionUtil } from './utils/fayda-encryption.util';
     AIFraudDetectionService,
     PasswordResetTokenService,
     EmailService,
+    AuditLoggingService,
   ],
 })
 export class SharedModule {}

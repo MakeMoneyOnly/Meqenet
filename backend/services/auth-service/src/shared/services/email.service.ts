@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 export interface PasswordResetEmailData {
   email: string;
@@ -10,10 +11,14 @@ export interface PasswordResetEmailData {
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
-  private readonly FRONTEND_RESET_URL =
-    process.env.FRONTEND_RESET_URL || 'https://app.meqenet.et/reset-password';
+  private readonly FRONTEND_RESET_URL: string;
 
-  constructor() {}
+  constructor(private readonly configService: ConfigService) {
+    this.FRONTEND_RESET_URL = this.configService.get<string>(
+      'FRONTEND_RESET_URL',
+      'https://app.meqenet.et/reset-password'
+    );
+  }
 
   /**
    * Sends a password reset email to the user
@@ -76,7 +81,7 @@ export class EmailService {
     email: string,
     resetUrl: string,
     language: string
-  ) {
+  ): { subject: string; html: string; text: string } {
     const isAmharic = language === 'am';
 
     const subject = isAmharic

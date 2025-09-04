@@ -11,6 +11,7 @@ const HOURS_IN_DAY = 24;
 const MINUTES_IN_HOUR = 60;
 const SECONDS_IN_MINUTE = 60;
 const RESPONSE_TTL_SECONDS = HOURS_IN_DAY * MINUTES_IN_HOUR * SECONDS_IN_MINUTE; // 24 hours for the final response
+const HTTP_STATUS_OK = 200;
 
 @Injectable()
 export class IdempotencyMiddleware implements NestMiddleware {
@@ -40,7 +41,7 @@ export class IdempotencyMiddleware implements NestMiddleware {
           res.status(parsedResponse.status).json(parsedResponse.body);
         } catch {
           // Legacy fallback: if cached data wasn't wrapped, send as-is
-          res.status(200).send(existingData);
+          res.status(HTTP_STATUS_OK).send(existingData);
         }
         return;
       }

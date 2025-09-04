@@ -29,7 +29,7 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
 
   // Close dropdown when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = (event: MouseEvent): void => {
       if (
         dropdownRef.current &&
         !dropdownRef.current.contains(event.target as Node)
@@ -42,7 +42,7 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleLanguageChange = async (langCode: string) => {
+  const handleLanguageChange = async (langCode: string): Promise<void> => {
     await changeLanguage(langCode as SupportedLanguageCode);
     setIsOpen(false);
 
@@ -59,7 +59,7 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
   } as const;
 
   // Safely construct className to avoid object injection
-  const getButtonClasses = (size: keyof typeof sizeClasses) => {
+  const getButtonClasses = (size: keyof typeof sizeClasses): string => {
     const sizeClass =
       size === 'small'
         ? sizeClasses.small
@@ -92,9 +92,9 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
             >
               {language === 'am' ? '🇪🇹' : '🇬🇧'}
             </span>
-            {showLabel && (
+            {showLabel ? (
               <span className="font-medium">{currentLanguage?.name}</span>
-            )}
+            ) : null}
           </span>
           <svg
             className={`ml-2 h-5 w-5 transform transition-transform ${isOpen ? 'rotate-180' : ''}`}
@@ -111,7 +111,7 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
           </svg>
         </button>
 
-        {isOpen && (
+        {isOpen ? (
           <div className="absolute right-0 mt-2 w-full rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
             <div className="py-1">
               {languages.map((lang) => (
@@ -132,7 +132,7 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
                     {lang.code === 'am' ? '🇪🇹' : '🇬🇧'}
                   </span>
                   <span>{lang.name}</span>
-                  {lang.code === language && (
+                  {lang.code === language ? (
                     <svg
                       className="ml-auto h-4 w-4 text-green-600"
                       xmlns="http://www.w3.org/2000/svg"
@@ -146,12 +146,12 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
                         clipRule="evenodd"
                       />
                     </svg>
-                  )}
+                  ) : null}
                 </button>
               ))}
             </div>
           </div>
-        )}
+        ) : null}
       </div>
     );
   }
@@ -165,7 +165,7 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
             key={lang.code}
             onClick={() => handleLanguageChange(lang.code)}
             disabled={isLoading}
-            className={(() => {
+            className={((): string => {
               const sizeClass =
                 size === 'small'
                   ? sizeClasses.small
@@ -193,7 +193,7 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
               <span className="mr-2" aria-label={`${lang.name} flag`}>
                 {lang.code === 'am' ? '🇪🇹' : '🇬🇧'}
               </span>
-              {showLabel && lang.name}
+              {showLabel ? lang.name : null}
             </span>
           </button>
         ))}
