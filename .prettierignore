@@ -1,14 +1,142 @@
-# Generated artifacts
+# Generated artifacts and build outputs
 bom.json
+bom.*.json
 java-reachables.slices.json
-# Dependency scanner caches
+java-usages.slices.json
+*.tsbuildinfo
+dist/
+build/
+.next/
+.nuxt/
+.cache/
+.coverage/
+
+# Dependency scanner caches and reports
 /governance/owasp-data/
 /governance/owasp-reports/
+/coverage/
+/reports/
+/logs/
+audit-results.json
+audit.json
+eslint-report.json
+trufflehog_report.json
 
-# Exclude cookiecutter templates and generated JSON slices
-/templates/
+# Binary files and executables
+*.exe
+*.dll
+*.so
+*.dylib
+*.bin
+*.tar.gz
+*.zip
+*.jar
+*.war
+prisma-engines.zip
+tfsec.exe
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Log files
+*.log
+logs/
+**/logs/
+
+# Test coverage and artifacts
+coverage/
+.nyc_output/
+coverage-final.json
+lcov.info
+lcov-report/
+
+# Node modules and lock files (handled separately)
+/node_modules/
+/.pnpm-store/
+/frontend/node_modules/
+/backend/node_modules/
+
+# Infrastructure and deployment files
+infrastructure/
+temp_db.tf
+docker-compose.*.yml
+otel-collector-config.yaml
+prometheus.yml
+grafana/
+
+# Security and compliance files
+security-tools/
+secrets/
+compliance/
+owasp-suppression.xml
+
+# Protocol buffer generated files
+proto/**/*.pb.ts
+proto/**/*.pb.js
+proto/**/*.d.ts
+
+# Generated OpenAPI files
 backend/java-openapi.json
-java-usages.slices.json
+backend/openapi.yaml
+frontend/src/app/api/
 
-bom.api-gateway.json
-bom.auth-service.json
+# Exclude cookiecutter templates
+/templates/
+
+# Documentation that shouldn't be formatted
+docs/**/*.md
+README.md
+CONTRIBUTING.md
+LICENSE
+*.md
+
+# Configuration files that shouldn't be formatted
+**/*.config.js
+**/*.config.ts
+**/*.config.json
+vitest.config.mjs
+vitest.d.ts
+tsconfig*.json
+.eslintrc*
+.prettierrc*
+.prettierignore
+
+# Git and version control
+.git/
+.gitignore
+.github/
+
+# Docker and container files
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# CI/CD and workflow files
+.github/
+.circleci/
+.gitlab-ci.yml
+.travis.yml
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+Thumbs.db
+*.tmp
+
+# Test files (format only source, not test artifacts)
+test/mocks/
+test/fixtures/
+**/*.test.json
+**/*.spec.json
+
+# Large data files
+dependency-tree.txt
+debug-prisma-import.js

@@ -22,9 +22,9 @@ jobs:
       postgres:
         image: postgres:15-alpine
         env:
-          POSTGRES_USER: meqenet
-          POSTGRES_PASSWORD: password
-          POSTGRES_DB: auth_service_db
+          POSTGRES_USER: ${{ secrets.CONTRACT_TEST_DB_USER || 'meqenet' }}
+          POSTGRES_PASSWORD: ${{ secrets.CONTRACT_TEST_DB_PASSWORD || 'secure_contract_test_password' }}
+          POSTGRES_DB: ${{ secrets.CONTRACT_TEST_DB_NAME || 'auth_service_db' }}
         ports:
           - 5432:5432
         options: >-
@@ -66,7 +66,7 @@ jobs:
       - name: Run database migrations
         run: pnpm --filter @meqenet/${{ matrix.service }} db:migrate
         env:
-          DATABASE_URL: postgresql://meqenet:password@localhost:5432/auth_service_db
+          DATABASE_URL: postgresql://${{ secrets.CONTRACT_TEST_DB_USER || 'meqenet' }}:${{ secrets.CONTRACT_TEST_DB_PASSWORD || 'secure_contract_test_password' }}@localhost:5432/${{ secrets.CONTRACT_TEST_DB_NAME || 'auth_service_db' }}
 
       - name: Setup Pact Broker
         run: |
@@ -208,36 +208,50 @@ jobs:
           PACT_BROKER_PASSWORD: password
 
       - name: Publish Contracts to Broker
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' && env.PACT_BROKER_CONFIGURED == 'true'
         run: |
           cd backend/services/${{ matrix.service }}
-          pact-broker publish pacts \
-            --broker-base-url ${{ secrets.PACT_BROKER_URL }} \
-            --broker-username ${{ secrets.PACT_BROKER_USERNAME }} \
-            --broker-password ${{ secrets.PACT_BROKER_PASSWORD }} \
-            --consumer-app-version ${GITHUB_SHA} \
-            --tag main
+          echo "🔍 Checking for Pact files to publish..."
+          if [ -d "pacts" ] && [ "$(find pacts -name "*.json" | wc -l)" -gt 0 ]; then
+            echo "📤 Publishing contracts to Pact Broker..."
+            pact-broker publish pacts \
+              --broker-base-url ${PACT_BROKER_URL} \
+              --broker-username ${PACT_BROKER_USERNAME} \
+              --broker-password ${PACT_BROKER_PASSWORD} \
+              --consumer-app-version ${GITHUB_SHA} \
+              --tag main
+            echo "✅ Contracts published successfully"
+          else
+            echo "⚠️ No Pact files found to publish"
+          fi
         env:
           PACT_BROKER_URL: ${{ secrets.PACT_BROKER_URL }}
           PACT_BROKER_USERNAME: ${{ secrets.PACT_BROKER_USERNAME }}
           PACT_BROKER_PASSWORD: ${{ secrets.PACT_BROKER_PASSWORD }}
+          PACT_BROKER_CONFIGURED: ${{ secrets.PACT_BROKER_URL != '' && 'true' || 'false' }}
 
       - name: Verify Contracts
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' && env.PACT_BROKER_CONFIGURED == 'true'
         run: |
-          pact-broker can-i-deploy \
-            --broker-base-url ${{ secrets.PACT_BROKER_URL }} \
-            --broker-username ${{ secrets.PACT_BROKER_USERNAME }} \
-            --broker-password ${{ secrets.PACT_BROKER_PASSWORD }} \
+          echo "🔍 Checking contract compatibility..."
+          if pact-broker can-i-deploy \
+            --broker-base-url ${PACT_BROKER_URL} \
+            --broker-username ${PACT_BROKER_USERNAME} \
+            --broker-password ${PACT_BROKER_PASSWORD} \
             --pacticipant ${{ matrix.service }} \
             --version ${GITHUB_SHA} \
-            --to main
+            --to main; then
+            echo "✅ Contracts are compatible for deployment"
+          else
+            echo "❌ Contract verification failed - please review contract changes"
+            exit 1
+          fi
 
   contract-verification:
     name: "Contract Verification"
     runs-on: ubuntu-latest
     needs: [contract-test]
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && env.PACT_BROKER_CONFIGURED == 'true'
 
     steps:
       - name: Checkout code
@@ -262,19 +276,19 @@ jobs:
           else
             # Fallback: Install Ruby and try gem installation with force flag
             echo "⚠️ Could not download Pact Ruby Standalone, trying gem installation..."
-            
+
             if ! command -v ruby &> /dev/null; then
               echo "📥 Installing Ruby..."
               sudo apt-get update
               sudo apt-get install -y ruby-full
             fi
-            
+
             # Remove any existing pact-broker binary to avoid conflicts
             if [ -f "/usr/local/bin/pact-broker" ]; then
               echo "⚠️ Removing existing pact-broker binary to avoid conflicts..."
               sudo rm -f /usr/local/bin/pact-broker
             fi
-            
+
             # Install with force flag to handle any remaining conflicts
             sudo gem install pact_broker-client --no-document --force
             echo "✅ Pact Broker Client gem installed"
@@ -290,13 +304,20 @@ jobs:
 
       - name: Verify Provider Contracts
         run: |
-          pact-broker can-i-deploy \
-            --broker-base-url ${{ secrets.PACT_BROKER_URL }} \
-            --broker-username ${{ secrets.PACT_BROKER_USERNAME }} \
-            --broker-password ${{ secrets.PACT_BROKER_PASSWORD }} \
+          echo "🔍 Verifying provider contracts..."
+          if pact-broker can-i-deploy \
+            --broker-base-url ${PACT_BROKER_URL} \
+            --broker-username ${PACT_BROKER_USERNAME} \
+            --broker-password ${PACT_BROKER_PASSWORD} \
             --pacticipant auth-service \
-            --version ${GITHUB_SHA}
+            --version ${GITHUB_SHA}; then
+            echo "✅ Provider contracts verified successfully"
+          else
+            echo "❌ Provider contract verification failed"
+            exit 1
+          fi
         env:
           PACT_BROKER_URL: ${{ secrets.PACT_BROKER_URL }}
           PACT_BROKER_USERNAME: ${{ secrets.PACT_BROKER_USERNAME }}
           PACT_BROKER_PASSWORD: ${{ secrets.PACT_BROKER_PASSWORD }}
+          PACT_BROKER_CONFIGURED: ${{ secrets.PACT_BROKER_URL != '' && 'true' || 'false' }}

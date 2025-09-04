@@ -24,10 +24,7 @@ buildscript {
     }
 }
 
-// Apply versions plugin using modern syntax - must come after buildscript
-plugins {
-    id "com.github.ben-manes.versions" version "0.50.0"
-}
+// Versions plugin dependency resolution is handled in settings.gradle
 
 // Enterprise Configuration Includes
 // Added for FinTech compliance and offline builds
