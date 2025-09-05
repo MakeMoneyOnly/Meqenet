@@ -89,7 +89,17 @@ if ! pnpm run build 2>&1 | tee "$BUILD_OUTPUT_FILE"; then
 fi
 rm -f "$BUILD_OUTPUT_FILE"
 
-# 5. Ethiopian FinTech specific checks
+# 5. Test Coverage Validation
+echo "📊 Validating test coverage requirements..."
+if ! timeout 30 pnpm run test:coverage >/dev/null 2>&1; then
+  echo "❌ Test coverage validation failed!"
+  echo "   • Minimum coverage thresholds not met"
+  echo "   • Run 'pnpm run test:coverage' for detailed coverage report"
+  echo "   • Critical financial code must maintain 90%+ coverage"
+  exit 1
+fi
+
+# 6. Ethiopian FinTech specific checks
 echo "🇪🇹 Running Ethiopian FinTech compliance checks..."
 
 # Check for NBE compliance documentation

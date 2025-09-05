@@ -6,7 +6,14 @@ echo "=================================================="
 
 # Set NODE_OPTIONS to prevent memory issues and enable better performance
 export NODE_OPTIONS="--max-old-space-size=4096 --enable-source-maps=false"
-export LINT_STAGED_CONCURRENCY=2
+export LINT_STAGED_CONCURRENCY=4
+
+# Performance optimization: Skip heavy checks for small commits
+STAGED_COUNT=$(git diff --cached --name-only | wc -l)
+if [ "$STAGED_COUNT" -gt 20 ]; then
+  echo "📊 Large commit detected ($STAGED_COUNT files) - enabling optimized processing..."
+  export SKIP_HEAVY_CHECKS=true
+fi
 
 # Get staged files count for better reporting
 STAGED_COUNT=$(git diff --cached --name-only | wc -l)
@@ -70,6 +77,18 @@ if ! timeout 15 pnpm run security:license-check >/dev/null 2>&1; then
   echo "⚠️  LICENSE COMPLIANCE ISSUES DETECTED!"
   echo "   • Incompatible or restricted licenses found"
   echo "   • Review reports/license-check.json for details"
+fi
+
+# 5. Infrastructure as Code Security Check
+echo "  • Scanning infrastructure security..."
+INFRA_FILES=$(echo "$STAGED_FILES" | grep -E "\.(tf|tfvars|yml|yaml|dockerfile|Dockerfile)$" || true)
+if [ -n "$INFRA_FILES" ]; then
+  echo "  • Infrastructure changes detected - running security scan..."
+  if ! timeout 20 pnpm run infrastructure:tfsec >/dev/null 2>&1; then
+    echo "⚠️  WARNING: Infrastructure security issues detected"
+    echo "   • Run 'pnpm run infrastructure:tfsec' for detailed results"
+    echo "   • Review and fix infrastructure security vulnerabilities"
+  fi
 fi
 
 # 5. Financial Logic Validation
@@ -156,6 +175,14 @@ if [ -n "$UI_FILES" ]; then
     echo "   • WCAG 2.1 AA compliance recommended for Ethiopian market"
     echo "   • Consider adding ARIA labels, semantic HTML, and keyboard navigation"
   fi
+
+  # Run automated accessibility checks for UI files
+  echo "  • Running automated accessibility validation..."
+  if ! timeout 20 pnpm run accessibility:jest >/dev/null 2>&1; then
+    echo "⚠️  WARNING: Accessibility test failures detected"
+    echo "   • Run 'pnpm run accessibility:jest' for detailed results"
+    echo "   • Ensure WCAG 2.1 AA compliance for Ethiopian accessibility standards"
+  fi
 fi
 
 # ============================================================================
@@ -210,7 +237,16 @@ if ! timeout 15 pnpm audit --audit-level moderate >/dev/null 2>&1; then
   echo "   • Critical vulnerabilities should be addressed immediately"
 fi
 
-# 12. Outdated Dependencies Check
+# 12. SBOM & Supply Chain Security Check
+echo "  • Validating Software Bill of Materials (SBOM)..."
+if ! timeout 15 pnpm run security:sbom:validate >/dev/null 2>&1; then
+  echo "⚠️  WARNING: SBOM validation issues detected"
+  echo "   • Supply chain security validation failed"
+  echo "   • Run 'pnpm run security:sbom:validate' for details"
+  echo "   • Ensure all dependencies are properly documented"
+fi
+
+# 13. Outdated Dependencies Check
 echo "  • Checking for outdated dependencies..."
 OUTDATED_COUNT=$(timeout 10 pnpm outdated --json 2>/dev/null | grep -c '"latest"' || echo "0")
 if [ "$OUTDATED_COUNT" -gt 10 ]; then

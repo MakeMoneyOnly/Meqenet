@@ -104,7 +104,9 @@ const checks = {
         // Check for Prettier (handle both static arrays and functions)
         let hasPrettier = false;
         for (const [pattern, commands] of Object.entries(config)) {
-          if (pattern.includes('.{js,jsx,ts,tsx,json,md,yml,yaml}')) {
+          if (pattern.includes('.{js,jsx,ts,tsx,json,md,yml,yaml}') ||
+              pattern.includes('*.{js,jsx,ts,tsx,json,md,yml,yaml}') ||
+              pattern === '*.{js,jsx,ts,tsx,json,md,yml,yaml}') {
             if (Array.isArray(commands)) {
               // Static array of commands
               hasPrettier =

@@ -152,7 +152,7 @@ if (isDockerAvailable()) {
       '🐳 Docker available, using Trufflehog for comprehensive secret scanning...'
     );
 
-    const command = `docker run --rm -v "${cwd}:/repo" -v "${trufflehogignorePath}:/.trufflehogignore" trufflesecurity/trufflehog:latest filesystem --only-verified --no-update --json /repo -x /.trufflehogignore`;
+    const command = `docker run --rm -v "${cwd}:/repo" -v "${trufflehogignorePath}:/.trufflehogignore" trufflesecurity/trufflehog:latest filesystem --only-verified --no-update --json /repo`;
 
     console.log(`Running secret scan with command: ${command}`);
 
