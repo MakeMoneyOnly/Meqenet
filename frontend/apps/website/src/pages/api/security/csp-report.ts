@@ -173,7 +173,9 @@ export default async function handler(
       columnNumber: report['column-number'],
       userAgent: SecurityUtils.sanitizeUserAgent(req.headers['user-agent']),
       ip: SecurityUtils.sanitizeIp(
-        req.headers['x-forwarded-for'] || req.connection.remoteAddress,
+        Array.isArray(req.headers['x-forwarded-for'])
+          ? req.headers['x-forwarded-for'][0]
+          : req.headers['x-forwarded-for'] || req.connection.remoteAddress,
       ),
       timestamp: new Date().toISOString(),
     });
