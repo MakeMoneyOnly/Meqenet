@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { Prisma } from '@prisma/client';
 
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -23,12 +24,15 @@ interface PrismaOutboxMessage {
   aggregateType: string;
   aggregateId: string;
   eventType: string;
-  payload: Record<string, unknown> | null; // JsonValue from Prisma - can be null or any JSON value
+  payload: Prisma.JsonValue; // JsonValue from Prisma - can be null or any JSON value
+  metadata: Prisma.JsonValue; // JsonValue from Prisma - can be null or any JSON value
   errorMessage: string | null;
   dlqReason: string | null;
   retryCount: number;
   createdAt: Date;
   dlqAt: Date | null;
+  status: string;
+  maxRetries: number;
 }
 
 export enum DLQAction {
@@ -325,13 +329,19 @@ export class DLQService {
   // Private helper methods
 
   private mapToDLQMessage(message: PrismaOutboxMessage): DLQMessage {
+    // Safely convert JsonValue to Record<string, unknown>
+    let payload: Record<string, unknown> = {};
+    if (message.payload && typeof message.payload === 'object' && !Array.isArray(message.payload)) {
+      payload = message.payload as Record<string, unknown>;
+    }
+
     return {
       id: message.id,
       messageId: message.messageId,
       aggregateType: message.aggregateType,
       aggregateId: message.aggregateId,
       eventType: message.eventType,
-      payload: message.payload || {},
+      payload,
       errorMessage: message.errorMessage,
       dlqReason: message.dlqReason ?? 'Unknown reason',
       retryCount: message.retryCount,

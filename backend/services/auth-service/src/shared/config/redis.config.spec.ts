@@ -2,9 +2,13 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 
 import { RedisConfigService } from './redis.config';
 
+interface MockConfigService {
+  get: ReturnType<typeof vi.fn>;
+}
+
 describe('RedisConfigService', () => {
   let service: RedisConfigService;
-  let mockConfigService: any;
+  let mockConfigService: MockConfigService;
 
   beforeEach(async () => {
     mockConfigService = {

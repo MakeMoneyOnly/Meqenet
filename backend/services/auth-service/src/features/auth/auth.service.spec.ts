@@ -17,6 +17,18 @@ import { AuditLoggingService } from '../../shared/services/audit-logging.service
 
 import { AuthService } from './auth.service';
 
+// Interface for testing that exposes private properties
+interface TestableAuthService extends AuthService {
+  prisma: jest.Mocked<import('../../shared/prisma/prisma.service').PrismaService>;
+  jwtService: jest.Mocked<import('@nestjs/jwt').JwtService>;
+  outboxService: jest.Mocked<import('../../shared/outbox/outbox.service').OutboxService>;
+  eventService: jest.Mocked<import('../../shared/services/event.service').EventService>;
+  passwordResetTokenService: jest.Mocked<import('../../shared/services/password-reset-token.service').PasswordResetTokenService>;
+  emailService: jest.Mocked<import('../../shared/services/email.service').EmailService>;
+  securityMonitoring: jest.Mocked<import('../../shared/services/security-monitoring.service').SecurityMonitoringService>;
+  auditLogging: jest.Mocked<import('../../shared/services/audit-logging.service').AuditLoggingService>;
+}
+
 // Mock bcrypt
 vi.mock('bcrypt', () => ({
   compare: vi.fn(),
@@ -133,14 +145,14 @@ describe('AuthService', () => {
 
     service = module.get<AuthService>(AuthService);
     // Mock the prisma property directly on the service instance
-    (service as any).prisma = mockPrismaService;
-    (service as any).jwtService = mockJwtService;
-    (service as any).outboxService = mockOutboxService;
-    (service as any).eventService = mockEventService;
-    (service as any).passwordResetTokenService = mockPasswordResetTokenService;
-    (service as any).emailService = mockEmailService;
-    (service as any).securityMonitoring = mockSecurityMonitoringService;
-    (service as any).auditLogging = mockAuditLoggingService;
+    (service as TestableAuthService).prisma = mockPrismaService;
+    (service as TestableAuthService).jwtService = mockJwtService;
+    (service as TestableAuthService).outboxService = mockOutboxService;
+    (service as TestableAuthService).eventService = mockEventService;
+    (service as TestableAuthService).passwordResetTokenService = mockPasswordResetTokenService;
+    (service as TestableAuthService).emailService = mockEmailService;
+    (service as TestableAuthService).securityMonitoring = mockSecurityMonitoringService;
+    (service as TestableAuthService).auditLogging = mockAuditLoggingService;
   });
 
   it('should be defined', () => {

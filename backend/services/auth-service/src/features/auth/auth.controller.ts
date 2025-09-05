@@ -50,7 +50,7 @@ export class AuthController {
   ): Promise<{ message: string }> {
     return this.authService.requestPasswordReset(dto, {
       ipAddress: req.ip || 'unknown',
-      userAgent: (req.headers['user-agent'] as string) || undefined,
+      userAgent: (req.headers['user-agent'] as string) || 'Unknown',
     });
   }
 

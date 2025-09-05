@@ -1,4 +1,5 @@
 import { AppProps } from 'next/app';
+import App from 'next/app';
 import Head from 'next/head';
 import React, { Component, ErrorInfo, JSX, ReactNode } from 'react';
 import { I18nextProvider } from 'react-i18next';
@@ -42,17 +43,28 @@ function CustomApp({ Component, pageProps }: AppProps): JSX.Element {
   return (
     <>
       <Head>
-        <title>Welcome to website!</title>
+        <title>Welcome to Meqenet</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
       <main className="app">
         <ErrorBoundary>
-          <I18nextProvider i18n={i18n}>
+          {i18n ? (
+            <I18nextProvider i18n={i18n}>
+              <Component {...pageProps} />
+            </I18nextProvider>
+          ) : (
             <Component {...pageProps} />
-          </I18nextProvider>
+          )}
         </ErrorBoundary>
       </main>
     </>
   );
 }
+
+// Disable static optimization for i18n compatibility
+CustomApp.getInitialProps = async (appContext: any) => {
+  const appProps = await (App as any).getInitialProps?.(appContext);
+  return { ...appProps };
+};
 
 export default CustomApp;

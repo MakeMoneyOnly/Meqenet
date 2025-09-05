@@ -169,7 +169,7 @@ describe('PasswordResetTokenService', () => {
         token: expectedHashedToken,
         hashedToken: expectedHashedToken,
         ipAddress,
-        userAgent: undefined,
+        userAgent: null,
         expiresAt: new Date(Date.now() + TOKEN_EXPIRY_HOURS * MINUTES_PER_HOUR * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND),
         isUsed: false,
         createdAt: new Date(),
@@ -187,7 +187,7 @@ describe('PasswordResetTokenService', () => {
           token: expectedHashedToken,
           hashedToken: expectedHashedToken,
           ipAddress,
-          userAgent: undefined,
+          userAgent: null,
           expiresAt: expect.any(Date),
         },
       });

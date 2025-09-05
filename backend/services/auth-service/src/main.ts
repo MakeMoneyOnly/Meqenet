@@ -151,7 +151,7 @@ async function bootstrap(): Promise<void> {
         transformOptions: {
           enableImplicitConversion: true,
         },
-        exceptionFactory: (validationErrors: ValidationError[]): ValidationError[] => {
+        exceptionFactory: (validationErrors: ValidationError[]): BadRequestException => {
           const messages = validationErrors.map(err => {
             const constraints = err.constraints || {};
             const firstMessage = Object.values(constraints)[0] as
@@ -179,7 +179,7 @@ async function bootstrap(): Promise<void> {
               am: 'ማረጋገጥ አልተሳካም።',
             };
           });
-          return new BadRequestException({ message: messages });
+          return new BadRequestException(messages);
         },
       })
     );

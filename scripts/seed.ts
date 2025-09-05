@@ -28,7 +28,7 @@ const ethiopianLastNames = [
 const prisma = new PrismaClient();
 
 // Encryption setup - using direct process.env for script-level configuration
-// eslint-disable-next-line no-process-env
+// This script runs outside of NestJS context, so ConfigService is not available
 const encryptionKey = process.env.E2E_DB_ENCRYPTION_KEY;
 if (!encryptionKey || encryptionKey.length < MIN_ENCRYPTION_KEY_LENGTH) {
   throw new Error(

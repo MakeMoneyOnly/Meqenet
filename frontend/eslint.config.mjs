@@ -32,6 +32,8 @@ export default [
       '**/vitest.config.*.timestamp*',
       '**/metro.config.js',
       '**/babel.config.js',
+      '**/.next',
+      '**/.next/**/*',
     ],
   },
   {

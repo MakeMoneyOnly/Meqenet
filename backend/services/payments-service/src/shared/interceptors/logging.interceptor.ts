@@ -166,7 +166,6 @@ export class LoggingInterceptor implements NestInterceptor {
       status: (error as Record<string, unknown>).status,
       // Don't include stack trace in production logs for security
       // Note: This is a controlled access to process.env for logging configuration only
-      // eslint-disable-next-line internal/no-process-env-outside-config
       stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
     };
   }

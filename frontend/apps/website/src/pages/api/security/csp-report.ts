@@ -42,6 +42,34 @@ interface CSPViolationReport {
   };
 }
 
+/**
+ * Safely extracts error information from an unknown error type
+ */
+function getErrorInfo(error: unknown): { message: string; stack?: string } {
+  if (error instanceof Error) {
+    return {
+      message: error.message,
+      stack: error.stack,
+    };
+  }
+
+  if (typeof error === 'string') {
+    return { message: error };
+  }
+
+  if (error && typeof error === 'object') {
+    const errorObj = error as Record<string, unknown>;
+    if ('message' in errorObj) {
+      return {
+        message: String(errorObj.message),
+        stack: 'stack' in errorObj ? String(errorObj.stack) : undefined,
+      };
+    }
+  }
+
+  return { message: 'Unknown error occurred' };
+}
+
 // HTTP Status Code constants
 const HTTP_METHOD_NOT_ALLOWED = 405;
 const HTTP_BAD_REQUEST = 400;
@@ -98,9 +126,10 @@ export default async function handler(
     });
 
   } catch (error) {
+    const errorInfo = getErrorInfo(error);
     logger.error('Error processing CSP report', {
-      error: error.message,
-      stack: error.stack,
+      error: errorInfo.message,
+      stack: errorInfo.stack,
       body: req.body,
     });
 

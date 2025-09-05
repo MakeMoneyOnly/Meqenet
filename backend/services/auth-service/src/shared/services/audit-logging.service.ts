@@ -4,22 +4,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../infrastructure/database/prisma.service';
 
-interface AuditLogEntry {
-  eventType: string;
-  entityType: string;
-  entityId: string;
-  userId: string | null;
-  userEmail: string;
-  userRole: string;
-  ipAddress: string;
-  userAgent: string;
-  sessionId: string;
-  location: string;
-  deviceFingerprint: string;
-  eventData: Record<string, unknown>;
-  riskScore: number;
-  complianceFlags: Record<string, boolean>;
-}
+// Removed unused interface - using Prisma types directly
 
 // Risk score constants
 const HIGH_RISK_SCORE = 0.8;
@@ -95,24 +80,36 @@ export class AuditLoggingService {
    */
   async logAuthEvent(event: AuthAuditEvent): Promise<void> {
     try {
+      const complianceFlagsArray = this.determineComplianceFlags(event);
+      const complianceFlagsRecord: Record<string, boolean> = {};
+      complianceFlagsArray.forEach(flag => {
+        complianceFlagsRecord[flag] = true;
+      });
+
       const auditEntry = {
         eventType: event.eventType,
         entityType: 'USER_AUTH',
         entityId: event.userId || 'SYSTEM',
-        userId: event.userId || null,
-        userEmail: event.userEmail,
-        userRole: event.userRole,
+        userId: event.userId || 'SYSTEM',
+        userEmail: event.userEmail || '',
+        userRole: event.userRole || '',
         ipAddress: event.ipAddress,
         userAgent: event.userAgent || 'Unknown',
-        sessionId: event.sessionId,
-        location: event.location,
-        deviceFingerprint: event.deviceFingerprint,
-        eventData: event.eventData,
-        riskScore: event.riskScore,
-        complianceFlags: this.determineComplianceFlags(event),
+        sessionId: event.sessionId || '',
+        location: event.location || '',
+        deviceFingerprint: event.deviceFingerprint || '',
+        eventData: event.eventData || {},
+        riskScore: event.riskScore || 0,
+        complianceFlags: complianceFlagsRecord,
       };
 
-      await this.prisma.createAuditLog(auditEntry as AuditLogEntry);
+      await this.prisma.auditLog.create({
+        data: {
+          ...auditEntry,
+          eventData: JSON.parse(JSON.stringify(auditEntry.eventData)),
+          complianceFlags: Object.keys(complianceFlagsRecord) as string[],
+        },
+      });
 
       // Log structured event for monitoring
       this.logger.log(`🔐 AUTH AUDIT: ${event.eventType}`, {

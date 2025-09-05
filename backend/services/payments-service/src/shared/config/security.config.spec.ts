@@ -2,9 +2,13 @@ import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { vi } from 'vitest';
 
+interface MockConfigService {
+  get: ReturnType<typeof vi.fn>;
+}
+
 describe('SecurityConfig', () => {
   let configService: ConfigService;
-  let mockConfigService: any;
+  let mockConfigService: MockConfigService;
 
   beforeEach(async () => {
     // Create a fresh mock for each test

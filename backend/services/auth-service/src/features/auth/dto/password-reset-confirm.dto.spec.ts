@@ -29,7 +29,7 @@ describe('PasswordResetConfirmDto', () => {
     });
 
     it('should fail validation with undefined token', async () => {
-      dto.token = undefined as any;
+      dto.token = undefined as string;
       dto.newPassword = 'StrongP@ssw0rd123';
       dto.confirmPassword = 'StrongP@ssw0rd123';
 
@@ -138,7 +138,7 @@ describe('PasswordResetConfirmDto', () => {
 
     it('should fail validation with undefined password', async () => {
       dto.token = 'valid-token';
-      dto.newPassword = undefined as any;
+      dto.newPassword = undefined as string;
       dto.confirmPassword = 'StrongP@ssw0rd123';
 
       const errors = await validate(dto);
@@ -189,7 +189,7 @@ describe('PasswordResetConfirmDto', () => {
     it('should fail validation with undefined confirmPassword', async () => {
       dto.token = 'valid-token';
       dto.newPassword = 'StrongP@ssw0rd123';
-      dto.confirmPassword = undefined as any;
+      dto.confirmPassword = undefined as string;
 
       const errors = await validate(dto);
       expect(errors.length).toBeGreaterThan(0);
@@ -342,18 +342,18 @@ describe('PasswordResetConfirmDto', () => {
 
   describe('edge cases', () => {
     it('should handle null values', async () => {
-      dto.token = null as any;
-      dto.newPassword = null as any;
-      dto.confirmPassword = null as any;
+      dto.token = null as string;
+      dto.newPassword = null as string;
+      dto.confirmPassword = null as string;
 
       const errors = await validate(dto);
       expect(errors.length).toBeGreaterThan(0);
     });
 
     it('should handle undefined values', async () => {
-      dto.token = undefined as any;
-      dto.newPassword = undefined as any;
-      dto.confirmPassword = undefined as any;
+      dto.token = undefined as string;
+      dto.newPassword = undefined as string;
+      dto.confirmPassword = undefined as string;
 
       const errors = await validate(dto);
       expect(errors.length).toBeGreaterThan(0);

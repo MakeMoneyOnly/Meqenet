@@ -1,6 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 
 import { MessagingProducerService } from '../../infrastructure/messaging/messaging.producer.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -21,8 +21,8 @@ type PrismaOutboxMessage = {
   aggregateType: string;
   aggregateId: string;
   eventType: string;
-  payload: Record<string, unknown> | null; // JsonValue from Prisma - can be null or any JSON value
-  metadata?: Record<string, unknown> | null; // JsonValue from Prisma - can be null or any JSON value
+  payload: Prisma.JsonValue; // JsonValue from Prisma - can be null or any JSON value
+  metadata?: Prisma.JsonValue; // JsonValue from Prisma - can be null or any JSON value
   status: string;
   retryCount: number;
   maxRetries: number;
@@ -78,14 +78,22 @@ export class OutboxService implements OnModuleInit {
     > = this.prisma
   ): Promise<void> {
     try {
+      // Safely convert payload and metadata to Prisma-compatible types
+      const payload = (message.payload && typeof message.payload === 'object' && !Array.isArray(message.payload))
+        ? message.payload
+        : {};
+      const metadata = (message.metadata && typeof message.metadata === 'object' && !Array.isArray(message.metadata))
+        ? message.metadata
+        : {};
+
       await prisma.outboxMessage.create({
         data: {
           messageId: message.messageId,
           aggregateType: message.aggregateType,
           aggregateId: message.aggregateId,
           eventType: message.eventType,
-          payload: (message.payload || {}) as Record<string, unknown>,
-          metadata: (message.metadata || {}) as Record<string, unknown>,
+          payload: JSON.parse(JSON.stringify(payload)),
+          metadata: JSON.parse(JSON.stringify(metadata)),
           status: OutboxStatus.PENDING,
           maxRetries: this.MAX_RETRIES,
         },

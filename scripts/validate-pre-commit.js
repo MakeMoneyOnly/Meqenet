@@ -289,7 +289,7 @@ let warningChecks = 0;
 console.log('\n📋 Validation Results:');
 console.log('======================');
 
-for (const [key, check] of Object.entries(checks)) {
+for (const [_key, check] of Object.entries(checks)) {
   totalChecks++;
   const result = check.validate();
 

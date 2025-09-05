@@ -5,6 +5,10 @@ import { vi, describe, it, beforeEach, afterEach, expect } from 'vitest';
 
 import { FaydaEncryptionUtil } from './fayda-encryption.util';
 
+interface MockConfigService {
+  get: ReturnType<typeof vi.fn>;
+}
+
 /**
  * Critical Security Tests for Fayda National ID Encryption
  *
@@ -25,9 +29,9 @@ describe('FaydaEncryptionUtil - Security Tests', () => {
 
   beforeEach(async () => {
     // Manual dependency injection to work around Vitest DI issues
-    const mockConfigService = {
+    const mockConfigService: MockConfigService = {
       get: vi.fn((key: string) => mockConfig[key as keyof typeof mockConfig]),
-    } as any;
+    };
 
     service = new FaydaEncryptionUtil(mockConfigService);
     _configService = mockConfigService;
@@ -214,9 +218,10 @@ describe('FaydaEncryptionUtil - Security Tests', () => {
       // Missing algorithm
       await expect(
         service.decryptFaydaId(validData, {
+          algorithm: '',
           timestamp: Date.now(),
           checksum: 'a'.repeat(64),
-        } as any)
+        })
       ).rejects.toThrow('Invalid metadata: missing required fields');
 
       // Missing checksum
@@ -224,7 +229,8 @@ describe('FaydaEncryptionUtil - Security Tests', () => {
         service.decryptFaydaId(validData, {
           algorithm: 'aes-256-gcm',
           timestamp: Date.now(),
-        } as any)
+          checksum: '',
+        })
       ).rejects.toThrow('Invalid metadata: missing required fields');
     });
   });

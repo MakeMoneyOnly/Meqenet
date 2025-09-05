@@ -245,7 +245,7 @@ export class FaydaEncryptionUtil {
    * @returns Derived encryption key
    */
   private async deriveKey(salt: Buffer): Promise<Buffer> {
-    const masterKey = this.configService.get<string>('FAYDA_ENCRYPTION_KEY');
+    const masterKey = this.configService.get<string>('faydaEncryptionKey');
     if (!masterKey || typeof masterKey !== 'string') {
       throw new Error('Fayda encryption key not configured');
     }
@@ -298,7 +298,7 @@ export class FaydaEncryptionUtil {
 
     this.validateFaydaIdFormat(faydaId);
 
-    const salt = this.configService.get<string>('FAYDA_HASH_SALT');
+    const salt = this.configService.get<string>('faydaHashSalt');
     if (!salt || typeof salt !== 'string') {
       throw new Error('Fayda hash salt not configured');
     }

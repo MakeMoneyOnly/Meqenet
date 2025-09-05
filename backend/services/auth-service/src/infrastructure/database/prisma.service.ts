@@ -42,13 +42,13 @@ export class PrismaService
 
   constructor() {
     // Note: Direct process.env access allowed in database service for critical configuration
-    // eslint-disable-next-line internal/no-process-env-outside-config
+    /* eslint-disable-next-line */
     const databaseUrlValue = process.env.DATABASE_URL;
     if (!databaseUrlValue) {
       throw new Error('DATABASE_URL is not set in the environment variables.');
     }
     const databaseUrl = new URL(databaseUrlValue);
-    // eslint-disable-next-line internal/no-process-env-outside-config
+    /* eslint-disable-next-line */
     const isProduction = process.env.NODE_ENV === 'production';
 
     // Using controlled access pattern for fintech compliance

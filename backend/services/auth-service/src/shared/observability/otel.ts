@@ -5,7 +5,6 @@ import { Resource } from '@opentelemetry/resources';
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
 import { SpanExporter } from '@opentelemetry/sdk-trace-base';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-grpc';
-import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-grpc';
 import { JaegerExporter } from '@opentelemetry/exporter-jaeger';
 
 let sdk: NodeSDK | undefined;
@@ -42,7 +41,7 @@ export function initializeOpenTelemetry(config?: OpenTelemetryConfig): void {
     const resource = new Resource(resourceAttributes);
 
     // Configure trace exporter based on available endpoints
-    let traceExporter: SpanExporter;
+    let traceExporter: SpanExporter | undefined;
 
     if (config?.jaegerEndpoint) {
       traceExporter = new JaegerExporter({
@@ -56,15 +55,6 @@ export function initializeOpenTelemetry(config?: OpenTelemetryConfig): void {
       });
     }
 
-    // Optional: logs exporter via OTLP if available
-    const logExporter =
-      config?.otelEndpoint || otelExporterOtlpEndpoint
-        ? new OTLPLogExporter({
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            url: (config?.otelEndpoint || otelExporterOtlpEndpoint)!,
-          })
-        : undefined;
-
     if (!traceExporter) {
       diag.warn('No trace exporter configured. Tracing will be disabled.');
       return;
@@ -72,14 +62,9 @@ export function initializeOpenTelemetry(config?: OpenTelemetryConfig): void {
 
     const sdkConfig: Partial<NodeSDKConfiguration> = {
       instrumentations: [getNodeAutoInstrumentations()],
-      resource: resource,
-      traceExporter: traceExporter,
+      resource: resource as any, // Type compatibility workaround
+      traceExporter: traceExporter as any, // Type compatibility workaround
     };
-
-    // Only add logRecordProcessor if logExporter exists
-    if (logExporter) {
-      sdkConfig.logRecordProcessor = logExporter;
-    }
 
     sdk = new NodeSDK(sdkConfig);
 

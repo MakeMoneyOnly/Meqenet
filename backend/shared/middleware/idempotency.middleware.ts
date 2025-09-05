@@ -21,7 +21,6 @@ const RESPONSE_TTL_SECONDS = HOURS_IN_DAY * MINUTES_IN_HOUR * SECONDS_IN_MINUTE;
 const HTTP_STATUS_OK = 200;
 
 // Configuration utility for shared middleware (cannot use DI)
-/* eslint-disable internal/no-process-env-outside-config */
 class IdempotencyConfig {
   static get serviceName(): string {
     return process.env.SERVICE_NAME || DEFAULT_SERVICE_NAME;
@@ -40,7 +39,6 @@ class IdempotencyConfig {
     return process.env.REDIS_PASSWORD;
   }
 }
-/* eslint-enable internal/no-process-env-outside-config */
 
 const SERVICE_NAMESPACE = IdempotencyConfig.serviceName;
 const KEY_PREFIX = `idemp:${SERVICE_NAMESPACE}:`;
