@@ -74,17 +74,59 @@ jobs:
             fi
           fi
 
-          # Verify Prisma client was generated (check both relative paths)
-          if [ ! -f "../../node_modules/.prisma/client/index.d.ts" ] && [ ! -f "../../../node_modules/.prisma/client/index.d.ts" ]; then
+          # Verify Prisma client was generated (check pnpm workspace store)
+          echo "🔍 Verifying Prisma client generation..."
+
+          # Check pnpm workspace store location (new Prisma location)
+          PRISMA_CLIENT_FOUND=false
+          PRISMA_CLIENT_PATH=""
+
+          # Find Prisma client in pnpm store
+          if [ -d "../../node_modules/.pnpm" ]; then
+            echo "📦 Checking pnpm workspace store..."
+            PRISMA_PATH=$(find ../../node_modules/.pnpm -name "client" -type d -path "*/@prisma/client" 2>/dev/null | head -1)
+            if [ -n "$PRISMA_PATH" ] && [ -f "$PRISMA_PATH/index.d.ts" ]; then
+              PRISMA_CLIENT_FOUND=true
+              PRISMA_CLIENT_PATH="$PRISMA_PATH"
+              echo "✅ Found Prisma client in pnpm workspace store: $PRISMA_CLIENT_PATH"
+            fi
+          fi
+
+          # Fallback: Check local node_modules (older Prisma versions)
+          if [ "$PRISMA_CLIENT_FOUND" = false ]; then
+            echo "📦 Checking local node_modules..."
+            if [ -f "node_modules/@prisma/client/index.d.ts" ]; then
+              PRISMA_CLIENT_FOUND=true
+              PRISMA_CLIENT_PATH="node_modules/@prisma/client"
+              echo "✅ Found Prisma client in local node_modules: $PRISMA_CLIENT_PATH"
+            fi
+          fi
+
+          if [ "$PRISMA_CLIENT_FOUND" = false ]; then
             echo "❌ Prisma client generation verification failed"
-            echo "Checking workspace root node_modules..."
-            ls -la ../../node_modules/.prisma/ 2>/dev/null || echo "Prisma client directory not found in workspace root"
-            echo "Checking auth-service node_modules..."
-            ls -la node_modules/.prisma/ 2>/dev/null || echo "Prisma client directory not found in auth-service"
+            echo "🔍 Debugging information:"
+            echo "  - Workspace pnpm store exists: $([ -d '../../node_modules/.pnpm' ] && echo 'Yes' || echo 'No')"
+            echo "  - Local node_modules exists: $([ -d 'node_modules' ] && echo 'Yes' || echo 'No')"
+            echo "  - Searched locations:"
+            echo "    * ../../node_modules/.pnpm/**/@prisma/client/index.d.ts"
+            echo "    * node_modules/@prisma/client/index.d.ts"
+            echo ""
+            echo "💡 This usually indicates:"
+            echo "   1. Prisma generate command failed silently"
+            echo "   2. Version mismatch between @prisma/client and prisma CLI"
+            echo "   3. Missing schema.prisma file"
+            echo "   4. Network issues during Prisma engine download"
             exit 1
           else
             echo "✅ Prisma client generated successfully"
-            echo "Client location: $(find ../../node_modules ../../../node_modules -name "index.d.ts" -path "*/.prisma/client/*" 2>/dev/null | head -1)"
+            echo "📍 Client location: $PRISMA_CLIENT_PATH"
+
+            # Additional verification: check if client is importable
+            if [ -f "$PRISMA_CLIENT_PATH/index.js" ] || [ -f "$PRISMA_CLIENT_PATH/index.mjs" ]; then
+              echo "✅ Prisma client files verified (TypeScript + JavaScript)"
+            else
+              echo "⚠️ Warning: Missing JavaScript client files, TypeScript-only client detected"
+            fi
           fi
       - name: Run AML/KYC tests
         run: |

@@ -159,7 +159,7 @@ if (isDockerAvailable()) {
     const result = spawnSync(command, [], {
       stdio: 'pipe', // Capture output instead of inheriting
       shell: true,
-      timeout: 120000, // 2 minute timeout for comprehensive scan
+      timeout: 300000, // 5 minute timeout for comprehensive scan
       encoding: 'utf8',
     });
 

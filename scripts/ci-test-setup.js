@@ -224,63 +224,195 @@ async function verifySetup() {
 
   // Check for Prisma client in pnpm workspace location
   const workspaceRoot = path.join(__dirname, '..');
-  const pnpmPrismaPath = path.join(
-    workspaceRoot,
-    'node_modules',
-    '.pnpm',
-    '@prisma+client*',
-    'node_modules',
-    '@prisma',
-    'client'
-  );
-
-  // Also check the service's local node_modules as fallback
-  const localPrismaPath = path.join(
-    authServicePath,
-    'node_modules',
-    '@prisma',
-    'client'
-  );
 
   let prismaClientPath = null;
   let foundLocation = '';
 
-  // Check pnpm workspace location first (with glob pattern)
+  // Check pnpm workspace store for generated Prisma client
   try {
-    const pnpmPattern = path.join(
-      workspaceRoot,
-      'node_modules',
-      '.pnpm',
-      '@prisma+client*',
+    const pnpmStore = path.join(workspaceRoot, 'node_modules', '.pnpm');
+
+    if (fs.existsSync(pnpmStore)) {
+      // Look for @prisma+client directories in pnpm store
+      const pnpmDirs = fs.readdirSync(pnpmStore);
+      const prismaClientDirs = pnpmDirs.filter(dir =>
+        dir.startsWith('@prisma+client@')
+      );
+
+      for (const dir of prismaClientDirs) {
+        const clientPath = path.join(
+          pnpmStore,
+          dir,
+          'node_modules',
+          '@prisma',
+          'client'
+        );
+
+        // Check if this directory contains the generated client files
+        if (fs.existsSync(clientPath)) {
+          const indexPath = path.join(clientPath, 'index.js');
+          const indexDPath = path.join(clientPath, 'index.d.ts');
+
+          if (fs.existsSync(indexPath) || fs.existsSync(indexDPath)) {
+            // Also check for the .prisma/client directory which contains schema-specific generation
+            const prismaDir = path.join(
+              pnpmStore,
+              dir,
+              'node_modules',
+              '.prisma',
+              'client'
+            );
+
+            if (fs.existsSync(prismaDir)) {
+              const prismaIndex = path.join(prismaDir, 'index.js');
+              const prismaIndexD = path.join(prismaDir, 'index.d.ts');
+
+              if (fs.existsSync(prismaIndex) || fs.existsSync(prismaIndexD)) {
+                prismaClientPath = prismaDir;
+                foundLocation = `pnpm workspace store (${dir})`;
+                break;
+              }
+            } else {
+              // Fallback to the base client if .prisma/client doesn't exist
+              prismaClientPath = clientPath;
+              foundLocation = `pnpm workspace store (${dir}) - base client`;
+              break;
+            }
+          }
+        }
+      }
+    }
+  } catch (err) {
+    log(`Warning: Error checking pnpm store: ${err.message}`);
+  }
+
+  // Fallback to local node_modules
+  if (!prismaClientPath) {
+    const localPrismaPath = path.join(
+      authServicePath,
       'node_modules',
       '@prisma',
       'client'
     );
-    const pnpmPaths = await glob(pnpmPattern);
-    if (pnpmPaths.length > 0) {
-      prismaClientPath = pnpmPaths[0];
-      foundLocation = 'pnpm workspace store';
-    }
-  } catch (_err) {
-    // glob might not be available or pattern failed, continue with fallback
-  }
 
-  // Fallback to local node_modules
-  if (!prismaClientPath && fs.existsSync(localPrismaPath)) {
-    prismaClientPath = localPrismaPath;
-    foundLocation = 'local node_modules';
+    if (fs.existsSync(localPrismaPath)) {
+      const localPrismaIndex = path.join(localPrismaPath, 'index.js');
+      const localPrismaIndexD = path.join(localPrismaPath, 'index.d.ts');
+
+      if (fs.existsSync(localPrismaIndex) || fs.existsSync(localPrismaIndexD)) {
+        prismaClientPath = localPrismaPath;
+        foundLocation = 'local node_modules';
+      }
+    }
   }
 
   if (!prismaClientPath) {
-    error('Prisma client not found in either pnpm workspace store or local node_modules');
+    error(
+      'Prisma client not found in either pnpm workspace store or local node_modules'
+    );
     error('Searched locations:');
-    error(`  - ${pnpmPrismaPath}`);
-    error(`  - ${localPrismaPath}`);
-    error('This indicates the Prisma generate command did not complete successfully.');
+    error(
+      `  - pnpm workspace store (.pnpm/@prisma+client*/node_modules/@prisma/client)`
+    );
+    error(
+      `  - pnpm workspace store (.pnpm/@prisma+client*/node_modules/.prisma/client)`
+    );
+    error(`  - ${authServicePath}/node_modules/@prisma/client`);
+    error(
+      'This indicates the Prisma generate command did not complete successfully.'
+    );
+
+    // Additional debugging info
+    log('🔍 Debugging information:');
+    log(`  Workspace root: ${workspaceRoot}`);
+    log(`  Auth service path: ${authServicePath}`);
+    log(
+      `  Node modules exists in workspace: ${fs.existsSync(path.join(workspaceRoot, 'node_modules'))}`
+    );
+    log(
+      `  Node modules exists in auth service: ${fs.existsSync(path.join(authServicePath, 'node_modules'))}`
+    );
+
+    // Check if pnpm store exists
+    const pnpmStore = path.join(workspaceRoot, 'node_modules', '.pnpm');
+    log(`  Pnpm store exists: ${fs.existsSync(pnpmStore)}`);
+
+    if (fs.existsSync(pnpmStore)) {
+      try {
+        const pnpmContents = fs.readdirSync(pnpmStore);
+        const prismaClientDirs = pnpmContents.filter(item =>
+          item.startsWith('@prisma+client@')
+        );
+        log(
+          `  Prisma client packages in pnpm store: ${prismaClientDirs.join(', ')}`
+        );
+
+        // Check each Prisma client directory
+        for (const dir of prismaClientDirs) {
+          const clientPath = path.join(
+            pnpmStore,
+            dir,
+            'node_modules',
+            '@prisma',
+            'client'
+          );
+          const prismaPath = path.join(
+            pnpmStore,
+            dir,
+            'node_modules',
+            '.prisma',
+            'client'
+          );
+
+          log(`  ${dir}:`);
+          log(`    Base client exists: ${fs.existsSync(clientPath)}`);
+          log(`    Generated client exists: ${fs.existsSync(prismaPath)}`);
+
+          if (fs.existsSync(clientPath)) {
+            const indexFiles = ['index.js', 'index.d.ts'].map(f =>
+              path.join(clientPath, f)
+            );
+            log(
+              `    Base client files: ${indexFiles.map(f => (fs.existsSync(f) ? path.basename(f) : 'missing')).join(', ')}`
+            );
+          }
+
+          if (fs.existsSync(prismaPath)) {
+            const indexFiles = ['index.js', 'index.d.ts'].map(f =>
+              path.join(prismaPath, f)
+            );
+            log(
+              `    Generated client files: ${indexFiles.map(f => (fs.existsSync(f) ? path.basename(f) : 'missing')).join(', ')}`
+            );
+          }
+        }
+      } catch (err) {
+        log(`  Could not read pnpm store contents: ${err.message}`);
+      }
+    }
+
     process.exit(1);
   }
 
   success(`Prisma client verified at: ${prismaClientPath} (${foundLocation})`);
+
+  // Verify that Prisma client can actually be imported
+  try {
+    const indexPath = path.join(prismaClientPath, 'index.js');
+    const indexDPath = path.join(prismaClientPath, 'index.d.ts');
+
+    if (!fs.existsSync(indexPath) && !fs.existsSync(indexDPath)) {
+      error(
+        'Prisma client index files not found. Client may not have been generated properly.'
+      );
+      process.exit(1);
+    }
+
+    success('Prisma client index files verified');
+  } catch (err) {
+    error(`Failed to verify Prisma client files: ${err.message}`);
+    process.exit(1);
+  }
 
   // Verify package.json has the correct Prisma dependency
   const packageJsonPath = path.join(authServicePath, 'package.json');

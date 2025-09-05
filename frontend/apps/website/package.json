@@ -35,7 +35,7 @@
     "build": "next build",
     "start": "next start",
     "dev": "next dev",
-    "lint": "next lint",
+    "lint": "eslint . --config eslint.config.mjs",
     "storybook": "nx serve:storybook -p 6006",
     "build-storybook": "nx build:storybook"
   }

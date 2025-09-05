@@ -53,6 +53,15 @@ export default defineConfig({
         // Exclude generated files
         '**/generated/**',
         '**/*.generated.ts',
+        // Exclude Python virtual environment
+        '**/.venv/**',
+        '**/.pip-audit-deps-temp/**',
+        // Exclude Python files and external dependencies
+        '**/*.py',
+        '**/site-packages/**',
+        '**/Lib/**',
+        // Exclude files with problematic characters in names
+        '**/external window */**',
       ],
       // FinTech-grade coverage thresholds
       thresholds: {
