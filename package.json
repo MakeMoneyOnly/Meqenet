@@ -14,6 +14,7 @@
     "test:watch": "pnpm run test:setup && vitest",
     "test:ui": "pnpm run test:setup && vitest --ui",
     "test:coverage": "pnpm run test:setup && vitest run --coverage",
+    "test:ci": "pnpm run test:setup && vitest run --coverage --run",
     "db:migrate": "cd backend/services/auth-service && prisma migrate dev",
     "db:reset": "cd backend/services/auth-service && prisma migrate reset --force",
     "db:seed": "ts-node scripts/seed.ts",
@@ -83,6 +84,7 @@
     "security:dependency-report": "echo 'Generating dependency security report...' && node scripts/generate-dependency-report.js",
     "security:license-check": "echo 'Running license compliance check...' && npx license-checker --json > reports/license-check.json && node scripts/validate-licenses.js",
     "pre-commit:validate": "echo '🔍 Running comprehensive pre-commit validation...' && node scripts/validate-pre-commit.js",
+    "commitlint": "commitlint --edit",
     "compliance:check": "echo '📋 Running compliance validation...' && node scripts/compliance-check.js",
     "security:enterprise-scan": "echo '🛡️ Running enterprise security scan...' && pnpm run security:secrets && pnpm run security:dependency-scan && pnpm run security:license-check && pnpm run compliance:check",
     "security:supply-chain": "echo '🔗 Running supply chain security checks...' && pnpm run security:sbom:validate && pnpm run security:dependency-report",
@@ -107,7 +109,9 @@
     "accessibility:ci": "echo 'Running accessibility tests in CI...' && pnpm run accessibility:pa11y && pnpm run accessibility:axe && pnpm run accessibility:storybook",
     "accessibility:report": "echo 'Generating accessibility compliance report...' && node scripts/generate-accessibility-report.js",
     "accessibility:fix": "echo 'Running automated accessibility fixes...' && eslint --fix --ext .tsx,.ts frontend/ --rule 'jsx-a11y/anchor-is-valid: 0, jsx-a11y/click-events-have-key-events: 0, jsx-a11y/no-static-element-interactions: 0' || echo 'Automated fixes applied where possible'",
-    "wcag:validate": "echo 'Validating WCAG 2.1 AA compliance...' && pnpm run accessibility:audit && pnpm run accessibility:report"
+    "wcag:validate": "echo 'Validating WCAG 2.1 AA compliance...' && pnpm run accessibility:audit && pnpm run accessibility:report",
+    "lint:staged:eslint": "eslint --fix --config eslint.config.staged.js --no-cache --max-warnings 0 --no-warn-ignored",
+    "lint:staged:prettier": "prettier --write"
   },
   "dependencies": {
     "@aws-sdk/client-secrets-manager": "^3.879.0",
@@ -167,6 +171,8 @@
     "zod": "^4.1.5"
   },
   "devDependencies": {
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
     "@eslint/plugin-kit": "0.3.5",
     "@nestjs/cli": "^11.0.10",
     "@nestjs/schematics": "^11.0.7",
