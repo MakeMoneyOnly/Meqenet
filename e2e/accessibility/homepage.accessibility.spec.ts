@@ -15,7 +15,9 @@ test.describe('Homepage Accessibility', () => {
   });
 
   test('should have proper heading structure', async ({ page }) => {
-    const headings = await page.locator('h1, h2, h3, h4, h5, h6').allTextContents();
+    const headings = await page
+      .locator('h1, h2, h3, h4, h5, h6')
+      .allTextContents();
     expect(headings.length).toBeGreaterThan(0);
 
     // Check for main heading
@@ -25,15 +27,19 @@ test.describe('Homepage Accessibility', () => {
 
   test('should have proper focus management', async ({ page }) => {
     // Get all focusable elements
-    const focusableElements = await page.locator(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-    ).all();
+    const focusableElements = await page
+      .locator(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      )
+      .all();
 
     expect(focusableElements.length).toBeGreaterThan(0);
 
     // Test tab navigation
     await page.keyboard.press('Tab');
-    const activeElement = await page.evaluate(() => document.activeElement?.tagName);
+    const activeElement = await page.evaluate(
+      () => document.activeElement?.tagName
+    );
     expect(activeElement).toBeDefined();
   });
 
@@ -59,7 +65,11 @@ test.describe('Homepage Accessibility', () => {
   });
 
   test('should have proper form labels', async ({ page }) => {
-    const inputs = await page.locator('input[type="text"], input[type="email"], input[type="password"], textarea, select').all();
+    const inputs = await page
+      .locator(
+        'input[type="text"], input[type="email"], input[type="password"], textarea, select'
+      )
+      .all();
 
     for (const input of inputs) {
       const id = await input.getAttribute('id');
@@ -67,7 +77,11 @@ test.describe('Homepage Accessibility', () => {
       const ariaLabelledBy = await input.getAttribute('aria-labelledby');
 
       // Either aria-label, aria-labelledby, or associated label should exist
-      const hasLabel = Boolean(ariaLabel || ariaLabelledBy || (id && await page.locator(`label[for="${id}"]`).count() > 0));
+      const hasLabel = Boolean(
+        ariaLabel ||
+          ariaLabelledBy ||
+          (id && (await page.locator(`label[for="${id}"]`).count()) > 0)
+      );
       expect(hasLabel).toBe(true);
     }
   });
@@ -84,7 +98,11 @@ test.describe('Homepage Accessibility', () => {
   });
 
   test('should have proper ARIA landmarks', async ({ page }) => {
-    const landmarks = await page.locator('[role="main"], [role="navigation"], [role="banner"], [role="contentinfo"], main, nav, header, footer').all();
+    const landmarks = await page
+      .locator(
+        '[role="main"], [role="navigation"], [role="banner"], [role="contentinfo"], main, nav, header, footer'
+      )
+      .all();
     expect(landmarks.length).toBeGreaterThan(0);
   });
 
@@ -93,7 +111,9 @@ test.describe('Homepage Accessibility', () => {
     await page.setViewportSize({ width: 375, height: 667 });
 
     // Test touch targets are adequately sized
-    const buttons = await page.locator('button, [role="button"], input[type="submit"], a').all();
+    const buttons = await page
+      .locator('button, [role="button"], input[type="submit"], a')
+      .all();
 
     for (const button of buttons) {
       const box = await button.boundingBox();
@@ -107,12 +127,15 @@ test.describe('Homepage Accessibility', () => {
 
   test('should work with screen readers', async ({ page }) => {
     // Test that interactive elements have proper accessible names
-    const interactiveElements = await page.locator('button, [role="button"], a[href], input, select, textarea').all();
+    const interactiveElements = await page
+      .locator('button, [role="button"], a[href], input, select, textarea')
+      .all();
 
     for (const element of interactiveElements) {
-      const accessibleName = await element.getAttribute('aria-label') ||
-                            await element.getAttribute('aria-labelledby') ||
-                            await element.textContent();
+      const accessibleName =
+        (await element.getAttribute('aria-label')) ||
+        (await element.getAttribute('aria-labelledby')) ||
+        (await element.textContent());
 
       expect(accessibleName?.trim()).toBeTruthy();
     }

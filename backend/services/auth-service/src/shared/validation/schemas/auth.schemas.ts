@@ -71,8 +71,9 @@ export const ipAddressSchema = z.string().refine(val => {
   // Safe validation patterns for IP addresses - no exponential backtracking
   const ipv4Pattern = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
   // Safe IPv6 pattern with length constraints to prevent ReDoS
-   
-  const ipv6Pattern = /^[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}$/;
+
+  const ipv6Pattern =
+    /^[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}:[0-9a-fA-F]{1,4}$/;
 
   if (ipv4Pattern.test(val)) {
     // Additional validation for IPv4 ranges

@@ -1,4 +1,7 @@
 import { composePlugins, withNx } from '@nx/next';
+import withPWA from 'next-pwa';
+import { fileURLToPath } from 'url';
+import { dirname, resolve } from 'path';
 
 /**
  * Security Headers Configuration
@@ -8,27 +11,27 @@ const securityHeaders = [
   // HTTPS and Security Headers
   {
     key: 'Strict-Transport-Security',
-    value: 'max-age=63072000; includeSubDomains; preload'
+    value: 'max-age=63072000; includeSubDomains; preload',
   },
   {
     key: 'X-Frame-Options',
-    value: 'DENY'
+    value: 'DENY',
   },
   {
     key: 'X-Content-Type-Options',
-    value: 'nosniff'
+    value: 'nosniff',
   },
   {
     key: 'X-XSS-Protection',
-    value: '1; mode=block'
+    value: '1; mode=block',
   },
   {
     key: 'Referrer-Policy',
-    value: 'strict-origin-when-cross-origin'
+    value: 'strict-origin-when-cross-origin',
   },
   {
     key: 'Permissions-Policy',
-    value: 'camera=(), microphone=(), geolocation=(), payment=(self), usb=()'
+    value: 'camera=(), microphone=(), geolocation=(), payment=(self), usb=()',
   },
   // Content Security Policy
   {
@@ -55,11 +58,13 @@ const securityHeaders = [
       // Form actions
       "form-action 'self'",
       // Upgrade insecure requests
-      "upgrade-insecure-requests",
+      'upgrade-insecure-requests',
       // Report violations (remove in production if causing issues)
-      "report-uri /api/security/csp-report"
-    ].filter(Boolean).join('; ')
-  }
+      'report-uri /api/security/csp-report',
+    ]
+      .filter(Boolean)
+      .join('; '),
+  },
 ];
 
 /**
@@ -110,12 +115,13 @@ const nextConfig = {
           ...securityHeaders,
           {
             key: 'X-API-Version',
-            value: '1.0.0' // Version managed by package.json
+            value: '1.0.0', // Version managed by package.json
           },
           {
             key: 'X-Request-ID',
-            value: Math.random().toString(36).substring(2) + Date.now().toString(36)
-          }
+            value:
+              Math.random().toString(36).substring(2) + Date.now().toString(36),
+          },
         ],
       },
       {
@@ -125,14 +131,14 @@ const nextConfig = {
           ...securityHeaders,
           {
             key: 'Cache-Control',
-            value: 'no-cache, no-store, must-revalidate'
+            value: 'no-cache, no-store, must-revalidate',
           },
           {
             key: 'X-Payment-Security',
-            value: 'PCI-DSS-Compliant'
-          }
+            value: 'PCI-DSS-Compliant',
+          },
         ],
-      }
+      },
     ];
   },
 
@@ -152,13 +158,13 @@ const nextConfig = {
       exclude: /node_modules/,
     });
 
-
     // Add path aliases for Nx workspace libraries
+    const __dirname = dirname(fileURLToPath(import.meta.url));
     config.resolve.alias = {
       ...config.resolve.alias,
-      '@frontend/shared': new URL('../../../libs/shared/src', import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1'),
-      '@frontend/shared/i18n': new URL('../../../libs/shared/src/i18n', import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1'),
-      '@frontend/shared-ui': new URL('../../../libs/shared-ui/src', import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1'),
+      '@frontend/shared': resolve(__dirname, '../../../libs/shared/src'),
+      '@frontend/shared/i18n': resolve(__dirname, '../../../libs/shared/src/i18n'),
+      '@frontend/shared-ui': resolve(__dirname, '../../../libs/shared-ui/src'),
     };
 
     // Ensure TypeScript extensions are resolved
@@ -216,6 +222,16 @@ const pwaConfig = {
   disable: false, // PWA enabled - environment handled at runtime
   register: true,
   skipWaiting: true,
+  // Workbox configuration for GenerateSW plugin
+  workbox: {
+    generateSW: {
+      swDest: 'public/sw.js',
+      skipWaiting: true,
+      clientsClaim: true,
+      cleanupOutdatedCaches: true,
+      mode: 'production',
+    },
+  },
   // Enhanced security for fintech applications
   runtimeCaching: [
     {
@@ -239,16 +255,22 @@ const pwaConfig = {
             '/fraud/',
             '/ledger/',
             '/accounts/',
-            '/balances/'
+            '/balances/',
           ];
 
-          if (sensitivePatterns.some(pattern => request.url.includes(pattern))) {
+          if (
+            sensitivePatterns.some((pattern) => request.url.includes(pattern))
+          ) {
             return null; // Don't cache sensitive requests
           }
 
           // Additional check for headers that might contain sensitive data
           const headers = request.headers || {};
-          if (headers['authorization'] || headers['x-api-key'] || headers['cookie']) {
+          if (
+            headers['authorization'] ||
+            headers['x-api-key'] ||
+            headers['cookie']
+          ) {
             return null; // Don't cache authenticated requests
           }
 
@@ -274,7 +296,10 @@ const pwaConfig = {
         },
         cacheKeyWillBeUsed: async ({ request }) => {
           // Ensure no sensitive data in image requests
-          if (request.url.includes('/secure/') || request.url.includes('/private/')) {
+          if (
+            request.url.includes('/secure/') ||
+            request.url.includes('/private/')
+          ) {
             return null;
           }
           return request;
@@ -302,24 +327,7 @@ const pwaConfig = {
     /.*\.env.*$/,
     /config.*\.json$/,
     /secrets.*\.json$/,
-  ],
-  // Additional security options
-  additionalManifestEntries: [
-    {
-      name: 'Meqenet BNPL',
-      short_name: 'Meqenet',
-      description: 'Secure Buy Now Pay Later platform for Ethiopian market',
-      theme_color: '#1f2937',
-      background_color: '#ffffff',
-      display: 'standalone',
-      orientation: 'portrait-primary',
-      scope: '/',
-      start_url: '/',
-      categories: ['finance', 'business'],
-      lang: 'en',
-      dir: 'ltr',
-    },
-  ],
+  ]
 };
 
-export default composePlugins(withNx)(nextConfig);
+export default composePlugins(withNx, withPWA(pwaConfig))(nextConfig);

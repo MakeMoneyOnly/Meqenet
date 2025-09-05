@@ -56,7 +56,8 @@ export class AccessLogMiddleware implements NestMiddleware {
     const requestId = (req.headers['x-request-id'] as string) || 'unknown';
 
     res.on('finish', () => {
-      const durationMs = Number(process.hrtime.bigint() - start) / NANOSECONDS_PER_MILLISECOND;
+      const durationMs =
+        Number(process.hrtime.bigint() - start) / NANOSECONDS_PER_MILLISECOND;
       const statusCode = res.statusCode;
       this.logger.log(
         `${method} ${safeUrl} ${statusCode} ${durationMs.toFixed(1)}ms [reqId=${requestId}]`
