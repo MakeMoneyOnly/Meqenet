@@ -1,5 +1,4 @@
 import { composePlugins, withNx } from '@nx/next';
-import withPWA from 'next-pwa';
 
 /**
  * Security Headers Configuration
@@ -58,7 +57,7 @@ const securityHeaders = [
       // Upgrade insecure requests
       "upgrade-insecure-requests",
       // Report violations (remove in production if causing issues)
-      process.env.NODE_ENV !== 'production' ? "report-uri /api/security/csp-report" : ""
+      "report-uri /api/security/csp-report"
     ].filter(Boolean).join('; ')
   }
 ];
