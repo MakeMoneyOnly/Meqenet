@@ -23,8 +23,8 @@ describe('FaydaEncryptionUtil - Security Tests', () => {
   let _configService: ConfigService; // Prefixed with _ to indicate intentionally unused
 
   const mockConfig = {
-    FAYDA_ENCRYPTION_KEY: 'test-encryption-key-32-characters-long-key',
-    FAYDA_HASH_SALT: 'test-hash-salt-for-fayda-id-hashing-32-chars',
+    faydaEncryptionKey: 'test-encryption-key-32-characters-long-key',
+    faydaHashSalt: 'test-hash-salt-for-fayda-id-hashing-32-chars',
   };
 
   beforeEach(async () => {

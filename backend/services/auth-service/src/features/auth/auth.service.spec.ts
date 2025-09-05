@@ -19,14 +19,28 @@ import { AuthService } from './auth.service';
 
 // Interface for testing that exposes private properties
 interface TestableAuthService extends AuthService {
-  prisma: jest.Mocked<import('../../shared/prisma/prisma.service').PrismaService>;
+  prisma: jest.Mocked<
+    import('../../shared/prisma/prisma.service').PrismaService
+  >;
   jwtService: jest.Mocked<import('@nestjs/jwt').JwtService>;
-  outboxService: jest.Mocked<import('../../shared/outbox/outbox.service').OutboxService>;
-  eventService: jest.Mocked<import('../../shared/services/event.service').EventService>;
-  passwordResetTokenService: jest.Mocked<import('../../shared/services/password-reset-token.service').PasswordResetTokenService>;
-  emailService: jest.Mocked<import('../../shared/services/email.service').EmailService>;
-  securityMonitoring: jest.Mocked<import('../../shared/services/security-monitoring.service').SecurityMonitoringService>;
-  auditLogging: jest.Mocked<import('../../shared/services/audit-logging.service').AuditLoggingService>;
+  outboxService: jest.Mocked<
+    import('../../shared/outbox/outbox.service').OutboxService
+  >;
+  eventService: jest.Mocked<
+    import('../../shared/services/event.service').EventService
+  >;
+  passwordResetTokenService: jest.Mocked<
+    import('../../shared/services/password-reset-token.service').PasswordResetTokenService
+  >;
+  emailService: jest.Mocked<
+    import('../../shared/services/email.service').EmailService
+  >;
+  securityMonitoring: jest.Mocked<
+    import('../../shared/services/security-monitoring.service').SecurityMonitoringService
+  >;
+  auditLogging: jest.Mocked<
+    import('../../shared/services/audit-logging.service').AuditLoggingService
+  >;
 }
 
 // Mock bcrypt
@@ -149,9 +163,11 @@ describe('AuthService', () => {
     (service as TestableAuthService).jwtService = mockJwtService;
     (service as TestableAuthService).outboxService = mockOutboxService;
     (service as TestableAuthService).eventService = mockEventService;
-    (service as TestableAuthService).passwordResetTokenService = mockPasswordResetTokenService;
+    (service as TestableAuthService).passwordResetTokenService =
+      mockPasswordResetTokenService;
     (service as TestableAuthService).emailService = mockEmailService;
-    (service as TestableAuthService).securityMonitoring = mockSecurityMonitoringService;
+    (service as TestableAuthService).securityMonitoring =
+      mockSecurityMonitoringService;
     (service as TestableAuthService).auditLogging = mockAuditLoggingService;
   });
 
@@ -486,7 +502,7 @@ describe('AuthService', () => {
       expect(mockPasswordResetTokenService.generateToken).toHaveBeenCalledWith(
         mockUser.id,
         'unknown',
-        undefined
+        'Unknown'
       );
     });
   });
@@ -931,7 +947,8 @@ describe('AuthService', () => {
 
         const auditContext = {
           ipAddress: '192.168.1.100',
-          userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+          userAgent:
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
           location: 'Addis Ababa, Ethiopia',
           deviceFingerprint: 'abc123def',
         };
@@ -970,7 +987,8 @@ describe('AuthService', () => {
           email: registerUserDto.email,
         });
 
-        const expectedToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test-payload.signature';
+        const expectedToken =
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test-payload.signature';
         mockJwtService.sign.mockReturnValue(expectedToken);
 
         const result = await service.register(registerUserDto);
