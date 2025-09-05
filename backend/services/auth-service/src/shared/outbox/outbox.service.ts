@@ -79,12 +79,18 @@ export class OutboxService implements OnModuleInit {
   ): Promise<void> {
     try {
       // Safely convert payload and metadata to Prisma-compatible types
-      const payload = (message.payload && typeof message.payload === 'object' && !Array.isArray(message.payload))
-        ? message.payload
-        : {};
-      const metadata = (message.metadata && typeof message.metadata === 'object' && !Array.isArray(message.metadata))
-        ? message.metadata
-        : {};
+      const payload =
+        message.payload &&
+        typeof message.payload === 'object' &&
+        !Array.isArray(message.payload)
+          ? message.payload
+          : {};
+      const metadata =
+        message.metadata &&
+        typeof message.metadata === 'object' &&
+        !Array.isArray(message.metadata)
+          ? message.metadata
+          : {};
 
       await prisma.outboxMessage.create({
         data: {

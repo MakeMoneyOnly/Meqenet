@@ -151,7 +151,9 @@ async function bootstrap(): Promise<void> {
         transformOptions: {
           enableImplicitConversion: true,
         },
-        exceptionFactory: (validationErrors: ValidationError[]): BadRequestException => {
+        exceptionFactory: (
+          validationErrors: ValidationError[]
+        ): BadRequestException => {
           const messages = validationErrors.map(err => {
             const constraints = err.constraints || {};
             const firstMessage = Object.values(constraints)[0] as

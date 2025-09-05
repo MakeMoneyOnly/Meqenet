@@ -375,7 +375,11 @@ export class SecretManagerService implements OnModuleInit {
           ? new Date(this.previousPublicKey.rotatedAt)
           : undefined;
         const withinGrace = rotatedAt
-          ? (Date.now() - rotatedAt.getTime()) / (MILLISECONDS_PER_SECOND * SECONDS_PER_MINUTE * MINUTES_PER_HOUR * HOURS_PER_DAY) <=
+          ? (Date.now() - rotatedAt.getTime()) /
+              (MILLISECONDS_PER_SECOND *
+                SECONDS_PER_MINUTE *
+                MINUTES_PER_HOUR *
+                HOURS_PER_DAY) <=
             graceDays
           : true;
         if (withinGrace) {

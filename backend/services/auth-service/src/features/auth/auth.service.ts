@@ -44,10 +44,21 @@ export class AuthService {
 
   async register(
     registerUserDto: RegisterUserDto,
-    context?: { language?: string; ipAddress?: string; userAgent?: string; location?: string; deviceFingerprint?: string }
+    context?: {
+      language?: string;
+      ipAddress?: string;
+      userAgent?: string;
+      location?: string;
+      deviceFingerprint?: string;
+    }
   ): Promise<{ accessToken: string }> {
     const { email, password } = registerUserDto;
-    const { ipAddress = 'unknown', userAgent = 'Unknown', location = 'Unknown', deviceFingerprint = 'Unknown' } = context || {};
+    const {
+      ipAddress = 'unknown',
+      userAgent = 'Unknown',
+      location = 'Unknown',
+      deviceFingerprint = 'Unknown',
+    } = context || {};
 
     try {
       const existingUser = await this.prisma.user.findUnique({
@@ -55,16 +66,20 @@ export class AuthService {
       });
       if (existingUser) {
         // Log failed registration attempt
-        await this.auditLogging.logRegistration(false, {
-          userEmail: email,
-          ipAddress,
-          userAgent: userAgent || 'Unknown',
-          location,
-          deviceFingerprint,
-        }, {
-          reason: 'EMAIL_ALREADY_EXISTS',
-          existingUserId: existingUser.id,
-        });
+        await this.auditLogging.logRegistration(
+          false,
+          {
+            userEmail: email,
+            ipAddress,
+            userAgent: userAgent || 'Unknown',
+            location,
+            deviceFingerprint,
+          },
+          {
+            reason: 'EMAIL_ALREADY_EXISTS',
+            existingUserId: existingUser.id,
+          }
+        );
 
         this.securityMonitoring.recordRegister('failure');
         throw new ConflictException({
@@ -85,18 +100,22 @@ export class AuthService {
       });
 
       // Log successful registration
-      await this.auditLogging.logRegistration(true, {
-        userId: createdUser.id,
-        userEmail: createdUser.email,
-        userRole: createdUser.role,
-        ipAddress,
-        userAgent: userAgent || 'Unknown',
-        location,
-        deviceFingerprint,
-      }, {
-        userAgent: userAgent || 'Unknown',
-        registrationMethod: 'EMAIL_PASSWORD',
-      });
+      await this.auditLogging.logRegistration(
+        true,
+        {
+          userId: createdUser.id,
+          userEmail: createdUser.email,
+          userRole: createdUser.role,
+          ipAddress,
+          userAgent: userAgent || 'Unknown',
+          location,
+          deviceFingerprint,
+        },
+        {
+          userAgent: userAgent || 'Unknown',
+          registrationMethod: 'EMAIL_PASSWORD',
+        }
+      );
 
       const eventPayload: UserRegisteredPayload = {
         userId: createdUser.id,
@@ -110,20 +129,23 @@ export class AuthService {
 
       this.securityMonitoring.recordRegister('success');
       return { accessToken };
-
     } catch (error) {
       // Handle unexpected errors during registration
       if (!(error instanceof ConflictException)) {
-        await this.auditLogging.logRegistration(false, {
-          userEmail: email,
-          ipAddress,
-          userAgent: userAgent || 'Unknown',
-          location,
-          deviceFingerprint,
-        }, {
-          reason: 'REGISTRATION_ERROR',
-          error: error instanceof Error ? error.message : 'Unknown error',
-        });
+        await this.auditLogging.logRegistration(
+          false,
+          {
+            userEmail: email,
+            ipAddress,
+            userAgent: userAgent || 'Unknown',
+            location,
+            deviceFingerprint,
+          },
+          {
+            reason: 'REGISTRATION_ERROR',
+            error: error instanceof Error ? error.message : 'Unknown error',
+          }
+        );
       }
       throw error;
     }
@@ -131,10 +153,21 @@ export class AuthService {
 
   async login(
     loginUserDto: LoginUserDto,
-    context?: { language?: string; ipAddress?: string; userAgent?: string; location?: string; deviceFingerprint?: string }
+    context?: {
+      language?: string;
+      ipAddress?: string;
+      userAgent?: string;
+      location?: string;
+      deviceFingerprint?: string;
+    }
   ): Promise<{ accessToken: string }> {
     const { email, password } = loginUserDto;
-    const { ipAddress = 'unknown', userAgent = 'Unknown', location = 'Unknown', deviceFingerprint = 'Unknown' } = context || {};
+    const {
+      ipAddress = 'unknown',
+      userAgent = 'Unknown',
+      location = 'Unknown',
+      deviceFingerprint = 'Unknown',
+    } = context || {};
 
     try {
       const user = await this.prisma.user.findUnique({
@@ -161,18 +194,22 @@ export class AuthService {
       // Check lockout
       if (user.lockoutUntil && user.lockoutUntil > new Date()) {
         // Log failed login - account locked
-        await this.auditLogging.logLoginFailure('ACCOUNT_LOCKED', {
-          userId: user.id,
-          userEmail: user.email,
-          userRole: user.role,
-          ipAddress,
-          userAgent: userAgent || 'Unknown',
-          location,
-          deviceFingerprint,
-        }, {
-          lockoutUntil: user.lockoutUntil.toISOString(),
-          currentAttempts: user.loginAttempts,
-        });
+        await this.auditLogging.logLoginFailure(
+          'ACCOUNT_LOCKED',
+          {
+            userId: user.id,
+            userEmail: user.email,
+            userRole: user.role,
+            ipAddress,
+            userAgent: userAgent || 'Unknown',
+            location,
+            deviceFingerprint,
+          },
+          {
+            lockoutUntil: user.lockoutUntil.toISOString(),
+            currentAttempts: user.loginAttempts,
+          }
+        );
 
         throw new UnauthorizedException({
           errorCode: 'ACCOUNT_LOCKED',
@@ -188,7 +225,8 @@ export class AuthService {
         let shouldLockAccount = false;
         if (attempts >= MAX_FAILED_ATTEMPTS) {
           update.lockoutUntil = new Date(
-            Date.now() + LOCKOUT_MINUTES * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND
+            Date.now() +
+              LOCKOUT_MINUTES * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND
           );
           shouldLockAccount = true;
         }
@@ -196,23 +234,9 @@ export class AuthService {
         await this.prisma.user.update({ where: { id: user.id }, data: update });
 
         // Log failed login - invalid password
-        await this.auditLogging.logLoginFailure('INVALID_PASSWORD', {
-          userId: user.id,
-          userEmail: user.email,
-          userRole: user.role,
-          ipAddress,
-          userAgent: userAgent || 'Unknown',
-          location,
-          deviceFingerprint,
-        }, {
-          attemptNumber: attempts,
-          maxAttempts: MAX_FAILED_ATTEMPTS,
-          accountLocked: shouldLockAccount,
-        });
-
-        // Log account lockout if triggered
-        if (shouldLockAccount) {
-          await this.auditLogging.logAccountLockout({
+        await this.auditLogging.logLoginFailure(
+          'INVALID_PASSWORD',
+          {
             userId: user.id,
             userEmail: user.email,
             userRole: user.role,
@@ -220,7 +244,28 @@ export class AuthService {
             userAgent: userAgent || 'Unknown',
             location,
             deviceFingerprint,
-          }, LOCKOUT_MINUTES);
+          },
+          {
+            attemptNumber: attempts,
+            maxAttempts: MAX_FAILED_ATTEMPTS,
+            accountLocked: shouldLockAccount,
+          }
+        );
+
+        // Log account lockout if triggered
+        if (shouldLockAccount) {
+          await this.auditLogging.logAccountLockout(
+            {
+              userId: user.id,
+              userEmail: user.email,
+              userRole: user.role,
+              ipAddress,
+              userAgent: userAgent || 'Unknown',
+              location,
+              deviceFingerprint,
+            },
+            LOCKOUT_MINUTES
+          );
         }
 
         this.securityMonitoring.recordLogin('failure');
@@ -252,19 +297,22 @@ export class AuthService {
 
       this.securityMonitoring.recordLogin('success');
       return { accessToken };
-
     } catch (error) {
       // Handle unexpected errors during login
       if (!(error instanceof UnauthorizedException)) {
-        await this.auditLogging.logLoginFailure('LOGIN_ERROR', {
-          userEmail: email,
-          ipAddress,
-          userAgent: userAgent || 'Unknown',
-          location,
-          deviceFingerprint,
-        }, {
-          error: error instanceof Error ? error.message : 'Unknown error',
-        });
+        await this.auditLogging.logLoginFailure(
+          'LOGIN_ERROR',
+          {
+            userEmail: email,
+            ipAddress,
+            userAgent: userAgent || 'Unknown',
+            location,
+            deviceFingerprint,
+          },
+          {
+            error: error instanceof Error ? error.message : 'Unknown error',
+          }
+        );
       }
       throw error;
     }
@@ -272,10 +320,21 @@ export class AuthService {
 
   async requestPasswordReset(
     dto: PasswordResetRequestDto,
-    context?: { ipAddress?: string; userAgent?: string; language?: string; location?: string; deviceFingerprint?: string }
+    context?: {
+      ipAddress?: string;
+      userAgent?: string;
+      language?: string;
+      location?: string;
+      deviceFingerprint?: string;
+    }
   ): Promise<{ message: string }> {
     const { email, clientId } = dto;
-    const { ipAddress = 'unknown', userAgent = 'Unknown', location = 'Unknown', deviceFingerprint = 'Unknown' } = context || {};
+    const {
+      ipAddress = 'unknown',
+      userAgent = 'Unknown',
+      location = 'Unknown',
+      deviceFingerprint = 'Unknown',
+    } = context || {};
 
     try {
       const user = await this.prisma.user.findUnique({ where: { email } });
@@ -300,17 +359,21 @@ export class AuthService {
       // Check if user is active (only generate tokens for active users)
       if (user.status !== 'ACTIVE') {
         // Log failed password reset request - inactive user
-        await this.auditLogging.logPasswordResetFailure('USER_INACTIVE', {
-          userId: user.id,
-          userEmail: user.email,
-          userRole: user.role,
-          ipAddress,
-          userAgent: userAgent || 'Unknown',
-          location,
-          deviceFingerprint,
-        }, {
-          userStatus: user.status,
-        });
+        await this.auditLogging.logPasswordResetFailure(
+          'USER_INACTIVE',
+          {
+            userId: user.id,
+            userEmail: user.email,
+            userRole: user.role,
+            ipAddress,
+            userAgent: userAgent || 'Unknown',
+            location,
+            deviceFingerprint,
+          },
+          {
+            userStatus: user.status,
+          }
+        );
 
         // Return generic message for security (don't leak user status)
         return {
@@ -320,9 +383,8 @@ export class AuthService {
       }
 
       // Check if user already has an active token
-      const hasActiveToken = await this.passwordResetTokenService.hasActiveToken(
-        user.id
-      );
+      const hasActiveToken =
+        await this.passwordResetTokenService.hasActiveToken(user.id);
 
       if (hasActiveToken) {
         // Log password reset request with active token
@@ -391,7 +453,6 @@ export class AuthService {
         message:
           'If an account with this email exists, a password reset link has been sent.',
       };
-
     } catch (error) {
       // If it's a token generation error, throw specific error
       if (
@@ -399,15 +460,19 @@ export class AuthService {
         (error.message.includes('Token generation failed') ||
           error.message.includes('generate'))
       ) {
-        await this.auditLogging.logPasswordResetFailure('TOKEN_GENERATION_FAILED', {
-          userEmail: email,
-          ipAddress,
-          userAgent: userAgent || 'Unknown',
-          location,
-          deviceFingerprint,
-        }, {
-          error: error.message,
-        });
+        await this.auditLogging.logPasswordResetFailure(
+          'TOKEN_GENERATION_FAILED',
+          {
+            userEmail: email,
+            ipAddress,
+            userAgent: userAgent || 'Unknown',
+            location,
+            deviceFingerprint,
+          },
+          {
+            error: error.message,
+          }
+        );
 
         throw new BadRequestException({
           errorCode: 'RESET_TOKEN_GENERATION_FAILED',
@@ -426,30 +491,38 @@ export class AuthService {
         (error.message.includes('database') ||
           error.message.includes('connect'))
       ) {
-        await this.auditLogging.logPasswordResetFailure('DATABASE_ERROR', {
-          userEmail: email,
-          ipAddress,
-          userAgent: userAgent || 'Unknown',
-          location,
-          deviceFingerprint,
-        }, {
-          error: error.message,
-        });
+        await this.auditLogging.logPasswordResetFailure(
+          'DATABASE_ERROR',
+          {
+            userEmail: email,
+            ipAddress,
+            userAgent: userAgent || 'Unknown',
+            location,
+            deviceFingerprint,
+          },
+          {
+            error: error.message,
+          }
+        );
 
         // Re-throw the original database error to preserve the error message for testing
         throw error;
       }
 
       // For any other errors, log and throw generic error to avoid leaking information
-      await this.auditLogging.logPasswordResetFailure('UNKNOWN_ERROR', {
-        userEmail: email,
-        ipAddress,
-        userAgent,
-        location,
-        deviceFingerprint,
-      }, {
-        error: error instanceof Error ? error.message : 'Unknown error',
-      });
+      await this.auditLogging.logPasswordResetFailure(
+        'UNKNOWN_ERROR',
+        {
+          userEmail: email,
+          ipAddress,
+          userAgent,
+          location,
+          deviceFingerprint,
+        },
+        {
+          error: error instanceof Error ? error.message : 'Unknown error',
+        }
+      );
 
       throw new BadRequestException({
         errorCode: 'RESET_REQUEST_FAILED',
@@ -461,20 +534,35 @@ export class AuthService {
 
   async confirmPasswordReset(
     dto: PasswordResetConfirmDto,
-    context?: { language?: string; ipAddress?: string; userAgent?: string; location?: string; deviceFingerprint?: string }
+    context?: {
+      language?: string;
+      ipAddress?: string;
+      userAgent?: string;
+      location?: string;
+      deviceFingerprint?: string;
+    }
   ): Promise<{ message: string }> {
     const { token, newPassword, confirmPassword } = dto;
-    const { language = 'en', ipAddress = 'unknown', userAgent = 'Unknown', location = 'Unknown', deviceFingerprint = 'Unknown' } = context || {};
+    const {
+      language = 'en',
+      ipAddress = 'unknown',
+      userAgent = 'Unknown',
+      location = 'Unknown',
+      deviceFingerprint = 'Unknown',
+    } = context || {};
 
     try {
       // Validate passwords match
       if (newPassword !== confirmPassword) {
-        await this.auditLogging.logPasswordResetFailure('PASSWORDS_DO_NOT_MATCH', {
-          ipAddress,
-          userAgent: userAgent || 'Unknown',
-          location,
-          deviceFingerprint,
-        });
+        await this.auditLogging.logPasswordResetFailure(
+          'PASSWORDS_DO_NOT_MATCH',
+          {
+            ipAddress,
+            userAgent: userAgent || 'Unknown',
+            location,
+            deviceFingerprint,
+          }
+        );
 
         if (language === 'am') {
           throw new BadRequestException({
@@ -516,14 +604,18 @@ export class AuthService {
       });
 
       if (!user) {
-        await this.auditLogging.logPasswordResetFailure('USER_NOT_FOUND', {
-          ipAddress,
-          userAgent: userAgent || 'Unknown',
-          location,
-          deviceFingerprint,
-        }, {
-          userId: validationResult.userId,
-        });
+        await this.auditLogging.logPasswordResetFailure(
+          'USER_NOT_FOUND',
+          {
+            ipAddress,
+            userAgent: userAgent || 'Unknown',
+            location,
+            deviceFingerprint,
+          },
+          {
+            userId: validationResult.userId,
+          }
+        );
 
         throw new BadRequestException({
           errorCode: 'RESET_TOKEN_INVALID',
@@ -553,15 +645,18 @@ export class AuthService {
         await this.passwordResetTokenService.consumeToken(token);
 
       if (!tokenConsumed) {
-        await this.auditLogging.logPasswordResetFailure('TOKEN_CONSUMPTION_FAILED', {
-          userId: user.id,
-          userEmail: user.email,
-          userRole: user.role,
-          ipAddress,
-          userAgent: userAgent || 'Unknown',
-          location,
-          deviceFingerprint,
-        });
+        await this.auditLogging.logPasswordResetFailure(
+          'TOKEN_CONSUMPTION_FAILED',
+          {
+            userId: user.id,
+            userEmail: user.email,
+            userRole: user.role,
+            ipAddress,
+            userAgent: userAgent || 'Unknown',
+            location,
+            deviceFingerprint,
+          }
+        );
 
         throw new BadRequestException({
           errorCode: 'RESET_TOKEN_CONSUMPTION_FAILED',
@@ -603,14 +698,18 @@ export class AuthService {
     } catch (error) {
       // Handle bcrypt hashing errors
       if (error instanceof Error && error.message.includes('hash')) {
-        await this.auditLogging.logPasswordResetFailure('PASSWORD_HASHING_FAILED', {
-          ipAddress,
-          userAgent: userAgent || 'Unknown',
-          location,
-          deviceFingerprint,
-        }, {
-          error: error.message,
-        });
+        await this.auditLogging.logPasswordResetFailure(
+          'PASSWORD_HASHING_FAILED',
+          {
+            ipAddress,
+            userAgent: userAgent || 'Unknown',
+            location,
+            deviceFingerprint,
+          },
+          {
+            error: error.message,
+          }
+        );
 
         throw new BadRequestException({
           errorCode: 'PASSWORD_HASHING_FAILED',
@@ -626,14 +725,18 @@ export class AuthService {
         error instanceof Error &&
         (error.message.includes('update') || error.message.includes('find'))
       ) {
-        await this.auditLogging.logPasswordResetFailure('DATABASE_ERROR', {
-          ipAddress,
-          userAgent: userAgent || 'Unknown',
-          location,
-          deviceFingerprint,
-        }, {
-          error: error.message,
-        });
+        await this.auditLogging.logPasswordResetFailure(
+          'DATABASE_ERROR',
+          {
+            ipAddress,
+            userAgent: userAgent || 'Unknown',
+            location,
+            deviceFingerprint,
+          },
+          {
+            error: error.message,
+          }
+        );
 
         throw new BadRequestException({
           errorCode: 'DATABASE_ERROR',
@@ -650,14 +753,18 @@ export class AuthService {
       }
 
       // For any other unexpected errors, log and throw generic error
-      await this.auditLogging.logPasswordResetFailure('UNKNOWN_ERROR', {
-        ipAddress,
-        userAgent,
-        location,
-        deviceFingerprint,
-      }, {
-        error: error instanceof Error ? error.message : 'Unknown error',
-      });
+      await this.auditLogging.logPasswordResetFailure(
+        'UNKNOWN_ERROR',
+        {
+          ipAddress,
+          userAgent,
+          location,
+          deviceFingerprint,
+        },
+        {
+          error: error instanceof Error ? error.message : 'Unknown error',
+        }
+      );
 
       throw new BadRequestException({
         errorCode: 'RESET_CONFIRMATION_FAILED',

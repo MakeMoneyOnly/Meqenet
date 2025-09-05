@@ -17,7 +17,7 @@ module.exports = async function () {
     globalThis.__API_GATEWAY_PROCESS__.kill('SIGTERM');
 
     // Wait for the process to exit
-    await new Promise((resolve) => {
+    await new Promise(resolve => {
       globalThis.__API_GATEWAY_PROCESS__.on('exit', () => {
         console.log('✅ API Gateway stopped');
         resolve(void 0);
@@ -25,7 +25,9 @@ module.exports = async function () {
 
       // Fallback timeout
       setTimeout(() => {
-        console.log('⚠️  API Gateway did not exit gracefully, force killing...');
+        console.log(
+          '⚠️  API Gateway did not exit gracefully, force killing...'
+        );
         globalThis.__API_GATEWAY_PROCESS__.kill('SIGKILL');
         resolve(void 0);
       }, 5000);

@@ -22,7 +22,11 @@ describe('EmailService', () => {
     const mockConfigService = {
       get: vi.fn().mockImplementation((key: string, defaultValue?: string) => {
         if (key === 'FRONTEND_RESET_URL') {
-          return process.env.FRONTEND_RESET_URL || defaultValue || mockEnv.FRONTEND_RESET_URL;
+          return (
+            process.env.FRONTEND_RESET_URL ||
+            defaultValue ||
+            mockEnv.FRONTEND_RESET_URL
+          );
         }
         return defaultValue;
       }),
@@ -98,36 +102,38 @@ describe('EmailService', () => {
       expect(result).toBe(true); // Current implementation always returns true
     });
 
-      it('should use correct frontend reset URL from environment', async () => {
-    const customUrl = 'https://custom-domain.com/reset-password';
+    it('should use correct frontend reset URL from environment', async () => {
+      const customUrl = 'https://custom-domain.com/reset-password';
 
-    // Create new service instance with custom config
-    const newModule: TestingModule = await Test.createTestingModule({
-      providers: [
-        EmailService,
-        {
-          provide: ConfigService,
-          useValue: {
-            get: vi.fn().mockImplementation((key: string, defaultValue?: string) => {
-              if (key === 'FRONTEND_RESET_URL') {
-                return customUrl;
-              }
-              return defaultValue;
-            }),
+      // Create new service instance with custom config
+      const newModule: TestingModule = await Test.createTestingModule({
+        providers: [
+          EmailService,
+          {
+            provide: ConfigService,
+            useValue: {
+              get: vi
+                .fn()
+                .mockImplementation((key: string, defaultValue?: string) => {
+                  if (key === 'FRONTEND_RESET_URL') {
+                    return customUrl;
+                  }
+                  return defaultValue;
+                }),
+            },
           },
-        },
-      ],
-    }).compile();
+        ],
+      }).compile();
 
-    const newService = newModule.get<EmailService>(EmailService);
+      const newService = newModule.get<EmailService>(EmailService);
 
-    const result = await newService.sendPasswordResetEmail(mockEmailData);
+      const result = await newService.sendPasswordResetEmail(mockEmailData);
 
-    expect(result).toBe(true);
+      expect(result).toBe(true);
 
-    // Clean up new module
-    await newModule.close();
-  });
+      // Clean up new module
+      await newModule.close();
+    });
   });
 
   describe('buildResetUrl', () => {
@@ -161,12 +167,14 @@ describe('EmailService', () => {
           {
             provide: ConfigService,
             useValue: {
-              get: vi.fn().mockImplementation((key: string, defaultValue?: string) => {
-                if (key === 'FRONTEND_RESET_URL') {
-                  return undefined; // Simulate env var not being set
-                }
-                return defaultValue;
-              }),
+              get: vi
+                .fn()
+                .mockImplementation((key: string, defaultValue?: string) => {
+                  if (key === 'FRONTEND_RESET_URL') {
+                    return undefined; // Simulate env var not being set
+                  }
+                  return defaultValue;
+                }),
             },
           },
         ],
