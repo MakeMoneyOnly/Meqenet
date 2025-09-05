@@ -40,7 +40,9 @@ describe('PaymentsService', () => {
       expect(result).toBeDefined();
       expect(result.id).toBeDefined();
       expect(result.status).toBe('completed'); // Matches actual implementation
-      expect((result as PaymentResult).amountMinor).toBe(createPaymentDto.amountMinor);
+      expect((result as PaymentResult).amountMinor).toBe(
+        createPaymentDto.amountMinor
+      );
       expect(result.currency).toBe(createPaymentDto.currency);
     });
 

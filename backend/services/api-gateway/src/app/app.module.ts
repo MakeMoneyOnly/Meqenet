@@ -64,7 +64,8 @@ export class AppModule implements NestModule {
 
   configure(consumer: MiddlewareConsumer): void {
     // IdempotencyMiddleware is disabled in test mode since RedisModule is not loaded
-    const isTest = this.configService.get('nodeEnv', { infer: true }) === 'test';
+    const isTest =
+      this.configService.get('nodeEnv', { infer: true }) === 'test';
     if (!isTest) {
       consumer
         .apply(IdempotencyMiddleware)

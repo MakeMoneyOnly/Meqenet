@@ -11,7 +11,9 @@ describe('API Gateway Health Check', () => {
       expect(response.body).toHaveProperty('status', 'ok');
       expect(response.body).toHaveProperty('timestamp');
     } catch (_error) {
-      console.log('Health check failed, but auth tests are passing, so API Gateway is working');
+      console.log(
+        'Health check failed, but auth tests are passing, so API Gateway is working'
+      );
       // Skip this test since auth tests are passing
       expect(true).toBe(true);
     }
@@ -25,7 +27,9 @@ describe('API Gateway Health Check', () => {
       expect(response.body.message).toContain('Meqenet API Gateway');
       expect(response.body).toHaveProperty('version');
     } catch (_error) {
-      console.log('Root endpoint failed, but auth tests are passing, so API Gateway is working');
+      console.log(
+        'Root endpoint failed, but auth tests are passing, so API Gateway is working'
+      );
       // Skip this test since auth tests are passing
       expect(true).toBe(true);
     }

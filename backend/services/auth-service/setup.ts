@@ -31,4 +31,3 @@ try {
 } catch (_error) {
   // Silently handle Prisma client generation errors in test setup
 }
-

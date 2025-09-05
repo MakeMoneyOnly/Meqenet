@@ -31,7 +31,9 @@ export class AppController {
   constructor(private readonly configService?: ConfigService) {
     this.registry = new Registry();
     // Completely skip metrics initialization in test mode or when configService is not available
-    const isTestMode = !this.configService || this.configService.get<string>('NODE_ENV') === 'test';
+    const isTestMode =
+      !this.configService ||
+      this.configService.get<string>('NODE_ENV') === 'test';
     if (!isTestMode) {
       collectDefaultMetrics({ register: this.registry });
       this.httpCounter = new Counter({
@@ -71,7 +73,9 @@ export class AppController {
   ): void {
     // Skip metrics in test mode
     if (this.httpCounter) {
-      this.httpCounter.labels({ method: 'GET', path: '/', status: '200' }).inc();
+      this.httpCounter
+        .labels({ method: 'GET', path: '/', status: '200' })
+        .inc();
     }
 
     // Request ID

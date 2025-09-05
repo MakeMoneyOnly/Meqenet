@@ -10,10 +10,7 @@
     "standard": "WCAG2AA",
     "level": "error",
     "runners": ["axe", "htmlcs"],
-    "ignore": [
-      "WCAG2AA.Principle1.Guideline1_3.1_3_1.H49.*",
-      "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail"
-    ],
+    "ignore": ["WCAG2AA.Principle1.Guideline1_3.1_3_1.H49.*", "WCAG2AA.Principle1.Guideline1_4.1_4_3.G18.Fail"],
     "hideElements": ".sr-only, .visually-hidden, [aria-hidden='true']",
     "rules": {
       "Principle1.Guideline1_1.1_1_1": "error",

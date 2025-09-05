@@ -1,7 +1,4 @@
-import {
-  Injectable,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../infrastructure/database/prisma.service';
 
 // Removed unused interface - using Prisma types directly
@@ -37,10 +34,23 @@ const NIGHT_RISK_INCREMENT = 0.1;
  */
 
 export interface AuthAuditEvent {
-  eventType: 'LOGIN_SUCCESS' | 'LOGIN_FAILURE' | 'REGISTER_SUCCESS' | 'REGISTER_FAILURE' |
-            'PASSWORD_RESET_REQUEST' | 'PASSWORD_RESET_SUCCESS' | 'PASSWORD_RESET_FAILURE' |
-            'LOGOUT' | 'SESSION_EXPIRED' | 'ACCOUNT_LOCKED' | 'ACCOUNT_UNLOCKED' |
-            'ROLE_CHANGED' | 'MFA_ENABLED' | 'MFA_DISABLED' | 'MFA_VERIFIED' | 'MFA_FAILED';
+  eventType:
+    | 'LOGIN_SUCCESS'
+    | 'LOGIN_FAILURE'
+    | 'REGISTER_SUCCESS'
+    | 'REGISTER_FAILURE'
+    | 'PASSWORD_RESET_REQUEST'
+    | 'PASSWORD_RESET_SUCCESS'
+    | 'PASSWORD_RESET_FAILURE'
+    | 'LOGOUT'
+    | 'SESSION_EXPIRED'
+    | 'ACCOUNT_LOCKED'
+    | 'ACCOUNT_UNLOCKED'
+    | 'ROLE_CHANGED'
+    | 'MFA_ENABLED'
+    | 'MFA_DISABLED'
+    | 'MFA_VERIFIED'
+    | 'MFA_FAILED';
   userId?: string;
   userEmail?: string;
   userRole?: string;
@@ -70,9 +80,7 @@ export interface AuditContext {
 export class AuditLoggingService {
   private readonly logger = new Logger(AuditLoggingService.name);
 
-  constructor(
-    private readonly prisma: PrismaService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   /**
    * Log authentication event with comprehensive context
@@ -119,7 +127,6 @@ export class AuditLoggingService {
         riskScore: event.riskScore,
         complianceFlags: auditEntry.complianceFlags,
       });
-
     } catch (error) {
       // Audit logging failures should not break auth flow
       // but must be logged for investigation
@@ -242,7 +249,10 @@ export class AuditLoggingService {
   /**
    * Log account lockout event
    */
-  async logAccountLockout(context: AuditContext, lockoutMinutes: number): Promise<void> {
+  async logAccountLockout(
+    context: AuditContext,
+    lockoutMinutes: number
+  ): Promise<void> {
     await this.logAuthEvent({
       eventType: 'ACCOUNT_LOCKED',
       ...context,
@@ -425,5 +435,4 @@ export class AuditLoggingService {
 
     return flags;
   }
-
 }
