@@ -82,7 +82,13 @@ export class EmailService {
     email: string,
     resetUrl: string,
     language: string
-  ): { to: string; from: string; subject: string; html: string; text?: string } {
+  ): {
+    to: string;
+    from: string;
+    subject: string;
+    html: string;
+    text?: string;
+  } {
     const isAmharic = language === 'am';
 
     const subject = isAmharic

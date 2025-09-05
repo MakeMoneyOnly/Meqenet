@@ -5,14 +5,15 @@ const api = request('http://localhost:3000');
 
 describe('Auth Service via API Gateway', () => {
   it('should register a new user', async () => {
-    const response = await api
-      .post('/auth/register')
-      .send({
+    const response = await api.post('/auth/register').send({
       email: `testuser_${Date.now()}@meqenet.com`,
       password: 'password123',
     });
     expect(response.status).toBe(201);
-    expect(response.body).toHaveProperty('message', 'User registered successfully');
+    expect(response.body).toHaveProperty(
+      'message',
+      'User registered successfully'
+    );
     expect(response.body).toHaveProperty('userId', 'test-user-123');
   });
 
@@ -20,17 +21,13 @@ describe('Auth Service via API Gateway', () => {
     const email = `testuser_${Date.now()}@meqenet.com`;
 
     // Register first
-    await api
-      .post('/auth/register')
-      .send({
+    await api.post('/auth/register').send({
       email,
       password: 'password123',
     });
 
     // Then login
-    const response = await api
-      .post('/auth/login')
-      .send({
+    const response = await api.post('/auth/login').send({
       email,
       password: 'password123',
     });

@@ -331,7 +331,11 @@ export class DLQService {
   private mapToDLQMessage(message: PrismaOutboxMessage): DLQMessage {
     // Safely convert JsonValue to Record<string, unknown>
     let payload: Record<string, unknown> = {};
-    if (message.payload && typeof message.payload === 'object' && !Array.isArray(message.payload)) {
+    if (
+      message.payload &&
+      typeof message.payload === 'object' &&
+      !Array.isArray(message.payload)
+    ) {
       payload = message.payload as Record<string, unknown>;
     }
 

@@ -16,7 +16,8 @@ export class RedisService implements OnModuleDestroy {
     const redisPort = this.configService.get('redisPort', { infer: true });
 
     const useMock =
-      this.configService.get('useRedisMock', { infer: true }) || this.configService.get('nodeEnv', { infer: true }) === 'test';
+      this.configService.get('useRedisMock', { infer: true }) ||
+      this.configService.get('nodeEnv', { infer: true }) === 'test';
 
     if (useMock) {
       try {

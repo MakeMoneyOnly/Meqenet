@@ -58,7 +58,9 @@ export function useI18n(namespace?: string): UseI18nReturn {
     setDirection(getLanguageDirection(i18n.language));
   }, [i18n.language]);
 
-  const handleChangeLanguage = async (lng: SupportedLanguageCode): Promise<void> => {
+  const handleChangeLanguage = async (
+    lng: SupportedLanguageCode,
+  ): Promise<void> => {
     setIsLoading(true);
     try {
       await changeLanguage(lng);
@@ -99,7 +101,11 @@ export function useI18n(namespace?: string): UseI18nReturn {
  */
 export function useErrorTranslation(): {
   getErrorMessage: (errorCode: string, defaultMessage?: string) => string;
-  getValidationError: (field: string, rule: string, params?: Record<string, unknown>) => string;
+  getValidationError: (
+    field: string,
+    rule: string,
+    params?: Record<string, unknown>,
+  ) => string;
 } {
   const { t } = useTranslation();
 

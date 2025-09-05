@@ -72,7 +72,8 @@ export const Primary: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Primary buttons for main actions. Use high contrast colors and clear labeling.',
+        story:
+          'Primary buttons for main actions. Use high contrast colors and clear labeling.',
       },
     },
   },
@@ -86,7 +87,8 @@ export const Secondary: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Secondary buttons for less prominent actions. Maintains accessibility with proper contrast.',
+        story:
+          'Secondary buttons for less prominent actions. Maintains accessibility with proper contrast.',
       },
     },
   },
@@ -100,7 +102,8 @@ export const Danger: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Danger buttons for destructive actions. Clear labeling is crucial for accessibility.',
+        story:
+          'Danger buttons for destructive actions. Clear labeling is crucial for accessibility.',
       },
     },
   },
@@ -115,7 +118,8 @@ export const Loading: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Loading state with spinner. Screen readers announce the loading state.',
+        story:
+          'Loading state with spinner. Screen readers announce the loading state.',
       },
     },
   },
@@ -130,7 +134,8 @@ export const Disabled: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Disabled state. Button is not focusable and clearly indicates disabled status.',
+        story:
+          'Disabled state. Button is not focusable and clearly indicates disabled status.',
       },
     },
   },
@@ -144,7 +149,8 @@ export const WithIcons: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Button with icon. Ensure icons have proper alt text or are decorative only.',
+        story:
+          'Button with icon. Ensure icons have proper alt text or are decorative only.',
       },
     },
   },
@@ -158,7 +164,8 @@ export const LongText: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Long button text. Button should wrap properly and remain accessible.',
+        story:
+          'Long button text. Button should wrap properly and remain accessible.',
       },
     },
   },
@@ -166,8 +173,18 @@ export const LongText: Story = {
 
 export const AccessibilityExamples: Story = {
   render: () => (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', padding: '1rem' }}>
-      <Button variant="primary" aria-label="Save your work to prevent data loss">
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '1rem',
+        padding: '1rem',
+      }}
+    >
+      <Button
+        variant="primary"
+        aria-label="Save your work to prevent data loss"
+      >
         💾 Save
       </Button>
 
@@ -181,11 +198,18 @@ export const AccessibilityExamples: Story = {
       >
         📥 Download Report
       </Button>
-      <div id="download-description" style={{ fontSize: '0.875rem', color: '#666' }}>
+      <div
+        id="download-description"
+        style={{ fontSize: '0.875rem', color: '#666' }}
+      >
         Downloads the current report in PDF format
       </div>
 
-      <Button variant="danger" disabled aria-label="Cannot delete admin account">
+      <Button
+        variant="danger"
+        disabled
+        aria-label="Cannot delete admin account"
+      >
         🗑️ Delete Account
       </Button>
     </div>

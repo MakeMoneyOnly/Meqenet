@@ -130,7 +130,13 @@ describe('PasswordResetTokenService', () => {
         hashedToken: expectedHashedToken,
         ipAddress,
         userAgent,
-        expiresAt: new Date(Date.now() + TOKEN_EXPIRY_HOURS * MINUTES_PER_HOUR * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND),
+        expiresAt: new Date(
+          Date.now() +
+            TOKEN_EXPIRY_HOURS *
+              MINUTES_PER_HOUR *
+              SECONDS_PER_MINUTE *
+              MILLISECONDS_PER_SECOND
+        ),
         isUsed: false,
         createdAt: new Date(),
       };
@@ -139,7 +145,11 @@ describe('PasswordResetTokenService', () => {
         mockCreatedRecord
       );
 
-      const generateResult = await service.generateToken(userId, ipAddress, userAgent);
+      const generateResult = await service.generateToken(
+        userId,
+        ipAddress,
+        userAgent
+      );
 
       expect(generateResult).toEqual({
         userId,
@@ -170,7 +180,13 @@ describe('PasswordResetTokenService', () => {
         hashedToken: expectedHashedToken,
         ipAddress,
         userAgent: null,
-        expiresAt: new Date(Date.now() + TOKEN_EXPIRY_HOURS * MINUTES_PER_HOUR * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND),
+        expiresAt: new Date(
+          Date.now() +
+            TOKEN_EXPIRY_HOURS *
+              MINUTES_PER_HOUR *
+              SECONDS_PER_MINUTE *
+              MILLISECONDS_PER_SECOND
+        ),
         isUsed: false,
         createdAt: new Date(),
       };
@@ -202,7 +218,13 @@ describe('PasswordResetTokenService', () => {
         hashedToken: expectedHashedToken,
         ipAddress,
         userAgent,
-        expiresAt: new Date(Date.now() + TOKEN_EXPIRY_HOURS * MINUTES_PER_HOUR * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND),
+        expiresAt: new Date(
+          Date.now() +
+            TOKEN_EXPIRY_HOURS *
+              MINUTES_PER_HOUR *
+              SECONDS_PER_MINUTE *
+              MILLISECONDS_PER_SECOND
+        ),
         isUsed: false,
         createdAt: new Date(),
       };
@@ -218,10 +240,20 @@ describe('PasswordResetTokenService', () => {
       const afterCall = new Date();
 
       expect(expiresAt.getTime()).toBeGreaterThanOrEqual(
-        beforeCall.getTime() + TOKEN_EXPIRY_HOURS * MINUTES_PER_HOUR * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND - 1000
+        beforeCall.getTime() +
+          TOKEN_EXPIRY_HOURS *
+            MINUTES_PER_HOUR *
+            SECONDS_PER_MINUTE *
+            MILLISECONDS_PER_SECOND -
+          1000
       );
       expect(expiresAt.getTime()).toBeLessThanOrEqual(
-        afterCall.getTime() + TOKEN_EXPIRY_HOURS * MINUTES_PER_HOUR * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND + 1000
+        afterCall.getTime() +
+          TOKEN_EXPIRY_HOURS *
+            MINUTES_PER_HOUR *
+            SECONDS_PER_MINUTE *
+            MILLISECONDS_PER_SECOND +
+          1000
       );
     });
 
@@ -520,7 +552,13 @@ describe('PasswordResetTokenService', () => {
         hashedToken: 'hashedtoken',
         ipAddress: '192.168.1.1',
         userAgent: 'Mozilla/5.0',
-        expiresAt: new Date(Date.now() + TOKEN_EXPIRY_HOURS * MINUTES_PER_HOUR * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND),
+        expiresAt: new Date(
+          Date.now() +
+            TOKEN_EXPIRY_HOURS *
+              MINUTES_PER_HOUR *
+              SECONDS_PER_MINUTE *
+              MILLISECONDS_PER_SECOND
+        ),
         isUsed: false,
         createdAt: new Date(),
       };
@@ -542,7 +580,13 @@ describe('PasswordResetTokenService', () => {
         hashedToken: 'hashedtoken',
         ipAddress: '192.168.1.1',
         userAgent: 'Mozilla/5.0',
-        expiresAt: new Date(Date.now() + TOKEN_EXPIRY_HOURS * MINUTES_PER_HOUR * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND),
+        expiresAt: new Date(
+          Date.now() +
+            TOKEN_EXPIRY_HOURS *
+              MINUTES_PER_HOUR *
+              SECONDS_PER_MINUTE *
+              MILLISECONDS_PER_SECOND
+        ),
         isUsed: false,
         createdAt: new Date(),
       };
@@ -567,7 +611,13 @@ describe('PasswordResetTokenService', () => {
         hashedToken: 'hashedtoken',
         ipAddress: '192.168.1.1',
         userAgent: 'Mozilla/5.0',
-        expiresAt: new Date(Date.now() + TOKEN_EXPIRY_HOURS * MINUTES_PER_HOUR * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND),
+        expiresAt: new Date(
+          Date.now() +
+            TOKEN_EXPIRY_HOURS *
+              MINUTES_PER_HOUR *
+              SECONDS_PER_MINUTE *
+              MILLISECONDS_PER_SECOND
+        ),
         isUsed: false,
         createdAt: new Date(),
       };
@@ -583,7 +633,11 @@ describe('PasswordResetTokenService', () => {
 
       // Check that expiry is approximately 24 hours from now
       const expectedExpiry = new Date(
-        beforeCall.getTime() + TOKEN_EXPIRY_HOURS * MINUTES_PER_HOUR * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND
+        beforeCall.getTime() +
+          TOKEN_EXPIRY_HOURS *
+            MINUTES_PER_HOUR *
+            SECONDS_PER_MINUTE *
+            MILLISECONDS_PER_SECOND
       );
       const tolerance = 1000; // 1 second tolerance
 
