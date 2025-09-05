@@ -48,7 +48,9 @@ if ! echo "$COMMIT_MSG" | grep -qE "$CONVENTIONAL_COMMIT_PATTERN"; then
   echo ""
   echo "💡 Pro tip: Use 'git commit --amend' to fix the message"
   echo ""
-  echo "🔧 To bypass (emergency only): git commit --no-verify"
+  echo "🔒 COMMIT BLOCKED FOR ENTERPRISE COMPLIANCE"
+  echo "   • Use proper conventional commit format"
+  echo "   • Contact development team for assistance: dev@meqenet.et"
   exit 1
 fi
 
