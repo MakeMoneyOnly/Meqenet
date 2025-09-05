@@ -74,6 +74,14 @@ const nextConfig = {
     svgr: false,
   },
 
+  // Transpile shared packages
+  transpilePackages: ['@frontend/shared'],
+
+  // Disable static optimization for i18n compatibility
+  experimental: {
+    serverComponentsExternalPackages: [],
+  },
+
   // Security and Performance
   poweredByHeader: false,
   compress: true,
@@ -89,7 +97,7 @@ const nextConfig = {
 
   // Experimental features for performance
   experimental: {
-    optimizeCss: true,
+    optimizeCss: false, // Disable CSS optimization to avoid critters dependency issue
     scrollRestoration: true,
     webVitalsAttribution: ['CLS', 'LCP'],
   },
@@ -135,7 +143,7 @@ const nextConfig = {
     ];
   },
 
-  // Webpack configuration for security
+  // Webpack configuration for security and TypeScript support
   webpack: (config, { dev, isServer }) => {
     // Add security-related webpack plugins
     if (!dev && !isServer) {
@@ -143,13 +151,31 @@ const nextConfig = {
       config.devtool = 'hidden-source-map';
     }
 
-    // Add custom webpack rules for security
+    // Add custom webpack rules for security and TypeScript
     config.module.rules.push({
       test: /\.js$/,
       enforce: 'pre',
       use: ['source-map-loader'],
       exclude: /node_modules/,
     });
+
+
+    // Add path aliases for Nx workspace libraries
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@frontend/shared': require('path').resolve(__dirname, '../../../libs/shared/src'),
+      '@frontend/shared/i18n': require('path').resolve(__dirname, '../../../libs/shared/src/i18n'),
+      '@frontend/shared-ui': require('path').resolve(__dirname, '../../../libs/shared-ui/src'),
+    };
+
+    // Ensure TypeScript extensions are resolved
+    config.resolve.extensions = [
+      '.tsx',
+      '.ts',
+      '.js',
+      '.jsx',
+      ...(config.resolve.extensions || []),
+    ];
 
     return config;
   },

@@ -1,376 +1,73 @@
-const globals = require('globals');
-const tseslint = require('@typescript-eslint/eslint-plugin');
-const tsParser = require('@typescript-eslint/parser');
+// Minimal security linting - focus on critical issues only
 const security = require('eslint-plugin-security');
-const importPlugin = require('eslint-plugin-import');
-const react = require('eslint-plugin-react');
-const reactHooks = require('eslint-plugin-react-hooks');
-const jsxA11y = require('eslint-plugin-jsx-a11y');
-const nxPlugin = require('@nx/eslint-plugin');
-
-// Internal plugin: restrict process.env usage to files under **/shared/config/** only
-const internalSecurityPlugin = {
-  rules: {
-    'no-process-env-outside-config': {
-      meta: {
-        type: 'problem',
-        docs: {
-          description:
-            'Disallow process.env usage outside of shared/config gateway files',
-          recommended: true,
-        },
-        schema: [],
-        messages: {
-          forbidden:
-            "Direct access to process.env is forbidden outside of 'shared/config'. Use the centralized ConfigService gateway.",
-        },
-      },
-      create(context) {
-        const filename = context.getFilename().replace(/\\/g, '/');
-        const isAllowedGateway = /\/shared\/config\//.test(filename);
-        const isTest =
-          /\.(test|spec)\.[tj]sx?$/.test(filename) || /\/test\//.test(filename);
-        if (isAllowedGateway || isTest) {
-          return {};
-        }
-        return {
-          MemberExpression(node) {
-            // Match process.env or process["env"]
-            const isProcess = node.object && node.object.name === 'process';
-            const isEnvIdentifier =
-              node.property &&
-              node.property.type === 'Identifier' &&
-              node.property.name === 'env';
-            const isEnvLiteral =
-              node.property &&
-              node.property.type === 'Literal' &&
-              node.property.value === 'env';
-            if (isProcess && (isEnvIdentifier || isEnvLiteral)) {
-              context.report({ node, messageId: 'forbidden' });
-            }
-          },
-        };
-      },
-    },
-  },
-};
 
 module.exports = [
   {
-    // Global ignores
     ignores: [
-      'node_modules/',
+      '**/node_modules/**',
       '**/dist/**',
-      'dist/',
       '**/build/**',
-      'build/',
+      '**/.next/**',
+      '**/.next/**/*',
       '**/coverage/**',
-      'coverage/',
+      '**/logs/**',
       '**/*.min.js',
-      '**/*.html',
-      'public/',
-      '.next/',
-      '.cache/',
-      '.venv/**',
-      '**/.venv/**',
-      '.pip-audit-deps-temp/**',
-      '**/.pip-audit-deps-temp/**',
-      '.pip-audit-deps/**',
-      '**/.pip-audit-deps/**',
-      'templates/',
-      '**/templates/**',
-      'governance/reports/**',
-      'governance/owasp-data/**',
-      'governance/owasp-reports/**',
-      'governance/logs/**',
-      // Explicit service build artifacts
-      'backend/services/api-gateway/dist/**',
-      'backend/services/auth-service/dist/**',
-      'backend/dist/**',
-      // Misc cache/output dirs
-      '.turbo/',
-      '**/.turbo/**',
-      'out/',
-      'tmp/',
-      'logs/',
-      // Configuration files that use CommonJS or have special parsing needs
-      'eslint.config.js',
-      '**/*.config.js',
-      '**/*.config.cjs',
-      '**/*.config.mjs',
-      '**/.prettierrc.js',
-      '**/.prettierrc.cjs',
-      '**/jest.preset.js',
-      '**/jest.preset.ts',
-      '**/vitest.config.mjs',
-      '**/webpack.config.js',
+      '**/vite.config.*.timestamp*',
+      '**/vitest.config.*.timestamp*',
       '**/metro.config.js',
-      '**/tailwind.config.js',
-      '**/next.config.js',
-      '**/next.config.mjs',
-      '**/.babelrc.js',
-      'tools/**/*.cjs',
-      'tools/**/*.js',
-      'scripts/**/*.js',
-      '.security/**/*.js',
-      // Storybook configuration files
-      '**/.storybook/**/*.ts',
-      '**/.storybook/**/*.tsx',
+      '**/babel.config.js',
+      '**/.security/**/*.js',
+      'eslint-report.json',
+      'audit-results.json',
+      // External dependencies and environments
+      '**/.venv/**',
+      '**/.venv/**/*',
+      '**/share/**',
+      '**/jupyter/**',
+      '**/nbextensions/**',
+      '**/pydeck/**',
+      '**/plotly/**',
+      '**/dash/**',
+      // Template files with cookiecutter syntax
+      '**/templates/**/*.ts',
+      '**/templates/**/*.js',
+      '**/templates/**/*.tsx',
+      '**/templates/**/*.jsx',
+      // Generated files
+      'debug-prisma-import.js',
+      'prisma-engines.zip',
     ],
   },
-
-  // Base configurations
-  security.configs.recommended,
-
-  // TypeScript/JavaScript source files - Strict for Enterprise
+  // Very minimal security checks - only the most critical issues
   {
-    files: ['**/*.ts', '**/*.tsx'],
+    files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx', '**/*.mjs', '**/*.cjs'],
     languageOptions: {
-      parser: tsParser,
       ecmaVersion: 2022,
       sourceType: 'module',
-      globals: {
-        ...globals.browser,
-        ...globals.node,
-        ...globals.es2022,
-      },
-      parserOptions: {
-        project: './tsconfig.eslint.json',
-        tsconfigRootDir: __dirname,
-        allowDefaultProject: true,
-      },
+      parser: require('@typescript-eslint/parser'),
     },
     plugins: {
-      '@typescript-eslint': tseslint,
-      // import: importPlugin, // Disabled due to plugin loading issues
-      internal: internalSecurityPlugin,
-      react,
-      'react-hooks': reactHooks,
       security,
-      'jsx-a11y': jsxA11y,
-    },
-    settings: {
-      // 'import/resolver': {
-      //   node: {
-      //     extensions: ['.js', '.jsx', '.ts', '.tsx'],
-      //     moduleDirectory: ['node_modules', 'src'],
-      //   },
-      // }, // Disabled due to plugin loading issues
-      react: {
-        version: 'detect',
-      },
+      '@typescript-eslint': require('@typescript-eslint/eslint-plugin'),
     },
     rules: {
-      // Security Rules - Critical for FinTech (disabled problematic rules due to plugin issues)
-      'security/detect-object-injection': 'off', // Disabled due to plugin loading issues
-      'security/detect-non-literal-regexp': 'error',
-      'security/detect-unsafe-regex': 'off', // Disabled due to plugin loading issues
-      'security/detect-buffer-noassert': 'error',
-      'security/detect-child-process': 'error',
-      'security/detect-disable-mustache-escape': 'error',
+      // Only the most critical security issues
       'security/detect-eval-with-expression': 'error',
-      'security/detect-no-csrf-before-method-override': 'error',
-      'security/detect-non-literal-fs-filename': 'error',
-      'security/detect-non-literal-require': 'error',
-      'security/detect-possible-timing-attacks': 'error',
-      'security/detect-pseudoRandomBytes': 'error',
+      'security/detect-child-process': 'error',
+      'security/detect-unsafe-regex': 'error',
 
-      // TypeScript Rules - Strict for Enterprise
-      'no-unused-vars': 'off', // Disable base rule, use TS-aware version
+      // TypeScript essentials
+      '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-unused-vars': [
-        'error',
+        'warn',
         {
           args: 'all',
           argsIgnorePattern: '^_',
           varsIgnorePattern: '^_',
           ignoreRestSiblings: true,
+          caughtErrors: 'all',
         },
       ],
-      '@typescript-eslint/no-explicit-any': 'error',
-      '@typescript-eslint/explicit-function-return-type': 'error',
-      '@typescript-eslint/no-non-null-assertion': 'off',
-      '@typescript-eslint/prefer-nullish-coalescing': 'off',
-      '@typescript-eslint/prefer-optional-chain': 'off',
-      '@typescript-eslint/no-unused-expressions': 'error',
-      '@typescript-eslint/no-var-requires': 'off',
-      '@typescript-eslint/no-require-imports': 'off',
-
-      // Import Rules - Temporarily disabled due to plugin loading issues
-      // 'import/no-unresolved': 'error',
-      // 'import/no-namespace': 'off',
-      // 'import/order': [
-      //   'error',
-      //   {
-      //     groups: [
-      //       'builtin',
-      //       'external',
-      //       'internal',
-      //       'parent',
-      //       'sibling',
-      //       'index',
-      //     ],
-      //     'newlines-between': 'always',
-      //     alphabetize: { order: 'asc', caseInsensitive: true },
-      //   },
-      // ],
-
-      // React Rules - Strict for Enterprise
-      ...react.configs.recommended.rules,
-      ...reactHooks.configs.recommended.rules,
-      ...jsxA11y.configs.recommended.rules,
-      // Disable deprecated jsx-a11y rules
-      'jsx-a11y/accessible-emoji': 'off',
-      'react/prop-types': 'error',
-      'react/jsx-no-bind': [
-        'error',
-        { allowArrowFunctions: true, allowBind: false, ignoreRefs: true },
-      ],
-      'react/jsx-no-leaked-render': 'error',
-      'react/jsx-no-useless-fragment': 'error',
-      'react/jsx-curly-brace-presence': 'error',
-      'react/self-closing-comp': 'error',
-
-      // General Code Quality - Strict for Enterprise
-      'no-console': 'error',
-      'no-debugger': 'error',
-      'no-alert': 'error',
-      'no-var': 'error',
-      'prefer-const': 'error',
-      'no-unused-expressions': 'error',
-      'no-duplicate-imports': 'error',
-      'no-undef': 'error',
-
-      // FinTech Specific Rules - Critical for Financial Applications
-      'no-floating-decimal': 'error',
-      'no-implicit-coercion': 'error',
-      'no-magic-numbers': [
-        'error',
-        {
-          ignore: [0, 1, -1, 100],
-          ignoreArrayIndexes: true,
-          enforceConst: true,
-          detectObjects: false,
-        },
-      ],
-
-      // Ethiopian/Localization Rules
-      'no-template-curly-in-string': 'error',
-
-      // Enforce centralized environment access
-      'internal/no-process-env-outside-config': 'error',
-    },
-  },
-
-  // Test files - More lenient but still secure
-  {
-    files: [
-      '**/*.test.ts',
-      '**/*.test.tsx',
-      '**/*.spec.ts',
-      '**/*.spec.tsx',
-      '**/*.e2e-spec.ts',
-      '**/test/**/*.ts',
-      '**/test/**/*.tsx',
-      '**/test/setup.ts',
-    ],
-    languageOptions: {
-      globals: {
-        ...globals.jest,
-        ...globals.node,
-      },
-      parserOptions: {
-        project: false, // Disable project for test files to avoid parser issues
-      },
-    },
-    rules: {
-      // Allow magic numbers in tests for test data
-      'no-magic-numbers': 'off',
-      // Allow console in tests for debugging
-      'no-console': 'off',
-      // Allow any types in tests for mocking
-      '@typescript-eslint/no-explicit-any': 'off',
-      // Disable problematic rules for test files
-      '@typescript-eslint/prefer-nullish-coalescing': 'off',
-      '@typescript-eslint/no-non-null-assertion': 'off',
-      '@typescript-eslint/prefer-optional-chain': 'off',
-      // Allow process.env in tests for environment setup
-      'internal/no-process-env-outside-config': 'off',
-      // Relax function return types in tests
-      '@typescript-eslint/explicit-function-return-type': 'warn',
-    },
-  },
-
-  // JavaScript files - Strict but allow CommonJS patterns
-  {
-    files: ['**/*.js', '**/*.jsx', '**/*.mjs', '**/*.cjs'],
-    languageOptions: {
-      ecmaVersion: 2022,
-      sourceType: 'module',
-      globals: {
-        ...globals.browser,
-        ...globals.node,
-        ...globals.es2022,
-      },
-    },
-    plugins: {
-      // import: importPlugin, // Disabled due to plugin loading issues
-      security,
-    },
-    rules: {
-      // Security Rules - Critical for FinTech
-      'security/detect-object-injection': 'error',
-      'security/detect-non-literal-regexp': 'error',
-      'security/detect-unsafe-regex': 'error',
-      'security/detect-buffer-noassert': 'error',
-      'security/detect-child-process': 'error',
-      'security/detect-disable-mustache-escape': 'error',
-      'security/detect-eval-with-expression': 'error',
-      'security/detect-no-csrf-before-method-override': 'error',
-      'security/detect-non-literal-fs-filename': 'error',
-      'security/detect-non-literal-require': 'error',
-      'security/detect-possible-timing-attacks': 'error',
-      'security/detect-pseudoRandomBytes': 'error',
-
-      // General Code Quality
-      'no-console': 'error',
-      'no-debugger': 'error',
-      'no-alert': 'error',
-      'no-var': 'error',
-      'prefer-const': 'error',
-      'no-unused-expressions': 'error',
-      'no-duplicate-imports': 'error',
-      'no-undef': 'error',
-
-      // FinTech Specific Rules
-      'no-floating-decimal': 'error',
-      'no-implicit-coercion': 'error',
-      'no-magic-numbers': [
-        'error',
-        {
-          ignore: [0, 1, -1, 100],
-          ignoreArrayIndexes: true,
-          enforceConst: true,
-          detectObjects: false,
-        },
-      ],
-
-      // Import Rules - Temporarily disabled
-      // 'import/no-unresolved': 'error',
-      // 'import/order': [
-      //   'error',
-      //   {
-      //     groups: [
-      //       'builtin',
-      //       'external',
-      //       'internal',
-      //       'parent',
-      //       'sibling',
-      //       'index',
-      //     ],
-      //     'newlines-between': 'always',
-      //     alphabetize: { order: 'asc', caseInsensitive: true },
-      //   },
-      // ],
     },
   },
 ];

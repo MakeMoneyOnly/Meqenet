@@ -54,6 +54,14 @@ const AppConfigSchema = z.object({
         message: 'REDIS_PORT must be a valid TCP port number',
       }
     ),
+  useRedisMock: z
+    .string()
+    .optional()
+    .default('false')
+    .transform((val: string) => val === 'true')
+    .refine((val: boolean) => typeof val === 'boolean', {
+      message: 'USE_REDIS_MOCK must be a boolean value (true/false)',
+    }),
 });
 
 export type AppConfig = z.infer<typeof AppConfigSchema>;
@@ -65,6 +73,7 @@ export default registerAs('app', (): AppConfig => {
     authServiceUrl: process.env.AUTH_SERVICE_URL,
     redisHost: process.env.REDIS_HOST,
     redisPort: process.env.REDIS_PORT,
+    useRedisMock: process.env.USE_REDIS_MOCK,
   } as const;
 
   const parsed = AppConfigSchema.safeParse(cfg);

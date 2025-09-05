@@ -36,7 +36,7 @@ describe('PasswordResetRequestDto', () => {
     });
 
     it('should fail validation with undefined email', async () => {
-      dto.email = undefined as any;
+      dto.email = undefined as string;
       dto.clientId = 'web-app';
 
       const errors = await validate(dto);
@@ -105,7 +105,7 @@ describe('PasswordResetRequestDto', () => {
 
     it('should fail validation with undefined clientId', async () => {
       dto.email = 'user@example.com';
-      dto.clientId = undefined as any;
+      dto.clientId = undefined as string;
 
       const errors = await validate(dto);
       expect(errors.length).toBeGreaterThan(0);
@@ -205,16 +205,16 @@ describe('PasswordResetRequestDto', () => {
 
   describe('edge cases', () => {
     it('should handle null values', async () => {
-      dto.email = null as any;
-      dto.clientId = null as any;
+      dto.email = null as string;
+      dto.clientId = null as string;
 
       const errors = await validate(dto);
       expect(errors.length).toBeGreaterThan(0);
     });
 
     it('should handle undefined values', async () => {
-      dto.email = undefined as any;
-      dto.clientId = undefined as any;
+      dto.email = undefined as string;
+      dto.clientId = undefined as string;
 
       const errors = await validate(dto);
       expect(errors.length).toBeGreaterThan(0);

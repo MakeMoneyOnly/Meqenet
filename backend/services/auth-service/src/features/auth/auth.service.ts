@@ -58,7 +58,7 @@ export class AuthService {
         await this.auditLogging.logRegistration(false, {
           userEmail: email,
           ipAddress,
-          userAgent,
+          userAgent: userAgent || 'Unknown',
           location,
           deviceFingerprint,
         }, {
@@ -90,11 +90,11 @@ export class AuthService {
         userEmail: createdUser.email,
         userRole: createdUser.role,
         ipAddress,
-        userAgent,
+        userAgent: userAgent || 'Unknown',
         location,
         deviceFingerprint,
       }, {
-        userAgent,
+        userAgent: userAgent || 'Unknown',
         registrationMethod: 'EMAIL_PASSWORD',
       });
 
@@ -117,7 +117,7 @@ export class AuthService {
         await this.auditLogging.logRegistration(false, {
           userEmail: email,
           ipAddress,
-          userAgent,
+          userAgent: userAgent || 'Unknown',
           location,
           deviceFingerprint,
         }, {
@@ -146,7 +146,7 @@ export class AuthService {
         await this.auditLogging.logLoginFailure('USER_NOT_FOUND', {
           userEmail: email,
           ipAddress,
-          userAgent,
+          userAgent: userAgent || 'Unknown',
           location,
           deviceFingerprint,
         });
@@ -166,7 +166,7 @@ export class AuthService {
           userEmail: user.email,
           userRole: user.role,
           ipAddress,
-          userAgent,
+          userAgent: userAgent || 'Unknown',
           location,
           deviceFingerprint,
         }, {
@@ -201,7 +201,7 @@ export class AuthService {
           userEmail: user.email,
           userRole: user.role,
           ipAddress,
-          userAgent,
+          userAgent: userAgent || 'Unknown',
           location,
           deviceFingerprint,
         }, {
@@ -217,7 +217,7 @@ export class AuthService {
             userEmail: user.email,
             userRole: user.role,
             ipAddress,
-            userAgent,
+            userAgent: userAgent || 'Unknown',
             location,
             deviceFingerprint,
           }, LOCKOUT_MINUTES);
@@ -259,7 +259,7 @@ export class AuthService {
         await this.auditLogging.logLoginFailure('LOGIN_ERROR', {
           userEmail: email,
           ipAddress,
-          userAgent,
+          userAgent: userAgent || 'Unknown',
           location,
           deviceFingerprint,
         }, {
@@ -275,7 +275,7 @@ export class AuthService {
     context?: { ipAddress?: string; userAgent?: string; language?: string; location?: string; deviceFingerprint?: string }
   ): Promise<{ message: string }> {
     const { email, clientId } = dto;
-    const { ipAddress = 'unknown', userAgent, location = 'Unknown', deviceFingerprint = 'Unknown' } = context || {};
+    const { ipAddress = 'unknown', userAgent = 'Unknown', location = 'Unknown', deviceFingerprint = 'Unknown' } = context || {};
 
     try {
       const user = await this.prisma.user.findUnique({ where: { email } });
@@ -285,7 +285,7 @@ export class AuthService {
         await this.auditLogging.logPasswordResetFailure('USER_NOT_FOUND', {
           userEmail: email,
           ipAddress,
-          userAgent,
+          userAgent: userAgent || 'Unknown',
           location,
           deviceFingerprint,
         });
@@ -305,7 +305,7 @@ export class AuthService {
           userEmail: user.email,
           userRole: user.role,
           ipAddress,
-          userAgent,
+          userAgent: userAgent || 'Unknown',
           location,
           deviceFingerprint,
         }, {
@@ -331,7 +331,7 @@ export class AuthService {
           userEmail: user.email,
           userRole: user.role,
           ipAddress,
-          userAgent,
+          userAgent: userAgent || 'Unknown',
           location,
           deviceFingerprint,
         });
@@ -375,7 +375,7 @@ export class AuthService {
           userEmail: user.email,
           userRole: user.role,
           ipAddress,
-          userAgent,
+          userAgent: userAgent || 'Unknown',
           location,
           deviceFingerprint,
         });
@@ -402,7 +402,7 @@ export class AuthService {
         await this.auditLogging.logPasswordResetFailure('TOKEN_GENERATION_FAILED', {
           userEmail: email,
           ipAddress,
-          userAgent,
+          userAgent: userAgent || 'Unknown',
           location,
           deviceFingerprint,
         }, {
@@ -429,7 +429,7 @@ export class AuthService {
         await this.auditLogging.logPasswordResetFailure('DATABASE_ERROR', {
           userEmail: email,
           ipAddress,
-          userAgent,
+          userAgent: userAgent || 'Unknown',
           location,
           deviceFingerprint,
         }, {
@@ -471,7 +471,7 @@ export class AuthService {
       if (newPassword !== confirmPassword) {
         await this.auditLogging.logPasswordResetFailure('PASSWORDS_DO_NOT_MATCH', {
           ipAddress,
-          userAgent,
+          userAgent: userAgent || 'Unknown',
           location,
           deviceFingerprint,
         });
@@ -496,7 +496,7 @@ export class AuthService {
       if (!validationResult.isValid) {
         await this.auditLogging.logPasswordResetFailure('INVALID_TOKEN', {
           ipAddress,
-          userAgent,
+          userAgent: userAgent || 'Unknown',
           location,
           deviceFingerprint,
         });
@@ -518,7 +518,7 @@ export class AuthService {
       if (!user) {
         await this.auditLogging.logPasswordResetFailure('USER_NOT_FOUND', {
           ipAddress,
-          userAgent,
+          userAgent: userAgent || 'Unknown',
           location,
           deviceFingerprint,
         }, {
@@ -558,7 +558,7 @@ export class AuthService {
           userEmail: user.email,
           userRole: user.role,
           ipAddress,
-          userAgent,
+          userAgent: userAgent || 'Unknown',
           location,
           deviceFingerprint,
         });
@@ -605,7 +605,7 @@ export class AuthService {
       if (error instanceof Error && error.message.includes('hash')) {
         await this.auditLogging.logPasswordResetFailure('PASSWORD_HASHING_FAILED', {
           ipAddress,
-          userAgent,
+          userAgent: userAgent || 'Unknown',
           location,
           deviceFingerprint,
         }, {
@@ -628,7 +628,7 @@ export class AuthService {
       ) {
         await this.auditLogging.logPasswordResetFailure('DATABASE_ERROR', {
           ipAddress,
-          userAgent,
+          userAgent: userAgent || 'Unknown',
           location,
           deviceFingerprint,
         }, {

@@ -28,10 +28,11 @@ export class AppController {
   private readonly registry: Registry;
   private readonly httpCounter: Counter | null;
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(private readonly configService?: ConfigService) {
     this.registry = new Registry();
-    // Completely skip metrics initialization in test mode
-    if (this.configService.get<string>('NODE_ENV') !== 'test') {
+    // Completely skip metrics initialization in test mode or when configService is not available
+    const isTestMode = !this.configService || this.configService.get<string>('NODE_ENV') === 'test';
+    if (!isTestMode) {
       collectDefaultMetrics({ register: this.registry });
       this.httpCounter = new Counter({
         name: 'http_requests_total',
@@ -40,7 +41,7 @@ export class AppController {
         registers: [this.registry],
       });
     } else {
-      // Skip all metrics in test mode
+      // Skip all metrics in test mode or when configService is not available
       this.httpCounter = null;
     }
   }

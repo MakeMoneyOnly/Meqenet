@@ -16,7 +16,7 @@ export class RedisService implements OnModuleDestroy {
     const redisPort = this.configService.get('redisPort', { infer: true });
 
     const useMock =
-      this.configService.get<string>('USE_REDIS_MOCK') === 'true' || this.configService.get<string>('NODE_ENV') === 'test';
+      this.configService.get('useRedisMock', { infer: true }) || this.configService.get('nodeEnv', { infer: true }) === 'test';
 
     if (useMock) {
       try {
@@ -30,9 +30,8 @@ export class RedisService implements OnModuleDestroy {
       this.redisClient = new Redis({
         host: redisHost,
         port: redisPort,
-        retryDelayOnFailover: 100,
-        maxRetriesPerRequest: 3,
         lazyConnect: true,
+        maxRetriesPerRequest: 3,
         // Add any other Redis options here, like password or db
       });
     }
@@ -52,15 +51,20 @@ export class RedisService implements OnModuleDestroy {
     ttlSeconds?: number,
     mode?: 'NX' | 'XX'
   ): Promise<string | null> {
-    // Build varargs for ioredis: set key value [EX seconds] [NX|XX]
-    const args: Array<string | number> = [key, value];
+    // Use simple, compatible Redis operations
     if (ttlSeconds && ttlSeconds > 0) {
-      args.push('EX', ttlSeconds);
+      // For TTL - use setex which is widely supported
+      return this.redisClient.setex(key, ttlSeconds, value);
+    } else if (mode) {
+      // For mode only - use basic set operations
+      if (mode === 'NX') {
+        return this.redisClient.set(key, value, 'NX');
+      } else {
+        return this.redisClient.set(key, value, 'XX');
+      }
+    } else {
+      // Simple set
+      return this.redisClient.set(key, value);
     }
-    if (mode) {
-      args.push(mode);
-    }
-    const res = await this.redisClient.set(...args);
-    return res;
   }
 }

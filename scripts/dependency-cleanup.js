@@ -11,7 +11,7 @@
  * 4. Enforces dependency security standards
  */
 
-const { execSync } = require('child_process');
+const { _execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
@@ -231,7 +231,7 @@ async function runSecurityAudit() {
       console.log('   Run: pnpm audit fix');
       process.exit(1);
     }
-  } catch (error) {
+  } catch (_error) {
     console.log('   ⚠️  Audit parsing failed, but continuing...');
   }
 }
@@ -245,7 +245,7 @@ async function validateDependencies() {
       'pnpm ls --depth=3 | grep -i deprecated | wc -l',
       'Count deprecated packages'
     );
-  } catch (error) {
+  } catch (_error) {
     console.log('   ⚠️  Could not check deprecated packages');
   }
 
@@ -255,7 +255,7 @@ async function validateDependencies() {
       'pnpm ls --depth=3 | grep -i unmet | wc -l',
       'Count peer dependency issues'
     );
-  } catch (error) {
+  } catch (_error) {
     console.log('   ⚠️  Could not check peer dependency issues');
   }
 

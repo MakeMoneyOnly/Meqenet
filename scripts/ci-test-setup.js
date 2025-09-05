@@ -16,6 +16,7 @@ import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { glob } from 'glob';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -129,7 +130,7 @@ try {
 
   // Check if we have a test database URL
   const dbUrl = new URL(process.env.DATABASE_URL);
-  const dbName = dbUrl.pathname.slice(1); // Remove leading slash
+  const _dbName = dbUrl.pathname.slice(1); // Remove leading slash
 
   // Create database if it doesn't exist
   const adminDbUrl = new URL(process.env.DATABASE_URL);
@@ -209,7 +210,7 @@ try {
 }
 
 // Step 5: Verify setup
-try {
+async function verifySetup() {
   log('🔍 Verifying test setup...');
 
   // Verify Prisma client is properly generated in the auth service
@@ -221,23 +222,65 @@ try {
     'auth-service'
   );
 
-  // Check for Prisma client in standard location
-  const prismaClientPath = path.join(
+  // Check for Prisma client in pnpm workspace location
+  const workspaceRoot = path.join(__dirname, '..');
+  const pnpmPrismaPath = path.join(
+    workspaceRoot,
+    'node_modules',
+    '.pnpm',
+    '@prisma+client*',
+    'node_modules',
+    '@prisma',
+    'client'
+  );
+
+  // Also check the service's local node_modules as fallback
+  const localPrismaPath = path.join(
     authServicePath,
     'node_modules',
     '@prisma',
     'client'
   );
 
-  if (!fs.existsSync(prismaClientPath)) {
-    error(`Prisma client not found at expected location: ${prismaClientPath}`);
-    error(
-      'This indicates the Prisma generate command did not complete successfully.'
+  let prismaClientPath = null;
+  let foundLocation = '';
+
+  // Check pnpm workspace location first (with glob pattern)
+  try {
+    const pnpmPattern = path.join(
+      workspaceRoot,
+      'node_modules',
+      '.pnpm',
+      '@prisma+client*',
+      'node_modules',
+      '@prisma',
+      'client'
     );
+    const pnpmPaths = await glob(pnpmPattern);
+    if (pnpmPaths.length > 0) {
+      prismaClientPath = pnpmPaths[0];
+      foundLocation = 'pnpm workspace store';
+    }
+  } catch (_err) {
+    // glob might not be available or pattern failed, continue with fallback
+  }
+
+  // Fallback to local node_modules
+  if (!prismaClientPath && fs.existsSync(localPrismaPath)) {
+    prismaClientPath = localPrismaPath;
+    foundLocation = 'local node_modules';
+  }
+
+  if (!prismaClientPath) {
+    error('Prisma client not found in either pnpm workspace store or local node_modules');
+    error('Searched locations:');
+    error(`  - ${pnpmPrismaPath}`);
+    error(`  - ${localPrismaPath}`);
+    error('This indicates the Prisma generate command did not complete successfully.');
     process.exit(1);
   }
 
-  success(`Prisma client verified at: ${prismaClientPath}`);
+  success(`Prisma client verified at: ${prismaClientPath} (${foundLocation})`);
 
   // Verify package.json has the correct Prisma dependency
   const packageJsonPath = path.join(authServicePath, 'package.json');
@@ -260,6 +303,10 @@ try {
 
   success('Prisma schema verified');
   success('Setup verification completed');
+}
+
+try {
+  await verifySetup();
 } catch (err) {
   error(`Setup verification failed: ${err.message}`);
   process.exit(1);

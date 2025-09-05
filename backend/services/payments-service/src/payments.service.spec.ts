@@ -3,6 +3,14 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { PaymentsService } from './payments.service';
 
+interface PaymentResult {
+  id: string;
+  status: string;
+  amountMinor: number;
+  currency: string;
+  createdAt: Date;
+}
+
 describe('PaymentsService', () => {
   let service: PaymentsService;
 
@@ -32,7 +40,7 @@ describe('PaymentsService', () => {
       expect(result).toBeDefined();
       expect(result.id).toBeDefined();
       expect(result.status).toBe('completed'); // Matches actual implementation
-      expect((result as any).amountMinor).toBe(createPaymentDto.amountMinor);
+      expect((result as PaymentResult).amountMinor).toBe(createPaymentDto.amountMinor);
       expect(result.currency).toBe(createPaymentDto.currency);
     });
 

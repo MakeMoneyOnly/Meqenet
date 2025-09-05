@@ -1,4 +1,4 @@
-import request from 'supertest';
+import request, { SuperAgentTest } from 'supertest';
 
 /**
  * E2E tests for Authentication endpoints
@@ -6,7 +6,7 @@ import request from 'supertest';
  */
 describe('Authentication E2E Tests', () => {
   const apiUrl = process.env.API_GATEWAY_URL || 'http://localhost:3000';
-  let app: any;
+  let app: SuperAgentTest;
 
   beforeAll(async () => {
     // Setup test environment

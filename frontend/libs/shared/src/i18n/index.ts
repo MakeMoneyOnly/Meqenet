@@ -27,9 +27,13 @@ export const supportedLanguages = {
     name: 'አማርኛ', // Amharic
     dir: 'ltr', // Amharic is left-to-right
   },
-} as const;
+};
 
-export type SupportedLanguageCode = keyof typeof supportedLanguages;
+// Type constants for runtime type checking
+export const SUPPORTED_LANGUAGE_CODES = ['en', 'am'];
+export const LANGUAGE_DIRECTIONS = ['ltr', 'rtl'];
+
+// Type definition moved inline to avoid webpack issues
 
 // Configure i18n
 const initI18n = (isClient = true): typeof i18n => {
@@ -110,7 +114,12 @@ const initI18n = (isClient = true): typeof i18n => {
   return i18nInstance;
 };
 
-// Currency formatter for Ethiopian Birr
+/**
+ * Currency formatter for Ethiopian Birr
+ * @param {number} value - The numeric value to format
+ * @param {string} [lng] - The language code
+ * @returns {string} The formatted currency string
+ */
 const formatCurrency = (value: number, lng?: string): string => {
   const formatter = new Intl.NumberFormat(lng === 'am' ? 'am-ET' : 'en-ET', {
     style: 'currency',
@@ -121,7 +130,12 @@ const formatCurrency = (value: number, lng?: string): string => {
   return formatter.format(value);
 };
 
-// Date formatter
+/**
+ * Date formatter
+ * @param {Date|string} value - The date value to format
+ * @param {string} [lng] - The language code
+ * @returns {string} The formatted date string
+ */
 const formatDate = (value: Date | string, lng?: string): string => {
   const date = typeof value === 'string' ? new Date(value) : value;
   const formatter = new Intl.DateTimeFormat(lng === 'am' ? 'am-ET' : 'en-ET', {
@@ -132,19 +146,41 @@ const formatDate = (value: Date | string, lng?: string): string => {
   return formatter.format(date);
 };
 
-// Number formatter
+/**
+ * Number formatter
+ * @param {number} value - The numeric value to format
+ * @param {string} [lng] - The language code
+ * @returns {string} The formatted number string
+ */
 const formatNumber = (value: number, lng?: string): string => {
   const formatter = new Intl.NumberFormat(lng === 'am' ? 'am-ET' : 'en-ET');
   return formatter.format(value);
 };
 
-// Helper to get current language direction
+/**
+ * Helper to get current language direction
+ * @param {string} lng - The language code
+ * @returns {string} The text direction ('ltr' or 'rtl')
+ */
 export const getLanguageDirection = (lng: string): 'ltr' | 'rtl' => {
-  return supportedLanguages[lng as SupportedLanguageCode]?.dir || 'ltr';
+  // Safe property access with fallback for object injection protection
+  const lang = supportedLanguages[lng as 'en' | 'am'];
+  return lang ? (lang.dir as 'ltr' | 'rtl') : 'ltr';
 };
 
-// Language change handler
-export const changeLanguage = async (lng: SupportedLanguageCode): Promise<void> => {
+/**
+ * Language change handler
+ * @param {string} lng - The language code to switch to
+ * @returns {Promise<void>}
+ */
+export const changeLanguage = async (lng: 'en' | 'am'): Promise<void> => {
+  // Validate that the language is supported
+  if (!SUPPORTED_LANGUAGE_CODES.includes(lng)) {
+    // eslint-disable-next-line no-console
+    console.warn(`Unsupported language: ${lng}`);
+    return;
+  }
+
   await i18n.changeLanguage(lng);
   // Update HTML dir attribute for proper text direction
   if (typeof document !== 'undefined') {
@@ -153,20 +189,43 @@ export const changeLanguage = async (lng: SupportedLanguageCode): Promise<void> 
   }
 };
 
-// Get all available languages for language switcher
-export const getAvailableLanguages = (): Array<{ code: string; name: string; dir: string }> => {
+/**
+ * Get all available languages for language switcher
+ * @returns {Array<{code: string, name: string, dir: string}>} Array of language objects
+ */
+export const getAvailableLanguages = () => {
   return Object.values(supportedLanguages);
 };
 
-// Check if language is supported
-export const isLanguageSupported = (
-  lng: string,
-): lng is SupportedLanguageCode => {
-  return lng in supportedLanguages;
+/**
+ * Check if language is supported
+ * @param {string} lng - The language code to check
+ * @returns {boolean} Whether the language is supported
+ */
+export const isLanguageSupported = (lng: string): boolean => {
+  return SUPPORTED_LANGUAGE_CODES.includes(lng);
 };
 
-// Export configured instance
-export default initI18n();
+// Export configured instance - conditionally initialize for SSR compatibility
+let defaultInstance: typeof i18n;
+
+if (typeof window !== 'undefined') {
+  // Client-side: initialize immediately
+  defaultInstance = initI18n(true);
+} else {
+  // Server-side: create a minimal instance to avoid SSR errors
+  defaultInstance = i18n.createInstance();
+  defaultInstance.init({
+    lng: 'en',
+    fallbackLng: 'en',
+    resources: {
+      en: { translation: enTranslations },
+      am: { translation: amTranslations },
+    },
+  });
+}
+
+export default defaultInstance;
 
 // Export utility functions for use in components
 export { initI18n, formatCurrency, formatDate, formatNumber };

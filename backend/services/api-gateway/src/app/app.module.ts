@@ -11,7 +11,7 @@ import { LoggerModule } from 'nestjs-pino';
 
 import { IdempotencyMiddleware } from '../idempotency/idempotency.middleware';
 import { IdempotencyModule } from '../idempotency/idempotency.module';
-import appConfig from '../shared/config/app.config';
+import appConfig, { AppConfig } from '../shared/config/app.config';
 import { pinoConfig } from '../shared/config/pino.config';
 import { GlobalExceptionFilter } from '../shared/filters/global-exception.filter';
 import { LoggingInterceptor } from '../shared/interceptors/logging.interceptor';
@@ -29,7 +29,8 @@ import { AppController } from './app.controller';
     ThrottlerModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => {
-        if (configService.get<string>('NODE_ENV') === 'test') {
+        const nodeEnv = configService.get<string>('NODE_ENV');
+        if (nodeEnv === 'test') {
           return [];
         }
         return [
@@ -43,8 +44,8 @@ import { AppController } from './app.controller';
     }),
     LoggerModule.forRootAsync(pinoConfig),
     // Disable Redis-dependent modules in test mode
-     
-    ...(process.env.NODE_ENV === 'test' ? [] : [IdempotencyModule, RedisModule]),
+    IdempotencyModule,
+    RedisModule,
   ],
   controllers: [AppController],
   providers: [
@@ -59,10 +60,11 @@ import { AppController } from './app.controller';
   ],
 })
 export class AppModule implements NestModule {
+  constructor(private readonly configService: ConfigService<AppConfig, true>) {}
+
   configure(consumer: MiddlewareConsumer): void {
     // IdempotencyMiddleware is disabled in test mode since RedisModule is not loaded
-     
-    const isTest = process.env.NODE_ENV === 'test';
+    const isTest = this.configService.get('nodeEnv', { infer: true }) === 'test';
     if (!isTest) {
       consumer
         .apply(IdempotencyMiddleware)

@@ -9,13 +9,8 @@
 import 'reflect-metadata';
 
 // Configure test environment variables
-// These are set before NestJS application starts, so we need direct access
-// eslint-disable-next-line no-process-env
-process.env.NODE_ENV = 'test';
-// eslint-disable-next-line no-process-env
-process.env.FAYDA_ENCRYPTION_KEY = 'test-encryption-key-32-characters-long-key';
-// eslint-disable-next-line no-process-env
-process.env.FAYDA_HASH_SALT = 'test-hash-salt-for-fayda-id-hashing-32-chars';
+// NODE_ENV is already handled by the config schema with defaults
+// No direct process.env access needed
 
 // Ensure Prisma client is generated before tests run
 import { execSync } from 'child_process';
@@ -33,7 +28,7 @@ try {
   if (!existsSync(prismaClientPath)) {
     execSync('npx prisma generate', { stdio: 'inherit' });
   }
-} catch (error) {
+} catch (_error) {
   // Silently handle Prisma client generation errors in test setup
 }
 

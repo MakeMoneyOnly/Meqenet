@@ -20,6 +20,8 @@ const AppEnvSchema = z.object({
   OTEL_SERVICE_NAME: z.string().optional().default('auth-service'),
   OTEL_EXPORTER_JAEGER_ENDPOINT: z.string().optional(),
   OTEL_EXPORTER_OTLP_ENDPOINT: z.string().optional(),
+  FAYDA_ENCRYPTION_KEY: z.string().optional().default('test-encryption-key-32-characters-long-key'),
+  FAYDA_HASH_SALT: z.string().optional().default('test-hash-salt-for-fayda-id-hashing-32-chars'),
 });
 
 export type AppConfig = {
@@ -30,6 +32,8 @@ export type AppConfig = {
   otelServiceName: string;
   otelExporterJaegerEndpoint?: string;
   otelExporterOtlpEndpoint?: string;
+  faydaEncryptionKey: string;
+  faydaHashSalt: string;
 };
 
 export default registerAs('app', (): AppConfig => {
@@ -47,6 +51,8 @@ export default registerAs('app', (): AppConfig => {
     redisPort: parseInt(env.REDIS_PORT, 10),
     nodeEnv: env.NODE_ENV,
     otelServiceName: env.OTEL_SERVICE_NAME,
+    faydaEncryptionKey: env.FAYDA_ENCRYPTION_KEY,
+    faydaHashSalt: env.FAYDA_HASH_SALT,
     ...(env.OTEL_EXPORTER_JAEGER_ENDPOINT && {
       otelExporterJaegerEndpoint: env.OTEL_EXPORTER_JAEGER_ENDPOINT,
     }),

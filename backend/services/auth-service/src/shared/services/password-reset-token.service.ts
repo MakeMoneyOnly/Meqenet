@@ -49,7 +49,7 @@ export class PasswordResetTokenService {
           token: hashedToken, // Store hashed token
           hashedToken, // Redundant for validation but explicit
           ipAddress,
-          userAgent,
+          userAgent: userAgent || null,
           expiresAt,
         },
       });

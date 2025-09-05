@@ -10,7 +10,7 @@ function isDockerAvailable() {
   try {
     execSync('docker --version', { stdio: 'pipe' });
     return true;
-  } catch (error) {
+  } catch (_error) {
     return false;
   }
 }
@@ -21,6 +21,7 @@ function simpleSecretScan() {
     '🔍 Running simple pattern-based secret scan (Docker not available)...'
   );
 
+  /* eslint-disable security/detect-unsafe-regex */
   const patterns = [
     /\b[A-Za-z0-9+/]{40}\b/g, // GitHub tokens (40 chars) - EXCLUDE legitimate patterns
     /\b[A-Za-z0-9+/]{32}\b/g, // Generic API keys (32 chars) - EXCLUDE legitimate patterns
@@ -29,6 +30,7 @@ function simpleSecretScan() {
     /\b(sk|pk)_\w{20,}/gi, // Stripe/Similar API keys
     /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g, // Email patterns
   ];
+  /* eslint-enable security/detect-unsafe-regex */
 
   const excludeDirs = [
     'node_modules',
@@ -121,7 +123,7 @@ function simpleSecretScan() {
           }
         }
       }
-    } catch (error) {
+    } catch (_error) {
       // Skip files/directories that can't be read
     }
   }
@@ -170,7 +172,7 @@ if (isDockerAvailable()) {
       simpleSecretScan();
     } else {
       // Parse the Trufflehog output
-      const output = result.stdout || '';
+      const _output = result.stdout || '';
       const stderr = result.stderr || '';
 
       // Parse the Trufflehog JSON output to check for actual secrets
@@ -187,12 +189,12 @@ if (isDockerAvailable()) {
               verifiedSecrets = data.verified_secrets || 0;
               unverifiedSecrets = data.unverified_secrets || 0;
               break;
-            } catch (e) {
+            } catch (_e) {
               // Not a valid JSON line, continue
             }
           }
         }
-      } catch (e) {
+      } catch (_e) {
         console.log('⚠️ Could not parse Trufflehog JSON output');
       }
 

@@ -75,8 +75,6 @@ export default defineConfig({
     timeout: 10000,
   },
 
-  /* eslint-disable internal/no-process-env-outside-config */
   retries: process.env.CI ? CI_RETRIES : NO_RETRIES,
   workers: process.env.CI ? CI_WORKERS : undefined,
-  /* eslint-enable internal/no-process-env-outside-config */
 });
