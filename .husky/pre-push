@@ -7,6 +7,9 @@
 echo "🚀 Meqenet.et Pre-Push Comprehensive Checks"
 echo "============================================="
 
+# Exit on error
+set -e
+
 # Get the current branch name
 branch=$(git rev-parse --abbrev-ref HEAD)
 echo "🌿 Current branch: $branch"
@@ -21,133 +24,46 @@ fi
 
 # 1. Run all tests
 echo "🧪 Running all tests..."
-# Capture test output in a temporary file to show on failure
-# Use cross-platform temporary file creation
-if command -v mktemp >/dev/null 2>&1; then
-  TEST_OUTPUT_FILE=$(mktemp)
-else
-  # Fallback for systems without mktemp (like some Windows bash environments)
-  TEST_OUTPUT_FILE="/tmp/pre-push-test-output.$$"
-  touch "$TEST_OUTPUT_FILE"
-fi
-
-# Set CI environment variable properly for cross-platform compatibility
-export CI=true
-if ! pnpm run test 2>&1 | tee "$TEST_OUTPUT_FILE"; then
+if ! pnpm test; then
   echo "❌ Tests failed! Cannot push to remote."
-  echo ""
-  echo "📋 Test Output (last 50 lines):"
-  echo "=================================="
-  tail -n 50 "$TEST_OUTPUT_FILE" 2>/dev/null || cat "$TEST_OUTPUT_FILE"
-  echo "=================================="
-  echo ""
   echo "💡 To run tests manually and see full output: pnpm test"
   echo "🔒 PUSH BLOCKED FOR ENTERPRISE COMPLIANCE"
-  echo "   • Fix all issues before pushing to remote repository"
-  echo "   • Contact DevOps team for assistance: devops@meqenet.et"
-  rm -f "$TEST_OUTPUT_FILE"
   exit 1
 fi
-rm -f "$TEST_OUTPUT_FILE"
 
 # 2. Run Secret Scan
 echo "🛡️  Running security scan for secrets..."
-SECRET_PUSH_OUTPUT=$(pnpm run security:secrets 2>&1)
-SECRET_PUSH_EXIT_CODE=$?
-
-if [ $SECRET_PUSH_EXIT_CODE -ne 0 ]; then
+if ! pnpm run security:secrets; then
     echo "❌ SECRET SCAN FAILED!"
-    echo ""
-    echo "📋 Detailed Security Scan Report:"
-    echo "================================"
-    echo "$SECRET_PUSH_OUTPUT"
-    echo "================================"
-    echo ""
     echo "🚨 CRITICAL SECURITY VIOLATION: Potential hardcoded secrets detected!"
-    echo "   • IMMEDIATE ACTION REQUIRED: Review and remove all hardcoded credentials"
-    echo "   • Contact Security Team: security@meqenet.et"
-    echo ""
     echo "🔒 PUSH BLOCKED FOR ENTERPRISE COMPLIANCE"
-    echo "   • Fix all security issues before pushing to remote repository"
     exit 1
 fi
 
 # 3. Check for critical vulnerabilities in dependencies
 echo "🔍 Checking for dependency vulnerabilities..."
-AUDIT_PUSH_OUTPUT=$(pnpm run security:audit 2>&1)
-AUDIT_PUSH_EXIT_CODE=$?
-
-if [ $AUDIT_PUSH_EXIT_CODE -ne 0 ]; then
+if ! pnpm run security:audit; then
   echo "❌ DEPENDENCY VULNERABILITIES FOUND!"
-  echo ""
-  echo "📋 Dependency Security Audit Report:"
-  echo "==================================="
-  echo "$AUDIT_PUSH_OUTPUT"
-  echo "==================================="
-  echo ""
-  echo "🔧 Resolution Steps:"
-  echo "   • Run 'pnpm audit fix' to attempt automatic fixes"
-  echo "   • Run 'pnpm update' for compatible updates"
-  echo "   • Contact Security Team for critical vulnerabilities: security@meqenet.et"
-  echo ""
+  echo "🔧 Run 'pnpm audit fix' to attempt automatic fixes"
   echo "🔒 PUSH BLOCKED FOR ENTERPRISE COMPLIANCE"
-  echo "   • All security vulnerabilities must be resolved before pushing"
   exit 1
 fi
 
 # 4. Build check
 echo "🏗️  Running build check..."
-# Use cross-platform temporary file creation
-if command -v mktemp >/dev/null 2>&1; then
-  BUILD_OUTPUT_FILE=$(mktemp)
-else
-  # Fallback for systems without mktemp (like some Windows bash environments)
-  BUILD_OUTPUT_FILE="/tmp/pre-push-build-output.$$"
-  touch "$BUILD_OUTPUT_FILE"
-fi
-
-if ! pnpm run build 2>&1 | tee "$BUILD_OUTPUT_FILE"; then
+if ! pnpm run build; then
   echo "❌ BUILD FAILED!"
-  echo ""
-  echo "📋 Complete Build Error Report:"
-  echo "==============================="
-  cat "$BUILD_OUTPUT_FILE" 2>/dev/null || echo "No build output captured"
-  echo "==============================="
-  echo ""
-  echo "🔧 Resolution Steps:"
-  echo "   • Run 'pnpm run build' locally to see full error details"
-  echo "   • Fix TypeScript compilation errors"
-  echo "   • Check for missing dependencies"
-  echo "   • Contact DevOps team: devops@meqenet.et"
-  echo ""
+  echo "🔧 Run 'pnpm run build' locally to see full error details"
   echo "🔒 PUSH BLOCKED FOR ENTERPRISE COMPLIANCE"
-  echo "   • Build must succeed before pushing to remote repository"
-  rm -f "$BUILD_OUTPUT_FILE"
   exit 1
 fi
-rm -f "$BUILD_OUTPUT_FILE"
 
 # 5. Test Coverage Validation
 echo "📊 Validating test coverage requirements..."
-COVERAGE_OUTPUT=$(timeout 30 pnpm run test:coverage 2>&1)
-COVERAGE_EXIT_CODE=$?
-
-if [ $COVERAGE_EXIT_CODE -ne 0 ]; then
+if ! pnpm run test:coverage; then
   echo "❌ TEST COVERAGE VALIDATION FAILED!"
-  echo ""
-  echo "📋 Test Coverage Report:"
-  echo "======================="
-  echo "$COVERAGE_OUTPUT"
-  echo "======================="
-  echo ""
-  echo "🔧 Resolution Steps:"
-  echo "   • Run 'pnpm run test:coverage' locally for detailed coverage report"
-  echo "   • Add tests for uncovered code sections"
-  echo "   • Financial/payment code must maintain 90%+ coverage"
-  echo "   • Contact QA team for test coverage assistance: qa@meqenet.et"
-  echo ""
+  echo "🔧 Run 'pnpm run test:coverage' locally for detailed coverage report"
   echo "🔒 PUSH BLOCKED FOR ENTERPRISE COMPLIANCE"
-  echo "   • Minimum test coverage requirements must be met"
   exit 1
 fi
 
@@ -177,24 +93,11 @@ if [ "$branch" = "main" ] || [ "$branch" = "develop" ]; then
   fi
 fi
 
-# 6. Check for proper commit message format (if pushing to protected branches)
-if [ "$branch" = "main" ] || [ "$branch" = "develop" ]; then
-  echo "📝 Validating commit message format for protected branch..."
-  last_commit_msg=$(git log -1 --pretty=%B)
-  if ! echo "$last_commit_msg" | grep -qE "^(feat|fix|docs|style|refactor|perf|test|chore|build|ci|security)(\(.+\))?: .+"; then
-    echo "⚠️  WARNING: Commit message doesn't follow conventional format!"
-    echo "For protected branches, use: type(scope): description"
-    echo "Types: feat, fix, docs, style, refactor, perf, test, chore, build, ci, security"
-  fi
-fi
-
 # 7. Final dependency check
 echo "📦 Final dependency validation..."
 if ! pnpm install --no-frozen-lockfile --silent 2>&1; then
   echo "❌ Dependency installation failed!"
-  echo "This indicates there are issues with package installation."
   echo "💡 Try running 'pnpm install' manually to see detailed error messages."
-  echo "💡 Check if pnpm-lock.yaml is corrupted or if there are network issues."
   exit 1
 fi
 
