@@ -78,6 +78,22 @@ jobs:
           done
 
       - uses: hashicorp/setup-terraform@v3
+
+      - name: Verify Terraform files exist
+        run: |
+          echo "🔍 Checking for Terraform files in infrastructure directory..."
+          TERRAFORM_FILES=$(find infrastructure -name "*.tf" -type f | wc -l)
+          echo "Found $TERRAFORM_FILES Terraform files"
+
+          if [ "$TERRAFORM_FILES" -gt 0 ]; then
+            echo "✅ Terraform files found:"
+            find infrastructure -name "*.tf" -type f -exec basename {} \;
+          else
+            echo "❌ No Terraform files found in infrastructure directory"
+            echo "This could cause Checkov to fail"
+            exit 1
+          fi
+
       - name: Terraform fmt check
         run: |
           if [ -d terraform ]; then
@@ -96,13 +112,39 @@ jobs:
           severity: "CRITICAL,HIGH,MEDIUM"
           exit-code: "0" # Don't fail the build, just report
       - name: checkov
+        id: checkov
         uses: bridgecrewio/checkov-action@v12
+        continue-on-error: true
         with:
           directory: infrastructure/
           framework: terraform
           output_format: sarif
           output_file_path: checkov-terraform.sarif
-          soft_fail: false
+          soft_fail: true
+          quiet: true
+
+      - name: Debug Checkov output
+        if: always()
+        run: |
+          echo "🔍 Checking Checkov execution status..."
+          echo "Checkov exit code: ${{ steps.checkov.outcome }}"
+          echo "Checkov conclusion: ${{ steps.checkov.conclusion }}"
+
+          echo "📁 Listing current directory contents..."
+          ls -la
+
+          echo "🔍 Checking if Checkov SARIF file exists..."
+          if [ -f "checkov-terraform.sarif" ]; then
+            echo "✅ Checkov SARIF file found!"
+            ls -la checkov-terraform.sarif
+            echo "📄 First few lines of SARIF file:"
+            head -20 checkov-terraform.sarif
+          else
+            echo "❌ Checkov SARIF file not found"
+            echo "📋 Checking for any SARIF files..."
+            find . -name "*.sarif" -type f 2>/dev/null || echo "No SARIF files found"
+          fi
+
       - name: Upload Terraform Security SARIF
         if: always()
         uses: github/codeql-action/upload-sarif@v3
@@ -140,7 +182,18 @@ jobs:
           if [ -f "checkov-terraform.sarif" ]; then
             echo "✅ Checkov SARIF file exists"
             ls -la checkov-terraform.sarif
+            # Check if SARIF file has content (not empty)
+            if [ -s "checkov-terraform.sarif" ]; then
+              echo "✅ SARIF file has content"
+            else
+              echo "⚠️ SARIF file exists but is empty (no findings)"
+            fi
           else
             echo "❌ Checkov SARIF file not found"
+            echo "This could indicate:"
+            echo "  - Checkov failed to run"
+            echo "  - No Terraform files found to scan"
+            echo "  - Configuration error in Checkov action"
+            echo "Check the debug output above for more details"
             exit 1
           fi

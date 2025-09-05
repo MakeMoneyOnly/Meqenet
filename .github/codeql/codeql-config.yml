@@ -8,17 +8,13 @@ name: "Meqenet CodeQL Configuration - FinTech Enterprise"
 # Global settings
 disable-default-queries: false
 
-# Enterprise-grade query suites
+# Enterprise-grade query suites for TypeScript/JavaScript only
 queries:
   # Core Security Analysis - Built-in suites
   - uses: security-and-quality
-  - uses: security-extended
   - uses: security-experimental
 
-  # Additional built-in security query suites
-  - uses: code-scanning
-
-# Multi-language security configuration
+# TypeScript/JavaScript security configuration
 paths:
   # Backend TypeScript services
   - backend/services/auth-service/src
@@ -27,113 +23,31 @@ paths:
   # Frontend TypeScript/React
   - frontend/apps/app/src
   - frontend/apps/website/src
-  # Android (if present)
-  - frontend/apps/app/android
+  # Shared libraries
+  - backend/shared
+  - frontend/libs
 paths-ignore:
   - "node_modules"
   - "dist"
   - "build"
   - ".git"
+  - "**/*.spec.ts"
+  - "**/*.test.ts"
+  - "**/*.d.ts"
 
 # Language-specific configurations
 # This project is TypeScript/JavaScript only - no Java/Kotlin code
 
-# TypeScript/JavaScript Security Configuration
-javascript:
-  # Web application security
-  - "js/webview-javascript-enabled"
-  - "js/cleartext-storage"
-  - "js/insecure-random"
-  - "js/insecure-crypto-algorithm"
-  - "js/sql-injection"
-  - "js/xss"
-  - "js/command-injection"
-  - "js/path-injection"
-  - "js/hardcoded-credentials"
-  - "js/cleartext-transmission"
-  - "js/insecure-temporary-file"
-  - "js/overly-permissive-file-permissions"
-  - "js/dangerous-permissions"
-  - "js/improper-code-sanitization"
-
-typescript:
-  # Same JavaScript security rules apply to TypeScript
-  - "js/webview-javascript-enabled"
-  - "js/cleartext-storage"
-  - "js/insecure-random"
-  - "js/insecure-crypto-algorithm"
-  - "js/sql-injection"
-  - "js/xss"
-  - "js/command-injection"
-  - "js/path-injection"
-  - "js/hardcoded-credentials"
-  - "js/cleartext-transmission"
-  - "js/insecure-temporary-file"
-  - "js/overly-permissive-file-permissions"
-  - "js/dangerous-permissions"
-  - "js/improper-code-sanitization"
+# TypeScript/JavaScript Security Configuration for FinTech
+# Using built-in CodeQL query suites instead of individual queries
+# This ensures compatibility and comprehensive coverage
 
 # Enterprise-grade severity thresholds for fintech compliance
-severity:
-  critical:
-    - "sql-injection"
-    - "hardcoded-credentials"
-    - "insecure-crypto"
-    - "js/insecure-storage-of-sensitive-information"  # Insecure storage of sensitive information
-    - "js/cleartext-transmission"  # Cleartext transmission of sensitive information
-    - "js/deserialization-of-untrusted-data"  # Deserialization of untrusted data
-    - "js/server-side-request-forgery"  # Server-side request forgery
-  high:
-    - "cleartext-storage"
-    - "cleartext-traffic"
-    - "dangerous-permissions"
-    - "js/improper-input-validation"  # Improper input validation
-    - "js/path-injection"  # Path traversal
-    - "js/xss"  # Cross-site scripting (XSS)
-    - "js/improper-authentication"  # Improper authentication
-    - "js/weak-cryptographic-algorithm"  # Cryptographic issues
-    - "js/open-redirect"  # Open redirect
-  medium:
-    - "webview-javascript-enabled"
-    - "overly-permissive-permissions"
-    - "js/information-disclosure"  # Information disclosure
-    - "js/weak-cryptographic-algorithm"  # Use of risky cryptographic algorithm
-    - "js/weak-hash"  # Use of weak hash
-  low:
-    - "insecure-random"
-    - "implicit-pendingintent"
-    - "js/weak-random-number-generator"  # Weak pseudo-random number generator
+# Note: Severity configuration is managed by built-in query suites
+# Custom severity levels may not be supported in all CodeQL versions
 
-# Enterprise-grade custom query suites for fintech-specific security
-# Note: Custom query suites removed as they reference non-existent queries
-# Using built-in CodeQL query suites instead for comprehensive coverage
-
-# Exclude false positives for known safe patterns
-exclude:
-  paths:
-    - "**/test*/**"
-    - "**/*Test.*"
-    - "**/*Tests.*"
-    - "**/*.spec.*"
-    - "**/*.test.*"
-    - "**/node_modules/**"
-    - "**/dist/**"
-    - "**/build/**"
-    - "**/coverage/**"
-    - "**/.nx/**"
-    - "**/.git/**"
-    - "**/logs/**"
-  queries:
-    - "js/cleartext-transmission" # May be needed for local development
-    - "js/insecure-random" # May be acceptable for non-cryptographic purposes
-
-# Performance optimization settings (Note: These are handled by GitHub Actions runner limits)
-# threads: 4  # Controlled by GitHub Actions environment
-# timeout: 600  # Controlled by GitHub Actions environment
-# ram: 8192  # Controlled by GitHub Actions environment
-
-# Output format handled by GitHub CodeQL Action automatically
-# output format and file location managed by the action
-
-# Analysis configuration handled by GitHub CodeQL Action
-# incremental analysis and scope configuration managed by the action
+# FinTech Enterprise Configuration Notes:
+# - Uses built-in CodeQL query suites for reliable analysis
+# - Focuses on TypeScript/JavaScript codebase only
+# - Optimized for BNPL and financial services security requirements
+# - Excludes test files and build artifacts automatically via paths-ignore

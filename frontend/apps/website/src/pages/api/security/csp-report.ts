@@ -1,35 +1,91 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import winston from 'winston';
 
 /**
  * CSP Violation Report Handler
  * Logs Content Security Policy violations for monitoring and debugging
+ * Uses lightweight logging to avoid heavy dependencies in frontend
  */
 
-const logger = winston.createLogger({
-  level: 'info',
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.errors({ stack: true }),
-    winston.format.json()
-  ),
-  defaultMeta: { service: 'csp-report' },
-  transports: [
-    new winston.transports.File({
-      filename: 'logs/csp-violations.log',
-      maxsize: 5242880, // 5MB
-      maxFiles: 5,
-    }),
-    new winston.transports.Console({
-      format: winston.format.simple(),
-    }),
-  ],
-});
+/**
+ * Lightweight logger for CSP violations
+ * Implements structured logging without external dependencies
+ */
+class CSPLogger {
+  private static formatMessage(
+    level: string,
+    message: string,
+    meta?: Record<string, unknown>,
+  ): string {
+    const timestamp = new Date().toISOString();
+    const logEntry = {
+      timestamp,
+      level: level.toUpperCase(),
+      service: 'csp-report',
+      message,
+      ...meta,
+    };
+    return JSON.stringify(logEntry);
+  }
+
+  static info(message: string, meta?: Record<string, unknown>): void {
+    // eslint-disable-next-line no-console
+    console.log(this.formatMessage('info', message, meta));
+  }
+
+  static warn(message: string, meta?: Record<string, unknown>): void {
+    // eslint-disable-next-line no-console
+    console.warn(this.formatMessage('warn', message, meta));
+  }
+
+  static error(message: string, meta?: Record<string, unknown>): void {
+    // eslint-disable-next-line no-console
+    console.error(this.formatMessage('error', message, meta));
+  }
+}
+
+/**
+ * Security utilities for sanitizing CSP report data
+ */
+class SecurityUtils {
+  /**
+   * Sanitize URI to prevent log injection and PII exposure
+   */
+  static sanitizeUri(uri?: string): string | undefined {
+    if (!uri) return undefined;
+    // Remove potential script injection and limit length
+    return uri.replace(/[<>'"&]/g, '').substring(0, 500);
+  }
+
+  /**
+   * Sanitize User-Agent string for logging
+   */
+  static sanitizeUserAgent(userAgent?: string): string | undefined {
+    if (!userAgent) return undefined;
+    // Remove potential sensitive information and limit length
+    return userAgent.replace(/([?&].*)/g, '').substring(0, 200);
+  }
+
+  /**
+   * Sanitize IP address for logging (mask last octet for privacy)
+   */
+  static sanitizeIp(ip?: string): string | undefined {
+    if (!ip) return undefined;
+    // Handle IPv4 addresses
+    if (ip.includes('.')) {
+      const parts = ip.split('.');
+      if (parts.length === 4) {
+        return `${parts[0]}.${parts[1]}.${parts[2]}.***`;
+      }
+    }
+    // Handle IPv6 or other formats - mask last segment
+    return ip.replace(/[:.][^:.]*$/, ':***');
+  }
+}
 
 interface CSPViolationReport {
   'csp-report': {
     'document-uri': string;
-    'referrer': string;
+    referrer: string;
     'violated-directive': string;
     'effective-directive': string;
     'original-policy': string;
@@ -78,11 +134,13 @@ const HTTP_INTERNAL_SERVER_ERROR = 500;
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ): Promise<void> {
   // Only accept POST requests
   if (req.method !== 'POST') {
-    return res.status(HTTP_METHOD_NOT_ALLOWED).json({ error: 'Method not allowed' });
+    return res
+      .status(HTTP_METHOD_NOT_ALLOWED)
+      .json({ error: 'Method not allowed' });
   }
 
   try {
@@ -90,26 +148,33 @@ export default async function handler(
 
     // Validate CSP report structure
     if (!body['csp-report']) {
-      logger.warn('Invalid CSP report received', { body });
-      return res.status(HTTP_BAD_REQUEST).json({ error: 'Invalid CSP report format' });
+      CSPLogger.warn('Invalid CSP report received', {
+        hasBody: Boolean(body),
+        bodyType: typeof body,
+      });
+      return res
+        .status(HTTP_BAD_REQUEST)
+        .json({ error: 'Invalid CSP report format' });
     }
 
     const report = body['csp-report'];
 
-    // Log the violation with structured data
-    logger.warn('CSP Violation Detected', {
-      documentUri: report['document-uri'],
-      referrer: report['referrer'],
+    // Log the violation with structured data (sanitized for security)
+    CSPLogger.warn('CSP Violation Detected', {
+      documentUri: SecurityUtils.sanitizeUri(report['document-uri']),
+      referrer: SecurityUtils.sanitizeUri(report['referrer']),
       violatedDirective: report['violated-directive'],
       effectiveDirective: report['effective-directive'],
-      blockedUri: report['blocked-uri'],
+      blockedUri: SecurityUtils.sanitizeUri(report['blocked-uri']),
       statusCode: report['status-code'],
-      scriptSample: report['script-sample']?.substring(0, HTTP_OK), // Truncate for security
+      scriptSample: report['script-sample']?.substring(0, 200), // Truncate for security
       sourceFile: report['source-file'],
       lineNumber: report['line-number'],
       columnNumber: report['column-number'],
-      userAgent: req.headers['user-agent'],
-      ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress,
+      userAgent: SecurityUtils.sanitizeUserAgent(req.headers['user-agent']),
+      ip: SecurityUtils.sanitizeIp(
+        req.headers['x-forwarded-for'] || req.connection.remoteAddress,
+      ),
       timestamp: new Date().toISOString(),
     });
 
@@ -122,19 +187,18 @@ export default async function handler(
     // For now, just acknowledge receipt
     res.status(HTTP_OK).json({
       status: 'received',
-      message: 'CSP violation report logged successfully'
+      message: 'CSP violation report logged successfully',
     });
-
   } catch (error) {
     const errorInfo = getErrorInfo(error);
-    logger.error('Error processing CSP report', {
+    CSPLogger.error('Error processing CSP report', {
       error: errorInfo.message,
       stack: errorInfo.stack,
-      body: req.body,
+      hasBody: Boolean(req.body),
     });
 
     res.status(HTTP_INTERNAL_SERVER_ERROR).json({
-      error: 'Internal server error processing CSP report'
+      error: 'Internal server error processing CSP report',
     });
   }
 }

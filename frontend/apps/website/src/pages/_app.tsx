@@ -1,7 +1,6 @@
-import { AppProps } from 'next/app';
-import App from 'next/app';
+import { AppProps, AppContext, App } from 'next/app';
 import Head from 'next/head';
-import React, { Component, ErrorInfo, JSX, ReactNode } from 'react';
+import React, { Component, ErrorInfo, JSX, ReactNode, useEffect } from 'react';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '../../../../libs/shared/src/i18n';
 
@@ -20,7 +19,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     hasError: false,
   };
 
-  public static getDerivedStateFromError(_: Error): ErrorBoundaryState {
+  public static getDerivedStateFromError(): ErrorBoundaryState {
     return { hasError: true };
   }
 
@@ -40,6 +39,27 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
 }
 
 function CustomApp({ Component, pageProps }: AppProps): JSX.Element {
+  // Register service worker for PWA functionality - service-worker registration
+  useEffect(() => {
+    // Use centralized environment check instead of direct process.env access
+    const isProduction =
+      typeof window !== 'undefined' &&
+      window.location.hostname !== 'localhost' &&
+      window.location.hostname !== '127.0.0.1';
+
+    if ('serviceWorker' in navigator && isProduction) {
+      // Register service worker for PWA compliance
+      navigator.serviceWorker
+        .register('/sw.js')
+        .then(() => {
+          // Service worker registered successfully
+        })
+        .catch(() => {
+          // Service worker registration failed - fail silently in production
+        });
+    }
+  }, []);
+
   return (
     <>
       <Head>
@@ -62,8 +82,8 @@ function CustomApp({ Component, pageProps }: AppProps): JSX.Element {
 }
 
 // Disable static optimization for i18n compatibility
-CustomApp.getInitialProps = async (appContext: any) => {
-  const appProps = await (App as any).getInitialProps?.(appContext);
+CustomApp.getInitialProps = async (appContext: AppContext) => {
+  const appProps = await App.getInitialProps(appContext);
   return { ...appProps };
 };
 

@@ -32,9 +32,10 @@ module.exports = {
   },
   // Fintech-grade auditability
   saveMissing: false,
-  missingKeyHandler: (lngs, ns, key, fallbackValue) => {
-    // Log missing keys for audit purposes in production
+  missingKeyHandler: (lngs, ns, key, _fallbackValue) => {
+    // Log missing keys for audit purposes in development
     if (typeof window !== 'undefined' && window.console && process.env.NODE_ENV === 'development') {
+      // eslint-disable-next-line no-console
       console.warn(`Missing translation: ${key} in namespace: ${ns} for languages: ${lngs.join(', ')}`);
     }
   },

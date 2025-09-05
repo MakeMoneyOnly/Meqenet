@@ -1,7 +1,5 @@
-//@ts-check
-/* eslint-env node */
-
-const { composePlugins, withNx } = require('@nx/next');
+import { composePlugins, withNx } from '@nx/next';
+import withPWA from 'next-pwa';
 
 /**
  * Security Headers Configuration
@@ -214,8 +212,124 @@ const nextConfig = {
   },
 };
 
+/**
+ * PWA Configuration
+ * Implements Progressive Web App features with enterprise fintech security considerations
+ */
+const pwaConfig = {
+  dest: 'public',
+  disable: process.env.NODE_ENV === 'development',
+  register: true,
+  skipWaiting: true,
+  // Enhanced security for fintech applications
+  runtimeCaching: [
+    {
+      urlPattern: /^https:\/\/api\./,
+      handler: 'NetworkFirst',
+      options: {
+        cacheName: 'api-cache',
+        expiration: {
+          maxEntries: 50,
+          maxAgeSeconds: 24 * 60 * 60, // 24 hours
+        },
+        cacheKeyWillBeUsed: async ({ request }) => {
+          // Enhanced security: Don't cache any sensitive financial data
+          const sensitivePatterns = [
+            '/auth/',
+            '/payments/',
+            '/loans/',
+            '/transactions/',
+            '/kyc/',
+            '/aml/',
+            '/fraud/',
+            '/ledger/',
+            '/accounts/',
+            '/balances/'
+          ];
+
+          if (sensitivePatterns.some(pattern => request.url.includes(pattern))) {
+            return null; // Don't cache sensitive requests
+          }
+
+          // Additional check for headers that might contain sensitive data
+          const headers = request.headers || {};
+          if (headers['authorization'] || headers['x-api-key'] || headers['cookie']) {
+            return null; // Don't cache authenticated requests
+          }
+
+          return request;
+        },
+        cacheWillUpdate: async ({ response }) => {
+          // Only cache successful responses
+          if (!response || response.status !== 200) {
+            return null;
+          }
+          return response;
+        },
+      },
+    },
+    {
+      urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/,
+      handler: 'CacheFirst',
+      options: {
+        cacheName: 'image-cache',
+        expiration: {
+          maxEntries: 100,
+          maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
+        },
+        cacheKeyWillBeUsed: async ({ request }) => {
+          // Ensure no sensitive data in image requests
+          if (request.url.includes('/secure/') || request.url.includes('/private/')) {
+            return null;
+          }
+          return request;
+        },
+      },
+    },
+    {
+      urlPattern: /\.(?:css|js)$/,
+      handler: 'StaleWhileRevalidate',
+      options: {
+        cacheName: 'static-assets-cache',
+        expiration: {
+          maxEntries: 200,
+          maxAgeSeconds: 7 * 24 * 60 * 60, // 7 days
+        },
+      },
+    },
+  ],
+  // Security exclusions for build artifacts
+  buildExcludes: [
+    /manifest\.json$/,
+    /sw\.js$/,
+    /workbox-.*\.js$/,
+    // Exclude sensitive files from service worker cache
+    /.*\.env.*$/,
+    /config.*\.json$/,
+    /secrets.*\.json$/,
+  ],
+  // Additional security options
+  additionalManifestEntries: [
+    {
+      name: 'Meqenet BNPL',
+      short_name: 'Meqenet',
+      description: 'Secure Buy Now Pay Later platform for Ethiopian market',
+      theme_color: '#1f2937',
+      background_color: '#ffffff',
+      display: 'standalone',
+      orientation: 'portrait-primary',
+      scope: '/',
+      start_url: '/',
+      categories: ['finance', 'business'],
+      lang: 'en',
+      dir: 'ltr',
+    },
+  ],
+};
+
 const plugins = [
   withNx,
+  [withPWA, pwaConfig],
 ];
 
-module.exports = composePlugins(...plugins)(nextConfig);
+export default composePlugins(...plugins)(nextConfig);
