@@ -37,7 +37,7 @@
     "@nx/js": "21.4.0",
     "@nx/next": "^21.4.0",
     "@nx/react": "21.4.0",
-    "@nx/react-native": "21.4.0",
+    "@nx/react-native": "21.4.1",
     "@nx/vite": "21.4.0",
     "@nx/web": "21.4.0",
     "@nx/workspace": "21.4.0",
