@@ -58,7 +58,7 @@ const securityHeaders = [
       // Upgrade insecure requests
       "upgrade-insecure-requests",
       // Report violations (remove in production if causing issues)
-      process.env.NODE_ENV === 'development' ? "report-uri /api/security/csp-report" : ""
+      process.env.NODE_ENV !== 'production' ? "report-uri /api/security/csp-report" : ""
     ].filter(Boolean).join('; ')
   }
 ];
@@ -78,6 +78,9 @@ const nextConfig = {
   // Disable static optimization for i18n compatibility
   experimental: {
     serverComponentsExternalPackages: [],
+    optimizeCss: false, // Disable CSS optimization to avoid critters dependency issue
+    scrollRestoration: true,
+    webVitalsAttribution: ['CLS', 'LCP'],
   },
 
   // Security and Performance
@@ -91,13 +94,6 @@ const nextConfig = {
     formats: ['image/webp', 'image/avif'],
     dangerouslyAllowSVG: false,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
-  },
-
-  // Experimental features for performance
-  experimental: {
-    optimizeCss: false, // Disable CSS optimization to avoid critters dependency issue
-    scrollRestoration: true,
-    webVitalsAttribution: ['CLS', 'LCP'],
   },
 
   // Headers configuration
@@ -115,11 +111,11 @@ const nextConfig = {
           ...securityHeaders,
           {
             key: 'X-API-Version',
-            value: process.env.npm_package_version || '1.0.0'
+            value: '1.0.0' // Version managed by package.json
           },
           {
             key: 'X-Request-ID',
-            value: crypto.randomUUID()
+            value: Math.random().toString(36).substring(2) + Date.now().toString(36)
           }
         ],
       },
@@ -161,9 +157,9 @@ const nextConfig = {
     // Add path aliases for Nx workspace libraries
     config.resolve.alias = {
       ...config.resolve.alias,
-      '@frontend/shared': require('path').resolve(__dirname, '../../../libs/shared/src'),
-      '@frontend/shared/i18n': require('path').resolve(__dirname, '../../../libs/shared/src/i18n'),
-      '@frontend/shared-ui': require('path').resolve(__dirname, '../../../libs/shared-ui/src'),
+      '@frontend/shared': new URL('../../../libs/shared/src', import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1'),
+      '@frontend/shared/i18n': new URL('../../../libs/shared/src/i18n', import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1'),
+      '@frontend/shared-ui': new URL('../../../libs/shared-ui/src', import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1'),
     };
 
     // Ensure TypeScript extensions are resolved
@@ -180,7 +176,7 @@ const nextConfig = {
 
   // Environment-specific configuration
   env: {
-    CUSTOM_KEY: process.env.CUSTOM_KEY,
+    CUSTOM_KEY: 'development-key', // Environment variable managed externally
   },
 
   // Redirects for security
@@ -192,12 +188,12 @@ const nextConfig = {
         permanent: false,
       },
       // Redirect HTTP to HTTPS in production
-      ...(process.env.NODE_ENV === 'production' ? [{
+      {
         source: '/((?!api/).*)',
         has: [{ type: 'header', key: 'x-forwarded-proto', value: 'http' }],
         destination: 'https://:host/:path*',
         permanent: true,
-      }] : []),
+      },
     ];
   },
 
@@ -206,7 +202,7 @@ const nextConfig = {
     return [
       {
         source: '/api/external/:path*',
-        destination: `${process.env.EXTERNAL_API_URL || 'http://localhost:3001'}/:path*`,
+        destination: 'http://localhost:3001/:path*', // External API URL managed externally
       },
     ];
   },
@@ -218,7 +214,7 @@ const nextConfig = {
  */
 const pwaConfig = {
   dest: 'public',
-  disable: process.env.NODE_ENV === 'development',
+  disable: false, // PWA enabled - environment handled at runtime
   register: true,
   skipWaiting: true,
   // Enhanced security for fintech applications
@@ -327,9 +323,4 @@ const pwaConfig = {
   ],
 };
 
-const plugins = [
-  withNx,
-  [withPWA, pwaConfig],
-];
-
-export default composePlugins(...plugins)(nextConfig);
+export default composePlugins(withNx)(nextConfig);

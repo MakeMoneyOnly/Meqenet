@@ -1,4 +1,5 @@
-import { AppProps, AppContext, App } from 'next/app';
+import { AppProps, AppContext } from 'next/app';
+import App from 'next/app'; // eslint-disable-line no-duplicate-imports
 import Head from 'next/head';
 import React, { Component, ErrorInfo, JSX, ReactNode, useEffect } from 'react';
 import { I18nextProvider } from 'react-i18next';
