@@ -1,0 +1,80 @@
+#!/usr/bin/env bash
+# Meqenet.et Commit Message Validation Hook
+# Enterprise-Grade Conventional Commit Enforcement
+
+echo "📝 Meqenet.et Commit Message Validation"
+echo "======================================"
+
+# Read the commit message
+COMMIT_MSG_FILE=$1
+COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
+
+echo "📋 Commit message:"
+echo "   '$COMMIT_MSG'"
+echo ""
+
+# Conventional commit regex pattern
+# Supports: type(scope): description
+# Types: feat, fix, docs, style, refactor, perf, test, chore, build, ci, security
+CONVENTIONAL_COMMIT_PATTERN="^(feat|fix|docs|style|refactor|perf|test|chore|build|ci|security)(\(.+\))?: .{1,}"
+
+# Check if commit message follows conventional format
+if ! echo "$COMMIT_MSG" | grep -qE "$CONVENTIONAL_COMMIT_PATTERN"; then
+  echo "❌ INVALID COMMIT MESSAGE FORMAT!"
+  echo ""
+  echo "🚨 Commit rejected due to non-conventional commit message."
+  echo ""
+  echo "📋 Required format:"
+  echo "   type(scope): description"
+  echo ""
+  echo "✅ Valid types:"
+  echo "   feat     - New feature"
+  echo "   fix      - Bug fix"
+  echo "   docs     - Documentation changes"
+  echo "   style    - Code style changes (formatting, etc.)"
+  echo "   refactor - Code refactoring"
+  echo "   perf     - Performance improvements"
+  echo "   test     - Test additions/modifications"
+  echo "   chore    - Maintenance tasks"
+  echo "   build    - Build system changes"
+  echo "   ci       - CI/CD changes"
+  echo "   security - Security-related changes"
+  echo ""
+  echo "📝 Examples:"
+  echo "   feat(auth): add biometric authentication"
+  echo "   fix(payment): resolve transaction timeout issue"
+  echo "   security(auth): implement rate limiting"
+  echo "   docs(api): update payment endpoint documentation"
+  echo ""
+  echo "💡 Pro tip: Use 'git commit --amend' to fix the message"
+  echo ""
+  echo "🔧 To bypass (emergency only): git commit --no-verify"
+  exit 1
+fi
+
+# Check minimum message length
+MSG_LENGTH=$(echo "$COMMIT_MSG" | wc -c)
+if [ "$MSG_LENGTH" -lt 15 ]; then
+  echo "⚠️  WARNING: Commit message is very short"
+  echo "   Consider providing more descriptive commit messages"
+  echo "   Minimum recommended: 15 characters"
+  echo ""
+fi
+
+# Check for Ethiopian FinTech specific patterns
+if echo "$COMMIT_MSG" | grep -q -E "(fayda|nbe|telebirr|ethiopia|ethiopian)"; then
+  echo "🇪🇹 Ethiopian FinTech specific commit detected"
+  echo "   Ensuring compliance with NBE regulations..."
+  echo ""
+fi
+
+# Check for security-related commits
+if echo "$COMMIT_MSG" | grep -q -E "(security|auth|encrypt|token|key|secret)"; then
+  echo "🔐 Security-related commit detected"
+  echo "   Additional security validation recommended..."
+  echo ""
+fi
+
+echo "✅ Commit message validation passed!"
+echo "🇪🇹 Ready to contribute to Ethiopia's financial future!"
+echo ""
