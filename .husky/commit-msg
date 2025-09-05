@@ -13,13 +13,8 @@ echo "📋 Commit message:"
 echo "   '$COMMIT_MSG'"
 echo ""
 
-# Conventional commit regex pattern
-# Supports: type(scope): description
-# Types: feat, fix, docs, style, refactor, perf, test, chore, build, ci, security
-CONVENTIONAL_COMMIT_PATTERN="^(feat|fix|docs|style|refactor|perf|test|chore|build|ci|security)(\(.+\))?: .{1,}"
-
-# Check if commit message follows conventional format
-if ! echo "$COMMIT_MSG" | grep -qE "$CONVENTIONAL_COMMIT_PATTERN"; then
+# Use commitlint for comprehensive conventional commit validation
+if ! pnpm run commitlint -- "$COMMIT_MSG_FILE"; then
   echo "❌ INVALID COMMIT MESSAGE FORMAT!"
   echo ""
   echo "🚨 Commit rejected due to non-conventional commit message."

@@ -33,8 +33,14 @@ fi
 
 # Enhanced linting and formatting with detailed error reporting
 echo "  • Running comprehensive code quality checks..."
+
+# Debug: Show what we're about to run
+echo "  • Executing: pnpm exec lint-staged"
+
 LINT_OUTPUT=$(pnpm exec lint-staged 2>&1)
 LINT_EXIT_CODE=$?
+
+echo "  • Lint-staged exit code: $LINT_EXIT_CODE"
 
 if [ $LINT_EXIT_CODE -ne 0 ]; then
   echo "❌ CODE QUALITY CHECKS FAILED!"
@@ -52,9 +58,10 @@ if [ $LINT_EXIT_CODE -ne 0 ]; then
   echo "🔒 COMMIT BLOCKED FOR ENTERPRISE COMPLIANCE"
   echo "   • All code must meet quality standards before committing"
   exit 1
+else
+  echo "  ✅ Code formatting and linting passed"
+  echo "  • Lint-staged completed successfully"
 fi
-
-echo "  ✅ Code formatting and linting passed"
 
 # ============================================================================
 # PHASE 2: ENTERPRISE SECURITY VALIDATION

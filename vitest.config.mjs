@@ -36,6 +36,68 @@ export default defineConfig({
     typecheck: {
       tsconfig: './tsconfig.json',
     },
+    // Enterprise-grade test coverage thresholds for FinTech compliance
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html', 'lcov'],
+      reportsDirectory: './coverage',
+      exclude: [
+        '**/node_modules/**',
+        '**/dist/**',
+        '**/coverage/**',
+        '**/*.d.ts',
+        '**/*.config.{js,ts,mjs}',
+        '**/test/**',
+        '**/mocks/**',
+        '**/types/**',
+        // Exclude generated files
+        '**/generated/**',
+        '**/*.generated.ts',
+      ],
+      // FinTech-grade coverage thresholds
+      thresholds: {
+        global: {
+          branches: 85,
+          functions: 85,
+          lines: 85,
+          statements: 85,
+        },
+        // Stricter thresholds for critical financial modules
+        './backend/services/auth-service/': {
+          branches: 90,
+          functions: 90,
+          lines: 90,
+          statements: 90,
+        },
+        './backend/services/api-gateway/': {
+          branches: 90,
+          functions: 90,
+          lines: 90,
+          statements: 90,
+        },
+        // Payment and financial logic require 95% coverage
+        './backend/services/payment-service/': {
+          branches: 95,
+          functions: 95,
+          lines: 95,
+          statements: 95,
+        },
+        './backend/src/features/payments/': {
+          branches: 95,
+          functions: 95,
+          lines: 95,
+          statements: 95,
+        },
+        './backend/src/features/auth/': {
+          branches: 95,
+          functions: 95,
+          lines: 95,
+          statements: 95,
+        },
+      },
+      // Fail CI if coverage drops below thresholds
+      all: true, // Include uncovered files in report
+    },
   },
   resolve: {
     alias: {
