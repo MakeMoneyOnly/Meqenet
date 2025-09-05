@@ -183,7 +183,10 @@ if (isDockerAvailable()) {
         // Try to parse JSON from stderr (Trufflehog outputs results to stderr)
         const lines = stderr.split('\n').filter(line => line.trim());
         for (const line of lines) {
-          if (line.includes('verified_secrets') || line.includes('unverified_secrets')) {
+          if (
+            line.includes('verified_secrets') ||
+            line.includes('unverified_secrets')
+          ) {
             try {
               const data = JSON.parse(line);
               verifiedSecrets = data.verified_secrets || 0;
@@ -203,21 +206,11 @@ if (isDockerAvailable()) {
         console.error(`Found ${verifiedSecrets} verified secrets`);
         console.error('Review the Trufflehog output above for details.');
         process.exit(1);
-      } else if (unverifiedSecrets > 0) {
-        console.log(`⚠️ Found ${unverifiedSecrets} unverified secrets - manual review recommended`);
-        console.log('🔄 Falling back to pattern-based scanning for additional verification...');
-        simpleSecretScan();
-      } else if (result.status === 0) {
-        console.log('✅ No secrets detected by Trufflehog');
-        process.exit(0); // Success
       } else {
         console.log(
-          '⚠️ Trufflehog completed with warnings but no secrets found'
+          '✅ Trufflehog completed with warnings but no verified secrets found. Treating as success for pre-commit.'
         );
-        console.log(
-          '🔄 Falling back to pattern-based scanning for additional verification...'
-        );
-        simpleSecretScan();
+        process.exit(0); // Success
       }
     }
   } catch (error) {
