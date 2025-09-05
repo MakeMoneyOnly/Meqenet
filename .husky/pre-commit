@@ -31,20 +31,30 @@ if [ "$STAGED_COUNT" -gt 50 ]; then
   echo "  ⚠️  Large commit detected ($STAGED_COUNT files). Using optimized processing..."
 fi
 
-# Temporarily disabled lint-staged due to git integration issues
-# TODO: Fix lint-staged git operations and re-enable
-# pnpm exec lint-staged || {
-#   echo "❌ Code quality checks failed"
-#   echo ""
-#   echo "📋 Issues found in staged files. Please fix the following:"
-#   echo "   • Run: pnpm eslint --fix <problematic-file>"
-#   echo "   • Run: pnpm prettier --write <problematic-file>"
-#   echo ""
-#   echo "🚫 Commit blocked. Fix issues and try again, or use --no-verify to bypass."
-#   exit 1
-# }
+# Enhanced linting and formatting with detailed error reporting
+echo "  • Running comprehensive code quality checks..."
+LINT_OUTPUT=$(pnpm exec lint-staged 2>&1)
+LINT_EXIT_CODE=$?
 
-echo "  ✅ Code formatting and linting completed (temporarily disabled)"
+if [ $LINT_EXIT_CODE -ne 0 ]; then
+  echo "❌ CODE QUALITY CHECKS FAILED!"
+  echo ""
+  echo "📋 Detailed Error Report:"
+  echo "========================="
+  echo "$LINT_OUTPUT"
+  echo "========================="
+  echo ""
+  echo "🔧 Quick Fixes:"
+  echo "   • Run: pnpm eslint --fix"
+  echo "   • Run: pnpm prettier --write ."
+  echo "   • Run: pnpm lint:fix"
+  echo ""
+  echo "🔒 COMMIT BLOCKED FOR ENTERPRISE COMPLIANCE"
+  echo "   • All code must meet quality standards before committing"
+  exit 1
+fi
+
+echo "  ✅ Code formatting and linting passed"
 
 # ============================================================================
 # PHASE 2: ENTERPRISE SECURITY VALIDATION
@@ -54,33 +64,67 @@ echo "🔐 Phase 2: Enterprise security validation..."
 
 # 2. Secret Scanning - Critical for FinTech
 echo "  • Scanning for hardcoded secrets..."
-if ! timeout 30 pnpm run security:secrets 2>&1; then
+SECRET_OUTPUT=$(timeout 30 pnpm run security:secrets 2>&1)
+SECRET_EXIT_CODE=$?
+
+if [ $SECRET_EXIT_CODE -ne 0 ]; then
   echo "❌ SECRET SCANNING FAILED!"
   echo ""
-  echo "🚨 CRITICAL: Potential hardcoded secrets detected!"
-  echo "   • Check the output above for specific files and issues found"
-  echo "   • Review and remove any hardcoded API keys, passwords, or tokens"
-  echo "   • Use environment variables or secure vaults instead"
+  echo "📋 Detailed Security Scan Report:"
+  echo "================================"
+  echo "$SECRET_OUTPUT"
+  echo "================================"
   echo ""
-  echo "🔧 To bypass: git commit --no-verify"
+  echo "🚨 CRITICAL SECURITY VIOLATION: Potential hardcoded secrets detected!"
+  echo "   • IMMEDIATE ACTION REQUIRED: Review and remove all hardcoded credentials"
+  echo "   • Use AWS Secrets Manager or environment variables for sensitive data"
+  echo "   • Contact security team if unsure: security@meqenet.et"
+  echo ""
+  echo "🔒 COMMIT BLOCKED FOR SECURITY COMPLIANCE"
+  echo "   • Fix all security issues before proceeding"
+  echo "   • This is mandatory for Ethiopian FinTech regulatory compliance"
   exit 1
 fi
 
+echo "  ✅ Secret scanning passed"
+
 # 3. Dependency Security Scan
 echo "  • Checking for vulnerable dependencies..."
-if ! timeout 20 pnpm audit --audit-level high >/dev/null 2>&1; then
+AUDIT_OUTPUT=$(timeout 20 pnpm audit --audit-level high 2>&1)
+AUDIT_EXIT_CODE=$?
+
+if [ $AUDIT_EXIT_CODE -ne 0 ]; then
   echo "⚠️  DEPENDENCY VULNERABILITIES DETECTED!"
-  echo "   • High or critical security vulnerabilities found"
-  echo "   • Run 'pnpm audit' for detailed information"
-  echo "   • Consider updating vulnerable packages immediately"
+  echo ""
+  echo "📋 Dependency Audit Report:"
+  echo "=========================="
+  echo "$AUDIT_OUTPUT"
+  echo "=========================="
+  echo ""
+  echo "🔧 Resolution Steps:"
+  echo "   • Run 'pnpm audit fix' to attempt automatic fixes"
+  echo "   • Run 'pnpm update' for compatible updates"
+  echo "   • Contact security team for critical vulnerabilities"
+  echo "   • Security Team: security@meqenet.et"
 fi
 
 # 4. License Compliance Check
 echo "  • Validating license compliance..."
-if ! timeout 15 pnpm run security:license-check >/dev/null 2>&1; then
+LICENSE_OUTPUT=$(timeout 15 pnpm run security:license-check 2>&1)
+LICENSE_EXIT_CODE=$?
+
+if [ $LICENSE_EXIT_CODE -ne 0 ]; then
   echo "⚠️  LICENSE COMPLIANCE ISSUES DETECTED!"
-  echo "   • Incompatible or restricted licenses found"
-  echo "   • Review reports/license-check.json for details"
+  echo ""
+  echo "📋 License Compliance Report:"
+  echo "============================"
+  echo "$LICENSE_OUTPUT"
+  echo "============================"
+  echo ""
+  echo "🔧 Resolution Steps:"
+  echo "   • Review reports/license-check.json for detailed license information"
+  echo "   • Contact legal team for license compatibility issues"
+  echo "   • Legal Team: legal@meqenet.et"
 fi
 
 # 5. Infrastructure as Code Security Check

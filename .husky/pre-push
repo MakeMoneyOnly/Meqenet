@@ -42,7 +42,9 @@ if ! pnpm run test 2>&1 | tee "$TEST_OUTPUT_FILE"; then
   echo "=================================="
   echo ""
   echo "💡 To run tests manually and see full output: pnpm test"
-  echo "💡 To skip pre-push checks (emergency only): git push --no-verify"
+  echo "🔒 PUSH BLOCKED FOR ENTERPRISE COMPLIANCE"
+  echo "   • Fix all issues before pushing to remote repository"
+  echo "   • Contact DevOps team for assistance: devops@meqenet.et"
   rm -f "$TEST_OUTPUT_FILE"
   exit 1
 fi
@@ -50,17 +52,46 @@ rm -f "$TEST_OUTPUT_FILE"
 
 # 2. Run Secret Scan
 echo "🛡️  Running security scan for secrets..."
-if ! pnpm run security:secrets 2>&1; then
-    echo "❌ Secret scan failed! Hardcoded secrets may be present."
-    echo "💡 Run 'pnpm run security:secrets' manually to see detailed output."
+SECRET_PUSH_OUTPUT=$(pnpm run security:secrets 2>&1)
+SECRET_PUSH_EXIT_CODE=$?
+
+if [ $SECRET_PUSH_EXIT_CODE -ne 0 ]; then
+    echo "❌ SECRET SCAN FAILED!"
+    echo ""
+    echo "📋 Detailed Security Scan Report:"
+    echo "================================"
+    echo "$SECRET_PUSH_OUTPUT"
+    echo "================================"
+    echo ""
+    echo "🚨 CRITICAL SECURITY VIOLATION: Potential hardcoded secrets detected!"
+    echo "   • IMMEDIATE ACTION REQUIRED: Review and remove all hardcoded credentials"
+    echo "   • Contact Security Team: security@meqenet.et"
+    echo ""
+    echo "🔒 PUSH BLOCKED FOR ENTERPRISE COMPLIANCE"
+    echo "   • Fix all security issues before pushing to remote repository"
     exit 1
 fi
 
 # 3. Check for critical vulnerabilities in dependencies
 echo "🔍 Checking for dependency vulnerabilities..."
-if ! pnpm run security:audit 2>&1; then
-  echo "❌ Dependency vulnerabilities found! Must be fixed before push."
-  echo "💡 Run 'pnpm audit' for details or 'pnpm audit fix' to attempt auto-fix."
+AUDIT_PUSH_OUTPUT=$(pnpm run security:audit 2>&1)
+AUDIT_PUSH_EXIT_CODE=$?
+
+if [ $AUDIT_PUSH_EXIT_CODE -ne 0 ]; then
+  echo "❌ DEPENDENCY VULNERABILITIES FOUND!"
+  echo ""
+  echo "📋 Dependency Security Audit Report:"
+  echo "==================================="
+  echo "$AUDIT_PUSH_OUTPUT"
+  echo "==================================="
+  echo ""
+  echo "🔧 Resolution Steps:"
+  echo "   • Run 'pnpm audit fix' to attempt automatic fixes"
+  echo "   • Run 'pnpm update' for compatible updates"
+  echo "   • Contact Security Team for critical vulnerabilities: security@meqenet.et"
+  echo ""
+  echo "🔒 PUSH BLOCKED FOR ENTERPRISE COMPLIANCE"
+  echo "   • All security vulnerabilities must be resolved before pushing"
   exit 1
 fi
 
@@ -76,14 +107,21 @@ else
 fi
 
 if ! pnpm run build 2>&1 | tee "$BUILD_OUTPUT_FILE"; then
-  echo "❌ Build failed! Cannot push to remote."
+  echo "❌ BUILD FAILED!"
   echo ""
-  echo "📋 Build Output (last 30 lines):"
+  echo "📋 Complete Build Error Report:"
   echo "==============================="
-  tail -n 30 "$BUILD_OUTPUT_FILE" 2>/dev/null || cat "$BUILD_OUTPUT_FILE"
+  cat "$BUILD_OUTPUT_FILE" 2>/dev/null || echo "No build output captured"
   echo "==============================="
   echo ""
-  echo "💡 To run build manually and see full output: pnpm run build"
+  echo "🔧 Resolution Steps:"
+  echo "   • Run 'pnpm run build' locally to see full error details"
+  echo "   • Fix TypeScript compilation errors"
+  echo "   • Check for missing dependencies"
+  echo "   • Contact DevOps team: devops@meqenet.et"
+  echo ""
+  echo "🔒 PUSH BLOCKED FOR ENTERPRISE COMPLIANCE"
+  echo "   • Build must succeed before pushing to remote repository"
   rm -f "$BUILD_OUTPUT_FILE"
   exit 1
 fi
@@ -91,11 +129,25 @@ rm -f "$BUILD_OUTPUT_FILE"
 
 # 5. Test Coverage Validation
 echo "📊 Validating test coverage requirements..."
-if ! timeout 30 pnpm run test:coverage >/dev/null 2>&1; then
-  echo "❌ Test coverage validation failed!"
-  echo "   • Minimum coverage thresholds not met"
-  echo "   • Run 'pnpm run test:coverage' for detailed coverage report"
-  echo "   • Critical financial code must maintain 90%+ coverage"
+COVERAGE_OUTPUT=$(timeout 30 pnpm run test:coverage 2>&1)
+COVERAGE_EXIT_CODE=$?
+
+if [ $COVERAGE_EXIT_CODE -ne 0 ]; then
+  echo "❌ TEST COVERAGE VALIDATION FAILED!"
+  echo ""
+  echo "📋 Test Coverage Report:"
+  echo "======================="
+  echo "$COVERAGE_OUTPUT"
+  echo "======================="
+  echo ""
+  echo "🔧 Resolution Steps:"
+  echo "   • Run 'pnpm run test:coverage' locally for detailed coverage report"
+  echo "   • Add tests for uncovered code sections"
+  echo "   • Financial/payment code must maintain 90%+ coverage"
+  echo "   • Contact QA team for test coverage assistance: qa@meqenet.et"
+  echo ""
+  echo "🔒 PUSH BLOCKED FOR ENTERPRISE COMPLIANCE"
+  echo "   • Minimum test coverage requirements must be met"
   exit 1
 fi
 
