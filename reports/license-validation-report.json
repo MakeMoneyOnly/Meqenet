@@ -1,0 +1,76 @@
+{
+  "generatedAt": "2025-09-06T13:20:53.937Z",
+  "summary": {
+    "totalPackages": 140,
+    "compliantPackages": 136,
+    "warningPackages": 2,
+    "blockingPackages": 2,
+    "complianceRate": 97
+  },
+  "licenseBreakdown": {
+    "Apache-2.0": 24,
+    "MIT": 106,
+    "UNLICENSED": 1,
+    "BSD-2-Clause": 2,
+    "MPL-2.0": 1,
+    "ISC": 3,
+    "LGPL-3.0-only": 2,
+    "0BSD": 1
+  },
+  "issues": {
+    "blocking": [
+      {
+        "name": "pa11y-ci@4.0.1",
+        "license": "LGPL-3.0-only",
+        "type": "blocking",
+        "reason": "Copyleft license may require source code disclosure"
+      },
+      {
+        "name": "pa11y@8.0.0",
+        "license": "LGPL-3.0-only",
+        "type": "blocking",
+        "reason": "Copyleft license may require source code disclosure"
+      }
+    ],
+    "warnings": [
+      {
+        "name": "@meqenet/root@1.0.0",
+        "license": "UNLICENSED",
+        "type": "warning",
+        "reason": "Unknown or non-standard license - requires review"
+      },
+      {
+        "name": "axe-core@4.10.3",
+        "license": "MPL-2.0",
+        "type": "warning",
+        "reason": "Weak copyleft license - review compatibility"
+      }
+    ]
+  },
+  "recommendations": [
+    {
+      "priority": "CRITICAL",
+      "action": "Replace blocking license packages",
+      "details": "2 packages use GPL/AGPL licenses that may conflict with proprietary software distribution",
+      "alternatives": "Look for MIT/BSD licensed alternatives"
+    },
+    {
+      "priority": "MEDIUM",
+      "action": "Review warning license packages",
+      "details": "2 packages use licenses that require careful review",
+      "alternatives": "Consider MIT/BSD alternatives where possible"
+    },
+    {
+      "priority": "LOW",
+      "action": "Implement license scanning in CI/CD",
+      "details": "Automate license compliance checks in the build pipeline",
+      "alternatives": "Use tools like FOSSA, Snyk, or WhiteSource"
+    },
+    {
+      "priority": "LOW",
+      "action": "Document license review process",
+      "details": "Create guidelines for evaluating new dependency licenses",
+      "alternatives": "Include license criteria in package evaluation checklist"
+    }
+  ]
+}

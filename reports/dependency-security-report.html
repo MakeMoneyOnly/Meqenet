@@ -1,0 +1,168 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meqenet Dependency Security Report</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header { text-align: center; margin-bottom: 30px; }
+        .score { font-size: 48px; font-weight: bold; color: #f59e0b; }
+        .status { display: inline-block; padding: 5px 15px; border-radius: 20px; font-size: 14px; font-weight: bold; text-transform: uppercase; }
+        .status.secure { background: #d1fae5; color: #065f46; }
+        .status.critical { background: #fee2e2; color: #991b1b; }
+        .status.warning { background: #fef3c7; color: #92400e; }
+        .section { margin-bottom: 30px; padding: 20px; border: 1px solid #e5e7eb; border-radius: 6px; }
+        .section h3 { margin-top: 0; color: #374151; }
+        .issues { margin-top: 15px; }
+        .issue { padding: 10px; margin-bottom: 10px; border-left: 4px solid #ef4444; background: #fef2f2; }
+        .issue.warning { border-left-color: #f59e0b; background: #fffbeb; }
+        .recommendations { background: #f0f9ff; padding: 15px; border-radius: 6px; margin-top: 15px; }
+        .summary { background: #f8fafc; padding: 20px; border-radius: 6px; margin-bottom: 20px; }
+        .next-steps { background: #ecfdf5; padding: 20px; border-radius: 6px; }
+        .next-steps ul { margin: 0; padding-left: 20px; }
+        .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .metric { background: #f3f4f6; padding: 15px; border-radius: 6px; text-align: center; }
+        .metric-value { font-size: 24px; font-weight: bold; color: #374151; }
+        .metric-label { font-size: 12px; color: #6b7280; text-transform: uppercase; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Meqenet Dependency Security Report</h1>
+            <div class="score">0</div>
+            <div class="status warning">WARNING</div>
+            <p><strong>Risk Level:</strong> MEDIUM</p>
+            <p><strong>Generated:</strong> 9/6/2025, 4:20:56 PM</p>
+        </div>
+
+        <div class="metrics">
+            <div class="metric">
+                <div class="metric-value">0</div>
+                <div class="metric-label">Total Vulnerabilities</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value">4</div>
+                <div class="metric-label">Tools Scanned</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value">1</div>
+                <div class="metric-label">Sections with Issues</div>
+            </div>
+        </div>
+
+        <div class="summary">
+            <h2>Summary</h2>
+            <p><strong>Overall Status:</strong> WARNING</p>
+            <p><strong>Risk Level:</strong> MEDIUM</p>
+            <p><strong>Sections Scanned:</strong> 4</p>
+        </div>
+
+        <div class="next-steps">
+            <h2>Next Steps</h2>
+            <ul>
+                <li>⚠️ Address medium/low-severity vulnerabilities within 30 days</li><li>📈 Prioritize updates based on CVSS scores and exploitability</li><li>🔍 Review license compliance issues</li><li>📅 Schedule weekly dependency security reviews</li><li>🤖 Implement automated dependency updates (Dependabot/Renovate)</li><li>📚 Train team on dependency security best practices</li>
+            </ul>
+        </div>
+
+        
+            <div class="section">
+                <h3>NPM Audit</h3>
+                <p><strong>Status:</strong>
+                    <span class="status secure">SECURE</span>
+                </p>
+
+                <p><strong>Vulnerabilities:</strong> 0</p>
+                
+                
+
+                <p>✅ No issues found</p>
+
+                <div class="recommendations">
+                    <h4>Recommendations</h4>
+                    <ul>
+                        <li>Run npm audit fix to automatically fix issues</li><li>Update vulnerable packages to latest versions</li><li>Review and test changes after updates</li><li>Consider using npm audit --production for production-only vulnerabilities</li>
+                    </ul>
+                </div>
+            </div>
+        
+            <div class="section">
+                <h3>Snyk Vulnerability Scan</h3>
+                <p><strong>Status:</strong>
+                    <span class="status secure">SECURE</span>
+                </p>
+
+                <p><strong>Vulnerabilities:</strong> 0</p>
+                <p><strong>Affected Packages:</strong> 0</p>
+                
+
+                <p>✅ No issues found</p>
+
+                <div class="recommendations">
+                    <h4>Recommendations</h4>
+                    <ul>
+                        <li>Fix vulnerabilities using Snyk CLI: snyk wizard</li><li>Update package.json with secure versions</li><li>Consider using Snyk Advisor for package insights</li><li>Implement automated Snyk scans in CI/CD pipeline</li>
+                    </ul>
+                </div>
+            </div>
+        
+            <div class="section">
+                <h3>OWASP Dependency Check</h3>
+                <p><strong>Status:</strong>
+                    <span class="status secure">SECURE</span>
+                </p>
+
+                <p><strong>Vulnerabilities:</strong> 0</p>
+                
+                <p><strong>Total Components:</strong> 0</p>
+
+                <p>✅ No issues found</p>
+
+                <div class="recommendations">
+                    <h4>Recommendations</h4>
+                    <ul>
+                        <li>Review OWASP Dependency Check report for detailed analysis</li><li>Update vulnerable components to secure versions</li><li>Use OWASP Dependency Check regularly in CI/CD</li><li>Consider using Nexus IQ or similar for policy enforcement</li>
+                    </ul>
+                </div>
+            </div>
+        
+            <div class="section">
+                <h3>License Compliance Check</h3>
+                <p><strong>Status:</strong>
+                    <span class="status warning">WARNING</span>
+                </p>
+
+                
+                
+                
+
+                
+                    <div class="issues">
+                        <h4>Issues Found (1)</h4>
+                        
+                            <div class="issue warning">
+                                <strong>Potentially problematic licenses detected</strong>
+                                
+                                
+                                <br><small>Potentially problematic licenses detected</small>
+                                <br><small>Some dependencies use licenses that may have copyleft implications</small>
+                                
+                            </div>
+                        
+                    </div>
+                
+
+                <div class="recommendations">
+                    <h4>Recommendations</h4>
+                    <ul>
+                        <li>Review license compatibility with business requirements</li><li>Consider replacing GPL-licensed packages with MIT/BSD alternatives</li><li>Document license review process for new dependencies</li><li>Use automated license checking in CI/CD pipeline</li>
+                    </ul>
+                </div>
+            </div>
+        
+    </div>
+</body>
+</html>

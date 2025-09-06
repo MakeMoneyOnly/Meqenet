@@ -1,8 +1,12 @@
 import { diag, DiagConsoleLogger, DiagLogLevel } from '@opentelemetry/api';
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
 import { NodeSDK, NodeSDKConfiguration } from '@opentelemetry/sdk-node';
-import { Resource } from '@opentelemetry/resources';
-import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
+import { resourceFromAttributes } from '@opentelemetry/resources';
+import {
+  ATTR_SERVICE_NAME,
+  ATTR_SERVICE_VERSION,
+  SEMRESATTRS_DEPLOYMENT_ENVIRONMENT,
+} from '@opentelemetry/semantic-conventions';
 import { SpanExporter } from '@opentelemetry/sdk-trace-base';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-grpc';
 import { JaegerExporter } from '@opentelemetry/exporter-jaeger';
@@ -32,13 +36,14 @@ export function initializeOpenTelemetry(config?: OpenTelemetryConfig): void {
     diag.setLogger(new DiagConsoleLogger(), level);
 
     // Configure resource attributes for better observability correlation
-    const resourceAttributes: Record<string, string> = {
-      [SemanticResourceAttributes.SERVICE_NAME]: serviceName,
-      [SemanticResourceAttributes.DEPLOYMENT_ENVIRONMENT]: nodeEnv,
-      [SemanticResourceAttributes.SERVICE_VERSION]: npmPackageVersion,
+    const resourceAttributes = {
+      [ATTR_SERVICE_NAME]: serviceName,
+      [SEMRESATTRS_DEPLOYMENT_ENVIRONMENT]: nodeEnv,
+      [ATTR_SERVICE_VERSION]: npmPackageVersion,
     };
 
-    const resource = new Resource(resourceAttributes);
+    // Create resource with attributes using OpenTelemetry v2.x API
+    const resource = resourceFromAttributes(resourceAttributes);
 
     // Configure trace exporter based on available endpoints
     let traceExporter: SpanExporter | undefined;
@@ -62,8 +67,8 @@ export function initializeOpenTelemetry(config?: OpenTelemetryConfig): void {
 
     const sdkConfig: Partial<NodeSDKConfiguration> = {
       instrumentations: [getNodeAutoInstrumentations()],
-      resource: resource as any, // Type compatibility workaround
-      traceExporter: traceExporter as any, // Type compatibility workaround
+      resource,
+      traceExporter,
     };
 
     sdk = new NodeSDK(sdkConfig);

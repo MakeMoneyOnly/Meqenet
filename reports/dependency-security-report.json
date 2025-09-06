@@ -1,0 +1,93 @@
+{
+  "title": "Meqenet Dependency Security Report",
+  "generatedAt": "2025-09-06T13:20:56.960Z",
+  "sections": [
+    {
+      "name": "NPM Audit",
+      "totalVulnerabilities": 0,
+      "criticalVulnerabilities": 0,
+      "highVulnerabilities": 0,
+      "status": "SECURE",
+      "issues": [],
+      "recommendations": [
+        "Run npm audit fix to automatically fix issues",
+        "Update vulnerable packages to latest versions",
+        "Review and test changes after updates",
+        "Consider using npm audit --production for production-only vulnerabilities"
+      ]
+    },
+    {
+      "name": "Snyk Vulnerability Scan",
+      "totalVulnerabilities": 0,
+      "affectedPackages": 0,
+      "severityBreakdown": {},
+      "status": "SECURE",
+      "issues": [],
+      "recommendations": [
+        "Fix vulnerabilities using Snyk CLI: snyk wizard",
+        "Update package.json with secure versions",
+        "Consider using Snyk Advisor for package insights",
+        "Implement automated Snyk scans in CI/CD pipeline"
+      ]
+    },
+    {
+      "name": "OWASP Dependency Check",
+      "totalComponents": 0,
+      "totalVulnerabilities": 0,
+      "status": "SECURE",
+      "issues": [],
+      "recommendations": [
+        "Review OWASP Dependency Check report for detailed analysis",
+        "Update vulnerable components to secure versions",
+        "Use OWASP Dependency Check regularly in CI/CD",
+        "Consider using Nexus IQ or similar for policy enforcement"
+      ]
+    },
+    {
+      "name": "License Compliance Check",
+      "totalPackages": 140,
+      "licenseBreakdown": {
+        "Apache-2.0": 24,
+        "MIT": 106,
+        "UNLICENSED": 1,
+        "BSD-2-Clause": 2,
+        "MPL-2.0": 1,
+        "ISC": 3,
+        "LGPL-3.0-only": 2,
+        "0BSD": 1
+      },
+      "status": "WARNING",
+      "issues": [
+        {
+          "title": "Potentially problematic licenses detected",
+          "description": "Some dependencies use licenses that may have copyleft implications",
+          "packages": [
+            "pa11y-ci@4.0.1@undefined",
+            "pa11y@8.0.0@undefined"
+          ]
+        }
+      ],
+      "recommendations": [
+        "Review license compatibility with business requirements",
+        "Consider replacing GPL-licensed packages with MIT/BSD alternatives",
+        "Document license review process for new dependencies",
+        "Use automated license checking in CI/CD pipeline"
+      ]
+    }
+  ],
+  "summary": {
+    "overallStatus": "WARNING",
+    "totalVulnerabilities": 0,
+    "sectionsScanned": 4,
+    "sectionsWithIssues": 1,
+    "riskLevel": "MEDIUM",
+    "nextSteps": [
+      "⚠️ Address medium/low-severity vulnerabilities within 30 days",
+      "📈 Prioritize updates based on CVSS scores and exploitability",
+      "🔍 Review license compliance issues",
+      "📅 Schedule weekly dependency security reviews",
+      "🤖 Implement automated dependency updates (Dependabot/Renovate)",
+      "📚 Train team on dependency security best practices"
+    ]
+  }
+}

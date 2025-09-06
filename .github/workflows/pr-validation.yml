@@ -1,0 +1,205 @@
+name: PR Validation & SBOM
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+    types: [opened, synchronize, reopened]
+
+env:
+  NODE_VERSION: '22'
+  PNPM_VERSION: '10'
+
+jobs:
+  sbom-generation:
+    name: Generate & Validate SBOM
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: ${{ env.PNPM_VERSION }}
+
+    - name: Get pnpm store directory
+      shell: bash
+      run: |
+        echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+    - name: Setup pnpm cache
+      uses: actions/cache@v4
+      with:
+        path: ${{ env.STORE_PATH }}
+        key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-pnpm-store-
+
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+
+    - name: Generate SBOMs
+      run: pnpm run security:sbom
+
+    - name: Validate SBOM structure
+      run: |
+        for file in bom.*.json; do
+          echo "🔍 Validating $file..."
+
+          # Check file is not empty
+          if [ ! -s "$file" ]; then
+            echo "❌ SBOM file $file is empty!"
+            exit 1
+          fi
+
+          # Validate required CycloneDX fields
+          if ! jq -e '.bomFormat == "CycloneDX"' "$file" > /dev/null; then
+            echo "❌ $file: Invalid CycloneDX format"
+            exit 1
+          fi
+
+          if ! jq -e '.specVersion' "$file" > /dev/null; then
+            echo "❌ $file: Missing spec version"
+            exit 1
+          fi
+
+          if ! jq -e '.metadata.timestamp' "$file" > /dev/null; then
+            echo "❌ $file: Missing timestamp"
+            exit 1
+          fi
+
+          components=$(jq '.components | length' "$file" 2>/dev/null || echo "0")
+          echo "✅ $file: Valid SBOM with $components components"
+        done
+
+    - name: Comment SBOM results on PR
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const { execSync } = require('child_process');
+
+          // Get SBOM file info
+          const sbomFiles = fs.readdirSync('.').filter(file => file.startsWith('bom.') && file.endsWith('.json'));
+
+          let comment = '## 🔒 SBOM Generation Results\n\n';
+          comment += '✅ **Executive Order 14028 Compliance:** SBOMs generated successfully\n\n';
+
+          for (const file of sbomFiles) {
+            try {
+              const content = fs.readFileSync(file, 'utf8');
+              const sbom = JSON.parse(content);
+              const components = sbom.components ? sbom.components.length : 0;
+              const dependencies = sbom.dependencies ? sbom.dependencies.length : 0;
+
+              comment += `### ${file}\n`;
+              comment += `- **Components:** ${components}\n`;
+              comment += `- **Dependencies:** ${dependencies}\n`;
+              comment += `- **Format:** ${sbom.bomFormat} ${sbom.specVersion}\n\n`;
+            } catch (error) {
+              comment += `### ${file}\n❌ Error reading SBOM: ${error.message}\n\n`;
+            }
+          }
+
+          comment += '### 📋 Compliance Status\n';
+          comment += '- ✅ CycloneDX format validated\n';
+          comment += '- ✅ Component enumeration complete\n';
+          comment += '- ✅ Dependency mapping generated\n';
+          comment += '- ✅ Supply chain transparency enabled\n\n';
+
+          comment += '### 🎯 Next Steps\n';
+          comment += '- SBOMs will be uploaded as workflow artifacts\n';
+          comment += '- Include SBOMs in release artifacts\n';
+          comment += '- Share with security team for vulnerability correlation\n';
+
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: comment
+          });
+
+    - name: Upload SBOM artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: pr-sbom-${{ github.event.pull_request.number }}
+        path: bom.*.json
+        retention-days: 30
+
+  fast-security-scan:
+    name: Fast Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: ${{ env.PNPM_VERSION }}
+
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+
+    - name: Run fast security scan
+      run: pnpm run security:fast-scan
+
+    - name: Check for critical vulnerabilities
+      run: |
+        if [ -f reports/npm-audit.json ]; then
+          critical=$(jq '.metadata.vulnerabilities.critical' reports/npm-audit.json 2>/dev/null || echo "0")
+          high=$(jq '.metadata.vulnerabilities.high' reports/npm-audit.json 2>/dev/null || echo "0")
+
+          if [ "$critical" -gt 0 ]; then
+            echo "🚨 Critical vulnerabilities found: $critical"
+            echo "Please address critical security issues before merging"
+            exit 1
+          fi
+
+          if [ "$high" -gt 5 ]; then
+            echo "⚠️ High number of high-severity vulnerabilities: $high"
+            echo "Consider addressing these security issues"
+          fi
+        fi
+
+  compliance-check:
+    name: FinTech Compliance Check
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: ${{ env.PNPM_VERSION }}
+
+    - name: Install dependencies
+      run: pnpm install --frozen-lockfile
+
+    - name: Run compliance validation
+      run: pnpm run compliance:check
+
+    - name: Ethiopian FinTech compliance
+      run: pnpm run validate:ethiopian-compliance
