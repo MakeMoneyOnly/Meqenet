@@ -14,6 +14,7 @@ export default [
       '**/dist/**',
       '**/build/**',
       'coverage/**',
+      'public/**/*',
     ],
   },
   // Configuration for TypeScript and TSX files
@@ -105,6 +106,15 @@ export default [
       // General rules
       'prefer-const': 'error',
       'no-console': 'warn',
+      'no-unused-vars': [
+        'error',
+        {
+          args: 'all',
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          ignoreRestSiblings: true,
+        },
+      ],
     },
   },
   // Configuration for test files

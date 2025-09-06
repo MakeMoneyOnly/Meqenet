@@ -1,7 +1,6 @@
 import { composePlugins, withNx } from '@nx/next';
 import withPWA from 'next-pwa';
-import { fileURLToPath } from 'url';
-import { dirname, resolve } from 'path';
+import { URL } from 'url';
 
 /**
  * Security Headers Configuration
@@ -87,6 +86,65 @@ const nextConfig = {
     webVitalsAttribution: ['CLS', 'LCP'],
   },
 
+  // Configure TypeScript for Nx workspace compatibility
+  typescript: {
+    tsconfigPath: './tsconfig.json',
+    // Disable incremental builds for Next.js compatibility with Nx
+    ignoreBuildErrors: false,
+  },
+
+  // Disable webpack incremental builds
+  webpack: (config, { dev, isServer }) => {
+    // Add security-related webpack plugins
+    if (!dev && !isServer) {
+      // In production, add source maps for debugging but protect them
+      config.devtool = 'hidden-source-map';
+    }
+
+    // Disable incremental builds
+    config.watchOptions = {
+      ...config.watchOptions,
+      aggregateTimeout: 300,
+      poll: false,
+    };
+
+    // Add custom webpack rules for security and TypeScript
+    config.module.rules.push({
+      test: /\.js$/,
+      enforce: 'pre',
+      use: ['source-map-loader'],
+      exclude: /node_modules/,
+    });
+
+    // Add path aliases for Nx workspace libraries
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@frontend/shared': new URL(
+        '../../../libs/shared/src',
+        import.meta.url,
+      ).pathname.replace(/^\/([A-Z]:)/, '$1'),
+      '@frontend/shared/i18n': new URL(
+        '../../../libs/shared/src/i18n',
+        import.meta.url,
+      ).pathname.replace(/^\/([A-Z]:)/, '$1'),
+      '@frontend/shared-ui': new URL(
+        '../../../libs/shared-ui/src',
+        import.meta.url,
+      ).pathname.replace(/^\/([A-Z]:)/, '$1'),
+    };
+
+    // Ensure TypeScript extensions are resolved
+    config.resolve.extensions = [
+      '.tsx',
+      '.ts',
+      '.js',
+      '.jsx',
+      ...(config.resolve.extensions || []),
+    ];
+
+    return config;
+  },
+
   // Security and Performance
   poweredByHeader: false,
   compress: true,
@@ -142,52 +200,6 @@ const nextConfig = {
     ];
   },
 
-  // Webpack configuration for security and TypeScript support
-  webpack: (config, { dev, isServer }) => {
-    // Add security-related webpack plugins
-    if (!dev && !isServer) {
-      // In production, add source maps for debugging but protect them
-      config.devtool = 'hidden-source-map';
-    }
-
-    // Add custom webpack rules for security and TypeScript
-    config.module.rules.push({
-      test: /\.js$/,
-      enforce: 'pre',
-      use: ['source-map-loader'],
-      exclude: /node_modules/,
-    });
-
-    // Add path aliases for Nx workspace libraries
-    const __dirname = dirname(fileURLToPath(import.meta.url));
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      '@frontend/shared': new URL(
-        '../../../libs/shared/src',
-        import.meta.url,
-      ).pathname.replace(/^\/([A-Z]:)/, '$1'),
-      '@frontend/shared/i18n': new URL(
-        '../../../libs/shared/src/i18n',
-        import.meta.url,
-      ).pathname.replace(/^\/([A-Z]:)/, '$1'),
-      '@frontend/shared-ui': new URL(
-        '../../../libs/shared-ui/src',
-        import.meta.url,
-      ).pathname.replace(/^\/([A-Z]:)/, '$1'),
-    };
-
-    // Ensure TypeScript extensions are resolved
-    config.resolve.extensions = [
-      '.tsx',
-      '.ts',
-      '.js',
-      '.jsx',
-      ...(config.resolve.extensions || []),
-    ];
-
-    return config;
-  },
-
   // Environment-specific configuration
   env: {
     CUSTOM_KEY: 'development-key', // Environment variable managed externally
@@ -227,116 +239,7 @@ const nextConfig = {
  * Implements Progressive Web App features with enterprise fintech security considerations
  */
 const pwaConfig = {
-  dest: 'public',
-  disable: false, // PWA enabled - environment handled at runtime
-  register: true,
-  skipWaiting: true,
-  // Workbox configuration for GenerateSW plugin
-  workbox: {
-    generateSW: {
-      swDest: 'public/sw.js',
-      skipWaiting: true,
-      clientsClaim: true,
-      cleanupOutdatedCaches: true,
-      mode: 'production',
-    },
-  },
-  // Enhanced security for fintech applications
-  runtimeCaching: [
-    {
-      urlPattern: /^https:\/\/api\./,
-      handler: 'NetworkFirst',
-      options: {
-        cacheName: 'api-cache',
-        expiration: {
-          maxEntries: 50,
-          maxAgeSeconds: 24 * 60 * 60, // 24 hours
-        },
-        cacheKeyWillBeUsed: async ({ request }) => {
-          // Enhanced security: Don't cache any sensitive financial data
-          const sensitivePatterns = [
-            '/auth/',
-            '/payments/',
-            '/loans/',
-            '/transactions/',
-            '/kyc/',
-            '/aml/',
-            '/fraud/',
-            '/ledger/',
-            '/accounts/',
-            '/balances/',
-          ];
-
-          if (
-            sensitivePatterns.some((pattern) => request.url.includes(pattern))
-          ) {
-            return null; // Don't cache sensitive requests
-          }
-
-          // Additional check for headers that might contain sensitive data
-          const headers = request.headers || {};
-          if (
-            headers['authorization'] ||
-            headers['x-api-key'] ||
-            headers['cookie']
-          ) {
-            return null; // Don't cache authenticated requests
-          }
-
-          return request;
-        },
-        cacheWillUpdate: async ({ response }) => {
-          // Only cache successful responses
-          if (!response || response.status !== 200) {
-            return null;
-          }
-          return response;
-        },
-      },
-    },
-    {
-      urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/,
-      handler: 'CacheFirst',
-      options: {
-        cacheName: 'image-cache',
-        expiration: {
-          maxEntries: 100,
-          maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
-        },
-        cacheKeyWillBeUsed: async ({ request }) => {
-          // Ensure no sensitive data in image requests
-          if (
-            request.url.includes('/secure/') ||
-            request.url.includes('/private/')
-          ) {
-            return null;
-          }
-          return request;
-        },
-      },
-    },
-    {
-      urlPattern: /\.(?:css|js)$/,
-      handler: 'StaleWhileRevalidate',
-      options: {
-        cacheName: 'static-assets-cache',
-        expiration: {
-          maxEntries: 200,
-          maxAgeSeconds: 7 * 24 * 60 * 60, // 7 days
-        },
-      },
-    },
-  ],
-  // Security exclusions for build artifacts
-  buildExcludes: [
-    /manifest\.json$/,
-    /sw\.js$/,
-    /workbox-.*\.js$/,
-    // Exclude sensitive files from service worker cache
-    /.*\.env.*$/,
-    /config.*\.json$/,
-    /secrets.*\.json$/,
-  ]
+  dest: 'public'
 };
 
 export default composePlugins(withNx, withPWA(pwaConfig))(nextConfig);

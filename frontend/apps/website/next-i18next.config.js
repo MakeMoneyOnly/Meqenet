@@ -34,6 +34,7 @@ module.exports = {
   saveMissing: false,
   missingKeyHandler: (lngs, ns, key, _fallbackValue) => {
     // Log missing keys for audit purposes in development
+    // Note: _fallbackValue parameter is intentionally unused but kept for API compatibility
     if (typeof window !== 'undefined' && window.console && process.env.NODE_ENV === 'development') {
       // eslint-disable-next-line no-console
       console.warn(`Missing translation: ${key} in namespace: ${ns} for languages: ${lngs.join(', ')}`);

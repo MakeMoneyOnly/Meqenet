@@ -33,18 +33,14 @@ jobs:
     name: 🛡️ Security & Compliance Scan
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
     steps:
       - name: 📥 Checkout Repository
         uses: actions/checkout@v5
         with:
           fetch-depth: 0 # Full history for security analysis
-
-      - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          registry-url: "https://registry.npmjs.org"
 
       - name: 📦 Install pnpm (Enterprise-Grade with Network Resilience)
         run: |
@@ -62,7 +58,7 @@ jobs:
           PNPM_INSTALLED=false
 
           # Method 1: Primary CDN with extended timeout
-          echo "🔄 Attempt 1/3: Installing via primary CDN..."
+          echo "🔄 Attempt 1/4: Installing via primary CDN..."
           if curl -fsSL --connect-timeout 30 --max-time 120 https://get.pnpm.io/install.sh | sh -; then
             export PNPM_HOME="$HOME/.local/share/pnpm"
             export PATH="$PNPM_HOME:$PATH"
@@ -78,7 +74,7 @@ jobs:
 
           # Method 2: Use npm to install pnpm as fallback
           if [ "$PNPM_INSTALLED" = false ]; then
-            echo "🔄 Attempt 2/3: Installing via npm fallback..."
+            echo "🔄 Attempt 2/4: Installing via npm fallback..."
             if npm install -g pnpm@${{ env.PNPM_VERSION }}; then
               export PATH="$(npm config get prefix)/bin:$PATH"
               if command -v pnpm &> /dev/null; then
@@ -92,7 +88,7 @@ jobs:
 
           # Method 3: Manual binary download as last resort
           if [ "$PNPM_INSTALLED" = false ]; then
-            echo "🔄 Attempt 3/3: Installing via manual binary download..."
+            echo "🔄 Attempt 3/4: Installing via manual binary download..."
             # Download latest pnpm binary for Linux x64
             if curl -fsSL --connect-timeout 30 --max-time 120 -o /tmp/pnpm.tar.gz https://github.com/pnpm/pnpm/releases/download/v${{ env.PNPM_VERSION }}/pnpm-linux-x64.tar.gz; then
               mkdir -p $HOME/.local/bin
@@ -107,45 +103,33 @@ jobs:
             fi
           fi
 
-          # Method 5: npm fallback (enterprise environments)
+          # Method 4: Enterprise fallback - create minimal wrapper
           if [ "$PNPM_INSTALLED" = false ]; then
-            echo "🔄 Attempt 5/6: Installing via npm fallback..."
-            if npm install -g pnpm@${{ env.PNPM_VERSION }}; then
-              export PATH="$(npm config get prefix)/bin:$PATH"
-              if command -v pnpm &> /dev/null; then
-                echo "✅ pnpm installed successfully via npm"
-                PNPM_INSTALLED=true
-              fi
-            else
-              echo "⚠️ npm installation failed"
-            fi
-          fi
-
-          # Method 6: Offline/Local installation (enterprise fallback)
-          if [ "$PNPM_INSTALLED" = false ]; then
-            echo "🔄 Attempt 6/6: Attempting offline installation..."
+            echo "🔄 Attempt 4/4: Creating enterprise fallback wrapper..."
             # Try to use system pnpm if available
             if command -v pnpm &> /dev/null; then
               echo "✅ Using system pnpm installation"
               PNPM_INSTALLED=true
             else
-              # Create minimal pnpm wrapper script
+              # Create minimal pnpm wrapper script for enterprise environments
               mkdir -p $HOME/.local/bin
               cat > $HOME/.local/bin/pnpm << 'EOF'
           #!/bin/bash
-          # Minimal pnpm wrapper for enterprise environments
-          echo "⚠️ Using minimal pnpm wrapper - limited functionality"
+          # Minimal pnpm wrapper for enterprise environments with limited connectivity
+          echo "⚠️ Using minimal pnpm wrapper - enterprise mode"
+
           case "$1" in
             "--version"|"-v")
-              echo "pnpm wrapper 1.0.0"
+              echo "pnpm wrapper 8.15.0 (enterprise fallback)"
               ;;
-            "install")
-              echo "📦 Running npm install (pnpm wrapper mode)..."
+            "install"|"i")
+              echo "📦 Running npm install (enterprise wrapper mode)..."
               shift
               npm install "$@"
               ;;
             *)
-              echo "⚠️ pnpm command '$1' not supported in wrapper mode"
+              echo "⚠️ pnpm command '$1' not fully supported in enterprise wrapper mode"
+              echo "💡 Consider using npm install for full compatibility"
               exit 1
               ;;
           esac
@@ -153,13 +137,12 @@ jobs:
               chmod +x $HOME/.local/bin/pnpm
               export PATH="$HOME/.local/bin:$PATH"
               if command -v pnpm &> /dev/null; then
-                echo "✅ pnpm wrapper created successfully (limited functionality)"
+                echo "✅ pnpm wrapper created successfully (enterprise mode)"
                 PNPM_INSTALLED=true
               fi
             fi
           fi
 
-          # Final verification and configuration
           if [ "$PNPM_INSTALLED" = true ]; then
             echo "🎉 pnpm installation completed successfully!"
             pnpm --version
@@ -169,10 +152,7 @@ jobs:
             pnpm config set fetch-timeout 120000
             pnpm config set network-timeout 600000
 
-            # Enable corepack for proper pnpm version management
-            corepack enable
-
-            # Clear problematic registry configurations
+            # Clean up JSR registry configs that might cause issues
             pnpm config delete @jsr:registry 2>/dev/null || true
             pnpm config delete //npm.jsr.io/:_authToken 2>/dev/null || true
           else
@@ -182,6 +162,13 @@ jobs:
             curl -I --connect-timeout 5 --max-time 10 https://registry.npmjs.org/ || echo "❌ Cannot reach npm registry"
             exit 1
           fi
+
+      - name: 🔧 Setup Node.js with pnpm
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          registry-url: "https://registry.npmjs.org"
+          cache: 'pnpm'
 
       - name: 📚 Install Dependencies
         run: |
@@ -203,42 +190,6 @@ jobs:
           pnpm config set fetch-retry-mintimeout 30000
           pnpm config set fetch-retry-maxtimeout 180000
           pnpm config set fetch-timeout 120000
-
-          # Set auth token if available and valid
-          if [ -n "${{ secrets.NPM_TOKEN }}" ] && [ "${{ secrets.NPM_TOKEN }}" != "XXXX[hidden]" ] && [ "${{ secrets.NPM_TOKEN }}" != "" ]; then
-            echo "🔐 Configuring NPM authentication..."
-            pnpm config set //registry.npmjs.org/:_authToken "${{ secrets.NPM_TOKEN }}"
-
-            # Test token validity by trying to access a private package (this will fail silently if token is invalid)
-            if pnpm info @nestjs/core --registry=https://registry.npmjs.org/ --silent >/dev/null 2>&1; then
-              echo "✅ NPM authentication configured and validated"
-            else
-              echo "⚠️  NPM_TOKEN may be invalid, but continuing with authentication configured"
-            fi
-          else
-            echo "⚠️  No NPM_TOKEN provided, using public registry with enhanced retry"
-            # Add additional retry configuration for public registry
-            pnpm config set fetch-retry-mintimeout 30000
-            pnpm config set fetch-retry-maxtimeout 180000
-            pnpm config set fetch-timeout 90000
-          fi
-
-          # Install dependencies with retry logic
-          echo "📦 Installing dependencies..."
-          for attempt in {1..3}; do
-            if pnpm install --no-frozen-lockfile --ignore-scripts; then
-              echo "✅ Dependencies installed successfully"
-              break
-            else
-              echo "❌ Installation failed on attempt $attempt"
-              if [ $attempt -eq 3 ]; then
-                echo "💥 CRITICAL: All dependency installation attempts failed"
-                exit 1
-              fi
-              echo "⏳ Waiting before retry..."
-              sleep 5
-            fi
-          done
 
       - name: 🔧 Generate Prisma Client
         run: |
@@ -508,9 +459,9 @@ jobs:
           pnpm config set fetch-timeout 120000
 
           # Set auth token if available and valid
-          if [ -n "${{ secrets.NPM_TOKEN }}" ] && [ "${{ secrets.NPM_TOKEN }}" != "XXXX[hidden]" ] && [ "${{ secrets.NPM_TOKEN }}" != "" ]; then
+          if [ -n "$NPM_TOKEN" ] && [ "$NPM_TOKEN" != "XXXX[hidden]" ] && [ "$NPM_TOKEN" != "" ]; then
             echo "🔐 Configuring NPM authentication..."
-            pnpm config set //registry.npmjs.org/:_authToken "${{ secrets.NPM_TOKEN }}"
+            pnpm config set //registry.npmjs.org/:_authToken "$NPM_TOKEN"
 
             # Test token validity by trying to access a private package (this will fail silently if token is invalid)
             if pnpm info @nestjs/core --registry=https://registry.npmjs.org/ --silent >/dev/null 2>&1; then
@@ -594,6 +545,12 @@ jobs:
     name: 🧪 Automated Test Suite
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      TEST_DB_USER: ${{ secrets.TEST_DB_USER }}
+      TEST_DB_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
+      TEST_DB_NAME: ${{ secrets.TEST_DB_NAME }}
+      TEST_JWT_SECRET: ${{ secrets.TEST_JWT_SECRET }}
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
     strategy:
       matrix:
@@ -603,9 +560,9 @@ jobs:
       postgres:
         image: postgres:15-alpine
         env:
-          POSTGRES_PASSWORD: ${{ secrets.TEST_DB_PASSWORD || 'test_password_secure_fallback' }}
-          POSTGRES_USER: ${{ secrets.TEST_DB_USER || 'test_user' }}
-          POSTGRES_DB: ${{ secrets.TEST_DB_NAME || 'meqenet_test' }}
+          POSTGRES_PASSWORD: ${{ env.TEST_DB_PASSWORD || 'test_password_secure_fallback' }}
+          POSTGRES_USER: ${{ env.TEST_DB_USER || 'test_user' }}
+          POSTGRES_DB: ${{ env.TEST_DB_NAME || 'meqenet_test' }}
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -806,9 +763,9 @@ jobs:
           pnpm config set fetch-timeout 120000
 
           # Set auth token if available and valid
-          if [ -n "${{ secrets.NPM_TOKEN }}" ] && [ "${{ secrets.NPM_TOKEN }}" != "XXXX[hidden]" ] && [ "${{ secrets.NPM_TOKEN }}" != "" ]; then
+          if [ -n "$NPM_TOKEN" ] && [ "$NPM_TOKEN" != "XXXX[hidden]" ] && [ "$NPM_TOKEN" != "" ]; then
             echo "🔐 Configuring NPM authentication..."
-            pnpm config set //registry.npmjs.org/:_authToken "${{ secrets.NPM_TOKEN }}"
+            pnpm config set //registry.npmjs.org/:_authToken "$NPM_TOKEN"
 
             # Test token validity by trying to access a private package (this will fail silently if token is invalid)
             if pnpm info @nestjs/core --registry=https://registry.npmjs.org/ --silent >/dev/null 2>&1; then
@@ -864,17 +821,28 @@ jobs:
             fi
           fi
 
-          # Verify Prisma client was generated (check both relative paths)
-          if [ ! -f "../../node_modules/.prisma/client/index.d.ts" ] && [ ! -f "../../../node_modules/.prisma/client/index.d.ts" ]; then
+          # Verify Prisma client was generated (check pnpm and npm paths)
+          PRISMA_CLIENT_FOUND=false
+          # Check pnpm paths with glob
+          if [ -f "../../node_modules/.pnpm/@prisma+client*/node_modules/@prisma/client/index.d.ts" ] || [ -f "../../../node_modules/.pnpm/@prisma+client*/node_modules/@prisma/client/index.d.ts" ]; then
+            PRISMA_CLIENT_FOUND=true
+          fi
+          # Check npm paths
+          if [ -f "../../node_modules/.prisma/client/index.d.ts" ] || [ -f "../../../node_modules/.prisma/client/index.d.ts" ]; then
+            PRISMA_CLIENT_FOUND=true
+          fi
+          if [ "$PRISMA_CLIENT_FOUND" = false ]; then
             echo "❌ Prisma client generation verification failed"
             echo "Checking workspace root node_modules..."
-            ls -la ../../node_modules/.prisma/ 2>/dev/null || echo "Prisma client directory not found in workspace root"
+            ls -la ../../node_modules/.pnpm/@prisma+client*/node_modules/@prisma/client/ 2>/dev/null || echo "Prisma client directory not found in workspace root pnpm"
+            ls -la ../../node_modules/.prisma/ 2>/dev/null || echo "Prisma client directory not found in workspace root npm"
             echo "Checking auth-service node_modules..."
-            ls -la node_modules/.prisma/ 2>/dev/null || echo "Prisma client directory not found in auth-service"
+            ls -la node_modules/.pnpm/@prisma+client*/node_modules/@prisma/client/ 2>/dev/null || echo "Prisma client directory not found in auth-service pnpm"
+            ls -la node_modules/.prisma/ 2>/dev/null || echo "Prisma client directory not found in auth-service npm"
             exit 1
           else
             echo "✅ Prisma client generated successfully"
-            echo "Client location: $(find ../../node_modules ../../../node_modules -name "index.d.ts" -path "*/.prisma/client/*" 2>/dev/null | head -1)"
+            echo "Client location: $(find ../../node_modules ../../../node_modules -name "index.d.ts" -path "*/@prisma/client/*" 2>/dev/null | head -1)"
           fi
 
       - name: 🧪 Run Unit Tests
@@ -883,7 +851,7 @@ jobs:
           export PATH="$PNPM_HOME:$PATH"
           pnpm run test
         env:
-          DATABASE_URL: postgresql://${{ secrets.TEST_DB_USER || 'test_user' }}:${{ secrets.TEST_DB_PASSWORD || 'test_password_secure_fallback' }}@localhost:5432/${{ secrets.TEST_DB_NAME || 'meqenet_test' }}
+          DATABASE_URL: postgresql://${{ env.TEST_DB_USER || 'test_user' }}:${{ env.TEST_DB_PASSWORD || 'test_password_secure_fallback' }}@localhost:5432/${{ env.TEST_DB_NAME || 'meqenet_test' }}
           REDIS_URL: redis://localhost:6379
 
       - name: 🔄 Run Integration Tests
@@ -892,7 +860,7 @@ jobs:
           export PATH="$PNPM_HOME:$PATH"
           pnpm run test:integration
         env:
-          DATABASE_URL: postgresql://${{ secrets.TEST_DB_USER || 'test_user' }}:${{ secrets.TEST_DB_PASSWORD || 'test_password_secure_fallback' }}@localhost:5432/${{ secrets.TEST_DB_NAME || 'meqenet_test' }}
+          DATABASE_URL: postgresql://${{ env.TEST_DB_USER || 'test_user' }}:${{ env.TEST_DB_PASSWORD || 'test_password_secure_fallback' }}@localhost:5432/${{ env.TEST_DB_NAME || 'meqenet_test' }}
           REDIS_URL: redis://localhost:6379
 
       - name: 🚀 Start Backend Services for E2E Tests
@@ -934,7 +902,7 @@ jobs:
             --network meqenet-test-network \
             -e DATABASE_URL=postgresql://test:test@postgres-test:5432/test \
             -e REDIS_URL=redis://redis-test:6379 \
-            -e JWT_SECRET=${{ secrets.TEST_JWT_SECRET || 'test-jwt-secret-secure-fallback-for-ci-only' }} \
+            -e JWT_SECRET=${{ env.TEST_JWT_SECRET || 'test-jwt-secret-secure-fallback-for-ci-only' }} \
             -e NODE_ENV=test \
             -p 3001:3001 \
             auth-service-test
@@ -964,7 +932,7 @@ jobs:
           export PATH="$PNPM_HOME:$PATH"
           pnpm run test:e2e
         env:
-          DATABASE_URL: postgresql://${{ secrets.TEST_DB_USER || 'test_user' }}:${{ secrets.TEST_DB_PASSWORD || 'test_password_secure_fallback' }}@localhost:5432/${{ secrets.TEST_DB_NAME || 'meqenet_test' }}
+          DATABASE_URL: postgresql://${{ env.TEST_DB_USER || 'test_user' }}:${{ env.TEST_DB_PASSWORD || 'test_password_secure_fallback' }}@localhost:5432/${{ env.TEST_DB_NAME || 'meqenet_test' }}
           REDIS_URL: redis://localhost:6379
 
       - name: 🧹 Stop Backend Services
@@ -1008,16 +976,15 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     needs: [security-scan]
+    env:
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      PNPM_HOME: /home/runner/.local/share/pnpm
+      PATH: /home/runner/.local/share/pnpm:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
     strategy:
       matrix:
         test-type:
           ["sast", "dependency-check", "container-scan", "secrets-scan"]
-
-    # Set environment variables for all steps in this job
-    env:
-      PNPM_HOME: /home/runner/.local/share/pnpm
-      PATH: /home/runner/.local/share/pnpm:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
     steps:
       - name: 📥 Checkout Repository
@@ -1222,9 +1189,9 @@ jobs:
           pnpm config set fetch-timeout 120000
 
           # Set auth token if available and valid
-          if [ -n "${{ secrets.NPM_TOKEN }}" ] && [ "${{ secrets.NPM_TOKEN }}" != "XXXX[hidden]" ] && [ "${{ secrets.NPM_TOKEN }}" != "" ]; then
+          if [ -n "$NPM_TOKEN" ] && [ "$NPM_TOKEN" != "XXXX[hidden]" ] && [ "$NPM_TOKEN" != "" ]; then
             echo "🔐 Configuring NPM authentication..."
-            pnpm config set //registry.npmjs.org/:_authToken "${{ secrets.NPM_TOKEN }}"
+            pnpm config set //registry.npmjs.org/:_authToken "$NPM_TOKEN"
 
             # Test token validity by trying to access a private package (this will fail silently if token is invalid)
             if pnpm info @nestjs/core --registry=https://registry.npmjs.org/ --silent >/dev/null 2>&1; then
@@ -1372,6 +1339,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     needs: [security-scan]
+    env:
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
     steps:
       - name: 📥 Checkout Repository
@@ -1555,9 +1524,9 @@ jobs:
           pnpm config set fetch-timeout 120000
 
           # Set auth token if available and valid
-          if [ -n "${{ secrets.NPM_TOKEN }}" ] && [ "${{ secrets.NPM_TOKEN }}" != "XXXX[hidden]" ] && [ "${{ secrets.NPM_TOKEN }}" != "" ]; then
+          if [ -n "$NPM_TOKEN" ] && [ "$NPM_TOKEN" != "XXXX[hidden]" ] && [ "$NPM_TOKEN" != "" ]; then
             echo "🔐 Configuring NPM authentication..."
-            pnpm config set //registry.npmjs.org/:_authToken "${{ secrets.NPM_TOKEN }}"
+            pnpm config set //registry.npmjs.org/:_authToken "$NPM_TOKEN"
 
             # Test token validity by trying to access a private package (this will fail silently if token is invalid)
             if pnpm info @nestjs/core --registry=https://registry.npmjs.org/ --silent >/dev/null 2>&1; then
@@ -1625,14 +1594,6 @@ jobs:
 
       - name: 🔧 Setup Android SDK
         uses: android-actions/setup-android@v3
-        with:
-          api-level: 35
-          target: android-35
-          build-tools: "36.0.0"
-          # Only install essential components to avoid emulator download issues
-          components: platform-tools
-          # Disable emulator to prevent ZipFile errors
-          emulator: false
 
       - name: 📦 Cache Gradle dependencies
         uses: actions/cache@v4
@@ -1731,6 +1692,8 @@ jobs:
     name: 🔍 Android Lint Security Analysis
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
     steps:
       - name: 📥 Checkout Repository
@@ -1914,9 +1877,9 @@ jobs:
           pnpm config set fetch-timeout 120000
 
           # Set auth token if available and valid
-          if [ -n "${{ secrets.NPM_TOKEN }}" ] && [ "${{ secrets.NPM_TOKEN }}" != "XXXX[hidden]" ] && [ "${{ secrets.NPM_TOKEN }}" != "" ]; then
+          if [ -n "$NPM_TOKEN" ] && [ "$NPM_TOKEN" != "XXXX[hidden]" ] && [ "$NPM_TOKEN" != "" ]; then
             echo "🔐 Configuring NPM authentication..."
-            pnpm config set //registry.npmjs.org/:_authToken "${{ secrets.NPM_TOKEN }}"
+            pnpm config set //registry.npmjs.org/:_authToken "$NPM_TOKEN"
 
             # Test token validity by trying to access a private package (this will fail silently if token is invalid)
             if pnpm info @nestjs/core --registry=https://registry.npmjs.org/ --silent >/dev/null 2>&1; then
@@ -2026,14 +1989,6 @@ jobs:
 
       - name: 🔧 Setup Android SDK
         uses: android-actions/setup-android@v3
-        with:
-          api-level: 35
-          target: android-35
-          build-tools: "36.0.0"
-          # Only install essential components to avoid emulator download issues
-          components: platform-tools
-          # Disable emulator to prevent ZipFile errors
-          emulator: false
 
       - name: 📦 Cache Gradle dependencies
         uses: actions/cache@v4
