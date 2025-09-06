@@ -3,7 +3,7 @@
  * Enterprise-grade conventional commit enforcement with Jira ticket references
  */
 
-module.exports = {
+export default {
   extends: ['@commitlint/config-conventional'],
   rules: {
     // Enforce conventional commit format

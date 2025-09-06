@@ -1,7 +1,7 @@
 // Minimal security linting - focus on critical issues only
-const security = require('eslint-plugin-security');
+import security from 'eslint-plugin-security';
 
-module.exports = [
+export default [
   {
     ignores: [
       '**/node_modules/**',
@@ -44,11 +44,11 @@ module.exports = [
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'module',
-      parser: require('@typescript-eslint/parser'),
+      parser: (await import('@typescript-eslint/parser')).default,
     },
     plugins: {
       security,
-      '@typescript-eslint': require('@typescript-eslint/eslint-plugin'),
+      '@typescript-eslint': (await import('@typescript-eslint/eslint-plugin')).default,
     },
     rules: {
       // Only the most critical security issues

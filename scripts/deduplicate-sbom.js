@@ -5,8 +5,7 @@
  * Merges multiple CycloneDX SBOMs and removes duplicate dependencies
  */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
 
 function readJson(filePath) {
   try {

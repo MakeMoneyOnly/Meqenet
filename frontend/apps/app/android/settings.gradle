@@ -1,14 +1,36 @@
 pluginManagement {
     repositories {
+        // Primary repositories for plugin resolution
         google()
         mavenCentral()
         gradlePluginPortal()
-        // Enterprise-grade repositories for stable builds
-        maven { url = "https://plugins.gradle.org/m2/" }
-        maven { url = "https://repo1.maven.org/maven2/" }
-        // Additional repositories for versions plugin
-        maven { url = "https://maven.aliyun.com/repository/google" }
-        maven { url = "https://maven.aliyun.com/repository/public" }
+
+        // Enterprise-grade Maven repositories for stable plugin builds
+        maven {
+            url = uri("https://plugins.gradle.org/m2/")
+            allowInsecureProtocol = false
+        }
+        maven {
+            url = uri("https://repo1.maven.org/maven2/")
+            allowInsecureProtocol = false
+        }
+
+        // Fast mirrors for improved build performance
+        maven {
+            url = uri("https://maven.aliyun.com/repository/google")
+            allowInsecureProtocol = false
+        }
+        maven {
+            url = uri("https://maven.aliyun.com/repository/public")
+            allowInsecureProtocol = false
+        }
+
+        // JetBrains Maven repository for Kotlin plugins
+        maven {
+            url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/kotlin")
+            allowInsecureProtocol = false
+        }
+
         // Windows-compatible path handling for React Native gradle plugin
         maven {
             // Path from frontend/apps/app/android/ to frontend/node_modules/@react-native/gradle-plugin
@@ -37,20 +59,42 @@ pluginManagement {
     }
 
     // React Native gradle plugin resolution for all environments
-    // Path from frontend/apps/app/android/ to frontend/node_modules/@react-native/gradle-plugin
-    def rnPluginPath = System.getenv('CI') || System.getenv('GITHUB_ACTIONS') ?
-        '../../node_modules/@react-native/gradle-plugin' :
-        '../../../node_modules/@react-native/gradle-plugin'
+    // Enhanced path resolution for CI and local environments
+    def rnPluginPaths = [
+        // CI environment paths (GitHub Actions, Jenkins, etc.)
+        '../../node_modules/@react-native/gradle-plugin',
+        // Local development paths
+        '../../../node_modules/@react-native/gradle-plugin',
+        // Alternative CI paths
+        '../../../../node_modules/@react-native/gradle-plugin',
+        // Root workspace path
+        '../../../../../node_modules/@react-native/gradle-plugin'
+    ]
 
-    def rnPluginDir = new File(settingsDir, rnPluginPath)
-    if (rnPluginDir.exists() && rnPluginDir.isDirectory()) {
+    def rnPluginDir = null
+    def foundPath = null
+
+    for (path in rnPluginPaths) {
+        def testDir = new File(settingsDir, path)
+        if (testDir.exists() && testDir.isDirectory()) {
+            rnPluginDir = testDir
+            foundPath = path
+            break
+        }
+    }
+
+    if (rnPluginDir != null) {
         def env = System.getenv('CI') || System.getenv('GITHUB_ACTIONS') ? 'CI' : 'local'
-        println "Found React Native gradle plugin in ${env} environment: ${rnPluginDir.absolutePath}"
-        includeBuild(rnPluginPath)
+        println "✅ Found React Native gradle plugin in ${env} environment: ${rnPluginDir.absolutePath}"
+        includeBuild(foundPath)
     } else {
         def env = System.getenv('CI') || System.getenv('GITHUB_ACTIONS') ? 'CI' : 'local'
-        println "React Native gradle plugin not found in ${env} environment at: ${rnPluginDir.absolutePath}"
-        println "Will attempt to use repository resolution"
+        println "⚠️  React Native gradle plugin not found in ${env} environment. Searched paths:"
+        rnPluginPaths.each { path ->
+            def testDir = new File(settingsDir, path)
+            println "   - ${testDir.absolutePath} (${testDir.exists() ? 'exists' : 'not found'})"
+        }
+        println "🔄 Will attempt to use repository resolution for React Native plugin"
     }
 }
 

@@ -1,65 +1,24 @@
 {
-  "generatedAt": "2025-09-06T13:26:59.579Z",
+  "generatedAt": "2025-09-06T16:29:11.329Z",
   "summary": {
-    "totalPackages": 140,
+    "totalPackages": 136,
     "compliantPackages": 136,
-    "warningPackages": 2,
-    "blockingPackages": 2,
-    "complianceRate": 97
+    "warningPackages": 0,
+    "blockingPackages": 0,
+    "complianceRate": 100
   },
   "licenseBreakdown": {
     "Apache-2.0": 24,
     "MIT": 106,
-    "UNLICENSED": 1,
     "BSD-2-Clause": 2,
-    "MPL-2.0": 1,
     "ISC": 3,
-    "LGPL-3.0-only": 2,
     "0BSD": 1
   },
   "issues": {
-    "blocking": [
-      {
-        "name": "pa11y-ci@4.0.1",
-        "license": "LGPL-3.0-only",
-        "type": "blocking",
-        "reason": "Copyleft license may require source code disclosure"
-      },
-      {
-        "name": "pa11y@8.0.0",
-        "license": "LGPL-3.0-only",
-        "type": "blocking",
-        "reason": "Copyleft license may require source code disclosure"
-      }
-    ],
-    "warnings": [
-      {
-        "name": "@meqenet/root@1.0.0",
-        "license": "UNLICENSED",
-        "type": "warning",
-        "reason": "Unknown or non-standard license - requires review"
-      },
-      {
-        "name": "axe-core@4.10.3",
-        "license": "MPL-2.0",
-        "type": "warning",
-        "reason": "Weak copyleft license - review compatibility"
-      }
-    ]
+    "blocking": [],
+    "warnings": []
   },
   "recommendations": [
-    {
-      "priority": "CRITICAL",
-      "action": "Replace blocking license packages",
-      "details": "2 packages use GPL/AGPL licenses that may conflict with proprietary software distribution",
-      "alternatives": "Look for MIT/BSD licensed alternatives"
-    },
-    {
-      "priority": "MEDIUM",
-      "action": "Review warning license packages",
-      "details": "2 packages use licenses that require careful review",
-      "alternatives": "Consider MIT/BSD alternatives where possible"
-    },
     {
       "priority": "LOW",
       "action": "Implement license scanning in CI/CD",
