@@ -65,7 +65,7 @@
     "@opentelemetry/sdk-trace-base": "^1.25.1",
     "@opentelemetry/semantic-conventions": "^1.25.1",
     "@prisma/client": "^6.15.0",
-    "argon2": "^0.43.0",
+    "argon2": "^0.44.0",
     "bcrypt": "^6.0.0",
     "bullmq": "^5.10.3",
     "class-transformer": "^0.5.1",
