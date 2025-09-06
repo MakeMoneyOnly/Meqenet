@@ -6,6 +6,7 @@ packages:
   # The root frontend application
   - "frontend"
   - "frontend/apps/*"
+  - "frontend/libs/*"
   # Tools
   - "tools/*"
   # Exclusions to prevent duplicate packages and improve performance

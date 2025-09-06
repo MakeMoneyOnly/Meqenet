@@ -36,6 +36,8 @@ export default [
       // Generated files
       'debug-prisma-import.js',
       'prisma-engines.zip',
+      'frontend/apps/website/public/sw.js',
+      'frontend/apps/website/public/workbox-*.js',
     ],
   },
   // Very minimal security checks - only the most critical issues
