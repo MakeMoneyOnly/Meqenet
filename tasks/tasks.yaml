@@ -1188,7 +1188,7 @@ stages:
             description:
               "[Security] Implement risk-based adaptive authentication (e.g.,
               step-up MFA for high-risk logins from new devices)."
-            status: To Do
+            status: Completed
             context: [docs/Stage 1 - Foundation/07-Security.md]
             personas: [
                 Data Security Specialist,
@@ -1200,7 +1200,7 @@ stages:
             description:
               "[Security/DB] Implement field-level encryption for all 'Level\
               \ 1' classified data fields in the database."
-            status: To Do
+            status: Completed
             context:
               [
                 docs/Stage 1 - Foundation/10-Database.md,
@@ -1216,7 +1216,7 @@ stages:
             description:
               "[BE/Security] Implement an OAuth 2.0 provider service (PKCE flow)
               for secure third-party and merchant integrations."
-            status: To Do
+            status: Completed
             context:
               [docs/Stage 2 -Development/19-API_Documentation_Strategy.md]
             personas: [

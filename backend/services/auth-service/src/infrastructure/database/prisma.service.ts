@@ -5,6 +5,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { PrismaClient, Prisma } from '@prisma/client';
+import { DatabaseEncryptionMiddleware } from '../../shared/services/database-encryption.middleware';
 
 /**
  * Prisma Database Service for Meqenet.et Authentication Service
@@ -39,8 +40,11 @@ export class PrismaService
   private connectionAttempts = 0;
   private readonly maxRetries = RETRY_CONFIG.MAX_RETRIES;
   private readonly baseDelay = RETRY_CONFIG.BASE_DELAY;
+  private encryptionMiddleware!: DatabaseEncryptionMiddleware;
 
-  constructor() {
+  constructor(
+    private readonly databaseEncryptionMiddleware: DatabaseEncryptionMiddleware,
+  ) {
     // Note: Direct process.env access allowed in database service for critical configuration
     /* eslint-disable-next-line */
     const databaseUrlValue = process.env.DATABASE_URL;
@@ -78,6 +82,10 @@ export class PrismaService
   async onModuleInit(): Promise<void> {
     await this.connectWithRetry();
     this.logger.log('✅ Database connection established successfully');
+
+    // Apply database encryption middleware for Level 1 data protection
+    this.databaseEncryptionMiddleware.applyMiddleware(this);
+    this.logger.log('🔐 Database encryption middleware applied successfully');
 
     // Run basic health check
     await this.healthCheck();
