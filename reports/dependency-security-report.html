@@ -9,7 +9,7 @@
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
         .container { max-width: 1200px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .header { text-align: center; margin-bottom: 30px; }
-        .score { font-size: 48px; font-weight: bold; color: #f59e0b; }
+        .score { font-size: 48px; font-weight: bold; color: #10b981; }
         .status { display: inline-block; padding: 5px 15px; border-radius: 20px; font-size: 14px; font-weight: bold; text-transform: uppercase; }
         .status.secure { background: #d1fae5; color: #065f46; }
         .status.critical { background: #fee2e2; color: #991b1b; }
@@ -34,9 +34,9 @@
         <div class="header">
             <h1>Meqenet Dependency Security Report</h1>
             <div class="score">0</div>
-            <div class="status warning">WARNING</div>
-            <p><strong>Risk Level:</strong> MEDIUM</p>
-            <p><strong>Generated:</strong> 9/6/2025, 6:26:39 PM</p>
+            <div class="status secure">SECURE</div>
+            <p><strong>Risk Level:</strong> LOW</p>
+            <p><strong>Generated:</strong> 9/6/2025, 8:39:07 PM</p>
         </div>
 
         <div class="metrics">
@@ -56,15 +56,15 @@
 
         <div class="summary">
             <h2>Summary</h2>
-            <p><strong>Overall Status:</strong> WARNING</p>
-            <p><strong>Risk Level:</strong> MEDIUM</p>
+            <p><strong>Overall Status:</strong> SECURE</p>
+            <p><strong>Risk Level:</strong> LOW</p>
             <p><strong>Sections Scanned:</strong> 4</p>
         </div>
 
         <div class="next-steps">
             <h2>Next Steps</h2>
             <ul>
-                <li>⚠️ Address medium/low-severity vulnerabilities within 30 days</li><li>📈 Prioritize updates based on CVSS scores and exploitability</li><li>🔍 Review license compliance issues</li><li>📅 Schedule weekly dependency security reviews</li><li>🤖 Implement automated dependency updates (Dependabot/Renovate)</li><li>📚 Train team on dependency security best practices</li>
+                <li>✅ Dependencies appear secure</li><li>🔄 Continue regular dependency scans</li><li>📅 Schedule weekly dependency security reviews</li><li>🤖 Implement automated dependency updates (Dependabot/Renovate)</li><li>📚 Train team on dependency security best practices</li>
             </ul>
         </div>
 
@@ -132,28 +132,14 @@
             <div class="section">
                 <h3>License Compliance Check</h3>
                 <p><strong>Status:</strong>
-                    <span class="status warning">WARNING</span>
+                    <span class="status compliant">COMPLIANT</span>
                 </p>
 
                 
                 
                 
 
-                
-                    <div class="issues">
-                        <h4>Issues Found (1)</h4>
-                        
-                            <div class="issue warning">
-                                <strong>Potentially problematic licenses detected</strong>
-                                
-                                
-                                <br><small>Potentially problematic licenses detected</small>
-                                <br><small>Some dependencies use licenses that may have copyleft implications</small>
-                                
-                            </div>
-                        
-                    </div>
-                
+                <p>✅ No issues found</p>
 
                 <div class="recommendations">
                     <h4>Recommendations</h4>

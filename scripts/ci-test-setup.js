@@ -238,7 +238,13 @@ async function verifySetup() {
         dir.startsWith('@prisma+client@')
       );
 
+      log(
+        `Found ${prismaClientDirs.length} Prisma client packages in pnpm store`
+      );
+
       for (const dir of prismaClientDirs) {
+        log(`Checking Prisma client package: ${dir}`);
+
         const clientPath = path.join(
           pnpmStore,
           dir,
@@ -268,13 +274,15 @@ async function verifySetup() {
 
               if (fs.existsSync(prismaIndex) || fs.existsSync(prismaIndexD)) {
                 prismaClientPath = prismaDir;
-                foundLocation = `pnpm workspace store (${dir})`;
+                foundLocation = `pnpm workspace store (${dir}) - schema-specific client`;
+                log(`✅ Found generated Prisma client at: ${prismaDir}`);
                 break;
               }
             } else {
               // Fallback to the base client if .prisma/client doesn't exist
               prismaClientPath = clientPath;
               foundLocation = `pnpm workspace store (${dir}) - base client`;
+              log(`✅ Found base Prisma client at: ${clientPath}`);
               break;
             }
           }
@@ -301,25 +309,61 @@ async function verifySetup() {
       if (fs.existsSync(localPrismaIndex) || fs.existsSync(localPrismaIndexD)) {
         prismaClientPath = localPrismaPath;
         foundLocation = 'local node_modules';
+        log(`✅ Found Prisma client in local node_modules: ${localPrismaPath}`);
+      }
+    }
+  }
+
+  // Additional fallback: Check if Prisma was generated in the workspace root
+  if (!prismaClientPath) {
+    const workspacePrismaPath = path.join(
+      workspaceRoot,
+      'node_modules',
+      '@prisma',
+      'client'
+    );
+
+    if (fs.existsSync(workspacePrismaPath)) {
+      const workspacePrismaIndex = path.join(workspacePrismaPath, 'index.js');
+      const workspacePrismaIndexD = path.join(
+        workspacePrismaPath,
+        'index.d.ts'
+      );
+
+      if (
+        fs.existsSync(workspacePrismaIndex) ||
+        fs.existsSync(workspacePrismaIndexD)
+      ) {
+        prismaClientPath = workspacePrismaPath;
+        foundLocation = 'workspace root node_modules';
+        log(`✅ Found Prisma client in workspace root: ${workspacePrismaPath}`);
       }
     }
   }
 
   if (!prismaClientPath) {
-    error(
-      'Prisma client not found in either pnpm workspace store or local node_modules'
-    );
+    error('❌ Prisma client generation verification failed');
+    error('Prisma client not found in any of the expected locations.');
+    error('');
     error('Searched locations:');
     error(
-      `  - pnpm workspace store (.pnpm/@prisma+client*/node_modules/@prisma/client)`
+      `  - Workspace pnpm store (.pnpm/@prisma+client*/node_modules/.prisma/client)`
     );
     error(
-      `  - pnpm workspace store (.pnpm/@prisma+client*/node_modules/.prisma/client)`
+      `  - Workspace pnpm store (.pnpm/@prisma+client*/node_modules/@prisma/client)`
     );
-    error(`  - ${authServicePath}/node_modules/@prisma/client`);
     error(
-      'This indicates the Prisma generate command did not complete successfully.'
+      `  - Auth service local node_modules (${authServicePath}/node_modules/@prisma/client)`
     );
+    error(
+      `  - Workspace root node_modules (${workspaceRoot}/node_modules/@prisma/client)`
+    );
+    error('');
+    error(
+      'This indicates the Prisma generate command may not have completed successfully,'
+    );
+    error('or the generated files are in an unexpected location.');
+    error('');
 
     // Additional debugging info
     log('🔍 Debugging information:');
@@ -343,7 +387,7 @@ async function verifySetup() {
           item.startsWith('@prisma+client@')
         );
         log(
-          `  Prisma client packages in pnpm store: ${prismaClientDirs.join(', ')}`
+          `  Prisma client packages in pnpm store: ${prismaClientDirs.length > 0 ? prismaClientDirs.join(', ') : 'none'}`
         );
 
         // Check each Prisma client directory
@@ -389,6 +433,20 @@ async function verifySetup() {
         log(`  Could not read pnpm store contents: ${err.message}`);
       }
     }
+
+    error('');
+    error('💡 Troubleshooting suggestions:');
+    error('  1. Check if Prisma schema exists and is valid');
+    error('  2. Verify Prisma CLI is properly installed');
+    error(
+      '  3. Ensure database connection is available (if required for generation)'
+    );
+    error(
+      '  4. Check for any Prisma-related errors in the generation output above'
+    );
+    error(
+      '  5. Try running "pnpm prisma generate" manually in the auth-service directory'
+    );
 
     process.exit(1);
   }

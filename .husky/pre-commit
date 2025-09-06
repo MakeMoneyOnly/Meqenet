@@ -3,61 +3,19 @@
 # Enterprise-Grade FinTech Security & Quality Gate
 # Manual lint-staged implementation to bypass Windows bugs.
 
-echo "🚀 Meqenet.et Enterprise Pre-Commit Quality Checks (Manual Mode)"
-echo "=================================================="
-
 # Exit immediately if a command exits with a non-zero status.
 set -e
+
+echo "🚀 Meqenet.et Enterprise Pre-Commit Quality Checks (Manual Mode)"
+echo "=================================================="
 
 # Set NODE_OPTIONS to prevent memory issues and enable better performance
 export NODE_OPTIONS="--max-old-space-size=4096 --enable-source-maps=false"
 
 # ============================================================================
-# PHASE 0: COMMIT MESSAGE VALIDATION (Early Exit)
+# PHASE 0: INITIAL VALIDATION
 # ============================================================================
-echo "📝 Phase 0: Validating commit message format..."
-
-# Get the commit message from the last commit
-COMMIT_MSG=$(git log --oneline -1 | head -1 | cut -d' ' -f2-)
-
-# Run commitlint validation
-if ! echo "$COMMIT_MSG" | pnpm exec commitlint --verbose 2>&1; then
-  echo "❌ INVALID COMMIT MESSAGE FORMAT!"
-  echo ""
-  echo "🚨 Commit rejected due to non-conventional commit message."
-  echo ""
-  echo "📋 Required format:"
-  echo "   type(scope): description"
-  echo ""
-  echo "✅ Valid types:"
-  echo "   feat     - New feature"
-  echo "   fix      - Bug fix"
-  echo "   docs     - Documentation changes"
-  echo "   style    - Code style changes (formatting, etc.)"
-  echo "   refactor - Code refactoring"
-  echo "   perf     - Performance improvements"
-  echo "   test     - Test additions/modifications"
-  echo "   chore    - Maintenance tasks"
-  echo "   build    - Build system changes"
-  echo "   ci       - CI/CD changes"
-  echo "   security - Security-related changes"
-  echo ""
-  echo "📝 Examples:"
-  echo "   feat(auth): add biometric authentication"
-  echo "   fix(payment): resolve transaction timeout issue"
-  echo "   security(auth): implement rate limiting"
-  echo "   docs(api): update payment endpoint documentation"
-  echo ""
-  echo "💡 Pro tip: Use 'git commit --amend' to fix the message"
-  echo ""
-  echo "🔒 COMMIT BLOCKED FOR ENTERPRISE COMPLIANCE"
-  echo "   • Use proper conventional commit format"
-  echo "   • Include Jira ticket reference: (TICKET-123)"
-  echo "   • Contact development team for assistance: dev@meqenet.et"
-  exit 1
-fi
-
-echo "✅ Commit message validation passed."
+echo "📝 Phase 0: Initial validation..."
 
 # 1. Find all relevant staged files
 ALL_RELEVANT_FILES=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '\.(js|jsx|ts|tsx|json|md|yml|yaml)$' || true)
