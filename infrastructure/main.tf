@@ -10,6 +10,10 @@ terraform {
       source  = "hashicorp/random"
       version = "~> 3.5"
     }
+    github = {
+      source  = "integrations/github"
+      version = "~> 6.0"
+    }
   }
 
   backend "s3" {
@@ -18,9 +22,6 @@ terraform {
     region         = "us-east-1"
     encrypt        = true
     dynamodb_table = "meqenet-terraform-state-lock"
-
-    # Enable versioning for state file recovery
-    versioning = true
   }
 }
 
@@ -1086,5 +1087,4 @@ resource "aws_iam_role_policy" "github_actions_deploy" {
 variable "ci_role_arn" {
   description = "ARN of the CI role for OIDC authentication"
   type        = string
-  default     = aws_iam_role.github_actions_ci.arn
 }

@@ -98,8 +98,6 @@ resource "aws_kms_key" "vpc_flow_logs" {
   }
 }
 
-data "aws_caller_identity" "current" {}
-
 # =============================================================================
 # VPC ENDPOINTS - FINTECH SECURITY ENHANCEMENT
 # =============================================================================
@@ -318,7 +316,4 @@ resource "aws_route_table_association" "private_b" {
   route_table_id = aws_route_table.private.id
 }
 
-# Fix CKV2_AWS_12 - Restrict the default security group
-resource "aws_default_security_group" "default" {
-  vpc_id = aws_vpc.main.id
-}
+# Fix CKV2_AWS_12 - Restrict the default security group (already defined above)
