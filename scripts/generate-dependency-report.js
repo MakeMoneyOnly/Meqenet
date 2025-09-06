@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
 /**
  * Dependency Security Report Generator
@@ -26,7 +26,7 @@ class DependencyReportGenerator {
     const report = {
       title: 'Meqenet Dependency Security Report',
       generatedAt: new Date().toISOString(),
-      sections: []
+      sections: [],
     };
 
     try {
@@ -53,8 +53,9 @@ class DependencyReportGenerator {
       await this.writeReport(report);
 
       console.log('✅ Dependency security report generated successfully!');
-      console.log(`📄 Report saved to: ${path.join(this.reportsDir, 'dependency-security-report.json')}`);
-
+      console.log(
+        `📄 Report saved to: ${path.join(this.reportsDir, 'dependency-security-report.json')}`
+      );
     } catch (error) {
       console.error('❌ Error generating dependency report:', error.message);
       process.exit(1);
@@ -70,27 +71,40 @@ class DependencyReportGenerator {
 
         const vulnerabilities = data.vulnerabilities || {};
         const vulnCount = Object.keys(vulnerabilities).length;
-        const criticalCount = Object.values(vulnerabilities).filter(v => v.severity === 'critical').length;
-        const highCount = Object.values(vulnerabilities).filter(v => v.severity === 'high').length;
+        const criticalCount = Object.values(vulnerabilities).filter(
+          v => v.severity === 'critical'
+        ).length;
+        const highCount = Object.values(vulnerabilities).filter(
+          v => v.severity === 'high'
+        ).length;
 
         return {
           name: 'NPM Audit',
           totalVulnerabilities: vulnCount,
           criticalVulnerabilities: criticalCount,
           highVulnerabilities: highCount,
-          status: vulnCount === 0 ? 'SECURE' : criticalCount > 0 ? 'CRITICAL' : highCount > 0 ? 'WARNING' : 'MINOR',
-          issues: Object.values(vulnerabilities).slice(0, 10).map(vuln => ({
-            package: vuln.name,
-            severity: vuln.severity,
-            title: vuln.title,
-            recommendation: 'Update to latest secure version'
-          })),
+          status:
+            vulnCount === 0
+              ? 'SECURE'
+              : criticalCount > 0
+                ? 'CRITICAL'
+                : highCount > 0
+                  ? 'WARNING'
+                  : 'MINOR',
+          issues: Object.values(vulnerabilities)
+            .slice(0, 10)
+            .map(vuln => ({
+              package: vuln.name,
+              severity: vuln.severity,
+              title: vuln.title,
+              recommendation: 'Update to latest secure version',
+            })),
           recommendations: [
             'Run npm audit fix to automatically fix issues',
             'Update vulnerable packages to latest versions',
             'Review and test changes after updates',
-            'Consider using npm audit --production for production-only vulnerabilities'
-          ]
+            'Consider using npm audit --production for production-only vulnerabilities',
+          ],
         };
       }
     } catch (error) {
@@ -102,7 +116,7 @@ class DependencyReportGenerator {
       totalVulnerabilities: 0,
       status: 'NOT_RUN',
       issues: [],
-      recommendations: ['Run npm audit to check for vulnerabilities']
+      recommendations: ['Run npm audit to check for vulnerabilities'],
     };
   }
 
@@ -114,7 +128,9 @@ class DependencyReportGenerator {
         const data = JSON.parse(fs.readFileSync(snykPath, 'utf8'));
 
         const vulnerabilities = data.vulnerabilities || [];
-        const uniquePackages = [...new Set(vulnerabilities.map(v => v.packageName))];
+        const uniquePackages = [
+          ...new Set(vulnerabilities.map(v => v.packageName)),
+        ];
 
         const severityCounts = vulnerabilities.reduce((acc, vuln) => {
           acc[vuln.severity] = (acc[vuln.severity] || 0) + 1;
@@ -126,21 +142,25 @@ class DependencyReportGenerator {
           totalVulnerabilities: vulnerabilities.length,
           affectedPackages: uniquePackages.length,
           severityBreakdown: severityCounts,
-          status: vulnerabilities.length === 0 ? 'SECURE' :
-                 severityCounts.critical > 0 || severityCounts.high > 0 ? 'CRITICAL' : 'WARNING',
+          status:
+            vulnerabilities.length === 0
+              ? 'SECURE'
+              : severityCounts.critical > 0 || severityCounts.high > 0
+                ? 'CRITICAL'
+                : 'WARNING',
           issues: vulnerabilities.slice(0, 10).map(vuln => ({
             package: vuln.packageName,
             version: vuln.version,
             severity: vuln.severity,
             title: vuln.title,
-            cve: vuln.identifiers?.CVE?.[0] || 'N/A'
+            cve: vuln.identifiers?.CVE?.[0] || 'N/A',
           })),
           recommendations: [
             'Fix vulnerabilities using Snyk CLI: snyk wizard',
             'Update package.json with secure versions',
             'Consider using Snyk Advisor for package insights',
-            'Implement automated Snyk scans in CI/CD pipeline'
-          ]
+            'Implement automated Snyk scans in CI/CD pipeline',
+          ],
         };
       }
     } catch (error) {
@@ -152,7 +172,7 @@ class DependencyReportGenerator {
       totalVulnerabilities: 0,
       status: 'NOT_RUN',
       issues: [],
-      recommendations: ['Run Snyk test to scan for vulnerabilities']
+      recommendations: ['Run Snyk test to scan for vulnerabilities'],
     };
   }
 
@@ -175,14 +195,14 @@ class DependencyReportGenerator {
             component: vuln.affects?.[0]?.ref || 'Unknown',
             severity: vuln.ratings?.[0]?.severity || 'Unknown',
             description: vuln.description,
-            cwe: vuln.cwe?.id || 'N/A'
+            cwe: vuln.cwe?.id || 'N/A',
           })),
           recommendations: [
             'Review OWASP Dependency Check report for detailed analysis',
             'Update vulnerable components to secure versions',
             'Use OWASP Dependency Check regularly in CI/CD',
-            'Consider using Nexus IQ or similar for policy enforcement'
-          ]
+            'Consider using Nexus IQ or similar for policy enforcement',
+          ],
         };
       }
     } catch (error) {
@@ -194,7 +214,9 @@ class DependencyReportGenerator {
       totalComponents: 0,
       status: 'NOT_RUN',
       issues: [],
-      recommendations: ['Run OWASP Dependency Check for comprehensive analysis']
+      recommendations: [
+        'Run OWASP Dependency Check for comprehensive analysis',
+      ],
     };
   }
 
@@ -211,7 +233,12 @@ class DependencyReportGenerator {
           return acc;
         }, {});
 
-        const problematicLicenses = ['GPL-2.0', 'GPL-3.0', 'AGPL-3.0', 'SSPL-1.0'];
+        const problematicLicenses = [
+          'GPL-2.0',
+          'GPL-3.0',
+          'AGPL-3.0',
+          'SSPL-1.0',
+        ];
         const hasProblematicLicenses = Object.keys(licenses).some(license =>
           problematicLicenses.some(problematic => license.includes(problematic))
         );
@@ -221,23 +248,28 @@ class DependencyReportGenerator {
           totalPackages: Object.keys(data).length,
           licenseBreakdown: licenses,
           status: hasProblematicLicenses ? 'WARNING' : 'COMPLIANT',
-          issues: hasProblematicLicenses ? [{
-            title: 'Potentially problematic licenses detected',
-            description: 'Some dependencies use licenses that may have copyleft implications',
-            packages: Object.entries(data)
-              .filter(([_, pkg]) =>
-                problematicLicenses.some(problematic =>
-                  (pkg.licenses || '').includes(problematic)
-                )
-              )
-              .map(([name, pkg]) => `${name}@${pkg.version}`)
-          }] : [],
+          issues: hasProblematicLicenses
+            ? [
+                {
+                  title: 'Potentially problematic licenses detected',
+                  description:
+                    'Some dependencies use licenses that may have copyleft implications',
+                  packages: Object.entries(data)
+                    .filter(([_, pkg]) =>
+                      problematicLicenses.some(problematic =>
+                        (pkg.licenses || '').includes(problematic)
+                      )
+                    )
+                    .map(([name, pkg]) => `${name}@${pkg.version}`),
+                },
+              ]
+            : [],
           recommendations: [
             'Review license compatibility with business requirements',
             'Consider replacing GPL-licensed packages with MIT/BSD alternatives',
             'Document license review process for new dependencies',
-            'Use automated license checking in CI/CD pipeline'
-          ]
+            'Use automated license checking in CI/CD pipeline',
+          ],
         };
       }
     } catch (error) {
@@ -249,21 +281,23 @@ class DependencyReportGenerator {
       totalPackages: 0,
       status: 'NOT_RUN',
       issues: [],
-      recommendations: ['Run license compliance check for all dependencies']
+      recommendations: ['Run license compliance check for all dependencies'],
     };
   }
 
   generateSummary(sections) {
-    const totalVulnerabilities = sections.reduce((sum, section) =>
-      sum + (section.totalVulnerabilities || 0), 0
+    const totalVulnerabilities = sections.reduce(
+      (sum, section) => sum + (section.totalVulnerabilities || 0),
+      0
     );
 
-    const criticalIssues = sections.some(section =>
-      section.status === 'CRITICAL' || section.criticalVulnerabilities > 0
+    const criticalIssues = sections.some(
+      section =>
+        section.status === 'CRITICAL' || section.criticalVulnerabilities > 0
     );
 
-    const hasIssues = sections.some(section =>
-      section.status === 'WARNING' || section.status === 'CRITICAL'
+    const hasIssues = sections.some(
+      section => section.status === 'WARNING' || section.status === 'CRITICAL'
     );
 
     let overallStatus = 'SECURE';
@@ -274,9 +308,11 @@ class DependencyReportGenerator {
       overallStatus,
       totalVulnerabilities,
       sectionsScanned: sections.length,
-      sectionsWithIssues: sections.filter(s => s.status !== 'SECURE' && s.status !== 'NOT_RUN').length,
+      sectionsWithIssues: sections.filter(
+        s => s.status !== 'SECURE' && s.status !== 'NOT_RUN'
+      ).length,
       riskLevel: criticalIssues ? 'HIGH' : hasIssues ? 'MEDIUM' : 'LOW',
-      nextSteps: this.generateNextSteps(overallStatus, totalVulnerabilities)
+      nextSteps: this.generateNextSteps(overallStatus, totalVulnerabilities),
     };
   }
 
@@ -284,13 +320,21 @@ class DependencyReportGenerator {
     const steps = [];
 
     if (status === 'CRITICAL') {
-      steps.push('🚨 CRITICAL: Address high-severity vulnerabilities immediately');
-      steps.push('📋 Review all critical and high-severity issues in reports above');
+      steps.push(
+        '🚨 CRITICAL: Address high-severity vulnerabilities immediately'
+      );
+      steps.push(
+        '📋 Review all critical and high-severity issues in reports above'
+      );
       steps.push('🔄 Update vulnerable dependencies to secure versions');
       steps.push('🧪 Test thoroughly after dependency updates');
     } else if (status === 'WARNING') {
-      steps.push('⚠️ Address medium/low-severity vulnerabilities within 30 days');
-      steps.push('📈 Prioritize updates based on CVSS scores and exploitability');
+      steps.push(
+        '⚠️ Address medium/low-severity vulnerabilities within 30 days'
+      );
+      steps.push(
+        '📈 Prioritize updates based on CVSS scores and exploitability'
+      );
       steps.push('🔍 Review license compliance issues');
     } else {
       steps.push('✅ Dependencies appear secure');
@@ -302,15 +346,23 @@ class DependencyReportGenerator {
     }
 
     steps.push('📅 Schedule weekly dependency security reviews');
-    steps.push('🤖 Implement automated dependency updates (Dependabot/Renovate)');
+    steps.push(
+      '🤖 Implement automated dependency updates (Dependabot/Renovate)'
+    );
     steps.push('📚 Train team on dependency security best practices');
 
     return steps;
   }
 
   async writeReport(report) {
-    const reportPath = path.join(this.reportsDir, 'dependency-security-report.json');
-    const htmlPath = path.join(this.reportsDir, 'dependency-security-report.html');
+    const reportPath = path.join(
+      this.reportsDir,
+      'dependency-security-report.json'
+    );
+    const htmlPath = path.join(
+      this.reportsDir,
+      'dependency-security-report.html'
+    );
 
     // Write JSON report
     fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
@@ -393,7 +445,9 @@ class DependencyReportGenerator {
             </ul>
         </div>
 
-        ${report.sections.map(section => `
+        ${report.sections
+          .map(
+            section => `
             <div class="section">
                 <h3>${section.name}</h3>
                 <p><strong>Status:</strong>
@@ -404,10 +458,14 @@ class DependencyReportGenerator {
                 ${section.affectedPackages !== undefined ? `<p><strong>Affected Packages:</strong> ${section.affectedPackages}</p>` : ''}
                 ${section.totalComponents !== undefined ? `<p><strong>Total Components:</strong> ${section.totalComponents}</p>` : ''}
 
-                ${section.issues && section.issues.length > 0 ? `
+                ${
+                  section.issues && section.issues.length > 0
+                    ? `
                     <div class="issues">
                         <h4>Issues Found (${section.issues.length})</h4>
-                        ${section.issues.map(issue => `
+                        ${section.issues
+                          .map(
+                            issue => `
                             <div class="issue ${issue.severity?.toLowerCase() === 'critical' || issue.severity?.toLowerCase() === 'high' ? '' : 'warning'}">
                                 <strong>${issue.package || issue.title || 'Issue'}</strong>
                                 ${issue.version ? `<br><small>Version: ${issue.version}</small>` : ''}
@@ -416,9 +474,13 @@ class DependencyReportGenerator {
                                 ${issue.description ? `<br><small>${issue.description}</small>` : ''}
                                 ${issue.cve && issue.cve !== 'N/A' ? `<br><small>CVE: ${issue.cve}</small>` : ''}
                             </div>
-                        `).join('')}
+                        `
+                          )
+                          .join('')}
                     </div>
-                ` : '<p>✅ No issues found</p>'}
+                `
+                    : '<p>✅ No issues found</p>'
+                }
 
                 <div class="recommendations">
                     <h4>Recommendations</h4>
@@ -427,7 +489,9 @@ class DependencyReportGenerator {
                     </ul>
                 </div>
             </div>
-        `).join('')}
+        `
+          )
+          .join('')}
     </div>
 </body>
 </html>`;

@@ -4,13 +4,13 @@
  * Follows fintech enterprise-grade security standards
  */
 
-const globals = require('globals');
-const tseslint = require('@typescript-eslint/eslint-plugin');
-const tsParser = require('@typescript-eslint/parser');
-const security = require('eslint-plugin-security');
-const react = require('eslint-plugin-react');
-const reactHooks = require('eslint-plugin-react-hooks');
-const jsxA11y = require('eslint-plugin-jsx-a11y');
+import globals from 'globals';
+import tseslint from '@typescript-eslint/eslint-plugin';
+import tsParser from '@typescript-eslint/parser';
+import security from 'eslint-plugin-security';
+import react from 'eslint-plugin-react';
+import reactHooks from 'eslint-plugin-react-hooks';
+import jsxA11y from 'eslint-plugin-jsx-a11y';
 
 // Internal plugin for process.env security
 const internalSecurityPlugin = {
@@ -58,7 +58,7 @@ const internalSecurityPlugin = {
   },
 };
 
-module.exports = [
+export default [
   {
     // Global ignores - extensive list for performance
     ignores: [

@@ -6,9 +6,9 @@
  * Compliant with Executive Order 14028 requirements
  */
 
-const fs = require('fs');
-const path = require('path');
-const crypto = require('crypto');
+import fs from 'fs';
+import path from 'path';
+import crypto from 'crypto';
 
 function readJson(filePath) {
   try {

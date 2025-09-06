@@ -5,8 +5,7 @@
  * Validates NBE, PSD2, GDPR, and internal security policies
  */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
 
 console.log('📋 Running Ethiopian FinTech Compliance Validation...\n');
 
@@ -47,7 +46,7 @@ function checkJsonStructure(filePath, requiredFields, description) {
         `❌ ${description}: FAILED (missing: ${missingFields.join(', ')})`
       );
     }
-  } catch (err) {
+  } catch (_err) {
     issues.push(`${description}: Invalid JSON format`);
     console.log(`❌ ${description}: FAILED (invalid JSON)`);
   }

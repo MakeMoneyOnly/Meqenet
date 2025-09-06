@@ -8,8 +8,8 @@
  * - Exits non-zero only on structural/schema issues we cannot fix locally
  */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
 function readJson(filePath) {
   try {
@@ -177,8 +177,8 @@ function main() {
   process.exit(hadFailure ? 1 : 0);
 }
 
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   main();
 }
 
-module.exports = { validateAndFixSbom };
+export { validateAndFixSbom };

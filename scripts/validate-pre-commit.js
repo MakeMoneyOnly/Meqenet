@@ -5,8 +5,8 @@
  * Validates that all pre-commit checks are properly configured and functional
  */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
 console.log('🔍 Meqenet.et Pre-Commit Validation');
 console.log('=====================================');
@@ -104,9 +104,11 @@ const checks = {
         // Check for Prettier (handle both static arrays and functions)
         let hasPrettier = false;
         for (const [pattern, commands] of Object.entries(config)) {
-          if (pattern.includes('.{js,jsx,ts,tsx,json,md,yml,yaml}') ||
-              pattern.includes('*.{js,jsx,ts,tsx,json,md,yml,yaml}') ||
-              pattern === '*.{js,jsx,ts,tsx,json,md,yml,yaml}') {
+          if (
+            pattern.includes('.{js,jsx,ts,tsx,json,md,yml,yaml}') ||
+            pattern.includes('*.{js,jsx,ts,tsx,json,md,yml,yaml}') ||
+            pattern === '*.{js,jsx,ts,tsx,json,md,yml,yaml}'
+          ) {
             if (Array.isArray(commands)) {
               // Static array of commands
               hasPrettier =

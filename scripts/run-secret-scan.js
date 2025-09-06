@@ -1,6 +1,6 @@
-const { exec, execSync } = require('child_process');
-const path = require('path');
-const fs = require('fs');
+import { execSync } from 'child_process';
+import path from 'path';
+import fs from 'fs';
 
 const cwd = process.cwd();
 const trufflehogignorePath = path.join(cwd, '.trufflehogignore');
@@ -158,13 +158,13 @@ if (isDockerAvailable()) {
       process.platform === 'win32'
         ? cwd
             .replace(/\\/g, '/')
-            .replace(/^([A-Z]):/i, (match, drive) => `/${drive.toLowerCase()}`)
+            .replace(/^([A-Z]):/i, (_match, drive) => `/${drive.toLowerCase()}`)
         : cwd;
     const ignorePath =
       process.platform === 'win32'
         ? trufflehogignorePath
             .replace(/\\/g, '/')
-            .replace(/^([A-Z]):/i, (match, drive) => `/${drive.toLowerCase()}`)
+            .replace(/^([A-Z]):/i, (_match, drive) => `/${drive.toLowerCase()}`)
         : trufflehogignorePath;
 
     const command = `docker run --rm -v "${repoPath}:/repo" -v "${ignorePath}:/.trufflehogignore" trufflesecurity/trufflehog:latest filesystem --only-verified --no-update --json --concurrency=1 --exclude-paths /.trufflehogignore /repo`;
@@ -187,7 +187,7 @@ if (isDockerAvailable()) {
 
       // Parse the Trufflehog JSON output
       let verifiedSecrets = 0;
-      let unverifiedSecrets = 0;
+      let _unverifiedSecrets = 0;
 
       try {
         // Try to parse JSON output
@@ -201,7 +201,7 @@ if (isDockerAvailable()) {
             try {
               const data = JSON.parse(line);
               verifiedSecrets = data.verified_secrets || 0;
-              unverifiedSecrets = data.unverified_secrets || 0;
+              _unverifiedSecrets = data.unverified_secrets || 0;
               break;
             } catch (_e) {
               // Not a valid JSON line, continue
@@ -230,12 +230,12 @@ if (isDockerAvailable()) {
         );
         console.log('🔄 Proceeding with pattern-based fallback scan...');
         simpleSecretScan();
-        return; // Exit early since fallback was already called
+        process.exit(0); // Exit early since fallback was already called
       } else {
         console.log('⚠️ Trufflehog scan failed with error:', error.message);
         console.log('🔄 Proceeding with pattern-based fallback scan...');
         simpleSecretScan();
-        return; // Exit early since fallback was already called
+        process.exit(0); // Exit early since fallback was already called
       }
     }
   } catch (error) {

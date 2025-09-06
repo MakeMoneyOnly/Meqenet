@@ -2,6 +2,7 @@
   "common": {
     "appName": "Meqenet",
     "welcome": "Welcome to Meqenet",
+    "greeting": "Hello, Welcome to Meqenet!",
     "loading": "Loading...",
     "error": "Error",
     "success": "Success",
