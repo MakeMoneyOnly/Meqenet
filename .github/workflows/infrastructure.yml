@@ -32,6 +32,13 @@ jobs:
           echo "📦 Enabling Corepack and activating pnpm 10.4.1"
           corepack enable
           corepack prepare pnpm@10.4.1 --activate
+
+          # Export PNPM_HOME and add to PATH for all subsequent steps
+          export PNPM_HOME="$HOME/.local/share/pnpm"
+          export PATH="$PNPM_HOME:$PATH"
+          echo "PNPM_HOME=$PNPM_HOME" >> $GITHUB_ENV
+          echo "PATH=$PATH" >> $GITHUB_ENV
+
           pnpm --version
           pnpm config set registry https://registry.npmjs.org/
           pnpm config set fetch-timeout 60000
@@ -55,14 +62,6 @@ jobs:
           pnpm config set fetch-retry-maxtimeout 120000
           pnpm config set fetch-timeout 60000
 
-          if [ -n "${{ secrets.NPM_TOKEN }}" ] && [ "${{ secrets.NPM_TOKEN }}" != "XXXX[hidden]" ] && [ "${{ secrets.NPM_TOKEN }}" != "" ]; then
-            pnpm config set //registry.npmjs.org/:_authToken "${{ secrets.NPM_TOKEN }}"
-          else
-            pnpm config set fetch-retry-mintimeout 30000
-            pnpm config set fetch-retry-maxtimeout 180000
-            pnpm config set fetch-timeout 90000
-          fi
-
           for attempt in {1..3}; do
             if pnpm install --no-frozen-lockfile --ignore-scripts; then
               echo "✅ Dependencies installed successfully"
@@ -76,6 +75,35 @@ jobs:
               sleep 5
             fi
           done
+
+      - name: 🔐 Check NPM Token
+        id: npm_token_check
+        run: |
+          # Use environment variable to check token without direct access
+          if [ -n "${NPM_TOKEN:-}" ] && [ "${NPM_TOKEN:-}" != "XXXX[hidden]" ]; then
+            echo "token_valid=true" >> $GITHUB_OUTPUT
+          else
+            echo "token_valid=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 🔐 Setup NPM Authentication
+        if: steps.npm_token_check.outputs.token_valid == 'true'
+        run: |
+          echo "🔐 Setting up NPM authentication..."
+
+      - name: 🔐 Configure NPM Registry
+        if: steps.npm_token_check.outputs.token_valid == 'true'
+        run: |
+          pnpm config set //registry.npmjs.org/:_authToken "$NPM_TOKEN"
+          echo "✅ NPM authentication configured"
+
+      - name: ⚠️ Configure Public Registry
+        if: steps.npm_token_check.outputs.token_valid == 'false'
+        run: |
+          echo "⚠️ NPM_TOKEN is invalid or not set, using public registry with extended timeouts"
+          pnpm config set fetch-retry-mintimeout 30000
+          pnpm config set fetch-retry-maxtimeout 180000
+          pnpm config set fetch-timeout 90000
 
       - uses: hashicorp/setup-terraform@v3
 

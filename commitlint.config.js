@@ -38,7 +38,9 @@ export default {
     // Enforce footer max line length
     'footer-max-line-length': [2, 'always', 100],
     // Custom rule for Jira ticket pattern
-    'jira-ticket-required': [2, 'always']
+    'jira-ticket-required': [2, 'always'],
+    // Prevent bypassing enterprise security checks
+    'no-verify-flag': [2, 'never']
   },
   parserPreset: {
     parserOpts: {
@@ -79,6 +81,41 @@ export default {
               false,
               `Invalid ticket format: ${invalidRefs.map(r => r.raw).join(', ')}\n` +
               'Use formats: JIRA-123, TICKET-456, ISSUE-789, MEQ-101, BNPL-202, PAY-303, AUTH-404, SEC-505'
+            ];
+          }
+
+          return [true];
+        },
+        'no-verify-flag': (parsed) => {
+          const { subject, body } = parsed;
+          const fullMessage = `${subject} ${body || ''}`.toLowerCase();
+
+          // Check for various forms of --no-verify flag usage
+          const noVerifyPatterns = [
+            /--no-verify/i,
+            /--no-verify/g,
+            /no.?verify/i,
+            /bypass.*check/i,
+            /skip.*hook/i,
+            /ignore.*pre.?commit/i
+          ];
+
+          const foundPattern = noVerifyPatterns.find(pattern => pattern.test(fullMessage));
+
+          if (foundPattern) {
+            return [
+              false,
+              'COMMIT REJECTED: Detected attempt to bypass enterprise security checks!\n\n' +
+              '🚨 SECURITY VIOLATION: Using --no-verify or similar bypass flags is strictly prohibited\n' +
+              '🔒 This would bypass critical FinTech security and compliance validation\n\n' +
+              '❌ FORBIDDEN PATTERNS DETECTED:\n' +
+              '   • --no-verify flags\n' +
+              '   • Bypass check references\n' +
+              '   • Skip hook mentions\n' +
+              '   • Ignore pre-commit references\n\n' +
+              '✅ REQUIRED: All commits must pass enterprise security validation\n' +
+              '🏛️ Contact security team for assistance: security@meqenet.et\n\n' +
+              '🇪🇹 Ethiopian FinTech Security Compliance Enforced'
             ];
           }
 

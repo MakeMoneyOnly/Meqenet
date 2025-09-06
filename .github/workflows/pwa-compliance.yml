@@ -336,16 +336,128 @@ jobs:
           cd frontend/apps/website
           npm run build
 
-      - name: 🚀 Start Development Server
+      - name: 🚀 Start Development Server with Enterprise-Grade Process Management
         run: |
-          cd frontend/apps/website
-          npm start &
-          sleep 10
+          echo "🔧 Enterprise-grade server startup with resource isolation..."
 
-      - name: 🌊 Run Lighthouse PWA Audit
+          # Set unique port for Lighthouse testing to prevent conflicts
+          export PORT=3001
+          export LHCI_PORT=3001
+
+          # Function to kill any existing processes on target port
+          kill_existing_processes() {
+            echo "🧹 Checking for existing processes on port $PORT..."
+            if lsof -ti:$PORT >/dev/null 2>&1; then
+              echo "⚠️ Found existing process on port $PORT, terminating..."
+              lsof -ti:$PORT | xargs kill -9 2>/dev/null || true
+              sleep 2
+            fi
+
+            # Double-check and force kill if still running
+            if lsof -ti:$PORT >/dev/null 2>&1; then
+              echo "💪 Force terminating remaining processes..."
+              lsof -ti:$PORT | xargs kill -15 2>/dev/null || true
+              sleep 1
+              lsof -ti:$PORT | xargs kill -9 2>/dev/null || true
+            fi
+          }
+
+          # Enterprise-grade process cleanup
+          cleanup() {
+            echo "🧹 Performing enterprise-grade cleanup..."
+            # Kill any node processes that might be using our port
+            pkill -f "next.*start" 2>/dev/null || true
+            pkill -f "node.*3001" 2>/dev/null || true
+
+            # Clean up any remaining processes on our port
+            if lsof -ti:$PORT >/dev/null 2>&1; then
+              lsof -ti:$PORT | xargs kill -9 2>/dev/null || true
+            fi
+
+            # Clean up any zombie processes
+            ps aux | grep -E "(next|node)" | grep -v grep | awk '{print $2}' | xargs kill -9 2>/dev/null || true
+          }
+
+          # Set up cleanup trap
+          trap cleanup EXIT
+
+          # Initial cleanup
+          cleanup
+          kill_existing_processes
+
+          cd frontend/apps/website
+
+          echo "🚀 Starting Next.js server on port $PORT..."
+
+          # Start server with proper error handling and retry logic
+          MAX_RETRIES=3
+          RETRY_COUNT=0
+
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            echo "🔄 Attempt $((RETRY_COUNT + 1))/$MAX_RETRIES to start server..."
+
+            # Start server in background with proper logging
+            PORT=$PORT npm start > server.log 2>&1 &
+            SERVER_PID=$!
+
+            echo "📝 Server PID: $SERVER_PID"
+
+            # Wait for server to be ready with timeout
+            TIMEOUT=60
+            COUNTER=0
+
+            while [ $COUNTER -lt $TIMEOUT ]; do
+              if curl -s http://localhost:$PORT >/dev/null 2>&1; then
+                echo "✅ Server is ready on port $PORT"
+                break
+              fi
+
+              # Check if server process is still running
+              if ! kill -0 $SERVER_PID 2>/dev/null; then
+                echo "❌ Server process died, checking logs..."
+                cat server.log
+                break
+              fi
+
+              echo "⏳ Waiting for server... ($COUNTER/$TIMEOUT)"
+              sleep 2
+              COUNTER=$((COUNTER + 2))
+            done
+
+            if curl -s http://localhost:$PORT >/dev/null 2>&1; then
+              echo "🎉 Server successfully started on port $PORT"
+              break
+            else
+              echo "❌ Server failed to start on attempt $((RETRY_COUNT + 1))"
+              cat server.log
+
+              # Cleanup and retry
+              cleanup
+              kill_existing_processes
+
+              RETRY_COUNT=$((RETRY_COUNT + 1))
+
+              if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+                echo "⏳ Waiting before retry..."
+                sleep 5
+              fi
+            fi
+          done
+
+          # Final verification
+          if ! curl -s http://localhost:$PORT >/dev/null 2>&1; then
+            echo "💥 CRITICAL: Server failed to start after $MAX_RETRIES attempts"
+            echo "📋 Server logs:"
+            cat server.log 2>/dev/null || echo "No server logs available"
+            exit 1
+          fi
+
+          echo "✅ Enterprise-grade server startup completed successfully"
+
+      - name: 🌊 Run Lighthouse PWA Audit with Enterprise-Grade Monitoring
         uses: treosh/lighthouse-ci-action@v10
         with:
-          urls: http://localhost:3000
+          urls: http://localhost:3001
           configPath: .github/lighthouse/pwa-config.json
           uploadArtifacts: true
           temporaryPublicStorage: true
@@ -358,6 +470,37 @@ jobs:
           path: |
             .lighthouseci/
             lighthouse-results.json
+
+      - name: 🧹 Enterprise-Grade Resource Cleanup
+        if: always()
+        run: |
+          echo "🧹 Performing enterprise-grade resource cleanup..."
+
+          # Kill any remaining processes from our test
+          pkill -f "next.*start" 2>/dev/null || true
+          pkill -f "node.*3001" 2>/dev/null || true
+
+          # Clean up any processes on our test port
+          if lsof -ti:3001 >/dev/null 2>&1; then
+            echo "⚠️ Cleaning up processes on port 3001..."
+            lsof -ti:3001 | xargs kill -9 2>/dev/null || true
+          fi
+
+          # Clean up any zombie processes
+          ps aux | grep -E "(next|node|lighthouse)" | grep -v grep | awk '{print $2}' | xargs kill -9 2>/dev/null || true
+
+          # Clean up temporary files
+          rm -f server.log 2>/dev/null || true
+
+          # Verify cleanup
+          if lsof -ti:3001 >/dev/null 2>&1; then
+            echo "⚠️ WARNING: Some processes may still be running on port 3001"
+            lsof -i:3001 || true
+          else
+            echo "✅ Port 3001 successfully cleaned up"
+          fi
+
+          echo "✅ Enterprise-grade cleanup completed"
 
   pwa-manifest-validation:
     name: 📋 PWA Manifest Validation

@@ -42,172 +42,53 @@ jobs:
         with:
           fetch-depth: 0 # Full history for security analysis
 
-      - name: 📦 Install pnpm (Enterprise-Grade with Network Resilience)
-        run: |
-          echo "📦 Installing pnpm with enterprise-grade network resilience..."
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
 
-          # Network diagnostics
-          echo "🔍 Checking network connectivity..."
-          if curl -fs --connect-timeout 10 --max-time 30 https://registry.npmjs.org/ &> /dev/null; then
-            echo "✅ NPM registry accessible"
-          else
-            echo "⚠️ NPM registry not accessible, will use offline methods"
-          fi
-
-          # Simplified installation with better reliability
-          PNPM_INSTALLED=false
-
-          # Method 1: Primary CDN with extended timeout
-          echo "🔄 Attempt 1/4: Installing via primary CDN..."
-          if curl -fsSL --connect-timeout 30 --max-time 120 https://get.pnpm.io/install.sh | sh -; then
-            export PNPM_HOME="$HOME/.local/share/pnpm"
-            export PATH="$PNPM_HOME:$PATH"
-            if command -v pnpm &> /dev/null; then
-              echo "✅ pnpm installed successfully via primary CDN"
-              PNPM_INSTALLED=true
-            else
-              echo "⚠️ pnpm command not found after CDN installation"
-            fi
-          else
-            echo "⚠️ CDN installation failed"
-          fi
-
-          # Method 2: Use npm to install pnpm as fallback
-          if [ "$PNPM_INSTALLED" = false ]; then
-            echo "🔄 Attempt 2/4: Installing via npm fallback..."
-            if npm install -g pnpm@${{ env.PNPM_VERSION }}; then
-              export PATH="$(npm config get prefix)/bin:$PATH"
-              if command -v pnpm &> /dev/null; then
-                echo "✅ pnpm installed successfully via npm"
-                PNPM_INSTALLED=true
-              fi
-            else
-              echo "⚠️ npm installation failed"
-            fi
-          fi
-
-          # Method 3: Manual binary download as last resort
-          if [ "$PNPM_INSTALLED" = false ]; then
-            echo "🔄 Attempt 3/4: Installing via manual binary download..."
-            # Download latest pnpm binary for Linux x64
-            if curl -fsSL --connect-timeout 30 --max-time 120 -o /tmp/pnpm.tar.gz https://github.com/pnpm/pnpm/releases/download/v${{ env.PNPM_VERSION }}/pnpm-linux-x64.tar.gz; then
-              mkdir -p $HOME/.local/bin
-              tar -xzf /tmp/pnpm.tar.gz -C $HOME/.local/bin --strip-components=1
-              export PATH="$HOME/.local/bin:$PATH"
-              if command -v pnpm &> /dev/null; then
-                echo "✅ pnpm installed successfully via binary download"
-                PNPM_INSTALLED=true
-              fi
-            else
-              echo "⚠️ Binary download failed"
-            fi
-          fi
-
-          # Method 4: Enterprise fallback - create minimal wrapper
-          if [ "$PNPM_INSTALLED" = false ]; then
-            echo "🔄 Attempt 4/4: Creating enterprise fallback wrapper..."
-            # Try to use system pnpm if available
-            if command -v pnpm &> /dev/null; then
-              echo "✅ Using system pnpm installation"
-              PNPM_INSTALLED=true
-            else
-              # Create minimal pnpm wrapper script for enterprise environments
-              mkdir -p $HOME/.local/bin
-              cat > $HOME/.local/bin/pnpm << 'EOF'
-          #!/bin/bash
-          # Minimal pnpm wrapper for enterprise environments with limited connectivity
-          echo "⚠️ Using minimal pnpm wrapper - enterprise mode"
-
-          case "$1" in
-            "--version"|"-v")
-              echo "pnpm wrapper 8.15.0 (enterprise fallback)"
-              ;;
-            "install"|"i")
-              echo "📦 Running npm install (enterprise wrapper mode)..."
-              shift
-              npm install "$@"
-              ;;
-            *)
-              echo "⚠️ pnpm command '$1' not fully supported in enterprise wrapper mode"
-              echo "💡 Consider using npm install for full compatibility"
-              exit 1
-              ;;
-          esac
-          EOF
-              chmod +x $HOME/.local/bin/pnpm
-              export PATH="$HOME/.local/bin:$PATH"
-              if command -v pnpm &> /dev/null; then
-                echo "✅ pnpm wrapper created successfully (enterprise mode)"
-                PNPM_INSTALLED=true
-              fi
-            fi
-          fi
-
-          if [ "$PNPM_INSTALLED" = true ]; then
-            echo "🎉 pnpm installation completed successfully!"
-            pnpm --version
-
-            # Configure pnpm for enterprise environment
-            pnpm config set registry https://registry.npmjs.org/
-            pnpm config set fetch-timeout 120000
-            pnpm config set network-timeout 600000
-
-            # Clean up JSR registry configs that might cause issues
-            pnpm config delete @jsr:registry 2>/dev/null || true
-            pnpm config delete //npm.jsr.io/:_authToken 2>/dev/null || true
-          else
-            echo "💥 CRITICAL: All pnpm installation methods failed"
-            echo "🔍 Network diagnostics:"
-            curl -I --connect-timeout 5 --max-time 10 https://get.pnpm.io/ || echo "❌ Cannot reach get.pnpm.io"
-            curl -I --connect-timeout 5 --max-time 10 https://registry.npmjs.org/ || echo "❌ Cannot reach npm registry"
-            exit 1
-          fi
-
-      - name: 🔧 Setup Node.js with pnpm
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: "https://registry.npmjs.org"
-          cache: 'pnpm'
 
-      - name: 📚 Install Dependencies
+      - name: Get pnpm store directory
+        shell: bash
         run: |
-          export PNPM_HOME="$HOME/.local/share/pnpm"
-          export PATH="$PNPM_HOME:$PATH"
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
 
-          # Configure npm registry with retry and auth handling
-          echo "📦 Configuring npm registry..."
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
 
-          # Clear any existing npm registry configuration that might be cached
-          pnpm config delete registry || true
-          pnpm config delete //registry.npmjs.org/:_authToken || true
-          pnpm config delete @jsr:registry || true
-          pnpm config delete //npm.jsr.io/:_authToken || true
-
+      - name: Install Dependencies
+        run: |
+          # Configure pnpm for enterprise environment
           pnpm config set registry https://registry.npmjs.org/
+          pnpm config set fetch-timeout 60000
+          pnpm config set network-timeout 300000
+          pnpm config delete @jsr:registry 2>/dev/null || true
+          pnpm config delete //npm.jsr.io/:_authToken 2>/dev/null || true
 
-          # Configure retry settings for rate limiting
-          pnpm config set fetch-retry-mintimeout 30000
-          pnpm config set fetch-retry-maxtimeout 180000
-          pnpm config set fetch-timeout 120000
+          # Install dependencies
+          pnpm install --frozen-lockfile
 
-      - name: 🔧 Generate Prisma Client
-        run: |
-          export PNPM_HOME="$HOME/.local/share/pnpm"
-          export PATH="$PNPM_HOME:$PATH"
-          pnpm prisma generate --schema=./backend/services/auth-service/prisma/schema.prisma || echo "⚠️  Prisma generate failed, continuing with existing client..."
+      - name: Generate Prisma Client
+        run: pnpm prisma generate --schema=./backend/services/auth-service/prisma/schema.prisma || echo "⚠️  Prisma generate failed, continuing with existing client..."
 
-      - name: 🔍 Dependency Vulnerability Scan
-        run: |
-          export PNPM_HOME="$HOME/.local/share/pnpm"
-          export PATH="$PNPM_HOME:$PATH"
-          pnpm run security:audit-ci
+      - name: Dependency Vulnerability Scan
+        run: pnpm run security:audit-ci
         continue-on-error: false
 
-      - name: 📋 Generate SBOM (Software Bill of Materials)
+      - name: Generate SBOM (Software Bill of Materials)
         run: docker run --rm -u 0:0 -e NPM_CONFIG_IGNORE_SCRIPTS=true -e HUSKY=0 -e HUSKY_SKIP_INSTALL=1 -e CI=1 -v ${{ github.workspace }}:/src ghcr.io/cyclonedx/cdxgen:latest -o /src/bom.json --include-formulation --include-crypto --spec-version 1.5 --exclude "node_modules,dist,coverage,.pnpm-store,.cache,.nx,.vite,.git,bom.json" /src/backend /src/governance /src/tools
 
-      - name: 📱 Mobile App Security Scan (Android)
+      - name: Mobile App Security Scan (Android)
         run: |
           echo "🔍 Scanning Android app for security vulnerabilities..."
           # Check for hardcoded secrets and sensitive data

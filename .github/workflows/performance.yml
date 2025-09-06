@@ -39,6 +39,13 @@ jobs:
           echo "📦 Enabling Corepack and activating pnpm ${{ env.PNPM_VERSION }}"
           corepack enable
           corepack prepare pnpm@${{ env.PNPM_VERSION }} --activate
+
+          # Export PNPM_HOME and add to PATH for all subsequent steps
+          export PNPM_HOME="$HOME/.local/share/pnpm"
+          export PATH="$PNPM_HOME:$PATH"
+          echo "PNPM_HOME=$PNPM_HOME" >> $GITHUB_ENV
+          echo "PATH=$PATH" >> $GITHUB_ENV
+
           pnpm --version
           pnpm config set registry https://registry.npmjs.org/
           pnpm config set fetch-timeout 60000
@@ -68,13 +75,18 @@ jobs:
           pnpm config set fetch-timeout 60000
 
           # Set auth token if available and valid
-          if [ -n "${{ secrets.NPM_TOKEN }}" ] && [ "${{ secrets.NPM_TOKEN }}" != "XXXX[hidden]" ]; then
-            echo "🔐 Testing NPM token validity..."
-            if npm whoami --registry=https://registry.npmjs.org/ >/dev/null 2>&1; then
-              pnpm config set //registry.npmjs.org/:_authToken "${{ secrets.NPM_TOKEN }}"
-              echo "✅ NPM authentication configured and validated"
+          if [ -n "${{ secrets.NPM_TOKEN }}" ]; then
+            NPM_TOKEN_VALUE="${{ secrets.NPM_TOKEN }}"
+            if [ "$NPM_TOKEN_VALUE" != "XXXX[hidden]" ]; then
+              echo "🔐 Testing NPM token validity..."
+              if npm whoami --registry=https://registry.npmjs.org/ >/dev/null 2>&1; then
+                pnpm config set //registry.npmjs.org/:_authToken "$NPM_TOKEN_VALUE"
+                echo "✅ NPM authentication configured and validated"
+              else
+                echo "⚠️  NPM_TOKEN is invalid or expired, using public registry"
+              fi
             else
-              echo "⚠️  NPM_TOKEN is invalid or expired, using public registry"
+              echo "⚠️  NPM_TOKEN is invalid, using public registry"
             fi
           else
             echo "⚠️  No valid NPM_TOKEN provided, using public registry"
@@ -284,13 +296,18 @@ jobs:
           pnpm config set fetch-timeout 60000
 
           # Set auth token if available and valid
-          if [ -n "${{ secrets.NPM_TOKEN }}" ] && [ "${{ secrets.NPM_TOKEN }}" != "XXXX[hidden]" ]; then
-            echo "🔐 Testing NPM token validity..."
-            if npm whoami --registry=https://registry.npmjs.org/ >/dev/null 2>&1; then
-              pnpm config set //registry.npmjs.org/:_authToken "${{ secrets.NPM_TOKEN }}"
-              echo "✅ NPM authentication configured and validated"
+          if [ -n "${{ secrets.NPM_TOKEN }}" ]; then
+            NPM_TOKEN_VALUE="${{ secrets.NPM_TOKEN }}"
+            if [ "$NPM_TOKEN_VALUE" != "XXXX[hidden]" ]; then
+              echo "🔐 Testing NPM token validity..."
+              if npm whoami --registry=https://registry.npmjs.org/ >/dev/null 2>&1; then
+                pnpm config set //registry.npmjs.org/:_authToken "$NPM_TOKEN_VALUE"
+                echo "✅ NPM authentication configured and validated"
+              else
+                echo "⚠️  NPM_TOKEN is invalid or expired, using public registry"
+              fi
             else
-              echo "⚠️  NPM_TOKEN is invalid or expired, using public registry"
+              echo "⚠️  NPM_TOKEN is invalid, using public registry"
             fi
           else
             echo "⚠️  No valid NPM_TOKEN provided, using public registry"
