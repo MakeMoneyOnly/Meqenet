@@ -35,6 +35,7 @@ jobs:
           output: "trivy-terraform-results.sarif"
           severity: "CRITICAL,HIGH,MEDIUM"
           exit-code: "0" # Don't fail the build, just report
+          hide-progress: false
 
       - name: Upload SARIF file
         uses: github/codeql-action/upload-sarif@v3
@@ -115,7 +116,7 @@ jobs:
           directory: infrastructure/
           framework: terraform
           output_format: sarif
-          output_file_path: results.sarif
+          output_file_path: ./results.sarif
           soft_fail: true
           quiet: false
           check: CKV_AWS_*,CKV2_AWS_*
@@ -170,7 +171,7 @@ jobs:
         if: always()
         continue-on-error: true
         with:
-          sarif_file: results.sarif
+          sarif_file: ./results.sarif
           category: "checkov"
 
       - name: Generate Checkov Compliance Report
@@ -183,11 +184,11 @@ jobs:
           echo "Commit: ${{ github.sha }}"
           echo "==================================="
 
-          if [ -f "results.sarif" ]; then
+          if [ -f "./results.sarif" ]; then
             # Extract compliance metrics
-            TOTAL_FINDINGS=$(jq '.runs[0].results | length' results.sarif 2>/dev/null || echo "0")
-            CRITICAL_FINDINGS=$(jq '[.runs[0].results[] | select(.level == "error")] | length' results.sarif 2>/dev/null || echo "0")
-            HIGH_FINDINGS=$(jq '[.runs[0].results[] | select(.properties.severity == "HIGH")] | length' results.sarif 2>/dev/null || echo "0")
+            TOTAL_FINDINGS=$(jq '.runs[0].results | length' ./results.sarif 2>/dev/null || echo "0")
+            CRITICAL_FINDINGS=$(jq '[.runs[0].results[] | select(.level == "error")] | length' ./results.sarif 2>/dev/null || echo "0")
+            HIGH_FINDINGS=$(jq '[.runs[0].results[] | select(.properties.severity == "HIGH")] | length' ./results.sarif 2>/dev/null || echo "0")
 
             echo "📊 Security Findings Summary:"
             echo "  Total Findings: $TOTAL_FINDINGS"
@@ -203,7 +204,7 @@ jobs:
             fi
 
             # PCI DSS Compliance Check
-            PCI_VIOLATIONS=$(jq '[.runs[0].results[] | select(.ruleId | contains("CKV_AWS_"))] | length' results.sarif 2>/dev/null || echo "0")
+            PCI_VIOLATIONS=$(jq '[.runs[0].results[] | select(.ruleId | contains("CKV_AWS_"))] | length' ./results.sarif 2>/dev/null || echo "0")
             if [ "$PCI_VIOLATIONS" -eq 0 ]; then
               echo "✅ PCI DSS Compliance: PASSED (No AWS security violations)"
             else

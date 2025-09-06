@@ -30,6 +30,15 @@ pluginManagement {
             url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/kotlin")
             allowInsecureProtocol = false
         }
+        maven {
+            url = uri("https://plugins.gradle.org/m2/")
+            allowInsecureProtocol = false
+        }
+        // Kotlin Android plugin specific repository
+        maven {
+            url = uri("https://dl.google.com/dl/android/maven2/")
+            allowInsecureProtocol = false
+        }
 
         // Windows-compatible path handling for React Native gradle plugin
         maven {

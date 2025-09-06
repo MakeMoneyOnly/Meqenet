@@ -97,28 +97,36 @@ jobs:
           # Verify Prisma client was generated using robust find commands
           echo "🔍 Verifying Prisma client generation..."
 
-          # Check for Prisma client in workspace node_modules (pnpm store)
+          # Check for Prisma client in pnpm store (most common location)
+          PNPM_STORE_PRISMA_CLIENT=$(find ../../../node_modules/.pnpm -name "index.d.ts" -path "*/@prisma+client*" 2>/dev/null | head -1)
+          if [ -n "$PNPM_STORE_PRISMA_CLIENT" ]; then
+            echo "✅ Prisma client found in pnpm store: $PNPM_STORE_PRISMA_CLIENT"
+            PRISMA_CLIENT_FOUND=true
+          fi
+
+          # Check for Prisma client in workspace node_modules
           WORKSPACE_PRISMA_CLIENT=$(find ../../node_modules -name "index.d.ts" -path "*/@prisma/client/*" 2>/dev/null | head -1)
           if [ -n "$WORKSPACE_PRISMA_CLIENT" ]; then
             echo "✅ Prisma client found in workspace node_modules: $WORKSPACE_PRISMA_CLIENT"
             PRISMA_CLIENT_FOUND=true
           fi
 
-          # Check for Prisma client in auth-service node_modules (pnpm store)
-          AUTH_SERVICE_PRISMA_CLIENT=$(find . -name "index.d.ts" -path "*/@prisma/client/*" 2>/dev/null | head -1)
+          # Check for Prisma client in auth-service node_modules
+          AUTH_SERVICE_PRISMA_CLIENT=$(find ./node_modules -name "index.d.ts" -path "*/@prisma/client/*" 2>/dev/null | head -1)
           if [ -n "$AUTH_SERVICE_PRISMA_CLIENT" ]; then
             echo "✅ Prisma client found in auth-service node_modules: $AUTH_SERVICE_PRISMA_CLIENT"
             PRISMA_CLIENT_FOUND=true
           fi
 
-          # Check for legacy npm .prisma directory
-          if [ -f "../../node_modules/.prisma/client/index.d.ts" ]; then
-            echo "✅ Legacy Prisma client found in workspace node_modules/.prisma"
+          # Check for generated Prisma client directory (post-generation location)
+          if [ -d "node_modules/.prisma" ]; then
+            echo "✅ Prisma generated client directory found in auth-service"
             PRISMA_CLIENT_FOUND=true
           fi
 
-          if [ -f "node_modules/.prisma/client/index.d.ts" ]; then
-            echo "✅ Legacy Prisma client found in auth-service node_modules/.prisma"
+          # Check for workspace generated Prisma client directory
+          if [ -d "../../node_modules/.prisma" ]; then
+            echo "✅ Prisma generated client directory found in workspace"
             PRISMA_CLIENT_FOUND=true
           fi
 
@@ -128,15 +136,16 @@ jobs:
             echo "Current directory: $(pwd)"
             echo "Auth service node_modules exists: $([ -d 'node_modules' ] && echo 'yes' || echo 'no')"
             echo "Workspace node_modules exists: $([ -d '../../node_modules' ] && echo 'yes' || echo 'no')"
+            echo "Pnpm store exists: $([ -d '../../../node_modules/.pnpm' ] && echo 'yes' || echo 'no')"
 
             # Show pnpm store contents for debugging
-            if [ -d '../../node_modules/.pnpm' ]; then
-              echo "Pnpm store contents:"
-              ls -la ../../node_modules/.pnpm/ | grep prisma || echo "No prisma packages found in pnpm store"
+            if [ -d '../../../node_modules/.pnpm' ]; then
+              echo "Pnpm store contents (prisma related):"
+              ls -la ../../../node_modules/.pnpm/ | grep -i prisma || echo "No prisma packages found in pnpm store"
             fi
 
             echo "Searching for any Prisma client files..."
-            find ../../node_modules ../../../node_modules ./node_modules -name "*.d.ts" -path "*/@prisma/*" 2>/dev/null | head -5 || echo "No Prisma client files found"
+            find ../../../node_modules ../../node_modules ./node_modules -name "*.d.ts" -path "*/@prisma/*" 2>/dev/null | head -5 || echo "No Prisma client files found"
 
             exit 1
           else
