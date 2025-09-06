@@ -56,6 +56,13 @@ jobs:
           echo "📦 Enabling Corepack and activating pnpm ${{ env.PNPM_VERSION }}"
           corepack enable
           corepack prepare pnpm@${{ env.PNPM_VERSION }} --activate
+
+          # Export PNPM_HOME and add to PATH for all subsequent steps
+          export PNPM_HOME="$HOME/.local/share/pnpm"
+          export PATH="$PNPM_HOME:$PATH"
+          echo "PNPM_HOME=$PNPM_HOME" >> $GITHUB_ENV
+          echo "PATH=$PATH" >> $GITHUB_ENV
+
           pnpm --version
           # Configure pnpm for enterprise environment
           pnpm config set registry https://registry.npmjs.org/
@@ -86,18 +93,6 @@ jobs:
           pnpm config set fetch-retry-maxtimeout 120000
           pnpm config set fetch-timeout 60000
 
-          # Set auth token if available and valid
-          if [ -n "${{ secrets.NPM_TOKEN }}" ] && [ "${{ secrets.NPM_TOKEN }}" != "XXXX[hidden]" ]; then
-            echo "🔐 Testing NPM token validity..."
-            if npm whoami --registry=https://registry.npmjs.org/ >/dev/null 2>&1; then
-              pnpm config set //registry.npmjs.org/:_authToken "${{ secrets.NPM_TOKEN }}"
-              echo "✅ NPM authentication configured and validated"
-            else
-              echo "⚠️  NPM_TOKEN is invalid or expired, using public registry"
-            fi
-          else
-            echo "⚠️  No valid NPM_TOKEN provided, using public registry"
-          fi
 
           # Install dependencies with retry logic
           echo "📦 Installing dependencies..."
@@ -115,6 +110,26 @@ jobs:
               sleep 5
             fi
           done
+
+      - name: 🔐 Check NPM Token
+        id: npm_token_check
+        run: |
+          # Use environment variable to check token without direct access
+          if [ -n "${NPM_TOKEN:-}" ] && [ "${NPM_TOKEN:-}" != "XXXX[hidden]" ]; then
+            echo "token_valid=true" >> $GITHUB_OUTPUT
+          else
+            echo "token_valid=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: 🔐 Setup NPM Authentication
+        if: steps.npm_token_check.outputs.token_valid == 'true'
+        run: |
+          echo "🔐 Testing NPM token validity..."
+          if npm whoami --registry=https://registry.npmjs.org/ >/dev/null 2>&1; then
+            pnpm config set //registry.npmjs.org/:_authToken "$NPM_TOKEN"
+            echo "✅ NPM authentication configured and validated"
+          else
+            echo "⚠️  NPM_TOKEN is invalid or expired, using public registry"
 
       # Note: CodeQL analysis is handled by GitHub's default setup
       # This avoids conflicts with manual CodeQL configuration
@@ -163,8 +178,6 @@ jobs:
           fi
 
           echo "✅ Semgrep scan completed (findings are tracked but not blocking)"
-        env:
-          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
         continue-on-error: true
 
       # Upload Semgrep Results
@@ -183,8 +196,6 @@ jobs:
       - name: 🔍 Snyk Security Scan
         uses: snyk/actions/node@master
         continue-on-error: true
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           args: --severity-threshold=high --file=package.json
 
@@ -243,6 +254,13 @@ jobs:
           echo "📦 Enabling Corepack and activating pnpm ${{ env.PNPM_VERSION }}"
           corepack enable
           corepack prepare pnpm@${{ env.PNPM_VERSION }} --activate
+
+          # Export PNPM_HOME and add to PATH for all subsequent steps
+          export PNPM_HOME="$HOME/.local/share/pnpm"
+          export PATH="$PNPM_HOME:$PATH"
+          echo "PNPM_HOME=$PNPM_HOME" >> $GITHUB_ENV
+          echo "PATH=$PATH" >> $GITHUB_ENV
+
           pnpm --version
           # Configure pnpm for enterprise environment
           pnpm config set registry https://registry.npmjs.org/
@@ -407,8 +425,8 @@ jobs:
       - name: 🔄 Docker Login (to avoid rate limits)
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME || 'githubactions' }}
-          password: ${{ secrets.DOCKERHUB_TOKEN || github.token }}
+          username: githubactions
+          password: ${{ github.token }}
         continue-on-error: true
 
       - name: 🏗️ Build Docker Image

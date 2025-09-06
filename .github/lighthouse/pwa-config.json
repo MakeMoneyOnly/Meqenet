@@ -2,9 +2,9 @@
   "ci": {
     "collect": {
       "numberOfRuns": 3,
-      "startServerCommand": "cd frontend/apps/website && npm start",
+      "startServerCommand": "cd frontend/apps/website && PORT=3001 npm start",
       "startServerReadyPattern": "ready - started server on",
-      "url": ["http://localhost:3000"]
+      "url": ["http://localhost:3001"]
     },
     "assert": {
       "assertions": {
