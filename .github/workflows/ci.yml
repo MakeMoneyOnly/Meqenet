@@ -42,16 +42,28 @@ jobs:
         with:
           fetch-depth: 0 # Full history for security analysis
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: "https://registry.npmjs.org"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+          run_install: false
+
+      - name: Verify pnpm installation
+        shell: bash
+        run: |
+          if ! command -v pnpm &> /dev/null; then
+            echo "❌ pnpm not found, installing..."
+            npm install -g pnpm@${{ env.PNPM_VERSION }}
+          else
+            echo "✅ pnpm found at $(which pnpm)"
+          fi
+          pnpm --version
 
       - name: Get pnpm store directory
         shell: bash
@@ -702,28 +714,25 @@ jobs:
             fi
           fi
 
-          # Verify Prisma client was generated (check pnpm and npm paths)
+          # Verify Prisma client was generated (check pnpm workspace paths)
           PRISMA_CLIENT_FOUND=false
-          # Check pnpm paths with glob
-          if [ -f "../../node_modules/.pnpm/@prisma+client*/node_modules/@prisma/client/index.d.ts" ] || [ -f "../../../node_modules/.pnpm/@prisma+client*/node_modules/@prisma/client/index.d.ts" ]; then
+          # Check auth-service local node_modules (correct location for pnpm workspaces)
+          if [ -f "node_modules/.pnpm/@prisma+client*/node_modules/@prisma/client/index.d.ts" ] || [ -f "node_modules/@prisma/client/index.d.ts" ]; then
             PRISMA_CLIENT_FOUND=true
+            echo "✅ Prisma client found in auth-service node_modules"
           fi
-          # Check npm paths
-          if [ -f "../../node_modules/.prisma/client/index.d.ts" ] || [ -f "../../../node_modules/.prisma/client/index.d.ts" ]; then
-            PRISMA_CLIENT_FOUND=true
-          fi
+
           if [ "$PRISMA_CLIENT_FOUND" = false ]; then
             echo "❌ Prisma client generation verification failed"
-            echo "Checking workspace root node_modules..."
-            ls -la ../../node_modules/.pnpm/@prisma+client*/node_modules/@prisma/client/ 2>/dev/null || echo "Prisma client directory not found in workspace root pnpm"
-            ls -la ../../node_modules/.prisma/ 2>/dev/null || echo "Prisma client directory not found in workspace root npm"
             echo "Checking auth-service node_modules..."
             ls -la node_modules/.pnpm/@prisma+client*/node_modules/@prisma/client/ 2>/dev/null || echo "Prisma client directory not found in auth-service pnpm"
-            ls -la node_modules/.prisma/ 2>/dev/null || echo "Prisma client directory not found in auth-service npm"
+            ls -la node_modules/@prisma/client/ 2>/dev/null || echo "Prisma client directory not found in auth-service direct"
+            echo "Checking workspace root for reference..."
+            ls -la ../../node_modules/.pnpm/@prisma+client*/node_modules/@prisma/client/ 2>/dev/null || echo "Prisma client directory not found in workspace root pnpm"
             exit 1
           else
             echo "✅ Prisma client generated successfully"
-            echo "Client location: $(find ../../node_modules ../../../node_modules -name "index.d.ts" -path "*/@prisma/client/*" 2>/dev/null | head -1)"
+            echo "Client location: $(find node_modules -name "index.d.ts" -path "*/@prisma/client/*" 2>/dev/null | head -1)"
           fi
 
       - name: 🧪 Run Unit Tests
@@ -1475,6 +1484,10 @@ jobs:
 
       - name: 🔧 Setup Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          api-level: 35
+          build-tools: 36.0.0
+          target: google_apis
 
       - name: 📦 Cache Gradle dependencies
         uses: actions/cache@v4
@@ -1870,6 +1883,10 @@ jobs:
 
       - name: 🔧 Setup Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          api-level: 35
+          build-tools: 36.0.0
+          target: google_apis
 
       - name: 📦 Cache Gradle dependencies
         uses: actions/cache@v4
