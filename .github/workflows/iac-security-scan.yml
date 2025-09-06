@@ -91,9 +91,9 @@ jobs:
           directory: infrastructure/
           framework: terraform
           output_format: sarif
-          output_file: results.sarif
-          quiet: true
+          output_file_path: results.sarif
           soft_fail: true
+          quiet: true
 
       - name: Debug Checkov output
         if: always()
@@ -105,16 +105,23 @@ jobs:
           echo "📁 Listing current directory contents..."
           ls -la
 
-          echo "🔍 Checking if SARIF file exists..."
+          echo "🔍 Checking if Checkov SARIF file exists..."
           if [ -f "results.sarif" ]; then
             echo "✅ Checkov SARIF file found!"
             ls -la results.sarif
             echo "📄 First few lines of SARIF file:"
             head -20 results.sarif
+            echo "📊 SARIF file size:"
+            wc -c results.sarif
           else
             echo "❌ Checkov SARIF file not found"
             echo "📋 Checking for any SARIF files..."
             find . -name "*.sarif" -type f 2>/dev/null || echo "No SARIF files found"
+            echo "This could indicate:"
+            echo "  - Checkov failed to run"
+            echo "  - No Terraform files found to scan"
+            echo "  - Configuration error in Checkov action"
+            echo "Check the debug output above for more details"
           fi
 
       - name: Upload SARIF file
@@ -135,8 +142,10 @@ jobs:
             # Check if SARIF file has content (not empty)
             if [ -s "results.sarif" ]; then
               echo "✅ SARIF file has content"
+              echo "📊 SARIF file size:"
+              wc -c results.sarif
             else
-              echo "⚠️ SARIF file exists but is empty (no findings)"
+              echo "⚠️ SARIF file exists but is empty (no findings or Checkov failed to scan)"
             fi
           else
             echo "❌ Checkov SARIF file not found"

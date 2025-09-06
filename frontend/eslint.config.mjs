@@ -34,6 +34,8 @@ export default [
       '**/babel.config.js',
       '**/.next',
       '**/.next/**/*',
+      '**/public/**/*',
+      'apps/website/public/**/*',
     ],
   },
   {

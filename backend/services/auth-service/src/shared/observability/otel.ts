@@ -1,7 +1,7 @@
 import { diag, DiagConsoleLogger, DiagLogLevel } from '@opentelemetry/api';
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
-import { NodeSDK, NodeSDKConfiguration } from '@opentelemetry/sdk-node';
-import { resourceFromAttributes } from '@opentelemetry/resources';
+import { NodeSDK } from '@opentelemetry/sdk-node';
+import { Resource } from '@opentelemetry/resources';
 import {
   ATTR_SERVICE_NAME,
   ATTR_SERVICE_VERSION,
@@ -42,8 +42,8 @@ export function initializeOpenTelemetry(config?: OpenTelemetryConfig): void {
       [ATTR_SERVICE_VERSION]: npmPackageVersion,
     };
 
-    // Create resource with attributes using OpenTelemetry v2.x API
-    const resource = resourceFromAttributes(resourceAttributes);
+    // Create resource with attributes using OpenTelemetry API
+    const resource = new Resource(resourceAttributes);
 
     // Configure trace exporter based on available endpoints
     let traceExporter: SpanExporter | undefined;
@@ -65,7 +65,7 @@ export function initializeOpenTelemetry(config?: OpenTelemetryConfig): void {
       return;
     }
 
-    const sdkConfig: Partial<NodeSDKConfiguration> = {
+    const sdkConfig = {
       instrumentations: [getNodeAutoInstrumentations()],
       resource,
       traceExporter,
