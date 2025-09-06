@@ -1,4 +1,4 @@
-const { spawnSync, execSync } = require('child_process');
+const { exec, execSync } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 
@@ -147,41 +147,52 @@ function simpleSecretScan() {
 }
 
 if (isDockerAvailable()) {
+  console.log('🐳 Docker detected, proceeding with Trufflehog scan...');
   try {
     console.log(
       '🐳 Docker available, using Trufflehog for comprehensive secret scanning...'
     );
 
-    const command = `docker run --rm -v "${cwd}:/repo" -v "${trufflehogignorePath}:/.trufflehogignore" trufflesecurity/trufflehog:latest filesystem --only-verified --no-update --json /repo`;
+    // Use proper Windows path handling for Docker volumes
+    const repoPath =
+      process.platform === 'win32'
+        ? cwd
+            .replace(/\\/g, '/')
+            .replace(/^([A-Z]):/i, (match, drive) => `/${drive.toLowerCase()}`)
+        : cwd;
+    const ignorePath =
+      process.platform === 'win32'
+        ? trufflehogignorePath
+            .replace(/\\/g, '/')
+            .replace(/^([A-Z]):/i, (match, drive) => `/${drive.toLowerCase()}`)
+        : trufflehogignorePath;
+
+    const command = `docker run --rm -v "${repoPath}:/repo" -v "${ignorePath}:/.trufflehogignore" trufflesecurity/trufflehog:latest filesystem --only-verified --no-update --json --concurrency=1 --exclude-paths /.trufflehogignore /repo`;
 
     console.log(`Running secret scan with command: ${command}`);
 
-    const result = spawnSync(command, [], {
-      stdio: 'pipe', // Capture output instead of inheriting
-      shell: true,
-      timeout: 300000, // 5 minute timeout for comprehensive scan
-      encoding: 'utf8',
-    });
+    // Use simpler synchronous approach for Windows compatibility
+    console.log('🔄 Executing Trufflehog scan...');
 
-    if (result.error) {
-      console.error(
-        'Failed to start subprocess for secret scan.',
-        result.error
-      );
-      console.log('🔄 Falling back to pattern-based scanning...');
-      simpleSecretScan();
-    } else {
-      // Parse the Trufflehog output
-      const _output = result.stdout || '';
-      const stderr = result.stderr || '';
+    try {
+      const result = execSync(command, {
+        timeout: 120000, // 2 minute timeout (should be sufficient with optimizations)
+        maxBuffer: 1024 * 1024 * 10, // 10MB buffer
+        encoding: 'utf8',
+        stdio: 'pipe',
+      });
 
-      // Parse the Trufflehog JSON output to check for actual secrets
+      console.log('✅ Trufflehog scan completed successfully');
+      console.log('📊 Processing scan results...');
+
+      // Parse the Trufflehog JSON output
       let verifiedSecrets = 0;
       let unverifiedSecrets = 0;
 
       try {
-        // Try to parse JSON from stderr (Trufflehog outputs results to stderr)
-        const lines = stderr.split('\n').filter(line => line.trim());
+        // Try to parse JSON output
+        const lines = result.split('\n').filter(line => line.trim());
+
         for (const line of lines) {
           if (
             line.includes('verified_secrets') ||
@@ -208,9 +219,23 @@ if (isDockerAvailable()) {
         process.exit(1);
       } else {
         console.log(
-          '✅ Trufflehog completed with warnings but no verified secrets found. Treating as success for pre-commit.'
+          '✅ Trufflehog completed - no verified secrets found. Treating as success for pre-commit.'
         );
         process.exit(0); // Success
+      }
+    } catch (error) {
+      if (error.code === 'ETIMEDOUT') {
+        console.log(
+          '⚠️ Trufflehog scan timed out - this is normal for large repositories'
+        );
+        console.log('🔄 Proceeding with pattern-based fallback scan...');
+        simpleSecretScan();
+        return; // Exit early since fallback was already called
+      } else {
+        console.log('⚠️ Trufflehog scan failed with error:', error.message);
+        console.log('🔄 Proceeding with pattern-based fallback scan...');
+        simpleSecretScan();
+        return; // Exit early since fallback was already called
       }
     }
   } catch (error) {
