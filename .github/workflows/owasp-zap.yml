@@ -234,7 +234,7 @@ jobs:
           EOF
 
       - name: Run ZAP Baseline against placeholder target
-        uses: zaproxy/action-baseline@v0.10.0
+        uses: zaproxy/action-baseline@v0.14.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           docker_name: "owasp/zap2docker-stable"
