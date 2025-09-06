@@ -1225,7 +1225,6 @@ stages:
                 Financial Software
                 Architect,
               ]
-
       - id: MEQ-AUTH-02
         name: "[Web] Build Authentication UI & Logic"
         platform: Website
@@ -1234,24 +1233,24 @@ stages:
             description:
               Create shared, reusable auth components (Input, Button, Form, Spinner)
               with Storybook.
-            status: To Do
+            status: Completed
             context:
               [docs/Stage 1 - Foundation/12-User_Experience_Guidelines.md]
             personas:
               [Senior Mobile Developer, UX Designer, Financial QA Specialist]
           - id: AUTH-FE-W-PG-01
             description: Build Login page with form validation (e.g., Zod) and API integration.
-            status: To Do
+            status: Completed
             context: [docs/Stage 2 -Development/17-Web_Platform_Features.md]
             personas: [Senior Mobile Developer, UX Designer, Product Manager]
           - id: AUTH-FE-W-PG-02
             description: Build Registration page with form validation and API integration.
-            status: To Do
+            status: Completed
             context: [docs/Stage 2 -Development/17-Web_Platform_Features.md]
             personas: [Senior Mobile Developer, UX Designer, Product Manager]
           - id: AUTH-FE-W-PG-03
             description: Build 'Request Password Reset' page.
-            status: To Do
+            status: Completed
             context: [docs/Stage 2 -Development/17-Web_Platform_Features.md]
             personas: [
                 Senior Mobile Developer,
