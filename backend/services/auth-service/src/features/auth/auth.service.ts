@@ -18,6 +18,10 @@ import { SecurityMonitoringService } from '../../shared/services/security-monito
 import { PasswordResetTokenService } from '../../shared/services/password-reset-token.service';
 import { EmailService } from '../../shared/services/email.service';
 import { AuditLoggingService } from '../../shared/services/audit-logging.service';
+import {
+  RiskAssessmentService,
+  RiskAssessment,
+} from '../../shared/services/risk-assessment.service';
 
 import { LoginUserDto } from './dto/login-user.dto';
 import { RegisterUserDto } from './dto/register-user.dto';
@@ -39,7 +43,8 @@ export class AuthService {
     private readonly securityMonitoring: SecurityMonitoringService,
     private readonly passwordResetTokenService: PasswordResetTokenService,
     private readonly emailService: EmailService,
-    private readonly auditLogging: AuditLoggingService
+    private readonly auditLogging: AuditLoggingService,
+    private readonly riskAssessmentService: RiskAssessmentService
   ) {}
 
   async register(
@@ -160,7 +165,11 @@ export class AuthService {
       location?: string;
       deviceFingerprint?: string;
     }
-  ): Promise<{ accessToken: string }> {
+  ): Promise<{
+    accessToken: string;
+    requiresMfa?: boolean;
+    riskAssessment?: RiskAssessment;
+  }> {
     const { email, password } = loginUserDto;
     const {
       ipAddress = 'unknown',
@@ -281,7 +290,24 @@ export class AuthService {
         data: { loginAttempts: 0, lockoutUntil: null },
       });
 
-      // Log successful login
+      // Perform risk assessment for adaptive authentication
+      const riskAssessment = await this.riskAssessmentService.assessRisk({
+        userId: user.id,
+        ipAddress,
+        userAgent,
+        location,
+        deviceFingerprint,
+        loginTime: new Date(),
+        previousLoginTime: user.lastLoginAt || undefined,
+        previousLoginLocation: user.lastLoginIp || undefined,
+        failedAttemptsCount: user.loginAttempts,
+        accountAge: user.createdAt
+          ? Date.now() - user.createdAt.getTime()
+          : undefined,
+        unusualPatterns: false,
+      });
+
+      // Log successful login with risk assessment
       await this.auditLogging.logLoginSuccess({
         userId: user.id,
         userEmail: user.email,
@@ -290,13 +316,35 @@ export class AuthService {
         userAgent,
         location,
         deviceFingerprint,
+        riskScore: riskAssessment.score,
+        riskLevel: riskAssessment.level,
+        riskFactors: riskAssessment.factors,
       });
 
       const payload = { sub: user.id, email: user.email };
       const accessToken = this.jwtService.sign(payload);
 
       this.securityMonitoring.recordLogin('success');
-      return { accessToken };
+
+      // Update last login information
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: {
+          lastLoginAt: new Date(),
+          lastLoginIp: ipAddress,
+        },
+      });
+
+      return {
+        accessToken,
+        requiresMfa: riskAssessment.requiresMfa,
+        riskAssessment: {
+          score: riskAssessment.score,
+          level: riskAssessment.level,
+          factors: riskAssessment.factors,
+          requiresStepUp: riskAssessment.requiresStepUp,
+        },
+      };
     } catch (error) {
       // Handle unexpected errors during login
       if (!(error instanceof UnauthorizedException)) {

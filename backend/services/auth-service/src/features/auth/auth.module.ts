@@ -8,11 +8,13 @@ import { SecretManagerService } from '../../shared/services/secret-manager.servi
 
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { OAuthModule } from '../oauth/oauth.module';
 
 @Module({
   imports: [
     PrismaModule,
     ConfigModule,
+    OAuthModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (

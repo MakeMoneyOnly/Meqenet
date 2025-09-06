@@ -43,110 +43,116 @@ enum RiskLevel {
 
 model User {
   /// @classification: Internal
-  id              String      @id @default(cuid())
+  id                 String          @id @default(cuid())
   /// @classification: PII
-  email           String      @unique
+  email              String          @unique
   /// @classification: Internal
-  emailVerified   Boolean     @default(false)
+  emailVerified      Boolean         @default(false)
   /// @classification: Internal
-  emailVerifiedAt DateTime?
+  emailVerifiedAt    DateTime?
   /// @classification: Sensitive
-  passwordHash    String
+  passwordHash       String
   /// @classification: PII
-  firstName       String?
+  firstName          String?
   /// @classification: PII
-  lastName        String?
+  lastName           String?
   /// @classification: PII
-  displayName     String?
+  displayName        String?
   /// @classification: PII
-  phone           String?
+  phone              String?
   /// @classification: Internal
-  phoneVerified   Boolean     @default(false)
+  phoneVerified      Boolean         @default(false)
   /// @classification: Internal
-  phoneVerifiedAt DateTime?
+  phoneVerifiedAt    DateTime?
   /// @classification: Internal
-  preferredLanguage String    @default("en")
+  preferredLanguage  String          @default("en")
   /// @classification: Internal
-  timezone        String      @default("Africa/Addis_Ababa")
+  timezone           String          @default("Africa/Addis_Ababa")
   /// @classification: Internal
-  kycStatus       KycStatus   @default(PENDING)
+  kycStatus          KycStatus       @default(PENDING)
   /// @classification: Internal
-  kycCompletedAt  DateTime?
+  kycCompletedAt     DateTime?
   /// @classification: Sensitive @encrypted
-  faydaIdHash     Bytes?     @unique
+  faydaIdHash        Bytes?          @unique
   /// @classification: Internal
-  kycDocuments    Json?
+  kycDocuments       Json?
   /// @classification: Internal
-  status          UserStatus  @default(ACTIVE)
+  status             UserStatus      @default(ACTIVE)
   /// @classification: Internal
-  role            UserRole    @default(CUSTOMER)
+  role               UserRole        @default(CUSTOMER)
   /// @classification: Internal
-  lastLoginAt     DateTime?
+  lastLoginAt        DateTime?
   /// @classification: Internal
-  lastLoginIp     String?
+  lastLoginIp        String?
   /// @classification: Internal
-  loginAttempts   Int         @default(0)
+  loginAttempts      Int             @default(0)
   /// @classification: Internal
-  lockoutUntil    DateTime?
+  lockoutUntil       DateTime?
   /// @classification: Internal
-  twoFactorEnabled Boolean    @default(false)
+  twoFactorEnabled   Boolean         @default(false)
   /// @classification: Sensitive
-  twoFactorSecret String?
+  twoFactorSecret    String?
   /// @classification: Internal
-  riskLevel       RiskLevel   @default(LOW)
+  riskLevel          RiskLevel       @default(LOW)
   /// @classification: Internal
-  riskScore       Float?
+  riskScore          Float?
   /// @classification: Internal
-  riskAssessedAt  DateTime?
+  riskAssessedAt     DateTime?
   /// @classification: Internal
-  dataClassification String   @default("CONFIDENTIAL")
+  dataClassification String          @default("CONFIDENTIAL")
   /// @classification: Internal
-  retentionPolicy String      @default("ACTIVE_USER")
+  retentionPolicy    String          @default("ACTIVE_USER")
   /// @classification: Internal
-  gdprConsent     Boolean     @default(false)
+  gdprConsent        Boolean         @default(false)
   /// @classification: Internal
-  marketingConsent Boolean    @default(false)
+  marketingConsent   Boolean         @default(false)
   /// @classification: Internal
-  createdAt       DateTime    @default(now())
+  createdAt          DateTime        @default(now())
   /// @classification: Internal
-  updatedAt       DateTime    @updatedAt
+  updatedAt          DateTime        @updatedAt
   /// @classification: Internal
-  deletedAt       DateTime?
-  credential      Credential?
+  deletedAt          DateTime?
+  credential         Credential?
   /// @classification: Internal
-  credentialId    String?     @unique
-  roles           Role[]      @relation
-  profile         Profile?
-  sessions        UserSession[]
-  passwordResets  PasswordReset[]
+  credentialId       String?         @unique
+  roles              Role[]          @relation
+  profile            Profile?
+  sessions           UserSession[]
+  passwordResets     PasswordReset[]
+
+  // OAuth 2.0 Relations
+  oauthClients       OAuthClient[]
+  oauthAuthCodes     OAuthAuthorizationCode[]
+  oauthAccessTokens  OAuthAccessToken[]
+  oauthRefreshTokens OAuthRefreshToken[]
 }
 
 model Credential {
   /// @classification: Internal
-  id           String @id @default(cuid())
+  id             String @id @default(cuid())
   /// @classification: Sensitive
   hashedPassword String
-  user         User   @relation(fields: [userId], references: [id])
+  user           User   @relation(fields: [userId], references: [id])
   /// @classification: Internal
-  userId       String @unique
+  userId         String @unique
 }
 
 model Profile {
   /// @classification: Internal
-  id        String  @id @default(cuid())
+  id      String  @id @default(cuid())
   /// @classification: PII
-  bio       String?
+  bio     String?
   /// @classification: Confidential
-  faydaId   String? @unique // For eKYC
+  faydaId String? @unique // For eKYC
   /// @classification: Internal
-  userId    String  @unique
-  user      User    @relation(fields: [userId], references: [id])
+  userId  String  @unique
+  user    User    @relation(fields: [userId], references: [id])
 }
 
 model Role {
-  id     String @id @default(cuid())
-  name   String @unique
-  users  User[] @relation
+  id    String @id @default(cuid())
+  name  String @unique
+  users User[] @relation
 }
 
 model UserSession {
@@ -185,98 +191,224 @@ model UserSession {
 
 model PasswordReset {
   /// @classification: Internal
-  id         String   @id @default(cuid())
+  id          String    @id @default(cuid())
   /// @classification: Internal
-  userId     String
+  userId      String
   /// @classification: Sensitive
-  token      String   @unique
+  token       String    @unique
   /// @classification: Sensitive
   hashedToken String
   /// @classification: Internal
-  ipAddress  String
+  ipAddress   String
   /// @classification: Internal
-  userAgent  String?
+  userAgent   String?
   /// @classification: Internal
-  isUsed     Boolean  @default(false)
+  isUsed      Boolean   @default(false)
   /// @classification: Internal
-  usedAt     DateTime?
+  usedAt      DateTime?
   /// @classification: Internal
-  expiresAt  DateTime
+  expiresAt   DateTime
   /// @classification: Internal
-  createdAt  DateTime @default(now())
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model OutboxMessage {
   /// @classification: Internal
-  id             String   @id @default(cuid())
+  id            String    @id @default(cuid())
   /// @classification: Internal
-  messageId      String   @unique
+  messageId     String    @unique
   /// @classification: Internal
-  aggregateType  String
+  aggregateType String
   /// @classification: Internal
-  aggregateId    String
+  aggregateId   String
   /// @classification: Internal
-  eventType      String
+  eventType     String
   /// @classification: Confidential
-  payload        Json
+  payload       Json
   /// @classification: Internal
-  metadata       Json?
+  metadata      Json?
   /// @classification: Internal
-  status         String   @default("PENDING")
+  status        String    @default("PENDING")
   /// @classification: Internal
-  retryCount     Int      @default(0)
+  retryCount    Int       @default(0)
   /// @classification: Internal
-  maxRetries     Int      @default(3)
+  maxRetries    Int       @default(3)
   /// @classification: Internal
-  errorMessage   String?
+  errorMessage  String?
   /// @classification: Internal
-  nextRetryAt    DateTime?
+  nextRetryAt   DateTime?
   /// @classification: Internal
-  createdAt      DateTime @default(now())
+  createdAt     DateTime  @default(now())
   /// @classification: Internal
-  processedAt    DateTime?
+  processedAt   DateTime?
   /// @classification: Internal
-  dlqAt          DateTime?
+  dlqAt         DateTime?
   /// @classification: Internal
-  dlqReason      String?
+  dlqReason     String?
 }
 
 model AuditLog {
   /// @classification: Internal
+  id                String   @id @default(cuid())
+  /// @classification: Internal
+  eventType         String
+  /// @classification: Internal
+  entityType        String
+  /// @classification: Internal
+  entityId          String?
+  /// @classification: Internal
+  userId            String?
+  /// @classification: PII
+  userEmail         String?
+  /// @classification: Internal
+  userRole          String?
+  /// @classification: PII
+  ipAddress         String
+  /// @classification: Internal
+  userAgent         String?
+  /// @classification: Internal
+  sessionId         String?
+  /// @classification: Internal
+  location          String?
+  /// @classification: Internal
+  deviceFingerprint String?
+  /// @classification: Confidential
+  eventData         Json?
+  /// @classification: Confidential
+  previousValues    Json?
+  /// @classification: Confidential
+  newValues         Json?
+  /// @classification: Internal
+  riskScore         Float?
+  /// @classification: Internal
+  complianceFlags   String[]
+  /// @classification: Internal
+  createdAt         DateTime @default(now())
+}
+
+// OAuth 2.0 Models for Third-Party Integrations
+model OAuthClient {
+  /// @classification: Internal
+  id                      String    @id @default(cuid())
+  /// @classification: Sensitive
+  clientId                String    @unique
+  /// @classification: Sensitive
+  clientSecret            String
+  /// @classification: Internal
+  clientName              String
+  /// @classification: Internal
+  clientDescription       String?
+  /// @classification: Internal
+  redirectUris            String[] // Array of allowed redirect URIs
+  /// @classification: Internal
+  grantTypes              String[] // authorization_code, refresh_token, etc.
+  /// @classification: Internal
+  responseTypes           String[] // code, token, id_token
+  /// @classification: Internal
+  scopes                  String[] // openid, profile, email, etc.
+  /// @classification: Internal
+  tokenEndpointAuthMethod String    @default("client_secret_basic")
+  /// @classification: Internal
+  ownerId                 String // User who owns this client
+  /// @classification: Internal
+  status                  String    @default("active") // active, inactive, suspended
+  /// @classification: Internal
+  createdAt               DateTime  @default(now())
+  /// @classification: Internal
+  updatedAt               DateTime  @updatedAt
+  /// @classification: Internal
+  deletedAt               DateTime?
+
+  // Relations
+  authorizationCodes OAuthAuthorizationCode[]
+  accessTokens       OAuthAccessToken[]
+  refreshTokens      OAuthRefreshToken[]
+  owner              User                     @relation(fields: [ownerId], references: [id])
+}
+
+model OAuthAuthorizationCode {
+  /// @classification: Internal
   id                  String   @id @default(cuid())
+  /// @classification: Sensitive
+  code                String   @unique
+  /// @classification: Sensitive
+  codeChallenge       String? // PKCE code challenge
   /// @classification: Internal
-  eventType           String
+  codeChallengeMethod String? // S256, plain
   /// @classification: Internal
-  entityType          String
+  clientId            String
   /// @classification: Internal
-  entityId            String?
+  userId              String
   /// @classification: Internal
-  userId              String?
-  /// @classification: PII
-  userEmail           String?
+  redirectUri         String
   /// @classification: Internal
-  userRole            String?
-  /// @classification: PII
-  ipAddress           String
+  scopes              String[]
   /// @classification: Internal
-  userAgent           String?
+  expiresAt           DateTime
   /// @classification: Internal
-  sessionId           String?
-  /// @classification: Internal
-  location            String?
-  /// @classification: Internal
-  deviceFingerprint   String?
-  /// @classification: Confidential
-  eventData           Json?
-  /// @classification: Confidential
-  previousValues      Json?
-  /// @classification: Confidential
-  newValues           Json?
-  /// @classification: Internal
-  riskScore           Float?
-  /// @classification: Internal
-  complianceFlags     String[]
+  used                Boolean  @default(false)
   /// @classification: Internal
   createdAt           DateTime @default(now())
+
+  // Relations
+  client OAuthClient @relation(fields: [clientId], references: [id])
+  user   User        @relation(fields: [userId], references: [id])
+}
+
+model OAuthAccessToken {
+  /// @classification: Internal
+  id         String    @id @default(cuid())
+  /// @classification: Sensitive
+  token      String    @unique
+  /// @classification: Internal
+  tokenType  String    @default("Bearer")
+  /// @classification: Internal
+  clientId   String
+  /// @classification: Internal
+  userId     String
+  /// @classification: Internal
+  scopes     String[]
+  /// @classification: Internal
+  expiresAt  DateTime
+  /// @classification: Internal
+  revoked    Boolean   @default(false)
+  /// @classification: Internal
+  createdAt  DateTime  @default(now())
+  /// @classification: Internal
+  lastUsedAt DateTime?
+
+  // Relations
+  client       OAuthClient        @relation(fields: [clientId], references: [id])
+  user         User               @relation(fields: [userId], references: [id])
+  refreshToken OAuthRefreshToken?
+}
+
+model OAuthRefreshToken {
+  /// @classification: Internal
+  id         String    @id @default(cuid())
+  /// @classification: Sensitive
+  token      String    @unique
+  /// @classification: Internal
+  clientId   String
+  /// @classification: Internal
+  userId     String
+  /// @classification: Internal
+  scopes     String[]
+  /// @classification: Internal
+  expiresAt  DateTime
+  /// @classification: Internal
+  revoked    Boolean   @default(false)
+  /// @classification: Internal
+  createdAt  DateTime  @default(now())
+  /// @classification: Internal
+  lastUsedAt DateTime?
+
+  // Relations
+  client OAuthClient @relation(fields: [clientId], references: [id])
+  user   User        @relation(fields: [userId], references: [id])
+
+  // One-to-one relation with access token
+  accessTokenId String?           @unique
+  accessToken   OAuthAccessToken? @relation(fields: [accessTokenId], references: [id])
 }

@@ -40,7 +40,8 @@ export default {
     // Custom rule for Jira ticket pattern
     'jira-ticket-required': [2, 'always'],
     // Prevent bypassing enterprise security checks
-    'no-verify-flag': [2, 'never']
+        'no-verify-flag': [2, 'never'],
+        'git-reset-hard': [2, 'never']
   },
   parserPreset: {
     parserOpts: {
@@ -81,6 +82,43 @@ export default {
               false,
               `Invalid ticket format: ${invalidRefs.map(r => r.raw).join(', ')}\n` +
               'Use formats: JIRA-123, TICKET-456, ISSUE-789, MEQ-101, BNPL-202, PAY-303, AUTH-404, SEC-505'
+            ];
+          }
+
+          return [true];
+        },
+        'git-reset-hard': (parsed) => {
+          const { subject, body } = parsed;
+          const fullMessage = `${subject} ${body || ''}`.toLowerCase();
+
+          // Check for various forms of git reset --hard usage
+          const resetHardPatterns = [
+            /git reset --hard/i,
+            /git reset.*hard/i,
+            /reset.*hard/i,
+            /discard.*changes/i,
+            /destroy.*work/i,
+            /delete.*files/i
+          ];
+
+          const foundPattern = resetHardPatterns.find(pattern => pattern.test(fullMessage));
+
+          if (foundPattern) {
+            return [
+              false,
+              'COMMIT REJECTED: Detected destructive git operation!\n\n' +
+              '🚨 DESTRUCTIVE OPERATION: git reset --hard or similar destructive commands are prohibited\n' +
+              '💀 This permanently destroys work and violates FinTech development standards\n\n' +
+              '❌ FORBIDDEN PATTERNS DETECTED:\n' +
+              '   • git reset --hard\n' +
+              '   • reset hard\n' +
+              '   • discard changes\n' +
+              '   • destroy work\n' +
+              '   • delete files\n\n' +
+              '✅ REQUIRED: Use safe git operations that preserve work\n' +
+              '🔄 Safe alternatives: git reset --soft, git stash, git branch\n' +
+              '🏛️ Contact team lead for destructive operations: dev@meqenet.et\n\n' +
+              '🇪🇹 Ethiopian FinTech Development Standards Enforced'
             ];
           }
 

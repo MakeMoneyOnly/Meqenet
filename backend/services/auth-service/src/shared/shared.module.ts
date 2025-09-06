@@ -21,6 +21,9 @@ import { PasswordResetTokenService } from './services/password-reset-token.servi
 import { EmailService } from './services/email.service';
 import { SecurityConfigService } from './services/security-config.service';
 import { AuditLoggingService } from './services/audit-logging.service';
+import { RiskAssessmentService } from './services/risk-assessment.service';
+import { DatabaseEncryptionMiddleware } from './services/database-encryption.middleware';
+import { OAuth2Service } from './services/oauth2.service';
 import { FaydaEncryptionUtil } from './utils/fayda-encryption.util';
 
 /**
@@ -58,6 +61,9 @@ import { FaydaEncryptionUtil } from './utils/fayda-encryption.util';
     PasswordResetTokenService,
     EmailService,
     AuditLoggingService,
+    RiskAssessmentService,
+    DatabaseEncryptionMiddleware,
+    OAuth2Service,
   ],
   exports: [
     SecurityConfigService,
@@ -73,6 +79,9 @@ import { FaydaEncryptionUtil } from './utils/fayda-encryption.util';
     PasswordResetTokenService,
     EmailService,
     AuditLoggingService,
+    RiskAssessmentService,
+    DatabaseEncryptionMiddleware,
+    OAuth2Service,
   ],
 })
 export class SharedModule {}
