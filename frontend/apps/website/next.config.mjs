@@ -162,9 +162,18 @@ const nextConfig = {
     const __dirname = dirname(fileURLToPath(import.meta.url));
     config.resolve.alias = {
       ...config.resolve.alias,
-      '@frontend/shared': resolve(__dirname, '../../../libs/shared/src'),
-      '@frontend/shared/i18n': resolve(__dirname, '../../../libs/shared/src/i18n'),
-      '@frontend/shared-ui': resolve(__dirname, '../../../libs/shared-ui/src'),
+      '@frontend/shared': new URL(
+        '../../../libs/shared/src',
+        import.meta.url,
+      ).pathname.replace(/^\/([A-Z]:)/, '$1'),
+      '@frontend/shared/i18n': new URL(
+        '../../../libs/shared/src/i18n',
+        import.meta.url,
+      ).pathname.replace(/^\/([A-Z]:)/, '$1'),
+      '@frontend/shared-ui': new URL(
+        '../../../libs/shared-ui/src',
+        import.meta.url,
+      ).pathname.replace(/^\/([A-Z]:)/, '$1'),
     };
 
     // Ensure TypeScript extensions are resolved
