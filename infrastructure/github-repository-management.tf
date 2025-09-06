@@ -2,16 +2,6 @@
 # Infrastructure as Code for branch protection and repository governance
 # Ensures NBE compliance and audit trail requirements
 
-terraform {
-  required_providers {
-    github = {
-      source  = "integrations/github"
-      version = "~> 5.0"
-    }
-  }
-  required_version = ">= 1.0"
-}
-
 # Configure GitHub Provider
 provider "github" {
   token = var.github_token
