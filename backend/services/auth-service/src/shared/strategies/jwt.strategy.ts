@@ -3,6 +3,9 @@ import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 
+// JWT security constants
+const MIN_JWT_SECRET_LENGTH = 32;
+
 /**
  * JwtStrategy
  *
@@ -24,7 +27,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     // Validate JWT secret strength
-    if (jwtSecret.length < 32) {
+    if (jwtSecret.length < MIN_JWT_SECRET_LENGTH) {
       throw new Error(
         'JWT_SECRET must be at least 32 characters long for security. ' +
           'Use a cryptographically secure random string.'

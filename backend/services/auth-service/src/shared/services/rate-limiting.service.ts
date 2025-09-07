@@ -1,6 +1,23 @@
 import { Injectable, Logger, Inject } from '@nestjs/common';
 import { Redis } from 'ioredis';
 
+// Time conversion constants
+const SECONDS_PER_MINUTE = 60;
+const MILLISECONDS_PER_SECOND = 1000;
+
+// Rate limiting constants
+const LOGIN_WINDOW_MINUTES = 15;
+const LOGIN_MAX_REQUESTS = 5;
+const LOGIN_BLOCK_MINUTES = 15;
+
+const PASSWORD_RESET_WINDOW_HOURS = 1;
+const PASSWORD_RESET_MAX_REQUESTS = 3;
+const PASSWORD_RESET_BLOCK_HOURS = 1;
+
+const GENERAL_WINDOW_MINUTES = 1;
+const GENERAL_MAX_REQUESTS = 10;
+const GENERAL_BLOCK_MINUTES = 5;
+
 interface RateLimitConfig {
   windowMs: number; // Time window in milliseconds
   maxRequests: number; // Maximum requests per window
@@ -21,19 +38,31 @@ export class RateLimitingService {
   // Default rate limit configurations for different endpoints
   private readonly configs = {
     login: {
-      windowMs: 15 * 60 * 1000, // 15 minutes
-      maxRequests: 5, // 5 attempts per 15 minutes
-      blockDurationMs: 15 * 60 * 1000, // 15 minute block
+      windowMs:
+        LOGIN_WINDOW_MINUTES * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND,
+      maxRequests: LOGIN_MAX_REQUESTS,
+      blockDurationMs:
+        LOGIN_BLOCK_MINUTES * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND,
     },
     passwordReset: {
-      windowMs: 60 * 60 * 1000, // 1 hour
-      maxRequests: 3, // 3 requests per hour
-      blockDurationMs: 60 * 60 * 1000, // 1 hour block
+      windowMs:
+        PASSWORD_RESET_WINDOW_HOURS *
+        SECONDS_PER_MINUTE *
+        SECONDS_PER_MINUTE *
+        MILLISECONDS_PER_SECOND,
+      maxRequests: PASSWORD_RESET_MAX_REQUESTS,
+      blockDurationMs:
+        PASSWORD_RESET_BLOCK_HOURS *
+        SECONDS_PER_MINUTE *
+        SECONDS_PER_MINUTE *
+        MILLISECONDS_PER_SECOND,
     },
     general: {
-      windowMs: 60 * 1000, // 1 minute
-      maxRequests: 10, // 10 requests per minute
-      blockDurationMs: 5 * 60 * 1000, // 5 minute block
+      windowMs:
+        GENERAL_WINDOW_MINUTES * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND,
+      maxRequests: GENERAL_MAX_REQUESTS,
+      blockDurationMs:
+        GENERAL_BLOCK_MINUTES * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND,
     },
   };
 
@@ -191,14 +220,28 @@ export class RateLimitingService {
         blockedUntil && parseInt(blockedUntil) > Date.now()
       );
 
-      return {
+      const result: {
+        currentCount: number;
+        isBlocked: boolean;
+        blockedUntil?: Date;
+        resetTime?: Date;
+      } = {
         currentCount: parseInt(currentCount || '0'),
         isBlocked,
-        blockedUntil: isBlocked ? new Date(parseInt(blockedUntil!)) : undefined,
-        resetTime: currentCount
-          ? new Date(Date.now() + (await this.redis.pttl(windowKey)))
-          : undefined,
       };
+
+      if (isBlocked && blockedUntil) {
+        result.blockedUntil = new Date(parseInt(blockedUntil));
+      }
+
+      if (currentCount) {
+        const ttl = await this.redis.pttl(windowKey);
+        if (ttl > 0) {
+          result.resetTime = new Date(Date.now() + ttl);
+        }
+      }
+
+      return result;
     } catch (error) {
       this.logger.error(
         `Failed to get rate limit status for key ${key}:`,

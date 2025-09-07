@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import React from 'react';
 import { View, StyleSheet, Text } from 'react-native';
 import { Formik } from 'formik';
@@ -18,7 +19,47 @@ const LoginScreen = () => {
   const handleLogin = async (values, { setSubmitting, setStatus }) => {
     try {
       const response = await apiClient.post('/auth/login', values);
-      login(response.user, response.token);
+      const responseData = response.data; // API response is wrapped in 'data' property
+
+      // Decode JWT token to get user information
+      const token = responseData.accessToken;
+      if (!token) {
+        throw new Error('No access token received');
+      }
+
+      // Simple JWT decode (for mobile, we could use a library like jwt-decode)
+      const decodeJWT = (token: string) => {
+        try {
+          const base64Url = token.split('.')[1];
+          const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+          const jsonPayload = decodeURIComponent(
+            atob(base64)
+              .split('')
+              .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+              .join(''),
+          );
+          return JSON.parse(jsonPayload);
+        } catch (error) {
+          console.error('Failed to decode JWT token:', error);
+          return null;
+        }
+      };
+
+      const decodedToken = decodeJWT(token);
+      if (!decodedToken) {
+        throw new Error('Failed to decode authentication token');
+      }
+
+      // Create user object from decoded token
+      const user = {
+        id: decodedToken.sub,
+        name: decodedToken.email, // Using email as name until we have display name
+        email: decodedToken.email,
+        roles: ['CUSTOMER'], // Default role, should be fetched from backend
+      };
+
+      // Login with user data and token
+      await login(user, token, responseData.refreshToken);
     } catch (error) {
       setStatus(error.message);
     } finally {

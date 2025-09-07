@@ -11,7 +11,7 @@ import { Input } from '../components/Input';
 import { Spinner } from '../components/Spinner';
 
 import { registerSchema, RegisterFormData } from '../lib/auth/schemas';
-import { authApi } from '../lib/auth/auth-api';
+import { authApi, decodeJwtToken } from '../lib/auth/auth-api';
 import { useAuthStore } from '../../../../libs/state-management/src/lib/auth-store';
 
 const RegisterPage: React.FC = () => {
@@ -34,7 +34,24 @@ const RegisterPage: React.FC = () => {
 
     try {
       const response = await authApi.register(data);
-      login(response.user);
+
+      // Decode JWT token to get user information
+      const decodedToken = decodeJwtToken(response.accessToken);
+      if (!decodedToken) {
+        throw new Error('Failed to decode authentication token');
+      }
+
+      // Create user object from decoded token
+      // Note: Role information is not included in JWT for security.
+      // In production, consider fetching user details from a separate endpoint
+      const user = {
+        id: decodedToken.sub,
+        name: decodedToken.email, // Using email as name until we have display name
+        email: decodedToken.email,
+        roles: ['CUSTOMER'], // Default role, should be fetched from backend
+      };
+
+      login(user);
       // Redirect to dashboard or verification page
       router.push('/dashboard');
     } catch (err: unknown) {
