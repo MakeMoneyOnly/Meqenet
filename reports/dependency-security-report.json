@@ -1,6 +1,6 @@
 {
   "title": "Meqenet Dependency Security Report",
-  "generatedAt": "2025-09-06T21:27:36.339Z",
+  "generatedAt": "2025-09-07T07:22:31.045Z",
   "sections": [
     {
       "name": "NPM Audit",
@@ -45,10 +45,10 @@
     },
     {
       "name": "License Compliance Check",
-      "totalPackages": 136,
+      "totalPackages": 138,
       "licenseBreakdown": {
         "Apache-2.0": 24,
-        "MIT": 106,
+        "MIT": 108,
         "BSD-2-Clause": 2,
         "ISC": 3,
         "0BSD": 1
