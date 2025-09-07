@@ -31,6 +31,13 @@ export default [
         window: 'readonly',
         document: 'readonly',
         navigator: 'readonly',
+        // DOM element types
+        HTMLElement: 'readonly',
+        HTMLButtonElement: 'readonly',
+        HTMLInputElement: 'readonly',
+        HTMLFormElement: 'readonly',
+        HTMLDivElement: 'readonly',
+        HTMLAnchorElement: 'readonly',
         // Node.js globals
         process: 'readonly',
         console: 'readonly',

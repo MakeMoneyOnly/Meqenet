@@ -11,6 +11,14 @@ import { PasswordResetTokenService } from '../../shared/services/password-reset-
 import { EmailService } from '../../shared/services/email.service';
 import { SecurityMonitoringService } from '../../shared/services/security-monitoring.service';
 import { AuditLoggingService } from '../../shared/services/audit-logging.service';
+import { RiskAssessmentService } from '../../shared/services/risk-assessment.service';
+
+// Mock RiskAssessmentService
+const mockRiskAssessmentService = {
+  assessRisk: vi.fn(),
+  getRiskStats: vi.fn(),
+};
+
 // DTO imports not used in this test suite
 // import { PasswordResetRequestDto } from './dto/password-reset-request.dto';
 // import { PasswordResetConfirmDto } from './dto/password-reset-confirm.dto';
@@ -40,6 +48,9 @@ interface TestableAuthService extends AuthService {
   >;
   auditLogging: jest.Mocked<
     import('../../shared/services/audit-logging.service').AuditLoggingService
+  >;
+  riskAssessmentService: jest.Mocked<
+    import('../../shared/services/risk-assessment.service').RiskAssessmentService
   >;
 }
 
@@ -115,6 +126,16 @@ describe('AuthService', () => {
     // Reset all mocks to clear call history
     vi.clearAllMocks();
 
+    // Setup RiskAssessmentService mock
+    mockRiskAssessmentService.assessRisk.mockResolvedValue({
+      score: 10,
+      level: 'LOW',
+      factors: ['New device detected'],
+      requiresMfa: false,
+      requiresStepUp: false,
+      recommendedActions: ['Allow login'],
+    });
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
@@ -154,6 +175,10 @@ describe('AuthService', () => {
           provide: AuditLoggingService,
           useValue: mockAuditLoggingService,
         },
+        {
+          provide: RiskAssessmentService,
+          useValue: mockRiskAssessmentService,
+        },
       ],
     }).compile();
 
@@ -169,6 +194,8 @@ describe('AuthService', () => {
     (service as TestableAuthService).securityMonitoring =
       mockSecurityMonitoringService;
     (service as TestableAuthService).auditLogging = mockAuditLoggingService;
+    (service as TestableAuthService).riskAssessmentService =
+      mockRiskAssessmentService;
   });
 
   it('should be defined', () => {
