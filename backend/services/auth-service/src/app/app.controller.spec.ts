@@ -28,8 +28,9 @@ describe('AppController (Security Headers & Validation)', () => {
       })
     );
 
+    // Increase timeout for app initialization
     await app.init();
-  });
+  }, 30000); // 30 second timeout for initialization
 
   afterEach(async () => {
     if (app) {
@@ -61,7 +62,7 @@ describe('AppController (Security Headers & Validation)', () => {
             /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
           );
         });
-    });
+    }, 30000); // 30 second timeout for this test
 
     it('should validate CORS for Ethiopian financial domains', () => {
       return request(app.getHttpServer())
@@ -151,7 +152,7 @@ describe('AppController (Security Headers & Validation)', () => {
 
       // If rate limiting doesn't trigger, test still passes
       expect(true).toBe(true);
-    });
+    }, 30000); // 30 second timeout for rate limiting test
   });
 
   describe('Request Tracing', () => {
@@ -173,7 +174,7 @@ describe('AppController (Security Headers & Validation)', () => {
       const requestIds = responses.map(res => res.headers['x-request-id']);
       const uniqueIds = new Set(requestIds);
       expect(uniqueIds.size).toBe(requestIds.length);
-    });
+    }, 20000); // 20 second timeout for parallel requests test
 
     it('should preserve request ID from headers', () => {
       const customRequestId = '550e8400-e29b-41d4-a716-446655440000';

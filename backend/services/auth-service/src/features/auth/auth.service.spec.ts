@@ -12,6 +12,7 @@ import { EmailService } from '../../shared/services/email.service';
 import { SecurityMonitoringService } from '../../shared/services/security-monitoring.service';
 import { AuditLoggingService } from '../../shared/services/audit-logging.service';
 import { RiskAssessmentService } from '../../shared/services/risk-assessment.service';
+import { RateLimitingService } from '../../shared/services/rate-limiting.service';
 
 // Mock RiskAssessmentService
 const mockRiskAssessmentService = {
@@ -51,6 +52,9 @@ interface TestableAuthService extends AuthService {
   >;
   riskAssessmentService: jest.Mocked<
     import('../../shared/services/risk-assessment.service').RiskAssessmentService
+  >;
+  rateLimiting: jest.Mocked<
+    import('../../shared/services/rate-limiting.service').RateLimitingService
   >;
 }
 
@@ -122,6 +126,15 @@ describe('AuthService', () => {
     logAccountLockout: vi.fn(),
   };
 
+  const mockRateLimitingService = {
+    checkLoginRateLimit: vi.fn(),
+    checkPasswordResetRateLimit: vi.fn(),
+    checkGeneralRateLimit: vi.fn(),
+    resetRateLimit: vi.fn(),
+    getRateLimitStatus: vi.fn(),
+    cleanup: vi.fn(),
+  };
+
   beforeEach(async () => {
     // Reset all mocks to clear call history
     vi.clearAllMocks();
@@ -134,6 +147,18 @@ describe('AuthService', () => {
       requiresMfa: false,
       requiresStepUp: false,
       recommendedActions: ['Allow login'],
+    });
+
+    // Setup RateLimitingService mock - default to allowing requests
+    mockRateLimitingService.checkLoginRateLimit.mockResolvedValue({
+      allowed: true,
+      remainingRequests: 4,
+      resetTime: new Date(Date.now() + 15 * 60 * 1000),
+    });
+    mockRateLimitingService.checkPasswordResetRateLimit.mockResolvedValue({
+      allowed: true,
+      remainingRequests: 2,
+      resetTime: new Date(Date.now() + 60 * 60 * 1000),
     });
 
     const module: TestingModule = await Test.createTestingModule({
@@ -179,6 +204,10 @@ describe('AuthService', () => {
           provide: RiskAssessmentService,
           useValue: mockRiskAssessmentService,
         },
+        {
+          provide: RateLimitingService,
+          useValue: mockRateLimitingService,
+        },
       ],
     }).compile();
 
@@ -196,6 +225,7 @@ describe('AuthService', () => {
     (service as TestableAuthService).auditLogging = mockAuditLoggingService;
     (service as TestableAuthService).riskAssessmentService =
       mockRiskAssessmentService;
+    (service as TestableAuthService).rateLimiting = mockRateLimitingService;
   });
 
   it('should be defined', () => {
