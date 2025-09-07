@@ -1,7 +1,7 @@
 import React, { FormHTMLAttributes, forwardRef } from 'react';
 
 export interface FormProps extends FormHTMLAttributes<HTMLFormElement> {
-  onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
+  onSubmit: () => void;
   children: React.ReactNode;
 }
 
@@ -9,7 +9,7 @@ export const Form = forwardRef<HTMLFormElement, FormProps>(
   ({ className, onSubmit, children, ...props }, ref) => {
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault();
-      onSubmit(event);
+      onSubmit();
     };
 
     return (
