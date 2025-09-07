@@ -93,6 +93,59 @@ jobs:
       - name: Generate Prisma Client
         run: pnpm prisma generate --schema=./backend/services/auth-service/prisma/schema.prisma || echo "⚠️  Prisma generate failed, continuing with existing client..."
 
+      - name: 📝 Validate Commit Messages
+        run: |
+          echo "🔍 Validating commit messages for enterprise compliance..."
+
+          # Determine commit range
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            BASE_SHA="${{ github.event.pull_request.base.sha }}"
+            HEAD_SHA="${{ github.sha }}"
+            echo "📋 Validating PR commits: $BASE_SHA..$HEAD_SHA"
+          else
+            # For push events
+            if [ "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ]; then
+              BASE_SHA="${{ github.event.before }}"
+              HEAD_SHA="${{ github.sha }}"
+            else
+              # First push to branch
+              HEAD_SHA="${{ github.sha }}"
+              BASE_SHA="$HEAD_SHA~1 2>/dev/null || echo 'HEAD'"
+            fi
+            echo "📋 Validating push commits: $BASE_SHA..$HEAD_SHA"
+          fi
+
+          # Get commit messages
+          if [ "$BASE_SHA" != "HEAD" ]; then
+            COMMITS=$(git log --oneline "$BASE_SHA..$HEAD_SHA" 2>/dev/null || git log --oneline -1)
+          else
+            COMMITS=$(git log --oneline -1)
+          fi
+
+          echo "📊 Found commits to validate:"
+          echo "$COMMITS"
+          echo ""
+
+          # Validate each commit
+          echo "$COMMITS" | while read -r commit; do
+            if [ -n "$commit" ]; then
+              COMMIT_MSG=$(echo "$commit" | cut -d' ' -f2-)
+
+              # Check for JIRA ticket reference
+              if ! echo "$COMMIT_MSG" | grep -q -E '\((JIRA|TICKET|ISSUE|MEQ|BNPL|PAY|AUTH|SEC)-[0-9]+\)'; then
+                echo "❌ INVALID COMMIT: $COMMIT_MSG"
+                echo "📋 Required format: type(scope): description (TICKET-123)"
+                echo "🔗 Supported tickets: JIRA, TICKET, ISSUE, MEQ, BNPL, PAY, AUTH, SEC"
+                exit 1
+              fi
+
+              echo "✅ VALID: $COMMIT_MSG"
+            fi
+          done
+
+          echo ""
+          echo "🎉 All commit messages meet enterprise FinTech standards!"
+
       - name: Dependency Vulnerability Scan
         run: pnpm run security:audit-ci
         continue-on-error: false

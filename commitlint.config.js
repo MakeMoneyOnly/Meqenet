@@ -51,6 +51,7 @@ export default {
         'TICKET-',
         'ISSUE-',
         'MEQ-',
+        'MEQ-CI-',
         'BNPL-',
         'PAY-',
         'AUTH-',
@@ -74,14 +75,14 @@ export default {
           }
 
           // Validate ticket format
-          const ticketPattern = /\(?(JIRA|TICKET|ISSUE|MEQ|BNPL|PAY|AUTH|SEC)-\d+\)?$/;
+          const ticketPattern = /\(?(JIRA|TICKET|ISSUE|MEQ(?:-CI)?|BNPL|PAY|AUTH|SEC)-\d+\)?$/;
           const invalidRefs = references.filter(ref => !ticketPattern.test(ref.raw));
 
           if (invalidRefs.length > 0) {
             return [
               false,
               `Invalid ticket format: ${invalidRefs.map(r => r.raw).join(', ')}\n` +
-              'Use formats: JIRA-123, TICKET-456, ISSUE-789, MEQ-101, BNPL-202, PAY-303, AUTH-404, SEC-505'
+              'Use formats: JIRA-123, TICKET-456, ISSUE-789, MEQ-101, MEQ-CI-002, BNPL-202, PAY-303, AUTH-404, SEC-505'
             ];
           }
 

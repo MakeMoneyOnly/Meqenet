@@ -1,0 +1,61 @@
+name: 📝 Commit Message Check
+
+on:
+  push:
+    branches: [main, develop]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  statuses: write
+
+jobs:
+  check-commits:
+    name: 🔍 Validate Recent Commits
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 📊 Analyze Recent Commits
+        run: |
+          echo "🔍 Analyzing recent commit messages..."
+
+          # Get the last 10 commits to check
+          git log --oneline -10 | while read -r commit; do
+            if [ -n "$commit" ]; then
+              COMMIT_HASH=$(echo "$commit" | cut -d' ' -f1)
+              COMMIT_MSG=$(echo "$commit" | cut -d' ' -f2-)
+
+              echo "📋 Checking: $COMMIT_HASH - '$COMMIT_MSG'"
+
+              # Validate commit message format
+              if ! echo "$COMMIT_MSG" | grep -q -E '\((JIRA|TICKET|ISSUE|MEQ|BNPL|PAY|AUTH|SEC)-[0-9]+\)'; then
+                echo "❌ INVALID: Missing JIRA ticket reference"
+                echo "📋 Required: type(scope): description (TICKET-123)"
+                exit 1
+              fi
+
+              # Check for conventional commit format
+              if ! echo "$COMMIT_MSG" | grep -q -E '^(feat|fix|docs|style|refactor|perf|test|chore|build|ci|security)(\([a-z0-9-]+\))?: .+'; then
+                echo "⚠️  WARNING: Not following conventional commit format"
+                echo "💡 Consider: feat(scope): description (TICKET-123)"
+              else
+                echo "✅ VALID: Conventional commit format"
+              fi
+
+              echo "---"
+            fi
+          done
+
+      - name: 🎉 Validation Success
+        run: |
+          echo "🎉 All recent commits follow enterprise standards!"
+          echo "✅ JIRA ticket references present"
+          echo "✅ Enterprise FinTech compliance maintained"
+          echo ""
+          echo "🇪🇹 Meqenet.et - Ethiopia's Financial Future"

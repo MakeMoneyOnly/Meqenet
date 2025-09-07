@@ -6,60 +6,63 @@
 # Exit immediately if a command exits with a non-zero status.
 set -e
 
-# ============================================================================
-# PHASE 0: COMMIT MESSAGE VALIDATION (FIRST CHECK - IMMEDIATE EXIT)
-# ============================================================================
-
-# Get the commit message from the last commit
-COMMIT_MSG=$(git log --oneline -1 | head -1 | cut -d' ' -f2-)
-
-# Run commitlint validation FIRST - before any other processing
-if ! echo "$COMMIT_MSG" | pnpm exec commitlint --verbose 2>&1; then
-  echo "🚀 Meqenet.et Enterprise Pre-Commit Quality Checks (Manual Mode)"
-  echo "=================================================="
-  echo "❌ INVALID COMMIT MESSAGE FORMAT!"
-  echo ""
-  echo "🚨 Commit rejected due to non-conventional commit message."
-  echo ""
-  echo "📋 Required format:"
-  echo "   type(scope): description (TICKET-123)"
-  echo ""
-  echo "✅ Valid types:"
-  echo "   feat     - New feature"
-  echo "   fix      - Bug fix"
-  echo "   docs     - Documentation changes"
-  echo "   style    - Code style changes (formatting, etc.)"
-  echo "   refactor - Code refactoring"
-  echo "   perf     - Performance improvements"
-  echo "   test     - Test additions/modifications"
-  echo "   chore    - Maintenance tasks"
-  echo "   build    - Build system changes"
-  echo "   ci       - CI/CD changes"
-  echo "   security - Security-related changes"
-  echo ""
-  echo "📝 Examples:"
-  echo "   feat(auth): add biometric authentication (JIRA-456)"
-  echo "   fix(payment): resolve transaction timeout issue (TICKET-789)"
-  echo "   security(auth): implement rate limiting (SEC-123)"
-  echo "   ci(workflows): fix GitHub Actions linter errors (CI-456)"
-  echo "   docs(api): update payment endpoint documentation (DOC-789)"
-  echo ""
-  echo "💡 Pro tip: Use 'git commit --amend' to fix the message"
-  echo ""
-  echo "🔒 COMMIT BLOCKED FOR ENTERPRISE COMPLIANCE"
-  echo "   • Use proper conventional commit format"
-  echo "   • Include Jira ticket reference: (TICKET-123)"
-  echo "   • Contact development team for assistance: dev@meqenet.et"
-  exit 1
-fi
-
 echo "🚀 Meqenet.et Enterprise Pre-Commit Quality Checks (Manual Mode)"
 echo "=================================================="
 
 # Set NODE_OPTIONS to prevent memory issues and enable better performance
 export NODE_OPTIONS="--max-old-space-size=4096 --enable-source-maps=false"
 
-echo "📝 Phase 0: Commit message validation passed."
+echo "📝 Phase 0: Pre-commit validation started."
+
+# ============================================================================
+# PHASE 0.5: EARLY COMMIT MESSAGE VALIDATION (INTERACTIVE COMMITS)
+# ============================================================================
+echo "📝 Phase 0.5: Checking for interactive commit..."
+
+# Check if this is an interactive commit (no -m flag used)
+if [ -t 0 ] && [ -t 1 ]; then
+  echo "🔍 Interactive commit detected - validating commit message format first..."
+
+  # Prompt for commit message early
+  echo "Please enter your commit message for validation:"
+  echo "(Format: type(scope): description (TICKET-123))"
+  read -p "Commit message: " EARLY_COMMIT_MSG
+
+  if [ -z "$EARLY_COMMIT_MSG" ]; then
+    echo "❌ ERROR: Commit message cannot be empty"
+    echo "🔒 COMMIT BLOCKED FOR ENTERPRISE COMPLIANCE"
+    exit 1
+  fi
+
+  # IMMEDIATE VALIDATION - Check for Jira ticket first
+  if ! echo "$EARLY_COMMIT_MSG" | grep -q -E '\((JIRA|TICKET|ISSUE|MEQ|BNPL|PAY|AUTH|SEC)-[0-9]+\)'; then
+    echo "❌ INVALID COMMIT MESSAGE FORMAT!"
+    echo ""
+    echo "🚨 MISSING JIRA TICKET REFERENCE"
+    echo ""
+    echo "📋 REQUIRED FORMAT:"
+    echo "   type(scope): description (TICKET-123)"
+    echo ""
+    echo "✅ Valid ticket formats:"
+    echo "   (JIRA-123)    (TICKET-456)   (ISSUE-789)"
+    echo "   (MEQ-101)     (BNPL-202)     (PAY-303)"
+    echo "   (AUTH-404)    (SEC-505)"
+    echo ""
+    echo "🔒 COMMIT BLOCKED FOR ENTERPRISE COMPLIANCE"
+    echo "💡 Pro tip: Use 'git commit -m \"your message\"' to avoid this prompt"
+    exit 1
+  fi
+
+  echo "✅ Early commit message validation passed!"
+  echo "⚡ Proceeding with full pre-commit checks..."
+else
+  echo "  • Non-interactive commit detected (using -m flag)"
+  echo "  • Commit message will be validated in commit-msg hook"
+fi
+
+# ============================================================================
+# PHASE 1: BASIC QUALITY GATES (Manual Implementation)
+# ============================================================================
 
 # 1. Find all relevant staged files
 ALL_RELEVANT_FILES=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '\.(js|jsx|ts|tsx|json|md|yml|yaml)$' || true)

@@ -50,6 +50,14 @@
     "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@grpc\\proto-loader",
     "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@grpc\\proto-loader\\LICENSE"
   },
+  "@hookform/resolvers@5.2.1": {
+    "licenses": "MIT",
+    "repository": "https://github.com/react-hook-form/resolvers",
+    "publisher": "bluebill1049",
+    "email": "bluebill1049@hotmail.com",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@hookform\\resolvers",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@hookform\\resolvers\\LICENSE"
+  },
   "@nest-lab/throttler-storage-redis@1.1.0": {
     "licenses": "MIT",
     "repository": "https://github.com/jmcdo29/nest-lab",
@@ -815,6 +823,15 @@
     "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\prom-client",
     "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\prom-client\\LICENSE"
   },
+  "react-hook-form@7.56.4": {
+    "licenses": "MIT",
+    "repository": "https://github.com/react-hook-form/react-hook-form",
+    "publisher": "Beier",
+    "email": "bluebill1049@hotmail.com",
+    "url": "Bill",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\react-hook-form",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\react-hook-form\\LICENSE"
+  },
   "reflect-metadata@0.2.2": {
     "licenses": "Apache-2.0",
     "repository": "https://github.com/rbuckton/reflect-metadata",
@@ -914,7 +931,7 @@
     "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\tslib",
     "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\tslib\\LICENSE.txt"
   },
-  "typescript@5.9.2": {
+  "typescript@5.8.3": {
     "licenses": "Apache-2.0",
     "repository": "https://github.com/microsoft/TypeScript",
     "publisher": "Microsoft Corp.",
