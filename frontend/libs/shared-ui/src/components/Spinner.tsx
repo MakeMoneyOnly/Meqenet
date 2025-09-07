@@ -11,21 +11,44 @@ export const Spinner: React.FC<SpinnerProps> = ({
   color = 'primary',
   className = '',
 }) => {
-  const sizeClasses = {
-    sm: 'h-4 w-4',
-    md: 'h-6 w-6',
-    lg: 'h-8 w-8',
+  // Helper functions to safely get class names
+  const getSizeClasses = (size: 'sm' | 'md' | 'lg'): string => {
+    switch (size) {
+      case 'sm':
+        return 'h-4 w-4';
+      case 'lg':
+        return 'h-8 w-8';
+      case 'md':
+      default:
+        return 'h-6 w-6';
+    }
   };
 
-  const colorClasses = {
-    primary: 'text-blue-600',
-    secondary: 'text-gray-600',
-    white: 'text-white',
+  const getColorClasses = (
+    color: 'primary' | 'secondary' | 'white',
+  ): string => {
+    switch (color) {
+      case 'secondary':
+        return 'text-gray-600';
+      case 'white':
+        return 'text-white';
+      case 'primary':
+      default:
+        return 'text-blue-600';
+    }
   };
+
+  // Validate and get class names safely
+  const validSize: 'sm' | 'md' | 'lg' =
+    size && ['sm', 'md', 'lg'].includes(size) ? size : 'md';
+  const validColor: 'primary' | 'secondary' | 'white' =
+    color && ['primary', 'secondary', 'white'].includes(color)
+      ? color
+      : 'primary';
 
   return (
     <svg
-      className={`animate-spin ${sizeClasses[size]} ${colorClasses[color]} ${className}`}
+      className={`animate-spin ${getSizeClasses(validSize)} ${getColorClasses(validColor)} ${className}`}
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
       viewBox="0 0 24 24"
