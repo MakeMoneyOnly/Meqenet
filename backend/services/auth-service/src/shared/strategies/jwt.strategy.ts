@@ -13,10 +13,28 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(configService: ConfigService) {
+    const jwtSecret = configService.get<string>('JWT_SECRET');
+
+    // CRITICAL SECURITY: Ensure JWT secret is always provided
+    if (!jwtSecret) {
+      throw new Error(
+        'JWT_SECRET environment variable is required for secure authentication. ' +
+          'Please configure a strong, randomly generated secret key.'
+      );
+    }
+
+    // Validate JWT secret strength
+    if (jwtSecret.length < 32) {
+      throw new Error(
+        'JWT_SECRET must be at least 32 characters long for security. ' +
+          'Use a cryptographically secure random string.'
+      );
+    }
+
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: configService.get<string>('JWT_SECRET') || 'fallback-secret',
+      secretOrKey: jwtSecret,
       issuer: configService.get<string>('JWT_ISSUER') || undefined,
       audience: configService.get<string>('JWT_AUDIENCE') || undefined,
     });

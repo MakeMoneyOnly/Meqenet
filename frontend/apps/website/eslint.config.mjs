@@ -31,6 +31,9 @@ export default [
         window: 'readonly',
         document: 'readonly',
         navigator: 'readonly',
+        fetch: 'readonly',
+        // React globals (when not imported)
+        React: 'readonly',
         // DOM element types
         HTMLElement: 'readonly',
         HTMLButtonElement: 'readonly',
@@ -61,6 +64,7 @@ export default [
           argsIgnorePattern: '^_',
           varsIgnorePattern: '^_',
           ignoreRestSiblings: true,
+          caughtErrors: 'all',
         },
       ],
       '@typescript-eslint/no-explicit-any': 'warn',
@@ -120,6 +124,7 @@ export default [
           argsIgnorePattern: '^_',
           varsIgnorePattern: '^_',
           ignoreRestSiblings: true,
+          caughtErrors: 'all',
         },
       ],
     },

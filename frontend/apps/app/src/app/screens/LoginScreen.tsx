@@ -4,6 +4,8 @@ import { Formik } from 'formik';
 import * as Yup from 'yup';
 import Input from '../components/auth/Input';
 import Button from '../components/auth/Button';
+import { useAuthStore } from '../../../../libs/mobile-state-management/src/lib/auth-store';
+import { apiClient } from '@frontend/mobile-api-client';
 
 const LoginSchema = Yup.object().shape({
   email: Yup.string().email('Invalid email').required('Required'),
@@ -11,21 +13,14 @@ const LoginSchema = Yup.object().shape({
 });
 
 const LoginScreen = () => {
-  const handleLogin = async (values, { setSubmitting }) => {
+  const { login } = useAuthStore();
+
+  const handleLogin = async (values, { setSubmitting, setStatus }) => {
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(values),
-      });
-      const _data = await response.json();
-      // Handle successful login, e.g., navigate to another screen
-      // TODO: Implement proper success handling
+      const response = await apiClient.post('/auth/login', values);
+      login(response.user, response.token);
     } catch (error) {
-      // Handle login error
-      // TODO: Implement proper error handling
+      setStatus(error.message);
     } finally {
       setSubmitting(false);
     }
@@ -47,8 +42,10 @@ const LoginScreen = () => {
           errors,
           touched,
           isSubmitting,
+          status,
         }) => (
           <>
+            {status ? <Text style={styles.errorText}>{status}</Text> : null}
             <Input
               placeholder="Email"
               onChangeText={handleChange('email')}
@@ -89,6 +86,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 40,
     color: '#2D3436',
+  },
+  errorText: {
+    color: '#E84393',
+    fontSize: 14,
+    marginBottom: 10,
+    textAlign: 'center',
   },
 });
 

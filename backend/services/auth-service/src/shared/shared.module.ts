@@ -22,6 +22,7 @@ import { EmailService } from './services/email.service';
 import { SecurityConfigService } from './services/security-config.service';
 import { AuditLoggingService } from './services/audit-logging.service';
 import { RiskAssessmentService } from './services/risk-assessment.service';
+import { RateLimitingService } from './services/rate-limiting.service';
 import { DatabaseEncryptionMiddleware } from './services/database-encryption.middleware';
 import { OAuth2Service } from './services/oauth2.service';
 import { FaydaEncryptionUtil } from './utils/fayda-encryption.util';
@@ -62,6 +63,7 @@ import { FaydaEncryptionUtil } from './utils/fayda-encryption.util';
     EmailService,
     AuditLoggingService,
     RiskAssessmentService,
+    RateLimitingService,
     DatabaseEncryptionMiddleware,
     OAuth2Service,
   ],
@@ -80,6 +82,7 @@ import { FaydaEncryptionUtil } from './utils/fayda-encryption.util';
     EmailService,
     AuditLoggingService,
     RiskAssessmentService,
+    RateLimitingService,
     DatabaseEncryptionMiddleware,
     OAuth2Service,
   ],

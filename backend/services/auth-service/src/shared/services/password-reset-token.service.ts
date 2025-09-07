@@ -46,8 +46,8 @@ export class PasswordResetTokenService {
       await this.prisma.passwordReset.create({
         data: {
           userId,
-          token: hashedToken, // Store hashed token
-          hashedToken, // Redundant for validation but explicit
+          token: hashedToken, // Store hashed token (secure - never store plain token)
+          hashedToken, // Keep for backward compatibility but will be removed in future
           ipAddress,
           userAgent: userAgent || null,
           expiresAt,
