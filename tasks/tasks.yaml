@@ -1260,7 +1260,7 @@ stages:
               ]
           - id: AUTH-FE-W-PG-04
             description: Build 'Confirm Password Reset' page.
-            status: To Do
+            status: Completed
             context: [docs/Stage 2 -Development/17-Web_Platform_Features.md]
             personas:
               [Senior Mobile Developer, UX Designer, Financial QA Specialist]
@@ -1268,7 +1268,7 @@ stages:
             description:
               Implement client-side session management (store/clear JWT in secure
               HttpOnly cookie).
-            status: To Do
+            status: Completed
             context: [docs/Stage 1 - Foundation/07-Security.md]
             personas: [
                 Senior Mobile Developer,
@@ -1280,7 +1280,7 @@ stages:
             description:
               Implement global state management for user authentication status
               (e.g., React Context/Zustand).
-            status: To Do
+            status: Completed
             context: [docs/Stage 1 - Foundation/08-Architecture.md]
             personas:
               [
@@ -1292,7 +1292,7 @@ stages:
             description:
               "[Test] Write E2E tests for the full login, registration, and password
               reset user flows."
-            status: To Do
+            status: Completed
             context: [docs/Stage 2 -Development/22-Testing_Guidelines.md]
             personas:
               [
@@ -1307,7 +1307,7 @@ stages:
         subtasks:
           - id: AUTH-FE-A-CMP-01
             description: Create shared, reusable auth components in React Native.
-            status: To Do
+            status: Completed
             context:
               [docs/Stage 1 - Foundation/12-User_Experience_Guidelines.md]
             personas:
@@ -1316,17 +1316,17 @@ stages:
             description:
               Build Login screen with form validation (e.g., Formik/Yup) and
               API integration.
-            status: To Do
+            status: Completed
             context: [docs/Stage 1 - Foundation/04-PRD.md]
             personas: [Senior Mobile Developer, UX Designer, Product Manager]
           - id: AUTH-FE-A-SCR-02
             description: Build Registration screen with form validation and API integration.
-            status: To Do
+            status: Completed
             context: [docs/Stage 1 - Foundation/04-PRD.md]
             personas: [Senior Mobile Developer, UX Designer, Product Manager]
           - id: AUTH-FE-A-SCR-03
             description: Build 'Request Password Reset' screen.
-            status: To Do
+            status: Completed
             context: [docs/Stage 1 - Foundation/04-PRD.md]
             personas: [
                 Senior Mobile Developer,
@@ -1336,7 +1336,7 @@ stages:
               ]
           - id: AUTH-FE-A-SCR-04
             description: Build 'Confirm Password Reset' screen.
-            status: To Do
+            status: Completed
             context: [docs/Stage 1 - Foundation/04-PRD.md]
             personas:
               [Senior Mobile Developer, UX Designer, Financial QA Specialist]
@@ -1344,7 +1344,7 @@ stages:
             description:
               Implement client-side session management (store/clear JWT in secure
               device storage).
-            status: To Do
+            status: Completed
             context: [docs/Stage 1 - Foundation/07-Security.md]
             personas: [
                 Senior Mobile Developer,
@@ -1356,7 +1356,7 @@ stages:
             description:
               Implement global state management and navigation guards for authentication
               status.
-            status: To Do
+            status: Completed
             context: [docs/Stage 1 - Foundation/08-Architecture.md]
             personas:
               [
@@ -1368,7 +1368,7 @@ stages:
             description:
               "[Test] Write E2E tests for the full mobile login and registration
               user flows."
-            status: To Do
+            status: Completed
             context: [docs/Stage 2 -Development/22-Testing_Guidelines.md]
             personas:
               [

@@ -4,6 +4,7 @@ import { Formik } from 'formik';
 import * as Yup from 'yup';
 import Input from '../components/auth/Input';
 import Button from '../components/auth/Button';
+import { apiClient } from '@frontend/mobile-api-client';
 
 const ConfirmPasswordResetSchema = Yup.object().shape({
   token: Yup.string().required('Required'),
@@ -16,25 +17,18 @@ const ConfirmPasswordResetSchema = Yup.object().shape({
 });
 
 const ConfirmPasswordResetScreen = ({ navigation }) => {
-  const handleConfirmPasswordReset = async (values, { setSubmitting }) => {
+  const handleConfirmPasswordReset = async (
+    values,
+    { setSubmitting, setStatus },
+  ) => {
     try {
-      const response = await fetch('/api/auth/password-reset-confirm', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          token: values.token,
-          password: values.password,
-        }),
+      await apiClient.post('/auth/password-reset-confirm', {
+        token: values.token,
+        password: values.password,
       });
-      const _data = await response.json();
-      // Handle successful password reset, e.g., navigate to login
-      // TODO: Implement proper success handling
       navigation.navigate('Login');
     } catch (error) {
-      // Handle error
-      // TODO: Implement proper error handling
+      setStatus(error.message);
     } finally {
       setSubmitting(false);
     }
@@ -56,8 +50,10 @@ const ConfirmPasswordResetScreen = ({ navigation }) => {
           errors,
           touched,
           isSubmitting,
+          status,
         }) => (
           <>
+            {status ? <Text style={styles.errorText}>{status}</Text> : null}
             <Input
               placeholder="Reset Token"
               onChangeText={handleChange('token')}
@@ -106,6 +102,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 40,
     color: '#2D3436',
+  },
+  errorText: {
+    color: '#E84393',
+    fontSize: 14,
+    marginBottom: 10,
+    textAlign: 'center',
   },
 });
 

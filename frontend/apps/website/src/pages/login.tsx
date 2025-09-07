@@ -12,11 +12,13 @@ import { Spinner } from '../components/Spinner';
 
 import { loginSchema, LoginFormData } from '../lib/auth/schemas';
 import { authApi } from '../lib/auth/auth-api';
+import { useAuthStore } from '../../../../libs/state-management/src/lib/auth-store';
 
 const LoginPage: React.FC = () => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { login } = useAuthStore();
 
   const {
     register,
@@ -32,15 +34,7 @@ const LoginPage: React.FC = () => {
 
     try {
       const response = await authApi.login(data);
-
-      // Store tokens securely
-      if (typeof window !== 'undefined' && window.localStorage) {
-        window.localStorage.setItem('authToken', response.accessToken);
-        if (response.refreshToken) {
-          window.localStorage.setItem('refreshToken', response.refreshToken);
-        }
-      }
-
+      login(response.user);
       // Redirect to dashboard or home
       router.push('/dashboard');
     } catch (err: unknown) {

@@ -4,28 +4,22 @@ import { Formik } from 'formik';
 import * as Yup from 'yup';
 import Input from '../components/auth/Input';
 import Button from '../components/auth/Button';
+import { apiClient } from '@frontend/mobile-api-client';
 
 const RequestPasswordResetSchema = Yup.object().shape({
   email: Yup.string().email('Invalid email').required('Required'),
 });
 
 const RequestPasswordResetScreen = ({ navigation }) => {
-  const handleRequestPasswordReset = async (values, { setSubmitting }) => {
+  const handleRequestPasswordReset = async (
+    values,
+    { setSubmitting, setStatus },
+  ) => {
     try {
-      const response = await fetch('/api/auth/password-reset-request', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(values),
-      });
-      const _data = await response.json();
-      // Handle successful request, e.g., show a confirmation message
-      // TODO: Implement proper success handling
+      await apiClient.post('/auth/password-reset-request', values);
       navigation.navigate('ConfirmPasswordReset');
     } catch (error) {
-      // Handle error
-      // TODO: Implement proper error handling
+      setStatus(error.message);
     } finally {
       setSubmitting(false);
     }
@@ -47,8 +41,10 @@ const RequestPasswordResetScreen = ({ navigation }) => {
           errors,
           touched,
           isSubmitting,
+          status,
         }) => (
           <>
+            {status ? <Text style={styles.errorText}>{status}</Text> : null}
             <Input
               placeholder="Email"
               onChangeText={handleChange('email')}
@@ -81,6 +77,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 40,
     color: '#2D3436',
+  },
+  errorText: {
+    color: '#E84393',
+    fontSize: 14,
+    marginBottom: 10,
+    textAlign: 'center',
   },
 });
 

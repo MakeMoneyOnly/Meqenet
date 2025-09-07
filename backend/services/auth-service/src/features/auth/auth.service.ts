@@ -22,6 +22,7 @@ import {
   RiskAssessmentService,
   RiskAssessment,
 } from '../../shared/services/risk-assessment.service';
+import { RateLimitingService } from '../../shared/services/rate-limiting.service';
 
 import { LoginUserDto } from './dto/login-user.dto';
 import { RegisterUserDto } from './dto/register-user.dto';
@@ -44,7 +45,8 @@ export class AuthService {
     private readonly passwordResetTokenService: PasswordResetTokenService,
     private readonly emailService: EmailService,
     private readonly auditLogging: AuditLoggingService,
-    private readonly riskAssessmentService: RiskAssessmentService
+    private readonly riskAssessmentService: RiskAssessmentService,
+    private readonly rateLimiting: RateLimitingService
   ) {}
 
   async register(
@@ -179,6 +181,31 @@ export class AuthService {
     } = context || {};
 
     try {
+      // CRITICAL SECURITY: Rate limiting for login attempts
+      const rateLimitResult = await this.rateLimiting.checkLoginRateLimit(
+        email,
+        ipAddress
+      );
+
+      if (!rateLimitResult.allowed) {
+        await this.auditLogging.logLoginFailure('RATE_LIMIT_EXCEEDED', {
+          userEmail: email,
+          ipAddress,
+          userAgent: userAgent || 'Unknown',
+          location,
+          deviceFingerprint,
+        });
+
+        this.securityMonitoring.recordLogin('failure');
+        throw new UnauthorizedException({
+          errorCode: 'RATE_LIMIT_EXCEEDED',
+          message: 'Too many login attempts. Please try again later.',
+          retryAfter: Math.ceil(
+            (rateLimitResult.resetTime.getTime() - Date.now()) / 1000
+          ),
+        });
+      }
+
       const user = await this.prisma.user.findUnique({
         where: { email },
       });
@@ -394,6 +421,28 @@ export class AuthService {
     } = context || {};
 
     try {
+      // CRITICAL SECURITY: Rate limiting for password reset requests
+      const rateLimitResult =
+        await this.rateLimiting.checkPasswordResetRateLimit(email, ipAddress);
+
+      if (!rateLimitResult.allowed) {
+        await this.auditLogging.logPasswordResetFailure('RATE_LIMIT_EXCEEDED', {
+          userEmail: email,
+          ipAddress,
+          userAgent: userAgent || 'Unknown',
+          location,
+          deviceFingerprint,
+        });
+
+        throw new BadRequestException({
+          errorCode: 'RATE_LIMIT_EXCEEDED',
+          message: 'Too many password reset requests. Please try again later.',
+          retryAfter: Math.ceil(
+            (rateLimitResult.resetTime.getTime() - Date.now()) / 1000
+          ),
+        });
+      }
+
       const user = await this.prisma.user.findUnique({ where: { email } });
 
       if (!user) {

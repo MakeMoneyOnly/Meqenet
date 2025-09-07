@@ -3,6 +3,7 @@ import Head from 'next/head';
 import React, { Component, ErrorInfo, JSX, ReactNode, useEffect } from 'react';
 import { I18nextProvider } from 'react-i18next';
 import i18n from '../../../../libs/shared/src/i18n';
+import { useAuthStore } from '../../../../libs/state-management/src/lib/auth-store';
 
 import './styles.css';
 
@@ -39,6 +40,8 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
 }
 
 function CustomApp({ Component, pageProps }: AppProps): JSX.Element {
+  const { isAuthenticated, logout } = useAuthStore();
+
   // Register service worker for PWA functionality - service-worker registration
   useEffect(() => {
     // Use centralized environment check instead of direct process.env access
@@ -68,6 +71,16 @@ function CustomApp({ Component, pageProps }: AppProps): JSX.Element {
       </Head>
       <main className="app">
         <ErrorBoundary>
+          {isAuthenticated ? (
+            <div className="flex justify-end p-4">
+              <button
+                onClick={() => logout()}
+                className="py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                Logout
+              </button>
+            </div>
+          ) : null}
           {i18n ? (
             <I18nextProvider i18n={i18n}>
               <Component {...pageProps} />

@@ -4,6 +4,7 @@ import { Formik } from 'formik';
 import * as Yup from 'yup';
 import Input from '../components/auth/Input';
 import Button from '../components/auth/Button';
+import { apiClient } from '@frontend/mobile-api-client';
 
 const RegistrationSchema = Yup.object().shape({
   email: Yup.string().email('Invalid email').required('Required'),
@@ -16,25 +17,15 @@ const RegistrationSchema = Yup.object().shape({
 });
 
 const RegistrationScreen = ({ navigation }) => {
-  const handleRegister = async (values, { setSubmitting }) => {
+  const handleRegister = async (values, { setSubmitting, setStatus }) => {
     try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: values.email,
-          password: values.password,
-        }),
+      await apiClient.post('/auth/register', {
+        email: values.email,
+        password: values.password,
       });
-      const _data = await response.json();
-      // Handle successful registration, e.g., navigate to login screen
-      // TODO: Implement proper success handling
       navigation.navigate('Login');
     } catch (error) {
-      // Handle registration error
-      // TODO: Implement proper error handling
+      setStatus(error.message);
     } finally {
       setSubmitting(false);
     }
@@ -56,8 +47,10 @@ const RegistrationScreen = ({ navigation }) => {
           errors,
           touched,
           isSubmitting,
+          status,
         }) => (
           <>
+            {status ? <Text style={styles.errorText}>{status}</Text> : null}
             <Input
               placeholder="Email"
               onChangeText={handleChange('email')}
@@ -106,6 +99,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 40,
     color: '#2D3436',
+  },
+  errorText: {
+    color: '#E84393',
+    fontSize: 14,
+    marginBottom: 10,
+    textAlign: 'center',
   },
 });
 
