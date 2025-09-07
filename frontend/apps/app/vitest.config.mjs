@@ -35,6 +35,11 @@ export default defineConfig({
       ),
     },
   },
+  server: {
+    deps: {
+      inline: ['@meqenet/mobile-state-management'],
+    },
+  },
   test: {
     globals: true,
     environment: 'jsdom',
