@@ -5,7 +5,7 @@ import RegistrationScreen from './screens/RegistrationScreen';
 import RequestPasswordResetScreen from './screens/RequestPasswordResetScreen';
 import ConfirmPasswordResetScreen from './screens/ConfirmPasswordResetScreen';
 import MainScreen from './screens/MainScreen';
-import { useAuthStore } from '../../../libs/mobile-state-management/src/lib/auth-store';
+import { useAuthStore } from '@meqenet/mobile-state-management/lib/auth-store';
 import Spinner from './components/auth/Spinner';
 
 const App = (): React.JSX.Element => {

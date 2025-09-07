@@ -7,7 +7,7 @@
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx --config eslint.config.mjs",
     "lint:security": "eslint . --ext .ts,.tsx,.js,.jsx --config eslint.config.mjs",
     "test": "vitest --config apps/app/vitest.config.mjs --run",
-    "typecheck": "node -e \"const { spawn } = require('child_process'); const child = spawn('vitest', ['--config', 'apps/app/vitest.config.mjs', '--typecheck', '--run'], { stdio: 'inherit' }); child.on('close', (code) => { console.log('Typecheck completed with code:', code); process.exit(code === 0 || code === null ? 0 : code); });\""
+    "typecheck": "npx vitest --config apps/app/vitest.config.mjs --typecheck --run"
   },
   "private": true,
   "dependencies": {
@@ -22,8 +22,7 @@
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-i18next": "^15.7.3",
-    "react-native": "0.76.5",
-    "zustand": "^5.0.8"
+    "react-native": "0.76.5"
   },
   "devDependencies": {
     "@babel/core": "^7.26.0",

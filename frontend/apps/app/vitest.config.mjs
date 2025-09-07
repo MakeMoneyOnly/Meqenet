@@ -2,13 +2,14 @@ import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 import react from '@vitejs/plugin-react';
+import tsconfigPaths from 'vite-tsconfig-paths';
 import { defineConfig } from 'vitest/config';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   root: __dirname,
-  plugins: [react()],
+  plugins: [react(), tsconfigPaths()],
   resolve: {
     conditions: ['browser', 'module', 'import', 'default'],
     // Prevent multiple React copies which can cause "Invalid hook call"
@@ -27,6 +28,10 @@ export default defineConfig({
       '@sentry/react-native': resolve(
         __dirname,
         './test/mocks/sentry-react-native.ts',
+      ),
+      '@meqenet/mobile-state-management': resolve(
+        __dirname,
+        '../../../libs/mobile-state-management/src',
       ),
     },
   },
