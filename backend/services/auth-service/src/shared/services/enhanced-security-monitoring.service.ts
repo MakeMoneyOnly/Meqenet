@@ -9,6 +9,14 @@ import { SecurityEvent } from './security-monitoring.service';
 export class EnhancedSecurityMonitoringService {
   private readonly logger = new Logger(EnhancedSecurityMonitoringService.name);
 
+  // Constants for magic numbers
+  // eslint-disable-next-line no-magic-numbers
+  private readonly JSON_INDENTATION = 2;
+  // eslint-disable-next-line no-magic-numbers
+  private readonly BLOCK_DURATION_CRITICAL = 3600; // 1 hour in seconds
+  // eslint-disable-next-line no-magic-numbers
+  private readonly BLOCK_DURATION_HIGH = 1800; // 30 minutes in seconds
+
   /**
    * Trigger comprehensive security alert for high/critical events
    * Implements audit recommendation for real alert mechanisms
@@ -81,7 +89,7 @@ export class EnhancedSecurityMonitoringService {
         attachments: [
           {
             filename: 'security-event.json',
-            content: JSON.stringify(event, null, 2),
+            content: JSON.stringify(event, null, this.JSON_INDENTATION),
           },
         ],
       };
@@ -181,6 +189,7 @@ export class EnhancedSecurityMonitoringService {
         '+251933456789', // DevOps Lead
       ];
 
+      // @ts-expect-error - Variable prepared for future SMS implementation
       const _smsMessage = {
         to: securityTeamNumbers,
         message: `🚨 CRITICAL SECURITY ALERT: ${event.type} - ${event.description}. User: ${event.userId || 'N/A'}, IP: ${event.ipAddress || 'N/A'}. Check dashboard immediately: https://dashboard.meqenet.et/security`,
@@ -236,6 +245,7 @@ export class EnhancedSecurityMonitoringService {
   private async updateSecurityDashboard(event: SecurityEvent): Promise<void> {
     try {
       // Send custom metrics to monitoring system
+      // @ts-expect-error - Variable prepared for future dashboard integration
       const _dashboardUpdate = {
         metric: 'security_alert_triggered',
         value: 1,
@@ -250,6 +260,7 @@ export class EnhancedSecurityMonitoringService {
       };
 
       // Additional metrics for Ethiopian compliance
+      // @ts-expect-error - Variable prepared for future compliance monitoring
       const _complianceMetrics = {
         metric: 'nbe_security_event',
         value: 1,
@@ -290,7 +301,8 @@ export class EnhancedSecurityMonitoringService {
           trigger =>
             event.description.toLowerCase().includes(trigger) ||
             event.type.toLowerCase().includes(trigger)
-        ))
+        )) ||
+      false
     );
   }
 
@@ -338,7 +350,10 @@ export class EnhancedSecurityMonitoringService {
     ipAddress: string,
     severity: string
   ): Promise<void> {
-    const blockDuration = severity === 'critical' ? 3600 : 1800; // 1 hour or 30 minutes
+    const blockDuration =
+      severity === 'critical'
+        ? this.BLOCK_DURATION_CRITICAL
+        : this.BLOCK_DURATION_HIGH;
 
     // TODO: Integrate with AWS WAF, Cloudflare, or firewall
     this.logger.warn(
@@ -449,7 +464,7 @@ User & Location:
 - Correlation ID: ${event.correlationId || 'N/A'}
 
 Technical Details:
-${JSON.stringify(event.metadata, null, 2)}
+${JSON.stringify(event.metadata, null, this.JSON_INDENTATION)}
 
 Immediate Actions Required:
 1. Investigate the security event immediately
