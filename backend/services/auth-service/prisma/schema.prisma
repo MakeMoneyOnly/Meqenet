@@ -403,6 +403,12 @@ model OAuthRefreshToken {
   createdAt  DateTime  @default(now())
   /// @classification: Internal
   lastUsedAt DateTime?
+  /// @classification: Internal
+  revokedAt  DateTime?
+  /// @classification: Internal
+  rotatedAt  DateTime?
+  /// @classification: Internal
+  rotatedToTokenId String?
 
   // Relations
   client OAuthClient @relation(fields: [clientId], references: [id])
@@ -411,4 +417,11 @@ model OAuthRefreshToken {
   // One-to-one relation with access token
   accessTokenId String?           @unique
   accessToken   OAuthAccessToken? @relation(fields: [accessTokenId], references: [id])
+
+  // Self-referencing relation for token rotation tracking
+  rotatedToToken   OAuthRefreshToken?  @relation("TokenRotation", fields: [rotatedToTokenId], references: [id])
+  rotatedFromToken OAuthRefreshToken[] @relation("TokenRotation")
+
+  @@index([revokedAt])
+  @@index([rotatedToTokenId])
 }
