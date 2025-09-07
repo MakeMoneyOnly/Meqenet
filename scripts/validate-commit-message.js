@@ -5,7 +5,6 @@
  * Validates commit messages against FinTech compliance standards
  */
 
-import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import readline from 'readline';

@@ -8,8 +8,7 @@
  * Specifically targets --no-verify flag usage and destructive operations
  */
 
-const { execSync, spawn } = require('child_process');
-const path = require('path');
+const { execSync } = require('child_process');
 
 // Enterprise security configuration
 const SECURITY_CONFIG = {
