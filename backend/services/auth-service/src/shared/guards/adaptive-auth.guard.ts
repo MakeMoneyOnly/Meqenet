@@ -7,7 +7,7 @@ import {
   Inject,
   forwardRef,
 } from '@nestjs/common';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 import { JwtService } from '@nestjs/jwt';
 
 import {
@@ -33,6 +33,7 @@ interface JwtPayload {
 interface RequestWithAuth extends Request {
   riskAssessment?: RiskAssessment;
   userId?: string;
+  user?: { id: string; email?: string; role?: string };
   requiresMfa?: boolean;
   mfaSuggested?: boolean;
   mfaToken?: string;
@@ -140,7 +141,7 @@ export class AdaptiveAuthGuard implements CanActivate {
     const riskFactors = {
       userId,
       ipAddress: clientIp,
-      userAgent,
+      ...(userAgent && { userAgent }),
       location: request.headers['x-user-location'] as string,
       deviceFingerprint,
       loginTime: new Date(),
@@ -204,18 +205,18 @@ export class AdaptiveAuthGuard implements CanActivate {
    * Handle critical risk level
    */
   private async handleCriticalRisk(
-    request: Request,
+    request: RequestWithAuth,
     riskAssessment: RiskAssessment
   ): Promise<void> {
     this.logger.warn(
-      `Critical risk detected for user ${request.user?.id || 'unknown'}`
+      `Critical risk detected for user ${(request as RequestWithAuth).user?.id || 'unknown'}`
     );
 
     // Log security event
     await this.securityMonitoring.recordSecurityEvent({
       type: 'authentication',
       severity: 'critical',
-      userId: request.user?.id,
+      userId: (request as RequestWithAuth).user?.id || 'unknown',
       ipAddress: this.getClientIp(request),
       userAgent: request.headers['user-agent'] as string,
       description: `Critical risk login attempt blocked: ${riskAssessment.factors.join(', ')}`,
@@ -242,14 +243,14 @@ export class AdaptiveAuthGuard implements CanActivate {
     response: Response
   ): Promise<void> {
     this.logger.warn(
-      `High risk detected for user ${request.user?.id || 'unknown'}`
+      `High risk detected for user ${(request as RequestWithAuth).user?.id || 'unknown'}`
     );
 
     // Log security event
     await this.securityMonitoring.recordSecurityEvent({
       type: 'authentication',
       severity: 'high',
-      userId: request.user?.id,
+      userId: (request as RequestWithAuth).user?.id || 'unknown',
       ipAddress: this.getClientIp(request),
       userAgent: request.headers['user-agent'] as string,
       description: `High risk login - MFA required: ${riskAssessment.factors.join(', ')}`,
@@ -286,7 +287,7 @@ export class AdaptiveAuthGuard implements CanActivate {
     await this.securityMonitoring.recordSecurityEvent({
       type: 'authentication',
       severity: 'medium',
-      userId: request.user?.id,
+      userId: request.user?.id || 'unknown',
       ipAddress: this.getClientIp(request),
       userAgent: request.headers['user-agent'] as string,
       description: `Medium risk login detected: ${riskAssessment.factors.join(', ')}`,

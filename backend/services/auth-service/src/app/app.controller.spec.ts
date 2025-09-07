@@ -32,7 +32,9 @@ describe('AppController (Security Headers & Validation)', () => {
   });
 
   afterEach(async () => {
-    await app.close();
+    if (app) {
+      await app.close();
+    }
   });
 
   describe('Security Headers Validation', () => {

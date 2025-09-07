@@ -6,7 +6,6 @@ import {
   Inject,
   forwardRef,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import * as crypto from 'crypto';
 
 import { PrismaService } from '../../infrastructure/database/prisma.service';
@@ -76,7 +75,6 @@ export class OAuth2Service {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly jwtService: JwtService,
     @Inject(forwardRef(() => SecurityMonitoringService))
     private readonly securityMonitoring: SecurityMonitoringService
   ) {}
@@ -191,8 +189,8 @@ export class OAuth2Service {
       await this.prisma.oAuthAuthorizationCode.create({
         data: {
           code,
-          codeChallenge,
-          codeChallengeMethod,
+          codeChallenge: codeChallenge || null,
+          codeChallengeMethod: codeChallengeMethod || null,
           clientId,
           userId,
           redirectUri,
@@ -496,6 +494,8 @@ export class OAuth2Service {
     userId: string;
     clientId: string;
     scopes: string[];
+    expiresAt: Date;
+    createdAt: Date;
     client: {
       id: string;
       clientId: string;
@@ -507,8 +507,8 @@ export class OAuth2Service {
     user: {
       id: string;
       email: string;
-      firstName?: string;
-      lastName?: string;
+      firstName: string | null;
+      lastName: string | null;
     };
   }> {
     try {
@@ -540,6 +540,8 @@ export class OAuth2Service {
         userId: tokenRecord.userId,
         clientId: tokenRecord.clientId,
         scopes: tokenRecord.scopes,
+        expiresAt: tokenRecord.expiresAt,
+        createdAt: tokenRecord.createdAt,
         client: tokenRecord.client,
         user: tokenRecord.user,
       };
@@ -618,8 +620,8 @@ export class OAuth2Service {
    */
   private validatePKCECodeVerifier(
     authCode: {
-      codeChallenge?: string;
-      codeChallengeMethod?: string;
+      codeChallenge?: string | null;
+      codeChallengeMethod?: string | null;
     },
     codeVerifier: string
   ): void {
@@ -718,7 +720,7 @@ export class OAuth2Service {
     userId: string;
     scopes: string[];
     expiresAt: Date;
-    accessTokenId: string;
+    accessTokenId: string | null;
   }> {
     const token = crypto.randomBytes(TOKEN_BYTES).toString('hex');
     const expiresAt = new Date(Date.now() + this.REFRESH_TOKEN_EXPIRY);
@@ -751,7 +753,7 @@ export class OAuth2Service {
     clientId: string;
     clientSecret: string;
     clientName: string;
-    clientDescription?: string;
+    clientDescription?: string | null;
     redirectUris: string[];
     scopes: string[];
     status: string;
@@ -767,7 +769,7 @@ export class OAuth2Service {
           clientId,
           clientSecret,
           clientName: clientData.name,
-          clientDescription: clientData.description,
+          clientDescription: clientData.description || null,
           redirectUris: clientData.redirectUris,
           grantTypes: ['authorization_code', 'refresh_token'],
           responseTypes: ['code'],
@@ -805,7 +807,7 @@ export class OAuth2Service {
     id: string;
     clientId: string;
     clientName: string;
-    clientDescription?: string;
+    clientDescription?: string | null;
     redirectUris: string[];
     scopes: string[];
     status: string;
@@ -825,7 +827,7 @@ export class OAuth2Service {
       id: string;
       clientId: string;
       clientName: string;
-      clientDescription?: string;
+      clientDescription?: string | null;
       redirectUris: string[];
       scopes: string[];
       status: string;
