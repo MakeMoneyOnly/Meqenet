@@ -38,7 +38,7 @@ interface OAuthClientResponse {
   id: string;
   clientId: string;
   clientName: string;
-  clientDescription?: string;
+  clientDescription?: string | null;
   redirectUris: string[];
   scopes: string[];
   status: string;
@@ -95,7 +95,7 @@ export class OAuthController {
       // Generate authorization code
       const code = await this.oauth2Service.generateAuthorizationCode(
         query.clientId,
-        userId,
+        userId || '',
         query.redirectUri,
         validation.scopes,
         query.codeChallenge,
@@ -103,11 +103,19 @@ export class OAuthController {
       );
 
       // Log successful authorization
-      await this.auditLogging.logOAuthAuthorization({
-        userId,
-        clientId: query.clientId,
-        scopes: validation.scopes,
-        success: true,
+      await this.auditLogging.logAuthEvent({
+        eventType: 'OAUTH_AUTHORIZATION_SUCCESS',
+        entityType: 'oauth_authorization_code',
+        userId: userId || 'unknown',
+        userEmail: (req.user as RequestUser)?.email,
+        userRole: (req.user as RequestUser)?.role || '',
+        ipAddress: this.getClientIp(req),
+        userAgent: req.headers['user-agent'] as string,
+        eventData: {
+          clientId: query.clientId,
+          scopes: validation.scopes,
+          success: true,
+        },
       });
 
       // Redirect back to client with authorization code
@@ -120,11 +128,18 @@ export class OAuthController {
       res.redirect(redirectUrl.toString());
     } catch (error: unknown) {
       // Log failed authorization
-      await this.auditLogging.logOAuthAuthorization({
-        userId: (req.user as RequestUser)?.id,
-        clientId: query.clientId,
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+      await this.auditLogging.logAuthEvent({
+        eventType: 'OAUTH_AUTHORIZATION_FAILURE',
+        entityType: 'oauth_authorization_code',
+        userId: (req.user as RequestUser)?.id || 'unknown',
+        userEmail: (req.user as RequestUser)?.email,
+        ipAddress: this.getClientIp(req),
+        userAgent: req.headers['user-agent'] as string,
+        eventData: {
+          clientId: query.clientId,
+          success: false,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        },
       });
 
       // Redirect with error
@@ -152,6 +167,7 @@ export class OAuthController {
   @HttpCode(HttpStatus.OK)
   async token(
     @Body() body: OAuthTokenRequest,
+    @Req() req: Request,
     @Headers('authorization') _authHeader?: string
   ): Promise<OAuthTokenResponse> {
     try {
@@ -178,21 +194,35 @@ export class OAuthController {
       }
 
       // Log successful token issuance
-      await this.auditLogging.logOAuthTokenIssuance({
-        clientId: body.clientId,
-        grantType: body.grantType,
-        success: true,
-        scopes: result.scope?.split(' ') || [],
+      await this.auditLogging.logAuthEvent({
+        eventType: 'OAUTH_TOKEN_ISSUANCE_SUCCESS',
+        entityType: 'oauth_access_token',
+        userId: 'unknown', // OAuth tokens don't necessarily have user context at this point
+        ipAddress: this.getClientIp(req),
+        userAgent: req.headers['user-agent'] as string,
+        eventData: {
+          clientId: body.clientId,
+          grantType: body.grantType,
+          success: true,
+          scopes: result.scope?.split(' ') || [],
+        },
       });
 
       return result;
     } catch (error: unknown) {
       // Log failed token issuance
-      await this.auditLogging.logOAuthTokenIssuance({
-        clientId: body.clientId,
-        grantType: body.grantType,
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+      await this.auditLogging.logAuthEvent({
+        eventType: 'OAUTH_TOKEN_ISSUANCE_FAILURE',
+        entityType: 'oauth_access_token',
+        userId: 'unknown',
+        ipAddress: this.getClientIp(req),
+        userAgent: req.headers['user-agent'] as string,
+        eventData: {
+          clientId: body.clientId,
+          grantType: body.grantType,
+          success: false,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        },
       });
 
       throw error;
@@ -244,26 +274,41 @@ export class OAuthController {
   @HttpCode(HttpStatus.OK)
   async revoke(
     @Body() body: { token: string; token_type_hint?: string },
+    @Req() req: Request,
     @Headers('authorization') _authHeader?: string
   ): Promise<{ revoked: boolean }> {
     try {
       await this.oauth2Service.revokeToken(body.token, body.token_type_hint);
 
       // Log token revocation
-      await this.auditLogging.logOAuthTokenRevocation({
-        token: body.token.substring(0, TOKEN_LOG_PREFIX_LENGTH) + '...', // Partial token for logging
-        tokenTypeHint: body.token_type_hint,
-        success: true,
+      await this.auditLogging.logAuthEvent({
+        eventType: 'OAUTH_TOKEN_REVOCATION_SUCCESS',
+        entityType: 'oauth_token',
+        userId: 'unknown',
+        ipAddress: this.getClientIp(req),
+        userAgent: req.headers['user-agent'] as string,
+        eventData: {
+          token: body.token.substring(0, TOKEN_LOG_PREFIX_LENGTH) + '...', // Partial token for logging
+          tokenTypeHint: body.token_type_hint,
+          success: true,
+        },
       });
 
       return { revoked: true };
     } catch (error: unknown) {
       // Log failed revocation
-      await this.auditLogging.logOAuthTokenRevocation({
-        token: body.token.substring(0, TOKEN_LOG_PREFIX_LENGTH) + '...',
-        tokenTypeHint: body.token_type_hint,
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+      await this.auditLogging.logAuthEvent({
+        eventType: 'OAUTH_TOKEN_REVOCATION_FAILURE',
+        entityType: 'oauth_token',
+        userId: 'unknown',
+        ipAddress: this.getClientIp(req),
+        userAgent: req.headers['user-agent'] as string,
+        eventData: {
+          token: body.token.substring(0, TOKEN_LOG_PREFIX_LENGTH) + '...',
+          tokenTypeHint: body.token_type_hint,
+          success: false,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        },
       });
 
       throw error;
@@ -278,7 +323,7 @@ export class OAuthController {
   @UseGuards(JwtAuthGuard)
   async getClients(@Req() req: Request): Promise<OAuthClientResponse[]> {
     const userId = (req.user as RequestUser)?.id;
-    return await this.oauth2Service.getUserClients(userId);
+    return await this.oauth2Service.getUserClients(userId || '');
   }
 
   /**
@@ -303,13 +348,38 @@ export class OAuthController {
     const client = await this.oauth2Service.createClient(userId, body);
 
     // Log client creation
-    await this.auditLogging.logOAuthClientCreation({
-      userId,
-      clientId: client.clientId,
-      clientName: client.clientName,
-      success: true,
+    await this.auditLogging.logAuthEvent({
+      eventType: 'OAUTH_CLIENT_CREATION_SUCCESS',
+      entityType: 'oauth_client',
+      entityId: client.clientId,
+      userId: userId || 'unknown',
+      userEmail: (req.user as RequestUser)?.email,
+      userRole: (req.user as RequestUser)?.role || '',
+      ipAddress: this.getClientIp(req),
+      userAgent: req.headers['user-agent'] as string,
+      eventData: {
+        clientId: client.clientId,
+        clientName: client.clientName,
+        success: true,
+      },
     });
 
     return client;
+  }
+
+  /**
+   * Get client IP address from request
+   */
+  private getClientIp(req: Request): string {
+    const forwarded = req.headers['x-forwarded-for'] as string;
+    const realIp = req.headers['x-real-ip'] as string;
+
+    if (forwarded) {
+      return forwarded.split(',')[0].trim();
+    }
+    if (realIp) {
+      return realIp;
+    }
+    return req.ip || 'unknown';
   }
 }

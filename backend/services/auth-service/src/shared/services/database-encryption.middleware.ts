@@ -76,10 +76,10 @@ export class DatabaseEncryptionMiddleware implements OnModuleInit {
    * Apply middleware for a specific model
    */
   private applyModelMiddleware(prisma: PrismaClient, modelName: string): void {
-    const model = (prisma as Record<string, unknown>)[
+    const model = (prisma as unknown as Record<string, unknown>)[
       modelName.toLowerCase()
     ] as {
-      $use: (
+      $use?: (
         middleware: (
           params: PrismaMiddlewareParams,
           next: PrismaMiddlewareNext
@@ -89,7 +89,7 @@ export class DatabaseEncryptionMiddleware implements OnModuleInit {
     const encryptedFields =
       this.LEVEL_1_FIELDS[modelName as keyof typeof this.LEVEL_1_FIELDS];
 
-    if (!model || !encryptedFields) {
+    if (!model || !encryptedFields || !model.$use) {
       return;
     }
 
@@ -156,7 +156,7 @@ export class DatabaseEncryptionMiddleware implements OnModuleInit {
       } else if (params.args?.data) {
         // Handle single operations
         await this.encryptObjectFields(
-          params.args.data,
+          params.args.data as Record<string, unknown>,
           modelName,
           encryptedFields
         );
@@ -220,7 +220,11 @@ export class DatabaseEncryptionMiddleware implements OnModuleInit {
         }
       } else if (result) {
         // Handle single object results
-        await this.decryptObjectFields(result, modelName, encryptedFields);
+        await this.decryptObjectFields(
+          result as Record<string, unknown>,
+          modelName,
+          encryptedFields
+        );
       }
 
       return result;
@@ -245,7 +249,7 @@ export class DatabaseEncryptionMiddleware implements OnModuleInit {
       if (data[field] !== undefined && data[field] !== null) {
         try {
           // Try to parse as encrypted field
-          const parsedField = JSON.parse(data[field]);
+          const parsedField = JSON.parse(data[field] as string);
           if (this.isEncryptedField(parsedField)) {
             fieldsToDecrypt[field] = parsedField;
           }
@@ -279,13 +283,13 @@ export class DatabaseEncryptionMiddleware implements OnModuleInit {
   /**
    * Check if a field value is encrypted
    */
-  private isEncryptedField(value: unknown): boolean {
+  private isEncryptedField(value: unknown): value is EncryptedFieldValue {
     return (
       typeof value === 'object' &&
       value !== null &&
       (value as EncryptedFieldValue).encrypted === true &&
-      (value as EncryptedFieldValue).value &&
-      (value as EncryptedFieldValue).algorithm
+      typeof (value as EncryptedFieldValue).value === 'string' &&
+      typeof (value as EncryptedFieldValue).algorithm === 'string'
     );
   }
 

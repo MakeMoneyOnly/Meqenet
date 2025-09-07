@@ -50,7 +50,16 @@ export interface AuthAuditEvent {
     | 'MFA_ENABLED'
     | 'MFA_DISABLED'
     | 'MFA_VERIFIED'
-    | 'MFA_FAILED';
+    | 'MFA_FAILED'
+    // OAuth 2.0 events
+    | 'OAUTH_AUTHORIZATION_SUCCESS'
+    | 'OAUTH_AUTHORIZATION_FAILURE'
+    | 'OAUTH_TOKEN_ISSUANCE_SUCCESS'
+    | 'OAUTH_TOKEN_ISSUANCE_FAILURE'
+    | 'OAUTH_TOKEN_REVOCATION_SUCCESS'
+    | 'OAUTH_TOKEN_REVOCATION_FAILURE'
+    | 'OAUTH_CLIENT_CREATION_SUCCESS'
+    | 'OAUTH_CLIENT_CREATION_FAILURE';
   userId?: string;
   userEmail?: string;
   userRole?: string;
@@ -62,6 +71,8 @@ export interface AuthAuditEvent {
   riskScore?: number;
   eventData?: Record<string, unknown>;
   complianceFlags?: string[];
+  entityType?: string;
+  entityId?: string;
 }
 
 export interface AuditContext {

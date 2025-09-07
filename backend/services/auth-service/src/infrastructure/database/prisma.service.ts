@@ -40,7 +40,6 @@ export class PrismaService
   private connectionAttempts = 0;
   private readonly maxRetries = RETRY_CONFIG.MAX_RETRIES;
   private readonly baseDelay = RETRY_CONFIG.BASE_DELAY;
-  private encryptionMiddleware!: DatabaseEncryptionMiddleware;
 
   constructor(
     private readonly databaseEncryptionMiddleware: DatabaseEncryptionMiddleware,

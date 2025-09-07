@@ -1,5 +1,4 @@
 import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
 
 import { SecurityMonitoringService } from './security-monitoring.service';
@@ -11,10 +10,10 @@ export interface RiskFactors {
   location?: string;
   deviceFingerprint?: string;
   loginTime: Date;
-  previousLoginTime?: Date;
-  previousLoginLocation?: string;
+  previousLoginTime?: Date | undefined;
+  previousLoginLocation?: string | undefined;
   failedAttemptsCount: number;
-  accountAge?: number;
+  accountAge?: number | undefined;
   unusualPatterns: boolean;
 }
 
@@ -85,7 +84,6 @@ export class RiskAssessmentService {
   };
 
   constructor(
-    private configService: ConfigService,
     @Inject(forwardRef(() => SecurityMonitoringService))
     private securityMonitoring: SecurityMonitoringService
   ) {}

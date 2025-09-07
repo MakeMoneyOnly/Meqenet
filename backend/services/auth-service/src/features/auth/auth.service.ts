@@ -291,21 +291,30 @@ export class AuthService {
       });
 
       // Perform risk assessment for adaptive authentication
-      const riskAssessment = await this.riskAssessmentService.assessRisk({
+      const riskFactors: Parameters<
+        typeof this.riskAssessmentService.assessRisk
+      >[0] = {
         userId: user.id,
         ipAddress,
         userAgent,
         location,
         deviceFingerprint,
         loginTime: new Date(),
-        previousLoginTime: user.lastLoginAt || undefined,
         previousLoginLocation: user.lastLoginIp || undefined,
         failedAttemptsCount: user.loginAttempts,
         accountAge: user.createdAt
           ? Date.now() - user.createdAt.getTime()
           : undefined,
         unusualPatterns: false,
-      });
+      };
+
+      // Only add previousLoginTime if it exists
+      if (user.lastLoginAt) {
+        riskFactors.previousLoginTime = user.lastLoginAt;
+      }
+
+      const riskAssessment =
+        await this.riskAssessmentService.assessRisk(riskFactors);
 
       // Log successful login with risk assessment
       await this.auditLogging.logLoginSuccess({
@@ -317,8 +326,6 @@ export class AuthService {
         location,
         deviceFingerprint,
         riskScore: riskAssessment.score,
-        riskLevel: riskAssessment.level,
-        riskFactors: riskAssessment.factors,
       });
 
       const payload = { sub: user.id, email: user.email };
@@ -342,7 +349,9 @@ export class AuthService {
           score: riskAssessment.score,
           level: riskAssessment.level,
           factors: riskAssessment.factors,
+          requiresMfa: riskAssessment.requiresMfa,
           requiresStepUp: riskAssessment.requiresStepUp,
+          recommendedActions: riskAssessment.recommendedActions,
         },
       };
     } catch (error) {
