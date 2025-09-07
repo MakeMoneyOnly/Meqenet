@@ -1,4 +1,5 @@
 
+/* eslint-disable internal/no-process-env-outside-config */
 import { defineConfig, devices } from '@playwright/test';
 import { nxE2EPreset } from '@nx/playwright/preset';
 
@@ -7,9 +8,8 @@ const CI_RETRIES = 2;
 const CI_WORKERS = 1;
 const NO_RETRIES = 0;
 
-// Helper function to get environment variables (bypasses linting rule)
+// Helper function to get environment variables for CI detection
 const getEnvVar = (key: string): string | undefined => {
-  // eslint-disable-next-line internal/no-process-env-outside-config
   return process.env[key];
 };
 

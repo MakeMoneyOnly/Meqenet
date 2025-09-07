@@ -201,7 +201,8 @@ export class AuthService {
           errorCode: 'RATE_LIMIT_EXCEEDED',
           message: 'Too many login attempts. Please try again later.',
           retryAfter: Math.ceil(
-            (rateLimitResult.resetTime.getTime() - Date.now()) / 1000
+            (rateLimitResult.resetTime.getTime() - Date.now()) /
+              MILLISECONDS_PER_SECOND
           ),
         });
       }
@@ -438,7 +439,8 @@ export class AuthService {
           errorCode: 'RATE_LIMIT_EXCEEDED',
           message: 'Too many password reset requests. Please try again later.',
           retryAfter: Math.ceil(
-            (rateLimitResult.resetTime.getTime() - Date.now()) / 1000
+            (rateLimitResult.resetTime.getTime() - Date.now()) /
+              MILLISECONDS_PER_SECOND
           ),
         });
       }
