@@ -1,5 +1,5 @@
 
-/* eslint-disable internal/no-process-env-outside-config */
+// Note: This file legitimately uses process.env for CI detection
 import { defineConfig, devices } from '@playwright/test';
 import { nxE2EPreset } from '@nx/playwright/preset';
 

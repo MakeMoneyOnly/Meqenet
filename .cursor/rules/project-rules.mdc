@@ -1,0 +1,123 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+
+# Project Rules — Meqenet.et (BNPL Super-App, Ethiopia)  — DETAIL Mode
+
+> These rules specialize Cursor’s assistance for this repository. They encode our SDLC, security, BNPL domain constraints, and Ethiopian localization.
+
+## A) Project Context & Scope
+- Product: **Meqenet.et** — BNPL + marketplace + rewards + wellness for Ethiopia.
+- Integrations: **Fayda National ID (eKYC)**, **Telebirr** (primary), HelloCash, CBE Birr, M-Pesa.
+- Architecture: **Microservices** backend (NestJS, TypeScript, PostgreSQL/Prisma, Redis, SNS/SQS, gRPC internal, REST external). Frontend: **Next.js/React**, React Native. **FSA** everywhere.
+- Security posture: **Zero Trust**, **mTLS** internally, **AWS** as cloud, IaC via **Terraform**, **ECS/EKS** orchestration.
+
+## B) Repository Governance
+- **Monorepo layout** is authoritative (see `/backend/services/*`, `/frontend/*`, `/mobile/*`, `/docs/*`, `/tasks/*`).
+- Shared code lives only in `backend/shared` and `frontend/shared` with strict versioning.
+- Each service owns its **schema & migrations**; no cross-service DB access.
+
+## C) BNPL Domain & Ledger Standards
+- **Contracts**: a signed BNPL agreement yields an immutable **InstallmentSchedule** (principal, fees, APR, due dates). Mutations occur via a **new version** with cross-reference + audit.
+- **Ledger**: double-entry, append-only; compensate instead of update. Every movement tagged with correlation IDs: `contractId`, `customerId`, `merchantId`, `paymentAttemptId`.
+- **Amounts**: store as `DECIMAL(38, 9)` or integer minor units; never float.
+- **Idempotency**: payment, refund, dispute, and webhook endpoints must accept `Idempotency-Key` and return the **same result** for duplicates.
+- **Decisioning**: record **reason codes** and input features (hashed where sensitive) for audit and Fair Lending reviews.
+- **Timezone & Calendars**: persist in UTC; render using **Africa/Addis_Ababa**; provide Ethiopian calendar views where user-facing; schedules consider Ethiopian bank holidays list (configurable).
+
+## D) Security & Compliance Controls
+- Standards targeted: **PCI DSS**, **SOC 2**, **GDPR**, **PSD2**, and **NBE** directives.
+- **Secrets**: AWS Secrets Manager; rotate keys; never commit secrets or long-lived tokens.
+- **PII classification**: mark data as `PUBLIC | INTERNAL | CONFIDENTIAL | RESTRICTED (PII/PCI)`. Access via least privilege; audit every access in high-security zone.
+- **Tokenization** for PAN and sensitive IDs; store only tokens; use vault for detokenization.
+- **Logging**: JSON, correlation IDs, **no PII**, use field allowlists; redact by default.
+- **Transport**: Enforce TLS 1.3, HSTS; internal **mTLS** with SPIFFE-style identities where available.
+- **SAST/DAST** on every PR; dependency and license scan (allowlist: MIT, Apache-2.0, BSD-2/3, MPL-2.0).
+- **Data retention**: policy documents in `/docs/Security/Retention.md`; implement TTL/archival jobs accordingly.
+- **Access**: admin actions require **MFA** and are fully audited (who/what/when/why).
+
+## E) API, Messaging, and Integrations
+- **Spec-first** APIs (OpenAPI 3.0). Generate clients/servers from spec; keep drift CI gate.
+- **Messaging**: SNS/SQS for async workflows (outbox/inbox patterns), at-least-once with idempotent consumers.
+- **External**: Fayda & Telebirr clients implement timeouts, retries (exponential w/ jitter), circuit breakers, and **signature verification**. Store request/response hashes for non-repudiation.
+
+## F) Error Handling & Observability
+- Centralized error format: `{ code, message, details, correlationId }`. Never expose internals.
+- Observability stack: **OpenTelemetry** tracing, Prometheus metrics, Grafana dashboards.
+- **Required metrics per payment service**: 
+  - `payments_attempted_total`, `payments_succeeded_total`, `payments_failed_total`
+  - `fraud_flag_rate`, `risk_decision_latency_ms`, `scheduler_lag_seconds`
+  - `idempotency_conflicts_total`, `ledger_compensation_total`
+- Alert policies (minimum): 
+  - spike in failed payments, fraud anomaly rate above threshold, scheduler lag > SLA, Telebirr error rate > baseline, abnormal decline reasons distribution.
+
+## G) Testing & QA Requirements
+- Coverage gates: **90% overall**, **95%** for money/ledger modules.
+- **Required suites**:
+  - Money math property tests; schedule edge cases (month-end, leap year, holiday, DST overlaps).
+  - Contract signing → schedule creation → payment attempts → refunds → chargebacks → closure.
+  - Fraud/KYC/AML happy & adversarial paths; Telebirr webhook replay/idempotency tests.
+- Test data: generated, deterministic; synthetic personas; seeding scripts per service.
+- E2E: run against docker-compose env; include Fayda/Telebirr **sandbox stubs**.
+
+## H) CI/CD, Branching, and Release
+- Branching: `main` (protected), `develop`, `feature/*`, `release/*`, `hotfix/*`.
+- PR gates (required): lint, typecheck, unit, integration, e2e (critical path), SAST, DAST, dep & license scan, coverage thresholds, OpenAPI drift, terraform fmt/validate/plan.
+- **2 approvals** to merge into `main` (security/architecture required for sensitive areas).
+- Deployments: **blue-green or canary** for payment services; automatic rollback on SLO breach; migrations are **forward-only** and reversible via compensating scripts.
+- Provenance: supply chain signing (e.g., Sigstore/Cosign) for images and artifacts.
+
+## I) Performance & Scalability
+- Document SLIs/SLOs per service (P95/P99 latency, error rate, availability).
+- Load tests before major releases; record baselines in `/docs/Performance/Baselines.md`.
+- Use **read models** (CQRS) for high-volume queries; apply caching with explicit TTL and cache invalidation plans.
+- Throughput spikes handled via queue buffering; back-pressure over drops.
+
+## J) Frontend & Mobile (FSA & i18n)
+- Structure by **feature slices**: `entities/`, `features/`, `widgets/`, `pages/`, `shared/`.
+- State: Zustand/RTK; server data via TanStack Query; avoid global stores for ephemeral UI state.
+- i18n: **Amharic + English**; never hard-code strings; number/currency formatting uses ETB conventions.
+- Accessibility: WCAG 2.1 AA minimum; keyboard and screen reader support for all purchase & consent flows.
+
+## K) Documentation, ADRs, and Runbooks
+- Each service keeps:
+  - `README.md` (purpose, APIs, env vars, run, test, deploy)
+  - `OPENAPI.yaml` (or protobufs) with examples
+  - `ADR/` records for major decisions
+  - `RUNBOOK.md` with common failures, dashboards, alerts, and rollback steps
+- Top-level architecture diagrams in `/docs/Stage 1 - Foundation/`.
+
+## L) Change Management & Approvals
+- Any change touching **payments, ledger, auth, KYC/AML, or data retention** requires:
+  - Risk assessment, test evidence, rollback plan
+  - Security/architecture approval in PR
+  - Updated docs and runbooks
+
+## M) Code Review Checklist (attach to every PR)
+- [ ] Money types: Decimal/BigInt only; rounding rules explicit
+- [ ] Idempotency enforced on external-facing mutations
+- [ ] Input validation at boundaries; schema types aligned with DTOs
+- [ ] Logs structured and PII-free; correlation IDs present
+- [ ] Errors mapped to safe client responses; no `any` leaks
+- [ ] OpenAPI/gRPC specs updated; examples provided
+- [ ] Tests added/updated; critical paths covered; deterministic clocks used
+- [ ] Performance considerations documented (N+1, indexes, cache)
+- [ ] Secrets/config from env/Secrets Manager only
+- [ ] Docs/ADRs/runbooks updated as needed
+
+## N) File/Directory Conventions
+- `backend/services/*/src/domain` — entities, value objects (money, schedule), domain services.
+- `backend/services/*/src/app` — use cases, orchestrators (sagas), commands, queries.
+- `backend/services/*/src/infra` — adapters (HTTP/gRPC, DB, MQ), mappers, repositories.
+- `frontend/*/src` — FSA layers; avoid cross-layer imports; public APIs via index files only.
+- `shared/*` — pure, dependency-light utilities and shared domain types.
+
+## O) Cursor Assistant Behavior (Important)
+- When generating code:
+  1) **Plan**: list approach, edge cases, and risk points.
+  2) **Produce**: small, composable, typed modules with tests.
+  3) **Verify**: include quick self-review against **Section M** checklist.
+- If a request conflicts with **these rules**, prefer **safety/compliance** and explain the trade-off.
+
