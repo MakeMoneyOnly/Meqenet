@@ -377,7 +377,7 @@ export class OAuth2Service {
   }
 
   /**
-   * Refresh access token
+   * Refresh access token with token rotation for enhanced security
    */
   async refreshAccessToken(
     request: OAuthTokenRequest
@@ -444,12 +444,23 @@ export class OAuth2Service {
         refreshTokenRecord.scopes
       );
 
-      // Update refresh token's access token reference
+      // SECURITY: Implement refresh token rotation
+      // Generate a new refresh token to replace the old one
+      const newRefreshToken = await this.generateRefreshToken(
+        refreshTokenRecord.userId,
+        refreshTokenRecord.clientId,
+        refreshTokenRecord.scopes,
+        accessToken.id
+      );
+
+      // Mark the old refresh token as revoked (security best practice)
       await this.prisma.oAuthRefreshToken.update({
         where: { id: refreshTokenRecord.id },
         data: {
-          accessTokenId: accessToken.id,
-          lastUsedAt: new Date(),
+          revoked: true,
+          revokedAt: new Date(),
+          rotatedAt: new Date(),
+          rotatedToTokenId: newRefreshToken.id,
         },
       });
 
@@ -457,10 +468,12 @@ export class OAuth2Service {
         type: 'authorization',
         severity: 'low',
         userId: refreshTokenRecord.userId,
-        description: 'OAuth access token refreshed',
+        description: 'OAuth tokens refreshed with rotation',
         metadata: {
           clientId: refreshTokenRecord.clientId,
           scopes: refreshTokenRecord.scopes,
+          oldTokenRevoked: true,
+          newTokenGenerated: true,
         },
       });
 
@@ -471,6 +484,7 @@ export class OAuth2Service {
           (accessToken.expiresAt.getTime() - Date.now()) /
             MILLISECONDS_PER_SECOND
         ),
+        refreshToken: newRefreshToken.token, // Return the new refresh token
         scope: refreshTokenRecord.scopes.join(' '),
       };
     } catch (error) {

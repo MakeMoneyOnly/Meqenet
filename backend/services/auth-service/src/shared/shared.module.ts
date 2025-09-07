@@ -26,6 +26,7 @@ import { RateLimitingService } from './services/rate-limiting.service';
 import { DatabaseEncryptionMiddleware } from './services/database-encryption.middleware';
 import { OAuth2Service } from './services/oauth2.service';
 import { FaydaEncryptionUtil } from './utils/fayda-encryption.util';
+import { EnhancedSecurityMonitoringService } from './services/enhanced-security-monitoring.service';
 
 /**
  * Shared Module
@@ -54,6 +55,7 @@ import { FaydaEncryptionUtil } from './utils/fayda-encryption.util';
     SecretManagerService,
     CredentialRotationService,
     SecurityMonitoringService,
+    EnhancedSecurityMonitoringService,
     SecurityConfigService,
     AdaptiveRateLimitingService,
     AnomalyDetectionService,
@@ -74,6 +76,7 @@ import { FaydaEncryptionUtil } from './utils/fayda-encryption.util';
     SecretManagerService,
     CredentialRotationService,
     SecurityMonitoringService,
+    EnhancedSecurityMonitoringService,
     AdaptiveRateLimitingService,
     AnomalyDetectionService,
     FieldEncryptionService,
