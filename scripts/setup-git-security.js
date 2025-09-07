@@ -5,7 +5,7 @@
  * Enterprise-Grade Git Command Security Gate Configuration
  */
 
-import { execSync, spawn } from 'child_process';
+import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -59,7 +59,7 @@ class GitSecuritySetup {
       // Check if alias already exists
       execSync('git config --global alias.secure', { stdio: 'pipe' });
       this.log("Git alias 'secure' already exists. Updating...", 'warning');
-    } catch (error) {
+    } catch (_error) {
       // Alias doesn't exist, which is fine
     }
 
@@ -113,7 +113,7 @@ class GitSecuritySetup {
     try {
       execSync('git secure status', { stdio: 'pipe' });
       this.log('Allowed commands work properly', 'success');
-    } catch (error) {
+    } catch (_error) {
       this.log(
         'Allowed command test failed, but this may be due to git state',
         'warning'
