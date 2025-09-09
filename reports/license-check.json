@@ -1136,6 +1136,14 @@
     "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\source-map-support",
     "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\source-map-support\\LICENSE.md"
   },
+  "sqlite3@5.1.7": {
+    "licenses": "BSD-3-Clause",
+    "repository": "https://github.com/TryGhost/node-sqlite3",
+    "publisher": "Mapbox",
+    "url": "https://mapbox.com/",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\sqlite3",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\sqlite3\\LICENSE"
+  },
   "storybook@9.1.4": {
     "licenses": "MIT",
     "repository": "https://github.com/storybookjs/storybook",
