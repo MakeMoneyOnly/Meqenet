@@ -413,9 +413,36 @@ export class OAuth2Service {
       }
 
       if (refreshTokenRecord.revoked) {
-        throw new BadRequestException({
+        // SECURITY: REUSE DETECTED!
+        // A revoked token was used, which indicates a potential compromise.
+        // Invalidate the entire token family.
+        this.logger.warn(
+          `Refresh token reuse detected for user ${refreshTokenRecord.userId} and client ${refreshTokenRecord.clientId}. Invalidating token family.`
+        );
+
+        if (refreshTokenRecord.familyId) {
+          await this.prisma.oAuthRefreshToken.updateMany({
+            where: { familyId: refreshTokenRecord.familyId },
+            data: { revoked: true, revokedAt: new Date() },
+          });
+        }
+
+        await this.securityMonitoring.recordSecurityEvent({
+          type: 'authorization',
+          severity: 'high',
+          userId: refreshTokenRecord.userId,
+          description:
+            'Refresh token reuse detected. All tokens in family invalidated.',
+          metadata: {
+            clientId: refreshTokenRecord.clientId,
+            familyId: refreshTokenRecord.familyId,
+          },
+        });
+
+        throw new UnauthorizedException({
+          // Use 401 for security issues
           error: 'invalid_grant',
-          errorDescription: 'Refresh token revoked',
+          errorDescription: 'Invalid refresh token', // Keep generic message
         });
       }
 
@@ -450,7 +477,8 @@ export class OAuth2Service {
         refreshTokenRecord.userId,
         refreshTokenRecord.clientId,
         refreshTokenRecord.scopes,
-        accessToken.id
+        accessToken.id,
+        refreshTokenRecord.familyId || undefined // Pass the familyId
       );
 
       // Mark the old refresh token as revoked (security best practice)
@@ -726,7 +754,8 @@ export class OAuth2Service {
     userId: string,
     clientId: string,
     scopes: string[],
-    accessTokenId: string
+    accessTokenId: string,
+    familyId?: string
   ): Promise<{
     id: string;
     token: string;
@@ -735,9 +764,11 @@ export class OAuth2Service {
     scopes: string[];
     expiresAt: Date;
     accessTokenId: string | null;
+    familyId: string;
   }> {
     const token = crypto.randomBytes(TOKEN_BYTES).toString('hex');
     const expiresAt = new Date(Date.now() + this.REFRESH_TOKEN_EXPIRY);
+    const newFamilyId = familyId || crypto.randomBytes(16).toString('hex');
 
     return await this.prisma.oAuthRefreshToken.create({
       data: {
@@ -747,6 +778,7 @@ export class OAuth2Service {
         scopes,
         expiresAt,
         accessTokenId,
+        familyId: newFamilyId,
       },
     });
   }

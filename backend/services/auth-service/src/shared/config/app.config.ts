@@ -20,7 +20,7 @@ const AppEnvSchema = z.object({
   OTEL_SERVICE_NAME: z.string().optional().default('auth-service'),
   OTEL_EXPORTER_JAEGER_ENDPOINT: z.string().optional(),
   OTEL_EXPORTER_OTLP_ENDPOINT: z.string().optional(),
-  FAYDA_ENCRYPTION_KEY: z.string().optional().default('test-encryption-key-32-characters-long-key'),
+  // FAYDA_ENCRYPTION_KEY has been removed for security reasons. All encryption is now handled by SecretManagerService via KMS.
   FAYDA_HASH_SALT: z.string().optional().default('test-hash-salt-for-fayda-id-hashing-32-chars'),
 });
 
@@ -51,7 +51,6 @@ export default registerAs('app', (): AppConfig => {
     redisPort: parseInt(env.REDIS_PORT, 10),
     nodeEnv: env.NODE_ENV,
     otelServiceName: env.OTEL_SERVICE_NAME,
-    faydaEncryptionKey: env.FAYDA_ENCRYPTION_KEY,
     faydaHashSalt: env.FAYDA_HASH_SALT,
     ...(env.OTEL_EXPORTER_JAEGER_ENDPOINT && {
       otelExporterJaegerEndpoint: env.OTEL_EXPORTER_JAEGER_ENDPOINT,

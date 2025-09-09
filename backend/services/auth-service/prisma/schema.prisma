@@ -409,6 +409,7 @@ model OAuthRefreshToken {
   rotatedAt  DateTime?
   /// @classification: Internal
   rotatedToTokenId String?
+  familyId         String? // Used to chain rotated tokens together for security invalidation
 
   // Relations
   client OAuthClient @relation(fields: [clientId], references: [id])
@@ -424,4 +425,5 @@ model OAuthRefreshToken {
 
   @@index([revokedAt])
   @@index([rotatedToTokenId])
+  @@index([familyId])
 }
