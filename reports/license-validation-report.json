@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2025-09-09T08:23:31.091Z",
+  "generatedAt": "2025-09-09T08:51:04.146Z",
   "summary": {
-    "totalPackages": 183,
-    "compliantPackages": 181,
+    "totalPackages": 184,
+    "compliantPackages": 182,
     "warningPackages": 2,
     "blockingPackages": 0,
     "complianceRate": 99
@@ -14,6 +14,7 @@
     "MPL-2.0": 1,
     "ISC": 5,
     "Custom: https://gsap.com/GSAP-share-image.png": 1,
+    "BSD-3-Clause": 1,
     "0BSD": 1
   },
   "issues": {
@@ -23,7 +24,7 @@
         "name": "@vercel/analytics@1.5.0",
         "license": "MPL-2.0",
         "type": "warning",
-        "reason": "Weak copyleft license - review compatibility"
+        "reason": "Unknown or non-standard license - requires review"
       },
       {
         "name": "gsap@3.13.0",
