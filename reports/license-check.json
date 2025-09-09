@@ -1,4 +1,12 @@
 {
+  "@appthreat/sqlite3@6.0.9": {
+    "licenses": "BSD-3-Clause",
+    "repository": "https://github.com/AppThreat/node-sqlite3",
+    "publisher": "Team AppThreat",
+    "email": "cloud@appthreat.com",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@appthreat\\sqlite3",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@appthreat\\sqlite3\\LICENSE"
+  },
   "@aws-sdk/client-secrets-manager@3.882.0": {
     "licenses": "Apache-2.0",
     "repository": "https://github.com/aws/aws-sdk-js-v3",
@@ -22,6 +30,14 @@
     "email": "hello@herebecode.com",
     "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@commitlint\\config-conventional",
     "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@commitlint\\config-conventional\\license.md"
+  },
+  "@cyclonedx/cdxgen@11.7.0": {
+    "licenses": "Apache-2.0",
+    "repository": "https://github.com/CycloneDX/cdxgen",
+    "publisher": "Prabhu Subramanian",
+    "email": "prabhu@appthreat.com",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@cyclonedx\\cdxgen",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@cyclonedx\\cdxgen\\LICENSE"
   },
   "@eslint/plugin-kit@0.3.5": {
     "licenses": "Apache-2.0",
