@@ -1,3 +1,9 @@
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -96,10 +102,12 @@ const nextConfig = {
     return config;
   },
   
+  // Output file tracing configuration to resolve lockfile warnings
+  outputFileTracingRoot: path.join(__dirname, '../../'),
+  
   // Experimental features for enhanced security
   experimental: {
-    // Enable strict mode for better security
-    strictNextHead: true,
+    // strictNextHead is deprecated in Next.js 15+
   },
 };
 

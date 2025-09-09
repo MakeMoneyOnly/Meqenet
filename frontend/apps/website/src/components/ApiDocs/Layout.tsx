@@ -3,11 +3,11 @@ import ApiDocsHeader from './Header';
 import ApiDocsSidebar from './Sidebar';
 import DocsTabs from './DocsTabs';
 
-export default function ApiDocsLayout({
-  children,
-}: {
+interface ApiDocsLayoutProps {
   children: React.ReactNode;
-}) {
+}
+
+export default function ApiDocsLayout({ children }: ApiDocsLayoutProps) {
   return (
     <div
       className="min-h-screen bg-[#F7F8FA] flex flex-col font-aeonik"

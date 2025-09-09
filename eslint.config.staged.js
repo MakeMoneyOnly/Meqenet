@@ -244,6 +244,7 @@ export default [
       'backend/services/auth-service/setup.ts',
       'scripts/seed.ts',
       'playwright.e2e.config.ts', // CI detection for Playwright configuration
+      'frontend/apps/website/src/lib/config.ts', // Frontend config gateway
     ],
     rules: {
       'internal/no-process-env-outside-config': 'off',
