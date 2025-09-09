@@ -1344,7 +1344,7 @@ stages:
             description:
               Implement client-side session management (store/clear JWT in secure
               device storage).
-            status: Completed
+            status: To Do
             context: [docs/Stage 1 - Foundation/07-Security.md]
             personas: [
                 Senior Mobile Developer,
@@ -1356,7 +1356,7 @@ stages:
             description:
               Implement global state management and navigation guards for authentication
               status.
-            status: Completed
+            status: To Do
             context: [docs/Stage 1 - Foundation/08-Architecture.md]
             personas:
               [
@@ -1368,7 +1368,7 @@ stages:
             description:
               "[Test] Write E2E tests for the full mobile login and registration
               user flows."
-            status: Completed
+            status: To Do
             context: [docs/Stage 2 -Development/22-Testing_Guidelines.md]
             personas:
               [
@@ -1807,6 +1807,163 @@ stages:
             status: To Do
             context: [docs/Stage 2 -Development/15-Development_Plan.md]
 
+      - id: MEQ-BNPL-06
+        name: "[BE] Credit & Risk Engine"
+        platform: Both
+        subtasks:
+          - id: BNPL-CREDIT-01
+            description: Implement alternative data credit scoring models for underserved populations.
+            status: To Do
+            context: [docs/Stage 2 -Development/18-AI_Integration.md]
+            personas: [Data Scientist / ML Engineer, Senior Backend Developer]
+          - id: BNPL-CREDIT-02
+            description: Build dynamic credit limits engine with real-time adjustments.
+            status: To Do
+            context: [docs/Stage 1 - Foundation/03-Business_Model.md]
+            personas: [Senior Backend Developer, Data Scientist / ML Engineer]
+          - id: BNPL-CREDIT-03
+            description: Develop collections engine with automated reminders, grace periods, and escalations.
+            status: To Do
+            context: [docs/Stage 1 - Foundation/03-Business_Model.md]
+            personas: [Senior Backend Developer, Compliance & Risk Officer]
+          - id: BNPL-CREDIT-04
+            description: Implement portfolio risk analytics and stress testing capabilities.
+            status: To Do
+            context: [docs/Stage 1 - Foundation/05-Compliance_Framework.md]
+            personas: [Data Scientist / ML Engineer, Compliance & Risk Officer]
+
+      - id: MEQ-BNPL-07
+        name: "[BE] Payments & Settlements Infrastructure"
+        platform: Both
+        subtasks:
+          - id: BNPL-PAY-01
+            description: Build payment switch layer supporting all payment channels and methods.
+            status: To Do
+            context: [docs/Stage 1 - Foundation/11-Integration_Requirements.md]
+            personas: [Senior Backend Developer, Financial Software Architect]
+          - id: BNPL-PAY-02
+            description: Implement settlement engine with T+0 and T+2 processing capabilities.
+            status: To Do
+            context: [docs/Stage 1 - Foundation/03-Business_Model.md]
+            personas: [Senior Backend Developer, FinTech DevOps Engineer]
+          - id: BNPL-PAY-03
+            description: Develop comprehensive refunds and disputes workflow system.
+            status: To Do
+            context: [docs/Stage 1 - Foundation/03-Business_Model.md]
+            personas: [Senior Backend Developer, Compliance & Risk Officer]
+          - id: BNPL-PAY-04
+            description: Implement chargeback handling with NBE compliance and dispute resolution.
+            status: To Do
+            context: [docs/Stage 1 - Foundation/05-Compliance_Framework.md]
+            personas: [Senior Backend Developer, Compliance & Risk Officer]
+          - id: BNPL-PAY-05
+            description: Integrate offline payment methods (USSD, POS) for comprehensive coverage.
+            status: To Do
+            context: [docs/Stage 1 - Foundation/11-Integration_Requirements.md]
+            personas: [Senior Backend Developer, FinTech DevOps Engineer]
+
+      - id: MEQ-BNPL-08
+        name: "[Mobile] Consumer Mobile App Development"
+        platform: App
+        subtasks:
+          - id: BNPL-MOBILE-01
+            description: Create React Native TypeScript mobile app skeleton with navigation setup.
+            status: To Do
+            context: [docs/Stage 1 - Foundation/09-Tech_Stack.md]
+            personas: [Senior Mobile Developer, Financial Software Architect]
+          - id: BNPL-MOBILE-02
+            description: Implement onboarding and KYC flow integration with Fayda ID.
+            status: To Do
+            context: [docs/Stage 1 - Foundation/11-Integration_Requirements.md]
+            personas: [Senior Mobile Developer, Compliance & Risk Officer]
+          - id: BNPL-MOBILE-03
+            description: Integrate authentication with backend JWT and secure storage.
+            status: To Do
+            context: [docs/Stage 1 - Foundation/07-Security.md]
+            personas: [Senior Mobile Developer, Data Security Specialist]
+          - id: BNPL-MOBILE-04
+            description: Build user dashboard for credit status and repayment tracking.
+            status: To Do
+            context: [docs/Stage 1 - Foundation/04-PRD.md]
+            personas: [Senior Mobile Developer, UX Designer]
+          - id: BNPL-MOBILE-05
+            description: Implement checkout flow with BNPL payment plan selection.
+            status: To Do
+            context: [docs/Stage 1 - Foundation/04-PRD.md]
+            personas: [Senior Mobile Developer, UX Designer]
+          - id: BNPL-MOBILE-06
+            description: Integrate push notifications and in-app payment reminders.
+            status: To Do
+            context: [docs/Stage 1 - Foundation/04-PRD.md]
+            personas: [Senior Mobile Developer, Product Manager]
+          - id: BNPL-MOBILE-07
+            description: Develop wallet interface and transaction history features.
+            status: To Do
+            context: [docs/Stage 1 - Foundation/04-PRD.md]
+            personas: [Senior Mobile Developer, UX Designer]
+          - id: BNPL-MOBILE-08
+            description: Create profile and settings management module.
+            status: To Do
+            context: [docs/Stage 1 - Foundation/04-PRD.md]
+            personas: [Senior Mobile Developer, UX Designer]
+          - id: BNPL-MOBILE-09
+            description: Integrate rewards and loyalty program features.
+            status: To Do
+            context: [docs/Stage 1 - Foundation/04-PRD.md]
+            personas: [Senior Mobile Developer, Product Manager]
+          - id: BNPL-MOBILE-10
+            description: Build USSD fallback interface for low-connectivity scenarios.
+            status: To Do
+            context: [docs/Stage 1 - Foundation/11-Integration_Requirements.md]
+            personas: [Senior Mobile Developer, UX Designer]
+          - id: BNPL-MOBILE-11
+            description: Conduct accessibility testing for Amharic support and low-end devices.
+            status: To Do
+            context: [docs/Stage 4 - Growth & Maintenance/33-Accessibility.md]
+            personas: [Financial QA Specialist, Senior Mobile Developer]
+          - id: BNPL-MOBILE-12
+            description: Prepare and execute App Store and Google Play publishing process.
+            status: To Do
+            context: [docs/Stage 3 - Deployment & Operations/23-Deployment.md]
+            personas: [Senior Mobile Developer, FinTech DevOps Engineer]
+
+      - id: MEQ-BNPL-09
+        name: "[Web] Consumer Website Development"
+        platform: Website
+        subtasks:
+          - id: BNPL-WEB-01
+            description: Design and build consumer landing page with Meqenet branding.
+            status: To Do
+            context:
+              [docs/Stage 1 - Foundation/12-User_Experience_Guidelines.md]
+            personas: [Senior Mobile Developer, UX Designer]
+          - id: BNPL-WEB-02
+            description: Implement marketplace shopping and product discovery features.
+            status: To Do
+            context: [docs/Stage 1 - Foundation/04-PRD.md]
+            personas: [Senior Mobile Developer, UX Designer]
+          - id: BNPL-WEB-03
+            description: Build checkout flow with BNPL payment option integration.
+            status: To Do
+            context: [docs/Stage 1 - Foundation/04-PRD.md]
+            personas: [Senior Mobile Developer, UX Designer]
+          - id: BNPL-WEB-04
+            description: Develop user account portal for profile and transaction management.
+            status: To Do
+            context: [docs/Stage 1 - Foundation/04-PRD.md]
+            personas: [Senior Mobile Developer, UX Designer]
+          - id: BNPL-WEB-05
+            description: Implement Amharic and English localization across the website.
+            status: To Do
+            context:
+              [docs/Stage 2 -Development/19-API_Documentation_Strategy.md]
+            personas: [Senior Mobile Developer, UX Designer]
+          - id: BNPL-WEB-06
+            description: Set up SEO optimization and analytics tracking infrastructure.
+            status: To Do
+            context: [docs/Stage 1 - Foundation/08-Architecture.md]
+            personas: [Senior Mobile Developer, FinTech DevOps Engineer]
+
   - stage: "Stage 4: Merchant & Admin Platforms"
     tasks:
       - id: MEQ-MGT-01
@@ -2244,6 +2401,102 @@ stages:
                 Customer Success & Support
                 Manager,
               ]
+
+      - id: MEQ-MGT-09
+        name: "[BE/FE] Merchant Integrations"
+        platform: Both
+        subtasks:
+          - id: MGT-INT-01
+            description: Develop merchant SDKs for iOS, Android, Web, and React Native platforms.
+            status: To Do
+            context: [docs/Stage 2 -Development/17-Web_Platform_Features.md]
+            personas: [Senior Backend Developer, Senior Mobile Developer]
+          - id: MGT-INT-02
+            description: Create e-commerce plugins for Shopify, WooCommerce, and Magento platforms.
+            status: To Do
+            context: [docs/Stage 2 -Development/17-Web_Platform_Features.md]
+            personas: [Senior Backend Developer, Senior Mobile Developer]
+          - id: MGT-INT-03
+            description: Implement POS integrations for retail checkout systems.
+            status: To Do
+            context: [docs/Stage 1 - Foundation/11-Integration_Requirements.md]
+            personas: [Senior Backend Developer, FinTech DevOps Engineer]
+          - id: MGT-INT-04
+            description: Build merchant developer portal with sandbox environment and documentation.
+            status: To Do
+            context:
+              [docs/Stage 2 -Development/19-API_Documentation_Strategy.md]
+            personas: [Senior Backend Developer, Senior Mobile Developer]
+
+      - id: MEQ-MGT-10
+        name: "[Web] Merchant Portal Development"
+        platform: Website
+        subtasks:
+          - id: MGT-PORTAL-01
+            description: Create merchant onboarding form with KYC document upload and verification.
+            status: To Do
+            context: [docs/Stage 2 -Development/17-Web_Platform_Features.md]
+            personas: [Senior Mobile Developer, Compliance & Risk Officer]
+          - id: MGT-PORTAL-02
+            description: Build merchant dashboard showing sales analytics and settlement data.
+            status: To Do
+            context: [docs/Stage 2 -Development/17-Web_Platform_Features.md]
+            personas:
+              [
+                Senior Mobile Developer,
+                Analytics & Business Intelligence Specialist,
+              ]
+          - id: MGT-PORTAL-03
+            description: Implement integration hub for managing SDKs, plugins, and API keys.
+            status: To Do
+            context: [docs/Stage 2 -Development/17-Web_Platform_Features.md]
+            personas: [Senior Mobile Developer, Senior Backend Developer]
+          - id: MGT-PORTAL-04
+            description: Create payout schedules and settlement history interface.
+            status: To Do
+            context: [docs/Stage 2 -Development/17-Web_Platform_Features.md]
+            personas: [Senior Mobile Developer, Product Manager]
+          - id: MGT-PORTAL-05
+            description: Develop merchant compliance reporting and document management tools.
+            status: To Do
+            context: [docs/Stage 2 -Development/17-Web_Platform_Features.md]
+            personas: [Senior Mobile Developer, Compliance & Risk Officer]
+
+      - id: MEQ-MGT-11
+        name: "[Web] Admin / Backoffice Portal"
+        platform: Website
+        subtasks:
+          - id: MGT-ADMIN-01
+            description: Implement admin user and role management system with permissions.
+            status: To Do
+            context: [docs/Stage 2 -Development/17-Web_Platform_Features.md]
+            personas: [Senior Mobile Developer, Data Security Specialist]
+          - id: MGT-ADMIN-02
+            description: Build fraud monitoring dashboard with real-time alerts and analytics.
+            status: To Do
+            context: [docs/Stage 2 -Development/17-Web_Platform_Features.md]
+            personas: [Senior Mobile Developer, Data Scientist / ML Engineer]
+          - id: MGT-ADMIN-03
+            description: Create portfolio risk analytics dashboard with key risk indicators.
+            status: To Do
+            context: [docs/Stage 2 -Development/17-Web_Platform_Features.md]
+            personas: [Senior Mobile Developer, Compliance & Risk Officer]
+          - id: MGT-ADMIN-04
+            description: Develop compliance reporting tools for regulatory submissions.
+            status: To Do
+            context: [docs/Stage 2 -Development/17-Web_Platform_Features.md]
+            personas: [Senior Mobile Developer, Compliance & Risk Officer]
+          - id: MGT-ADMIN-05
+            description: Build collections management system for overdue payments and recovery.
+            status: To Do
+            context: [docs/Stage 2 -Development/17-Web_Platform_Features.md]
+            personas: [Senior Mobile Developer, Product Manager]
+          - id: MGT-ADMIN-06
+            description: Create customer support tools for dispute resolution and case management.
+            status: To Do
+            context: [docs/Stage 2 -Development/17-Web_Platform_Features.md]
+            personas:
+              [Senior Mobile Developer, Customer Success & Support Manager]
 
   - stage: "Stage 5: AI, Deployment & Launch"
     tasks:
@@ -3110,6 +3363,156 @@ stages:
               ]
             personas:
               [Financial QA Specialist, UX Designer, Senior Mobile Developer]
+
+      - id: MEQ-LNC-04
+        name: "[BE/FE] Compliance & Regulatory Framework"
+        platform: Both
+        subtasks:
+          - id: LNC-COMPLY-01
+            description: Prepare NBE license application documentation and compliance framework.
+            status: To Do
+            context: [docs/Stage 1 - Foundation/05-Compliance_Framework.md]
+            personas: [Compliance & Risk Officer, Product Manager]
+          - id: LNC-COMPLY-02
+            description: Implement AML/CTF transaction monitoring with automated alerts.
+            status: To Do
+            context: [docs/Stage 1 - Foundation/05-Compliance_Framework.md]
+            personas: [Data Security Specialist, Compliance & Risk Officer]
+          - id: LNC-COMPLY-03
+            description: Build regulatory audit and automated reporting module.
+            status: To Do
+            context: [docs/Stage 1 - Foundation/05-Compliance_Framework.md]
+            personas: [Compliance & Risk Officer, Senior Backend Developer]
+          - id: LNC-COMPLY-04
+            description: Implement data privacy controls and GDPR compliance framework.
+            status: To Do
+            context:
+              [
+                docs/Stage 1 - Foundation/06-Data_Governance_and_Privacy_Policy.md,
+              ]
+            personas: [Data Security Specialist, Compliance & Risk Officer]
+
+      - id: MEQ-LNC-05
+        name: "[BE/FE] User Experience & Trust Features"
+        platform: Both
+        subtasks:
+          - id: LNC-UX-01
+            description: Implement sub-500ms instant decisioning for BNPL applications.
+            status: To Do
+            context: [docs/Stage 2 -Development/20-Error_Handling.md]
+            personas: [Senior Backend Developer, Data Scientist / ML Engineer]
+          - id: LNC-UX-02
+            description: Develop transparent terms and disclosures with clear pricing display.
+            status: To Do
+            context:
+              [docs/Stage 1 - Foundation/12-User_Experience_Guidelines.md]
+            personas: [UX Designer, Compliance & Risk Officer]
+          - id: LNC-UX-03
+            description: Build consumer dispute resolution system with automated responses.
+            status: To Do
+            context: [docs/Stage 1 - Foundation/05-Compliance_Framework.md]
+            personas:
+              [Senior Backend Developer, Customer Success & Support Manager]
+          - id: LNC-UX-04
+            description: Implement loyalty rewards engine with gamification features.
+            status: To Do
+            context: [docs/Stage 1 - Foundation/04-PRD.md]
+            personas: [Senior Backend Developer, Product Manager]
+          - id: LNC-UX-05
+            description: Ensure USSD accessibility for low-end devices with simplified interface.
+            status: To Do
+            context: [docs/Stage 4 - Growth & Maintenance/33-Accessibility.md]
+            personas: [Senior Mobile Developer, UX Designer]
+
+      - id: MEQ-LNC-06
+        name: "[BE/FE] Operations & Support Infrastructure"
+        platform: Both
+        subtasks:
+          - id: LNC-OPS-01
+            description: Implement omnichannel customer support with chat, email, and phone integration.
+            status: To Do
+            context:
+              [
+                docs/Stage 3 - Deployment & Operations/25-Monitoring_And_Logging.md,
+              ]
+            personas:
+              [Senior Backend Developer, Customer Success & Support Manager]
+          - id: LNC-OPS-02
+            description: Build merchant support tools with onboarding automation and analytics.
+            status: To Do
+            context: [docs/Stage 2 -Development/17-Web_Platform_Features.md]
+            personas:
+              [Senior Backend Developer, Marketplace & Merchant Success Manager]
+          - id: LNC-OPS-03
+            description: Develop internal dispute resolution workflow with escalation paths.
+            status: To Do
+            context: [docs/Stage 1 - Foundation/05-Compliance_Framework.md]
+            personas: [Senior Backend Developer, Compliance & Risk Officer]
+          - id: LNC-OPS-04
+            description: Create knowledge base and help center with self-service features.
+            status: To Do
+            context: [docs/Stage 2 -Development/17-Web_Platform_Features.md]
+            personas:
+              [Senior Mobile Developer, Customer Success & Support Manager]
+
+      - id: MEQ-LNC-07
+        name: "[BE] Financial Model & Treasury Management"
+        platform: Both
+        subtasks:
+          - id: LNC-FIN-01
+            description: Implement treasury liquidity management with cash flow forecasting.
+            status: To Do
+            context: [docs/Stage 1 - Foundation/03-Business_Model.md]
+            personas: [Senior Backend Developer, Product Manager]
+          - id: LNC-FIN-02
+            description: Build capital management system for credit lines and partnership funding.
+            status: To Do
+            context: [docs/Stage 1 - Foundation/03-Business_Model.md]
+            personas: [Senior Backend Developer, Financial Software Architect]
+          - id: LNC-FIN-03
+            description: Develop collections and recovery workflows with automated strategies.
+            status: To Do
+            context: [docs/Stage 1 - Foundation/03-Business_Model.md]
+            personas: [Senior Backend Developer, Compliance & Risk Officer]
+          - id: LNC-FIN-04
+            description: Implement IFRS-compliant accounting and automated reporting system.
+            status: To Do
+            context: [docs/Stage 1 - Foundation/05-Compliance_Framework.md]
+            personas: [Senior Backend Developer, Compliance & Risk Officer]
+
+      - id: MEQ-LNC-08
+        name: "[BE/FE] Growth & Ecosystem Expansion"
+        platform: Both
+        subtasks:
+          - id: LNC-GROWTH-01
+            description: Build referral program engine with incentive management.
+            status: To Do
+            context: [docs/Stage 1 - Foundation/04-PRD.md]
+            personas: [Senior Backend Developer, Product Manager]
+          - id: LNC-GROWTH-02
+            description: Implement social group payments for community-based lending.
+            status: To Do
+            context: [docs/Stage 1 - Foundation/04-PRD.md]
+            personas: [Senior Backend Developer, UX Designer]
+          - id: LNC-GROWTH-03
+            description: Develop consumer marketplace discovery with AI-powered recommendations.
+            status: To Do
+            context: [docs/Stage 2 -Development/18-AI_Integration.md]
+            personas: [Senior Backend Developer, Data Scientist / ML Engineer]
+          - id: LNC-GROWTH-04
+            description: Integrate with telco and retail partnerships for expanded reach.
+            status: To Do
+            context: [docs/Stage 1 - Foundation/11-Integration_Requirements.md]
+            personas: [Senior Backend Developer, FinTech DevOps Engineer]
+          - id: LNC-GROWTH-05
+            description: Create merchant insights and data dashboards for performance analytics.
+            status: To Do
+            context: [docs/Stage 2 -Development/17-Web_Platform_Features.md]
+            personas:
+              [
+                Senior Backend Developer,
+                Analytics & Business Intelligence Specialist,
+              ]
 
   - stage: "Stage 6: Marketplace, Rewards & Financial Wellness"
     tasks:
@@ -3978,3 +4381,68 @@ stages:
             context: [docs/Stage 4 - Growth & Maintenance/33-Accessibility.md]
             personas:
               [Financial QA Specialist, UX Designer, Senior Mobile Developer]
+
+      - id: MEQ-FND-10
+        name: "[BE] Technical Infrastructure Setup"
+        platform: Both
+        subtasks:
+          - id: FND-INFRA-01
+            description: Define and document clear microservice boundaries and domain responsibilities.
+            status: To Do
+            context: [docs/Stage 1 - Foundation/08-Architecture.md]
+            personas: [Financial Software Architect, Senior Backend Developer]
+          - id: FND-INFRA-02
+            description: Design and implement public API layer with proper versioning and documentation.
+            status: To Do
+            context:
+              [docs/Stage 1 - Foundation/02-API_Specification_and_Governance.md]
+            personas: [Financial Software Architect, Senior Backend Developer]
+          - id: FND-INFRA-03
+            description: Build data pipelines for credit scoring and fraud detection systems.
+            status: To Do
+            context: [docs/Stage 1 - Foundation/10-Database.md]
+            personas: [Senior Backend Developer, Data Scientist / ML Engineer]
+          - id: FND-INFRA-04
+            description: Implement multi-region infrastructure with automated failover capabilities.
+            status: To Do
+            context:
+              [docs/Stage 3 - Deployment & Operations/24-Infrastructure.md]
+            personas: [FinTech DevOps Engineer, Financial Software Architect]
+          - id: FND-INFRA-05
+            description: Set up comprehensive CI/CD pipeline with infrastructure as code.
+            status: To Do
+            context: [docs/Stage 3 - Deployment & Operations/23-Deployment.md]
+            personas: [FinTech DevOps Engineer, Senior Backend Developer]
+          - id: FND-INFRA-06
+            description: Deploy observability stack (Prometheus, Grafana, ELK) with comprehensive monitoring.
+            status: To Do
+            context:
+              [
+                docs/Stage 3 - Deployment & Operations/25-Monitoring_And_Logging.md,
+              ]
+            personas: [FinTech DevOps Engineer, Senior Backend Developer]
+
+      - id: MEQ-FND-09
+        name: "[BE/Security] Security Infrastructure"
+        platform: Both
+        subtasks:
+          - id: FND-SEC-INFRA-01
+            description: Implement comprehensive encryption at rest and in transit across all systems.
+            status: To Do
+            context: [docs/Stage 1 - Foundation/07-Security.md]
+            personas: [Data Security Specialist, Senior Backend Developer]
+          - id: FND-SEC-INFRA-02
+            description: Deploy zero trust architecture with RBAC implementation.
+            status: To Do
+            context: [docs/Stage 1 - Foundation/07-Security.md]
+            personas: [Data Security Specialist, Financial Software Architect]
+          - id: FND-SEC-INFRA-03
+            description: Establish ongoing penetration testing program with automated scanning.
+            status: To Do
+            context: [docs/Stage 1 - Foundation/07-Security.md]
+            personas: [Data Security Specialist, FinTech DevOps Engineer]
+          - id: FND-SEC-INFRA-04
+            description: Deploy fraud AI with device fingerprinting and anomaly detection.
+            status: To Do
+            context: [docs/Stage 1 - Foundation/07-Security.md]
+            personas: [Data Security Specialist, Data Scientist / ML Engineer]
