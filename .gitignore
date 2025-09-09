@@ -102,6 +102,7 @@ dist/
 downloads/
 eggs/
 .eggs/
+!frontend/apps/website/src/lib/
 lib/
 lib64/
 parts/
