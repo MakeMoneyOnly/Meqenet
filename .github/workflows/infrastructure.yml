@@ -144,10 +144,10 @@ jobs:
         uses: bridgecrewio/checkov-action@v12
         continue-on-error: true
         with:
-          directory: infrastructure/
+          directory: ./infrastructure/
           framework: terraform
           output_format: sarif
-          output_file_path: checkov-terraform.sarif
+          output_file_path: ./checkov-terraform.sarif
           soft_fail: true
           quiet: true
 

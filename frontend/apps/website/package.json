@@ -42,6 +42,7 @@
     "react-hook-form": "^7.58.0",
     "react-i18next": "^13.5.0",
     "react-use-measure": "^2.1.7",
+    "redoc": "^2.1.4",
     "tailwind-merge": "^3.3.0",
     "tailwindcss-animate": "^1.0.7",
     "uuid": "^10.0.0",

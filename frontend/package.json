@@ -4,8 +4,8 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "lint": "eslint . --ext .ts,.tsx,.js,.jsx --config eslint.config.mjs",
-    "lint:security": "eslint . --ext .ts,.tsx,.js,.jsx --config eslint.config.mjs",
+    "lint": "eslint . --config eslint.config.mjs",
+    "lint:security": "eslint . --config eslint.config.mjs",
     "test": "vitest --config apps/app/vitest.config.mjs --run",
     "typecheck": "bash ../scripts/typecheck-quiet.sh"
   },
