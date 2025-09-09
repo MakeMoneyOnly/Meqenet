@@ -28,7 +28,8 @@
       "@frontend/shared-api-client": ["libs/shared/api-client/src/index.ts"],
       "@frontend/shared-config": ["libs/shared/config/src/index.ts"],
       "@frontend/shared-ui": ["libs/shared/ui/src/index.ts"],
-      "@frontend/mobile-api-client": ["libs/mobile-api-client/src/lib/api-client.ts"]
+      "@frontend/mobile-api-client": ["libs/mobile-api-client/src/index.ts"],
+      "@meqenet/mobile-state-management": ["libs/mobile-state-management/src/index.ts"]
     }
   }
 }

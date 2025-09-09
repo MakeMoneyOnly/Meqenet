@@ -1,0 +1,23 @@
+{
+  "name": "@meqenet/mobile-state-management",
+  "version": "1.0.0",
+  "description": "Mobile state management for Meqenet BNPL app",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "lint": "eslint src --ext .ts,.tsx"
+  },
+  "dependencies": {
+    "zustand": "^4.4.7",
+    "react": "^18.3.1"
+  },
+  "devDependencies": {
+    "typescript": "~5.8.3",
+    "@types/react": "~18.3.12"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0"
+  }
+}

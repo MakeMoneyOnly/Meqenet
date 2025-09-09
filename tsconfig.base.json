@@ -31,7 +31,7 @@
       "@frontend/shared/ui/*": ["frontend/libs/shared/ui/src/*"],
       "@meqenet/auth-service/*": ["backend/services/auth-service/src/*"],
       "@meqenet/mobile-state-management": [
-        "frontend/libs/mobile-state-management/src"
+        "frontend/libs/mobile-state-management/src/index.ts"
       ],
       "@meqenet/mobile-state-management/*": [
         "frontend/libs/mobile-state-management/src/*"

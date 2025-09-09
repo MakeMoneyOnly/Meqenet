@@ -10,6 +10,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 export default defineConfig({
   root: __dirname,
   plugins: [react(), tsconfigPaths()],
+  // Suppress experimental warnings
+  logLevel: 'warn',
   resolve: {
     conditions: ['browser', 'module', 'import', 'default'],
     // Prevent multiple React copies which can cause "Invalid hook call"
@@ -31,7 +33,7 @@ export default defineConfig({
       ),
       '@meqenet/mobile-state-management': resolve(
         __dirname,
-        '../../../libs/mobile-state-management/src',
+        '../../libs/mobile-state-management/src',
       ),
     },
   },
@@ -69,6 +71,9 @@ export default defineConfig({
     },
     typecheck: {
       tsconfig: resolve(__dirname, './tsconfig.spec.json'),
+      // Disable experimental warning for typecheck
+      checker: 'tsc',
+      ignoreSourceErrors: false,
     },
     coverage: {
       provider: 'v8',
