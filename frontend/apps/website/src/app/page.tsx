@@ -1,19 +1,19 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
-import HeroSection from '@/components/landing/HeroSection';
-import Header from '@/components/landing/Header';
-import ServicesSection from '@/components/services-section';
-import PricingSection from '@/components/PricingSection';
-import TeamSection from '@/components/TeamSection';
-import FAQSection from '@/components/FAQSection';
-import TrendsSection from '@/components/TrendsSection';
-import ContentSection from '@/components/content-3';
-import FooterSection from '@/components/footer';
-import ClientsProjectsSection from '@/components/ClientsProjectsSection';
-import { wrapContentWithScrollBlurItem } from '@/components/common/ui/wrapContentWithScrollBlurItem';
-import ContactCardSection from '@/components/ContactCardSection';
-import NewsletterSection from '@/components/NewsletterSection';
+import HeroSection from '@/widgets/landing/HeroSection';
+import Header from '@/widgets/landing/Header';
+import ServicesSection from '@/widgets/landing/ServicesSection';
+import PricingSection from '@/widgets/landing/PricingSection';
+import TeamSection from '@/widgets/landing/TeamSection';
+import FAQSection from '@/widgets/landing/FAQSection';
+import TrendsSection from '@/widgets/landing/TrendsSection';
+import ContentSection from '@/widgets/landing/ContentSection';
+import FooterSection from '@/widgets/landing/FooterSection';
+import ClientsProjectsSection from '@/widgets/landing/ClientsProjectsSection';
+import { wrapContentWithScrollBlurItem } from '@/shared/ui/wrapContentWithScrollBlurItem';
+import ContactCardSection from '@/widgets/landing/ContactCardSection';
+import NewsletterSection from '@/widgets/landing/NewsletterSection';
 
 export default function Home() {
   const scrollRef = useRef<HTMLDivElement | null>(null);
