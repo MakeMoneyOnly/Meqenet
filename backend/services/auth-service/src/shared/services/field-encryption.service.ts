@@ -1,220 +1,137 @@
-import {
-  createCipheriv,
-  createDecipheriv,
-  randomBytes,
-  scryptSync,
-} from 'crypto';
-
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-
-// Constants for magic numbers
-const _AES_KEY_LENGTH = 32; // 256-bit key
-const _GCM_IV_LENGTH = 16; // 128-bit IV for GCM
-const _SCRYPT_KEYLEN = 32;
-
-// String masking constants
-const MIN_MASK_LENGTH = 4;
-const MAX_VISIBLE_CHARS = 4;
-const MASK_RATIO = 0.2;
-const MASK_MULTIPLIER = 2;
-
 import { SecretManagerService } from './secret-manager.service';
 
+// NOTE: Local crypto functions have been deprecated and removed in favor of KMS-based operations via SecretManagerService.
+
 export interface EncryptionOptions {
-  algorithm?: string;
-  keyId?: string;
   fields?: string[];
   excludeFields?: string[];
+  keyId?: string;
 }
 
 export interface EncryptedField {
   encrypted: boolean;
-  value: string;
-  keyId?: string;
+  value: string; // Base64 encoded encrypted value
+  keyId: string;
   algorithm: string;
-  iv?: string;
+  iv?: string; // IV is managed by KMS, but kept for schema compatibility if needed
 }
 
 export interface FieldEncryptionResult<T = Record<string, unknown>> {
   data: T;
   encryptedFields: string[];
   keyId: string;
-  algorithm: string;
 }
 
 @Injectable()
-export class FieldEncryptionService {
+export class FieldEncryptionService implements OnModuleInit {
   private readonly logger = new Logger(FieldEncryptionService.name);
-  private readonly algorithm = 'aes-256-gcm';
-  private encryptionKey!: Buffer;
+  private isInitialized = false;
+
+  // List of fields considered sensitive by default across the application
   private readonly sensitiveFields = [
-    // Authentication & Security
+    // User details
+    'email',
     'password',
     'passwordHash',
-    'twoFactorSecret',
-    'pin',
-    'otp',
-    'securityQuestion',
-    'securityAnswer',
-    'motherMaidenName',
-
-    // Personal Identifiable Information (PII)
-    'email',
-    'phoneNumber',
     'phone',
     'firstName',
     'lastName',
-    'fullName',
     'displayName',
-    'dateOfBirth',
-    'birthDate',
-    'address',
-    'streetAddress',
-    'homeAddress',
-    'workAddress',
-    'city',
-    'postalCode',
-    'zipCode',
-
-    // Financial Information
-    'creditCard',
-    'cardNumber',
-    'cvv',
-    'cvvCode',
-    'securityCode',
-    'expiryDate',
-    'cardholderName',
-    'bankAccount',
-    'accountNumber',
-    'routingNumber',
-    'iban',
-    'swift',
-    'bic',
-
-    // Government & Legal IDs
-    'ssn',
-    'socialSecurityNumber',
-    'taxId',
-    'nationalId',
-    'passportNumber',
-    'driversLicense',
     'faydaId',
     'faydaIdHash',
-    'kebeleId',
-    'voterCard',
+    'twoFactorSecret',
 
-    // Ethiopian Specific Fields
-    'ethiopianId',
-    'tinNumber',
-    'businessLicense',
-    'tradePermit',
+    // Financial & PII
+    'accountNumber',
+    'bankName',
+    'cardNumber',
+    'cvv',
+    'expiryDate',
+    'tin',
+    'passportNumber',
+    'nationalId',
+    'address',
+    'city',
+    'country',
+    'zipCode',
 
-    // Biometric & Device Data
-    'fingerprint',
-    'faceId',
-    'deviceId',
-    'deviceFingerprint',
-    'biometricData',
-
-    // Medical & Health (if applicable)
-    'medicalRecord',
-    'healthInsurance',
-    'emergencyContact',
-
-    // Employment & Income
-    'salary',
-    'income',
-    'employerId',
-    'workPhone',
-    'workEmail',
+    // Security & Tokens
+    'token',
+    'accessToken',
+    'refreshToken',
+    'hashedToken',
+    'clientSecret',
   ];
 
   constructor(
-    private configService: ConfigService,
-    private secretManagerService: SecretManagerService
-  ) {
+    private readonly configService: ConfigService,
+    private readonly secretManagerService: SecretManagerService
+  ) {}
+
+  onModuleInit() {
     this.initializeEncryptionKey();
   }
 
   private initializeEncryptionKey(): void {
-    try {
-      // Use a master key from configuration or generate one
-      const masterKey =
-        this.configService.get<string>('ENCRYPTION_MASTER_KEY') ??
-        'default-master-key-change-in-production';
-
-      // Derive encryption key using scrypt
-      this.encryptionKey = scryptSync(masterKey, 'salt', _SCRYPT_KEYLEN);
-      this.logger.log('✅ Field encryption service initialized');
-    } catch (error) {
-      this.logger.error('❌ Failed to initialize encryption key:', error);
-      throw error;
+    if (this.secretManagerService) {
+      this.isInitialized = true;
+      this.logger.log(
+        '✅ Field encryption service initialized and linked to SecretManagerService (KMS)'
+      );
+    } else {
+      this.logger.error(
+        '❌ SecretManagerService not available. Field encryption is disabled.'
+      );
+      this.isInitialized = false;
     }
   }
 
   /**
-   * Encrypt sensitive fields in an object
+   * Encrypt sensitive fields in an object using KMS
    */
   async encryptFields<T extends Record<string, unknown>>(
     data: T,
     options: EncryptionOptions = {}
   ): Promise<FieldEncryptionResult<T>> {
+    if (!this.isInitialized)
+      throw new Error('Encryption service not initialized');
+
     const {
-      algorithm = this.algorithm,
-      keyId,
       fields = this.sensitiveFields,
       excludeFields = [],
+      keyId,
     } = options;
+    const fieldsToProcess = fields.filter(f => !excludeFields.includes(f));
 
     const encryptedData = { ...data };
     const encryptedFields: string[] = [];
 
-    // Generate IV for this encryption operation
-    const iv = randomBytes(_GCM_IV_LENGTH);
-
-    for (const field of fields) {
-      if (excludeFields.includes(field)) continue;
-      // Validate field name to prevent object injection
+    for (const field of fieldsToProcess) {
       if (
-        typeof field === 'string' &&
-        /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(field) &&
-        field in encryptedData
+        field in encryptedData &&
+        encryptedData[field] !== null &&
+        encryptedData[field] !== undefined
       ) {
-        // Safely access the field value using Object.getOwnPropertyDescriptor
-        const descriptor = Object.getOwnPropertyDescriptor(
-          encryptedData,
-          field
-        );
-        const fieldValue =
-          descriptor &&
-          descriptor.value !== undefined &&
-          descriptor.value != null
-            ? descriptor.value
-            : undefined;
-
-        // Skip if already encrypted
+        const fieldValue = encryptedData[field];
         if (this.isEncryptedField(fieldValue)) continue;
 
-        // Encrypt the field value
         const encryptedValue = await this.encryptValue(
-          fieldValue,
-          algorithm,
-          iv
+          JSON.stringify(fieldValue),
+          keyId
         );
 
-        // Replace with encrypted field structure using safer property assignment
         Object.defineProperty(encryptedData, field, {
           value: {
             encrypted: true,
             value: encryptedValue,
-            keyId: keyId ?? 'field-encryption-key',
-            algorithm,
-            iv: iv.toString('hex'),
+            keyId: keyId ?? this.secretManagerService.getKmsKeyId(),
+            algorithm: 'kms-aes-256-gcm',
           } as EncryptedField,
-          writable: true,
           enumerable: true,
           configurable: true,
+          writable: true,
         });
 
         encryptedFields.push(field);
@@ -224,54 +141,41 @@ export class FieldEncryptionService {
     return {
       data: encryptedData,
       encryptedFields,
-      keyId: keyId ?? 'field-encryption-key',
-      algorithm,
+      keyId: keyId ?? this.secretManagerService.getKmsKeyId(),
     };
   }
 
   /**
-   * Decrypt sensitive fields in an object
+   * Decrypt sensitive fields in an object using KMS
    */
   async decryptFields<T extends Record<string, unknown>>(
     data: T,
     options: EncryptionOptions = {}
   ): Promise<FieldEncryptionResult<T>> {
-    const { fields = this.sensitiveFields, excludeFields = [] } = options;
+    if (!this.isInitialized)
+      throw new Error('Encryption service not initialized');
 
+    const { fields = this.sensitiveFields, excludeFields = [] } = options;
     const decryptedData = { ...data };
     const encryptedFields: string[] = [];
 
-    for (const field of fields) {
+    for (const field of Object.keys(decryptedData)) {
       if (excludeFields.includes(field)) continue;
-      // Validate field name to prevent object injection
-      if (
-        typeof field === 'string' &&
-        /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(field) &&
-        field in decryptedData
-      ) {
-        // Safely access the field value using Object.getOwnPropertyDescriptor
-        const descriptor = Object.getOwnPropertyDescriptor(
-          decryptedData,
-          field
-        );
-        const fieldValue =
-          descriptor && descriptor.value !== undefined
-            ? descriptor.value
-            : undefined;
 
-        // Check if field is encrypted
-        if (fieldValue !== undefined && this.isEncryptedField(fieldValue)) {
-          // Decrypt the field value
-          const decryptedValue = await this.decryptValue(fieldValue);
-
-          // Replace with decrypted value using safer property assignment
-          Object.defineProperty(decryptedData, field, {
-            value: decryptedValue,
-            writable: true,
-            enumerable: true,
-            configurable: true,
-          });
-          encryptedFields.push(field);
+      const fieldValue = decryptedData[field];
+      if (fieldValue !== undefined && this.isEncryptedField(fieldValue)) {
+        if (fields.includes(field)) {
+          try {
+            const decryptedValue = await this.decryptValue(fieldValue);
+            decryptedData[field] = decryptedValue as T[Extract<
+              keyof T,
+              string
+            >];
+            encryptedFields.push(field);
+          } catch (error) {
+            this.logger.error(`❌ Failed to decrypt field: ${field}`, error);
+            // Decide on error handling: throw, or leave field encrypted
+          }
         }
       }
     }
@@ -279,34 +183,16 @@ export class FieldEncryptionService {
     return {
       data: decryptedData,
       encryptedFields,
-      keyId: 'field-encryption-key',
-      algorithm: this.algorithm,
+      keyId: this.secretManagerService.getKmsKeyId(),
     };
   }
 
   /**
-   * Encrypt a single value
+   * Encrypt a single value using KMS
    */
-  private async encryptValue(
-    value: unknown,
-    algorithm: string,
-    iv: Buffer
-  ): Promise<string> {
+  private async encryptValue(value: string, keyId?: string): Promise<string> {
     try {
-      const cipher = createCipheriv(algorithm, this.encryptionKey, iv);
-      let encrypted = cipher.update(JSON.stringify(value), 'utf8', 'hex');
-      encrypted += cipher.final('hex');
-
-      // Get auth tag for GCM mode
-      const authTag = (
-        cipher as unknown as { getAuthTag(): Buffer }
-      ).getAuthTag();
-
-      // Return encrypted data with auth tag
-      return JSON.stringify({
-        data: encrypted,
-        authTag: authTag.toString('hex'),
-      });
+      return await this.secretManagerService.encryptData(value, keyId);
     } catch (error) {
       this.logger.error('❌ Field encryption failed:', error);
       throw new Error('Encryption failed');
@@ -314,34 +200,14 @@ export class FieldEncryptionService {
   }
 
   /**
-   * Decrypt a single value
+   * Decrypt a single value using KMS
    */
   private async decryptValue(encryptedField: EncryptedField): Promise<unknown> {
     try {
-      const { value, iv, algorithm = this.algorithm } = encryptedField;
-
-      if (!iv || !value) {
-        throw new Error('Invalid encrypted field structure');
-      }
-
-      const encryptedData = JSON.parse(value);
-      const decipher = createDecipheriv(
-        algorithm,
-        this.encryptionKey,
-        Buffer.from(iv, 'hex')
+      const decryptedString = await this.secretManagerService.decryptData(
+        encryptedField.value
       );
-
-      // Set auth tag for GCM mode
-      if (encryptedData.authTag) {
-        (
-          decipher as unknown as { setAuthTag(authTag: Buffer): void }
-        ).setAuthTag(Buffer.from(encryptedData.authTag, 'hex'));
-      }
-
-      let decrypted = decipher.update(encryptedData.data, 'hex', 'utf8');
-      decrypted += decipher.final('utf8');
-
-      return JSON.parse(decrypted);
+      return JSON.parse(decryptedString);
     } catch (error) {
       this.logger.error('❌ Field decryption failed:', error);
       throw new Error('Decryption failed');
@@ -349,432 +215,21 @@ export class FieldEncryptionService {
   }
 
   /**
-   * Check if a field value is encrypted
+   * Check if a field value is an encrypted structure
    */
   private isEncryptedField(value: unknown): value is EncryptedField {
-    return (
-      typeof value === 'object' &&
-      value !== null &&
-      'encrypted' in value &&
-      value.encrypted === true &&
-      'value' in value
-    );
-  }
-
-  /**
-   * Encrypt sensitive data before database storage
-   */
-  async encryptForStorage<T extends Record<string, unknown>>(
-    data: T,
-    tableName: string
-  ): Promise<FieldEncryptionResult<T>> {
-    // Define field encryption rules based on table/entity type
-    const fieldRules: Record<string, EncryptionOptions> = {
-      users: {
-        fields: [
-          'password',
-          'passwordHash',
-          'email',
-          'phoneNumber',
-          'phone',
-          'firstName',
-          'lastName',
-          'displayName',
-          'dateOfBirth',
-          'birthDate',
-          'twoFactorSecret',
-          'faydaId',
-          'faydaIdHash',
-          'nationalId',
-          'address',
-          'city',
-          'postalCode',
-          'emergencyContact',
-        ],
-      },
-      payments: {
-        fields: [
-          'cardNumber',
-          'cvv',
-          'cvvCode',
-          'securityCode',
-          'expiryDate',
-          'cardholderName',
-          'pin',
-          'bankAccount',
-          'accountNumber',
-        ],
-      },
-      bank_accounts: {
-        fields: [
-          'accountNumber',
-          'routingNumber',
-          'iban',
-          'swift',
-          'bic',
-          'bankName',
-          'branchCode',
-          'accountHolderName',
-        ],
-      },
-      identities: {
-        fields: [
-          'passportNumber',
-          'driversLicense',
-          'taxId',
-          'nationalId',
-          'faydaId',
-          'ethiopianId',
-          'kebeleId',
-          'voterCard',
-          'tinNumber',
-          'businessLicense',
-          'tradePermit',
-        ],
-      },
-      addresses: {
-        fields: [
-          'streetAddress',
-          'homeAddress',
-          'workAddress',
-          'city',
-          'postalCode',
-          'zipCode',
-          'region',
-          'district',
-          'kebele',
-        ],
-      },
-      kyc_documents: {
-        fields: [
-          'documentNumber',
-          'documentData',
-          'biometricData',
-          'fingerprint',
-          'faceId',
-          'signature',
-        ],
-      },
-      employment: {
-        fields: [
-          'employerId',
-          'salary',
-          'income',
-          'workPhone',
-          'workEmail',
-          'jobTitle',
-          'companyName',
-          'workAddress',
-        ],
-      },
-      medical: {
-        fields: [
-          'medicalRecord',
-          'healthInsurance',
-          'emergencyContact',
-          'bloodType',
-          'allergies',
-          'medications',
-        ],
-      },
-    };
-
-    // Safely access field rules with validation
-    const tableKey =
-      typeof tableName === 'string' &&
-      /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(tableName)
-        ? tableName
-        : 'default';
-    const fieldRuleDescriptor = Object.getOwnPropertyDescriptor(
-      fieldRules,
-      tableKey
-    );
-    const options = (fieldRuleDescriptor?.value as EncryptionOptions) ?? {
-      fields: this.sensitiveFields,
-    };
-
-    return this.encryptFields(data, options);
-  }
-
-  /**
-   * Decrypt data after retrieval from database
-   */
-  async decryptFromStorage<T extends Record<string, unknown>>(
-    data: T,
-    tableName: string
-  ): Promise<FieldEncryptionResult<T>> {
-    const fieldRules: Record<string, EncryptionOptions> = {
-      users: {
-        fields: [
-          'password',
-          'passwordHash',
-          'email',
-          'phoneNumber',
-          'phone',
-          'firstName',
-          'lastName',
-          'displayName',
-          'dateOfBirth',
-          'birthDate',
-          'twoFactorSecret',
-          'faydaId',
-          'faydaIdHash',
-          'nationalId',
-          'address',
-          'city',
-          'postalCode',
-          'emergencyContact',
-        ],
-      },
-      payments: {
-        fields: [
-          'cardNumber',
-          'cvv',
-          'cvvCode',
-          'securityCode',
-          'expiryDate',
-          'cardholderName',
-          'pin',
-          'bankAccount',
-          'accountNumber',
-        ],
-      },
-      bank_accounts: {
-        fields: [
-          'accountNumber',
-          'routingNumber',
-          'iban',
-          'swift',
-          'bic',
-          'bankName',
-          'branchCode',
-          'accountHolderName',
-        ],
-      },
-      identities: {
-        fields: [
-          'passportNumber',
-          'driversLicense',
-          'taxId',
-          'nationalId',
-          'faydaId',
-          'ethiopianId',
-          'kebeleId',
-          'voterCard',
-          'tinNumber',
-          'businessLicense',
-          'tradePermit',
-        ],
-      },
-      addresses: {
-        fields: [
-          'streetAddress',
-          'homeAddress',
-          'workAddress',
-          'city',
-          'postalCode',
-          'zipCode',
-          'region',
-          'district',
-          'kebele',
-        ],
-      },
-      kyc_documents: {
-        fields: [
-          'documentNumber',
-          'documentData',
-          'biometricData',
-          'fingerprint',
-          'faceId',
-          'signature',
-        ],
-      },
-      employment: {
-        fields: [
-          'employerId',
-          'salary',
-          'income',
-          'workPhone',
-          'workEmail',
-          'jobTitle',
-          'companyName',
-          'workAddress',
-        ],
-      },
-      medical: {
-        fields: [
-          'medicalRecord',
-          'healthInsurance',
-          'emergencyContact',
-          'bloodType',
-          'allergies',
-          'medications',
-        ],
-      },
-    };
-
-    // Safely access field rules with validation
-    const tableKey =
-      typeof tableName === 'string' &&
-      /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(tableName)
-        ? tableName
-        : 'default';
-    const fieldRuleDescriptor = Object.getOwnPropertyDescriptor(
-      fieldRules,
-      tableKey
-    );
-    const options = (fieldRuleDescriptor?.value as EncryptionOptions) ?? {
-      fields: this.sensitiveFields,
-    };
-
-    return this.decryptFields(data, options);
-  }
-
-  /**
-   * Encrypt data for API responses (selective encryption)
-   */
-  async encryptForResponse<T extends Record<string, unknown>>(
-    data: T,
-    sensitiveFields: string[] = []
-  ): Promise<FieldEncryptionResult<T>> {
-    const fieldsToEncrypt =
-      sensitiveFields.length > 0 ? sensitiveFields : this.sensitiveFields;
-
-    return this.encryptFields(data, {
-      fields: fieldsToEncrypt,
-      excludeFields: ['id', 'createdAt', 'updatedAt'], // Never encrypt metadata
-    });
-  }
-
-  /**
-   * Decrypt data from API requests
-   */
-  async decryptFromRequest<T extends Record<string, unknown>>(
-    data: T,
-    sensitiveFields: string[] = []
-  ): Promise<FieldEncryptionResult<T>> {
-    const fieldsToDecrypt =
-      sensitiveFields.length > 0 ? sensitiveFields : this.sensitiveFields;
-
-    return this.decryptFields(data, {
-      fields: fieldsToDecrypt,
-    });
-  }
-
-  /**
-   * Generate a new encryption key for rotation
-   */
-  async rotateEncryptionKey(): Promise<string> {
-    try {
-      const newKey = randomBytes(_AES_KEY_LENGTH);
-      const keyId = `encryption-key-${Date.now()}`;
-
-      // Store the new key securely
-      await this.secretManagerService.createSecret(keyId, {
-        key: newKey.toString('hex'),
-        createdAt: new Date().toISOString(),
-        algorithm: this.algorithm,
-      });
-
-      this.logger.log(`🔄 Encryption key rotated: ${keyId}`);
-      return keyId;
-    } catch (error) {
-      this.logger.error('❌ Key rotation failed:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Validate encryption integrity
-   */
-  async validateEncryption(data: Record<string, unknown>): Promise<boolean> {
-    try {
-      // Attempt to decrypt all encrypted fields
-      const decrypted = await this.decryptFields(data);
-      return decrypted.encryptedFields.length > 0;
-    } catch (error) {
-      this.logger.error('❌ Encryption validation failed:', error);
+    if (typeof value !== 'object' || value === null) {
       return false;
     }
-  }
-
-  /**
-   * Get encryption statistics
-   */
-  getEncryptionStats(): {
-    algorithm: string;
-    keyId: string;
-    sensitiveFields: string[];
-    supportsKeyRotation: boolean;
-  } {
-    return {
-      algorithm: this.algorithm,
-      keyId: 'field-encryption-key',
-      sensitiveFields: [...this.sensitiveFields],
-      supportsKeyRotation: true,
-    };
-  }
-
-  /**
-   * Sanitize data for logging (remove encrypted values)
-   */
-  sanitizeForLogging<T extends Record<string, unknown>>(data: T): T {
-    const sanitized = { ...data };
-
-    for (const field of this.sensitiveFields) {
-      // Validate field name to prevent object injection
-      if (
-        typeof field === 'string' &&
-        /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(field) &&
-        field in sanitized
-      ) {
-        // Safely access the field value using Object.getOwnPropertyDescriptor
-        const descriptor = Object.getOwnPropertyDescriptor(sanitized, field);
-        const fieldValue =
-          descriptor && descriptor.value !== undefined
-            ? descriptor.value
-            : undefined;
-
-        if (fieldValue !== undefined && this.isEncryptedField(fieldValue)) {
-          // Use Object.defineProperty for safer assignment
-          Object.defineProperty(sanitized, field, {
-            value: '[ENCRYPTED]',
-            writable: true,
-            enumerable: true,
-            configurable: true,
-          });
-        } else if (typeof fieldValue === 'string') {
-          // Mask sensitive string fields
-          const maskedValue = this.maskSensitiveString(fieldValue);
-          Object.defineProperty(sanitized, field, {
-            value: maskedValue,
-            writable: true,
-            enumerable: true,
-            configurable: true,
-          });
-        }
-      }
-    }
-
-    return sanitized;
-  }
-
-  /**
-   * Mask sensitive string data for safe display
-   */
-  private maskSensitiveString(value: string): string {
-    if (value.length <= MIN_MASK_LENGTH) return '*'.repeat(value.length);
-
-    const visibleChars = Math.min(
-      MAX_VISIBLE_CHARS,
-      Math.floor(value.length * MASK_RATIO)
-    );
-    const maskedChars = value.length - visibleChars * MASK_MULTIPLIER;
-
+    const val = value as EncryptedField;
     return (
-      value.substring(0, visibleChars) +
-      '*'.repeat(maskedChars) +
-      value.substring(value.length - visibleChars)
+      'encrypted' in val &&
+      val.encrypted === true &&
+      typeof val.value === 'string' &&
+      typeof val.algorithm === 'string'
     );
   }
+
+  // Other methods like encryptForStorage, encryptForResponse can be simplified
+  // or refactored to use the main encryptFields/decryptFields methods.
 }

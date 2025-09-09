@@ -496,7 +496,7 @@ describe('OAuth2Service', () => {
 
       await expect(
         service.refreshAccessToken(validRefreshRequest)
-      ).rejects.toThrow(BadRequestException);
+      ).rejects.toThrow(UnauthorizedException);
     });
 
     it('should reject expired refresh token', async () => {
@@ -511,6 +511,80 @@ describe('OAuth2Service', () => {
       await expect(
         service.refreshAccessToken(validRefreshRequest)
       ).rejects.toThrow(BadRequestException);
+    });
+  });
+
+  describe('Refresh Token Reuse Detection', () => {
+    const familyId = 'token-family-123';
+    const initialToken = { ...mockRefreshToken, familyId, revoked: false };
+    const rotatedToken = {
+      ...mockRefreshToken,
+      id: 'rotated-token-id',
+      token: 'rotated-token',
+      familyId,
+      revoked: false,
+    };
+
+    it('should reject a reused refresh token and invalidate the entire token family', async () => {
+      // 1. First, mock the successful rotation
+      vi.spyOn(
+        prismaService.oAuthRefreshToken,
+        'findUnique'
+      ).mockResolvedValueOnce(initialToken);
+      vi.spyOn(prismaService.oAuthAccessToken, 'create').mockResolvedValue(
+        mockAccessToken
+      );
+      vi.spyOn(prismaService.oAuthRefreshToken, 'create').mockResolvedValue(
+        rotatedToken
+      );
+      vi.spyOn(prismaService.oAuthRefreshToken, 'update').mockResolvedValue({
+        ...initialToken,
+        revoked: true,
+      });
+
+      // Attacker or first legitimate use
+      await service.refreshAccessToken({
+        grantType: 'refresh_token',
+        refreshToken: initialToken.token,
+      });
+
+      // 2. Now, simulate the reuse of the *original* token
+      const reusedToken = { ...initialToken, revoked: true };
+      vi.spyOn(prismaService.oAuthRefreshToken, 'findUnique').mockResolvedValue(
+        reusedToken
+      );
+      const updateManySpy = vi
+        .spyOn(prismaService.oAuthRefreshToken, 'updateMany')
+        .mockResolvedValue({ count: 2 });
+
+      // 3. Assert the reuse attempt fails and triggers invalidation
+      await expect(
+        service.refreshAccessToken({
+          grantType: 'refresh_token',
+          refreshToken: initialToken.token,
+        })
+      ).rejects.toThrow(UnauthorizedException);
+
+      // 4. Verify the entire family was revoked
+      expect(updateManySpy).toHaveBeenCalledWith({
+        where: { familyId: familyId },
+        data: { revoked: true, revokedAt: expect.any(Date) },
+      });
+
+      // 5. Verify a high-severity security event was logged
+      expect(
+        securityMonitoringService.recordSecurityEvent
+      ).toHaveBeenCalledWith({
+        type: 'authorization',
+        severity: 'high',
+        userId: initialToken.userId,
+        description:
+          'Refresh token reuse detected. All tokens in family invalidated.',
+        metadata: {
+          clientId: initialToken.clientId,
+          familyId: familyId,
+        },
+      });
     });
   });
 
