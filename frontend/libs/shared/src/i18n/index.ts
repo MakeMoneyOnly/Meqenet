@@ -36,7 +36,7 @@ export const LANGUAGE_DIRECTIONS = ['ltr', 'rtl'];
 // Type definition moved inline to avoid webpack issues
 
 // Configure i18n
-const initI18n = (isClient = true): typeof i18n => {
+const initI18n = (isClient = true) => {
   const i18nInstance = i18n.use(initReactI18next);
 
   // Use language detector and backend only on client
@@ -116,9 +116,6 @@ const initI18n = (isClient = true): typeof i18n => {
 
 /**
  * Currency formatter for Ethiopian Birr
- * @param {number} value - The numeric value to format
- * @param {string} [lng] - The language code
- * @returns {string} The formatted currency string
  */
 const formatCurrency = (value: number, lng?: string): string => {
   const formatter = new Intl.NumberFormat(lng === 'am' ? 'am-ET' : 'en-ET', {
@@ -132,9 +129,6 @@ const formatCurrency = (value: number, lng?: string): string => {
 
 /**
  * Date formatter
- * @param {Date|string} value - The date value to format
- * @param {string} [lng] - The language code
- * @returns {string} The formatted date string
  */
 const formatDate = (value: Date | string, lng?: string): string => {
   const date = typeof value === 'string' ? new Date(value) : value;
@@ -148,9 +142,6 @@ const formatDate = (value: Date | string, lng?: string): string => {
 
 /**
  * Number formatter
- * @param {number} value - The numeric value to format
- * @param {string} [lng] - The language code
- * @returns {string} The formatted number string
  */
 const formatNumber = (value: number, lng?: string): string => {
   const formatter = new Intl.NumberFormat(lng === 'am' ? 'am-ET' : 'en-ET');

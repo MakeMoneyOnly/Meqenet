@@ -1,0 +1,384 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "FlexPay API",
+    "description": "API documentation for FlexPay Buy Now Pay Later service",
+    "version": "1.0.0",
+    "contact": {
+      "name": "FlexPay Support",
+      "url": "https://flexpay.et/support",
+      "email": "support@flexpay.et"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.flexpay.et/api/v1",
+      "description": "Production server"
+    },
+    {
+      "url": "https://staging-api.flexpay.et/api/v1",
+      "description": "Staging server"
+    },
+    {
+      "url": "http://localhost:3000/api/v1",
+      "description": "Local development server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "merchants",
+      "description": "Merchant API endpoints"
+    },
+    {
+      "name": "transactions",
+      "description": "Transaction management endpoints"
+    },
+    {
+      "name": "webhooks",
+      "description": "Webhook endpoints"
+    }
+  ],
+  "paths": {
+    "/merchants/transactions": {
+      "post": {
+        "tags": ["merchants", "transactions"],
+        "summary": "Create a new transaction",
+        "description": "Create a new BNPL transaction for a customer",
+        "operationId": "createTransaction",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTransactionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Transaction created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["merchants", "transactions"],
+        "summary": "Get merchant transactions",
+        "description": "Get a list of transactions for the merchant",
+        "operationId": "getMerchantTransactions",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of items per page",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 10
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by transaction status",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PENDING",
+                "APPROVED",
+                "REJECTED",
+                "COMPLETED",
+                "CANCELLED"
+              ]
+            }
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "description": "Filter by start date (ISO format)",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "description": "Filter by end date (ISO format)",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of transactions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/TransactionResponse"
+                      }
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CreateTransactionRequest": {
+        "type": "object",
+        "required": ["amount", "currency", "customer", "items", "redirectUrl"],
+        "properties": {
+          "amount": {
+            "type": "number",
+            "description": "Total transaction amount"
+          },
+          "currency": {
+            "type": "string",
+            "description": "Currency code",
+            "default": "ETB"
+          },
+          "customer": {
+            "$ref": "#/components/schemas/CustomerInfo"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransactionItem"
+            }
+          },
+          "redirectUrl": {
+            "type": "string",
+            "description": "URL to redirect the customer after the transaction is completed"
+          },
+          "metadata": {
+            "type": "object",
+            "description": "Additional metadata for the transaction"
+          }
+        }
+      },
+      "CustomerInfo": {
+        "type": "object",
+        "required": ["phoneNumber"],
+        "properties": {
+          "phoneNumber": {
+            "type": "string",
+            "description": "Customer phone number"
+          },
+          "email": {
+            "type": "string",
+            "description": "Customer email address"
+          }
+        }
+      },
+      "TransactionItem": {
+        "type": "object",
+        "required": ["name", "price", "quantity"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Item name"
+          },
+          "price": {
+            "type": "number",
+            "description": "Item price"
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "Item quantity"
+          },
+          "description": {
+            "type": "string",
+            "description": "Item description"
+          },
+          "imageUrl": {
+            "type": "string",
+            "description": "Item image URL"
+          }
+        }
+      },
+      "TransactionResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Transaction ID"
+          },
+          "amount": {
+            "type": "number",
+            "description": "Transaction amount"
+          },
+          "currency": {
+            "type": "string",
+            "description": "Currency code"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "APPROVED",
+              "REJECTED",
+              "COMPLETED",
+              "CANCELLED"
+            ],
+            "description": "Transaction status"
+          },
+          "paymentUrl": {
+            "type": "string",
+            "description": "URL for the customer to complete the payment"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Transaction creation date"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Transaction last update date"
+          }
+        }
+      },
+      "PaginationMeta": {
+        "type": "object",
+        "properties": {
+          "currentPage": {
+            "type": "integer",
+            "description": "Current page number"
+          },
+          "totalPages": {
+            "type": "integer",
+            "description": "Total number of pages"
+          },
+          "totalItems": {
+            "type": "integer",
+            "description": "Total number of items"
+          },
+          "itemsPerPage": {
+            "type": "integer",
+            "description": "Number of items per page"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "integer",
+            "description": "HTTP status code"
+          },
+          "message": {
+            "type": "string",
+            "description": "Error message"
+          },
+          "error": {
+            "type": "string",
+            "description": "Error type"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-api-key",
+        "description": "API key for merchant authentication"
+      }
+    }
+  }
+}
