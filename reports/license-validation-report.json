@@ -1,24 +1,45 @@
 {
-  "generatedAt": "2025-09-07T13:16:26.858Z",
+  "generatedAt": "2025-09-09T08:18:58.216Z",
   "summary": {
-    "totalPackages": 138,
-    "compliantPackages": 138,
-    "warningPackages": 0,
+    "totalPackages": 183,
+    "compliantPackages": 181,
+    "warningPackages": 2,
     "blockingPackages": 0,
-    "complianceRate": 100
+    "complianceRate": 99
   },
   "licenseBreakdown": {
-    "Apache-2.0": 24,
-    "MIT": 108,
+    "Apache-2.0": 27,
+    "MIT": 146,
     "BSD-2-Clause": 2,
-    "ISC": 3,
+    "MPL-2.0": 1,
+    "ISC": 5,
+    "Custom: https://gsap.com/GSAP-share-image.png": 1,
     "0BSD": 1
   },
   "issues": {
     "blocking": [],
-    "warnings": []
+    "warnings": [
+      {
+        "name": "@vercel/analytics@1.5.0",
+        "license": "MPL-2.0",
+        "type": "warning",
+        "reason": "Weak copyleft license - review compatibility"
+      },
+      {
+        "name": "gsap@3.13.0",
+        "license": "Custom: https://gsap.com/GSAP-share-image.png",
+        "type": "warning",
+        "reason": "Unknown or non-standard license - requires review"
+      }
+    ]
   },
   "recommendations": [
+    {
+      "priority": "MEDIUM",
+      "action": "Review warning license packages",
+      "details": "2 packages use licenses that require careful review",
+      "alternatives": "Consider MIT/BSD alternatives where possible"
+    },
     {
       "priority": "LOW",
       "action": "Implement license scanning in CI/CD",

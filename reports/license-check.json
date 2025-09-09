@@ -50,6 +50,18 @@
     "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@grpc\\proto-loader",
     "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@grpc\\proto-loader\\LICENSE"
   },
+  "@headlessui/react@2.2.7": {
+    "licenses": "MIT",
+    "repository": "https://github.com/tailwindlabs/headlessui",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@headlessui\\react",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@headlessui\\react\\LICENSE"
+  },
+  "@heroicons/react@2.2.0": {
+    "licenses": "MIT",
+    "repository": "https://github.com/tailwindlabs/heroicons",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@heroicons\\react",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@heroicons\\react\\LICENSE"
+  },
   "@hookform/resolvers@5.2.1": {
     "licenses": "MIT",
     "repository": "https://github.com/react-hook-form/resolvers",
@@ -302,6 +314,24 @@
     "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@prisma\\client",
     "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@prisma\\client\\LICENSE"
   },
+  "@radix-ui/react-accordion@1.2.12": {
+    "licenses": "MIT",
+    "repository": "https://github.com/radix-ui/primitives",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@radix-ui\\react-accordion",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@radix-ui\\react-accordion\\LICENSE"
+  },
+  "@radix-ui/react-label@2.1.7": {
+    "licenses": "MIT",
+    "repository": "https://github.com/radix-ui/primitives",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@radix-ui\\react-label",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@radix-ui\\react-label\\LICENSE"
+  },
+  "@radix-ui/react-slot@1.2.3": {
+    "licenses": "MIT",
+    "repository": "https://github.com/radix-ui/primitives",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@radix-ui\\react-slot",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@radix-ui\\react-slot\\LICENSE"
+  },
   "@storybook/nextjs@9.1.4": {
     "licenses": "MIT",
     "repository": "https://github.com/storybookjs/storybook",
@@ -338,6 +368,13 @@
     "email": "kdy1997.dev@gmail.com",
     "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@swc\\helpers",
     "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@swc\\helpers\\LICENSE"
+  },
+  "@tanstack/react-query@5.76.1": {
+    "licenses": "MIT",
+    "repository": "https://github.com/TanStack/query",
+    "publisher": "tannerlinsley",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@tanstack\\react-query",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@tanstack\\react-query\\LICENSE"
   },
   "@testing-library/jest-dom@6.8.0": {
     "licenses": "MIT",
@@ -377,17 +414,47 @@
     "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@types\\bcrypt",
     "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@types\\bcrypt\\LICENSE"
   },
+  "@types/bcryptjs@2.4.6": {
+    "licenses": "MIT",
+    "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@types\\bcryptjs",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@types\\bcryptjs\\LICENSE"
+  },
   "@types/compression@1.8.1": {
     "licenses": "MIT",
     "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
     "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@types\\compression",
     "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@types\\compression\\LICENSE"
   },
+  "@types/crypto-js@4.2.2": {
+    "licenses": "MIT",
+    "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@types\\crypto-js",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@types\\crypto-js\\LICENSE"
+  },
   "@types/express@5.0.3": {
     "licenses": "MIT",
     "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
     "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@types\\express",
     "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@types\\express\\LICENSE"
+  },
+  "@types/jest@30.0.0": {
+    "licenses": "MIT",
+    "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@types\\jest",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@types\\jest\\LICENSE"
+  },
+  "@types/js-cookie@3.0.6": {
+    "licenses": "MIT",
+    "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@types\\js-cookie",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@types\\js-cookie\\LICENSE"
+  },
+  "@types/jsonwebtoken@9.0.10": {
+    "licenses": "MIT",
+    "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@types\\jsonwebtoken",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@types\\jsonwebtoken\\LICENSE"
   },
   "@types/node@22.18.1": {
     "licenses": "MIT",
@@ -419,6 +486,12 @@
     "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@types\\uuid",
     "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@types\\uuid\\LICENSE"
   },
+  "@types/validator@13.15.3": {
+    "licenses": "MIT",
+    "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@types\\validator",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@types\\validator\\LICENSE"
+  },
   "@typescript-eslint/eslint-plugin@6.21.0": {
     "licenses": "MIT",
     "repository": "https://github.com/typescript-eslint/typescript-eslint",
@@ -430,6 +503,18 @@
     "repository": "https://github.com/typescript-eslint/typescript-eslint",
     "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@typescript-eslint\\parser",
     "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@typescript-eslint\\parser\\LICENSE"
+  },
+  "@vercel/analytics@1.5.0": {
+    "licenses": "MPL-2.0",
+    "repository": "https://github.com/vercel/analytics",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@vercel\\analytics",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@vercel\\analytics\\LICENSE"
+  },
+  "@vercel/speed-insights@1.2.0": {
+    "licenses": "Apache-2.0",
+    "repository": "https://github.com/vercel/speed-insights",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@vercel\\speed-insights",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@vercel\\speed-insights\\LICENSE"
   },
   "@vitest/coverage-v8@3.2.4": {
     "licenses": "MIT",
@@ -476,6 +561,14 @@
     "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\audit-ci",
     "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\audit-ci\\LICENSE"
   },
+  "autoprefixer@10.4.21": {
+    "licenses": "MIT",
+    "repository": "https://github.com/postcss/autoprefixer",
+    "publisher": "Andrey Sitnik",
+    "email": "andrey@sitnik.ru",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\autoprefixer",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\autoprefixer\\LICENSE"
+  },
   "axe-playwright@2.1.0": {
     "licenses": "MIT",
     "repository": "https://github.com/abhinaba-ghosh/axe-playwright",
@@ -497,6 +590,14 @@
     "publisher": "Matt Zabriskie",
     "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\axios",
     "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\axios\\LICENSE"
+  },
+  "bcryptjs@2.4.3": {
+    "licenses": "MIT",
+    "repository": "https://github.com/dcodeIO/bcrypt.js",
+    "publisher": "Daniel Wirtz",
+    "email": "dcode@dcode.io",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\bcryptjs",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\bcryptjs\\LICENSE"
   },
   "bufferutil@4.0.9": {
     "licenses": "MIT",
@@ -535,6 +636,23 @@
     "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\class-validator",
     "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\class-validator\\LICENSE"
   },
+  "class-variance-authority@0.7.1": {
+    "licenses": "Apache-2.0",
+    "repository": "https://github.com/joe-bell/cva",
+    "publisher": "Joe Bell",
+    "url": "https://joebell.co.uk",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\class-variance-authority",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\class-variance-authority\\LICENSE"
+  },
+  "clsx@2.1.1": {
+    "licenses": "MIT",
+    "repository": "https://github.com/lukeed/clsx",
+    "publisher": "Luke Edwards",
+    "email": "luke.edwards05@gmail.com",
+    "url": "https://lukeed.com",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\clsx",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\clsx\\license"
+  },
   "compression@1.8.1": {
     "licenses": "MIT",
     "repository": "https://github.com/expressjs/compression",
@@ -549,6 +667,20 @@
     "url": "https://kentcdodds.com",
     "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\cross-env",
     "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\cross-env\\LICENSE"
+  },
+  "crypto-js@4.2.0": {
+    "licenses": "MIT",
+    "repository": "https://github.com/brix/crypto-js",
+    "publisher": "Evan Vosberg",
+    "url": "http://github.com/evanvosberg",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\crypto-js",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\crypto-js\\LICENSE"
+  },
+  "date-fns@4.1.0": {
+    "licenses": "MIT",
+    "repository": "https://github.com/date-fns/date-fns",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\date-fns",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\date-fns\\LICENSE.md"
   },
   "dotenv@17.2.2": {
     "licenses": "BSD-2-Clause",
@@ -623,6 +755,13 @@
     "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\form-data",
     "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\form-data\\License"
   },
+  "framer-motion@12.23.12": {
+    "licenses": "MIT",
+    "repository": "https://github.com/motiondivision/motion",
+    "publisher": "Matt Perry",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\framer-motion",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\framer-motion\\LICENSE.md"
+  },
   "glob@11.0.3": {
     "licenses": "ISC",
     "repository": "https://github.com/isaacs/node-glob",
@@ -640,6 +779,12 @@
     "url": "https://sindresorhus.com",
     "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\globals",
     "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\globals\\license"
+  },
+  "gsap@3.13.0": {
+    "licenses": "Custom: https://gsap.com/GSAP-share-image.png",
+    "repository": "https://github.com/greensock/GSAP",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\gsap",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\gsap\\README.md"
   },
   "happy-dom@18.0.1": {
     "licenses": "MIT",
@@ -696,11 +841,45 @@
     "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\jest-axe",
     "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\jest-axe\\LICENSE.txt"
   },
+  "jest-environment-jsdom@30.1.2": {
+    "licenses": "MIT",
+    "repository": "https://github.com/jestjs/jest",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\jest-environment-jsdom",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\jest-environment-jsdom\\LICENSE"
+  },
+  "jest@30.1.3": {
+    "licenses": "MIT",
+    "repository": "https://github.com/jestjs/jest",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\jest",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\jest\\LICENSE"
+  },
+  "jose@6.1.0": {
+    "licenses": "MIT",
+    "repository": "https://github.com/panva/jose",
+    "publisher": "Filip Skokan",
+    "email": "panva.ip@gmail.com",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\jose",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\jose\\LICENSE.md"
+  },
+  "js-cookie@3.0.5": {
+    "licenses": "MIT",
+    "repository": "https://github.com/js-cookie/js-cookie",
+    "publisher": "Klaus Hartl",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\js-cookie",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\js-cookie\\LICENSE"
+  },
   "jsdom@26.1.0": {
     "licenses": "MIT",
     "repository": "https://github.com/jsdom/jsdom",
     "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\jsdom",
     "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\jsdom\\LICENSE.txt"
+  },
+  "jsonwebtoken@9.0.2": {
+    "licenses": "MIT",
+    "repository": "https://github.com/auth0/node-jsonwebtoken",
+    "publisher": "auth0",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\jsonwebtoken",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\jsonwebtoken\\LICENSE"
   },
   "kill-port@2.0.1": {
     "licenses": "MIT",
@@ -708,6 +887,13 @@
     "publisher": "Tiaan du Plessis",
     "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\kill-port",
     "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\kill-port\\LICENSE"
+  },
+  "lenis@1.3.11": {
+    "licenses": "MIT",
+    "repository": "https://github.com/darkroomengineering/lenis",
+    "publisher": "darkroom.engineering",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\lenis",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\lenis\\LICENSE"
   },
   "lighthouse@12.8.2": {
     "licenses": "Apache-2.0",
@@ -724,6 +910,22 @@
     "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\lint-staged",
     "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\lint-staged\\LICENSE"
   },
+  "locomotive-scroll@4.1.4": {
+    "licenses": "MIT",
+    "repository": "https://github.com/locomotivemtl/locomotive-scroll",
+    "publisher": "Locomotive",
+    "email": "info@locomotive.ca",
+    "url": "https://locomotive.ca",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\locomotive-scroll",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\locomotive-scroll\\LICENSE"
+  },
+  "lucide-react@0.515.0": {
+    "licenses": "ISC",
+    "repository": "https://github.com/lucide-icons/lucide",
+    "publisher": "Eric Fennis",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\lucide-react",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\lucide-react\\LICENSE"
+  },
   "micromatch@4.0.8": {
     "licenses": "MIT",
     "repository": "https://github.com/micromatch/micromatch",
@@ -731,6 +933,13 @@
     "url": "https://github.com/jonschlinkert",
     "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\micromatch",
     "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\micromatch\\LICENSE"
+  },
+  "motion@12.23.12": {
+    "licenses": "MIT",
+    "repository": "https://github.com/motiondivision/motion",
+    "publisher": "Matt Perry",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\motion",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\motion\\LICENSE.md"
   },
   "multer@2.0.2": {
     "licenses": "MIT",
@@ -752,6 +961,27 @@
     "publisher": "Toon van Strijp",
     "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\nestjs-i18n",
     "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\nestjs-i18n\\LICENSE.md"
+  },
+  "next-auth@4.24.11": {
+    "licenses": "ISC",
+    "repository": "https://github.com/nextauthjs/next-auth",
+    "publisher": "Iain Collins",
+    "email": "me@iaincollins.com",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\next-auth",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\next-auth\\LICENSE"
+  },
+  "next-secure-headers@2.2.0": {
+    "licenses": "MIT",
+    "repository": "https://github.com/jagaapple/next-secure-headers",
+    "publisher": "Jaga Apple",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\next-secure-headers",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\next-secure-headers\\LICENSE"
+  },
+  "next@15.5.2": {
+    "licenses": "MIT",
+    "repository": "https://github.com/vercel/next.js",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\next",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\next\\license.md"
   },
   "npm-check-updates@18.0.3": {
     "licenses": "Apache-2.0",
@@ -801,6 +1031,14 @@
     "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\passport",
     "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\passport\\LICENSE"
   },
+  "postcss@8.5.3": {
+    "licenses": "MIT",
+    "repository": "https://github.com/postcss/postcss",
+    "publisher": "Andrey Sitnik",
+    "email": "andrey@sitnik.ru",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\postcss",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\postcss\\LICENSE"
+  },
   "prettier@3.6.2": {
     "licenses": "MIT",
     "repository": "https://github.com/prettier/prettier",
@@ -823,6 +1061,12 @@
     "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\prom-client",
     "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\prom-client\\LICENSE"
   },
+  "react-dom@19.1.1": {
+    "licenses": "MIT",
+    "repository": "https://github.com/facebook/react",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\react-dom",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\react-dom\\LICENSE"
+  },
   "react-hook-form@7.56.4": {
     "licenses": "MIT",
     "repository": "https://github.com/react-hook-form/react-hook-form",
@@ -831,6 +1075,27 @@
     "url": "Bill",
     "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\react-hook-form",
     "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\react-hook-form\\LICENSE"
+  },
+  "react-use-measure@2.1.7": {
+    "licenses": "MIT",
+    "repository": "https://github.com/pmndrs/react-use-measure",
+    "publisher": "Paul Henschel",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\react-use-measure",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\react-use-measure\\LICENSE"
+  },
+  "react@19.1.1": {
+    "licenses": "MIT",
+    "repository": "https://github.com/facebook/react",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\react",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\react\\LICENSE"
+  },
+  "redoc@2.5.0": {
+    "licenses": "MIT",
+    "repository": "https://github.com/Redocly/redoc",
+    "publisher": "Roman Hotsiy",
+    "email": "gotsijroman@gmail.com",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\redoc",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\redoc\\LICENSE"
   },
   "reflect-metadata@0.2.2": {
     "licenses": "Apache-2.0",
@@ -858,6 +1123,13 @@
     "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\rxjs",
     "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\rxjs\\LICENSE.txt"
   },
+  "snyk@1.1299.0": {
+    "licenses": "Apache-2.0",
+    "repository": "https://github.com/snyk/snyk",
+    "publisher": "snyk.io",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\snyk",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\snyk\\LICENSE"
+  },
   "source-map-support@0.5.21": {
     "licenses": "MIT",
     "repository": "https://github.com/evanw/node-source-map-support",
@@ -884,6 +1156,26 @@
     "email": "scottie1984@gmail.com",
     "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\swagger-ui-express",
     "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\swagger-ui-express\\LICENSE"
+  },
+  "tailwind-merge@3.3.1": {
+    "licenses": "MIT",
+    "repository": "https://github.com/dcastil/tailwind-merge",
+    "publisher": "Dany Castillo",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\tailwind-merge",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\tailwind-merge\\LICENSE.md"
+  },
+  "tailwindcss-animate@1.0.7": {
+    "licenses": "MIT",
+    "publisher": "Jamie Kyle",
+    "email": "me@thejameskyle.com",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\tailwindcss-animate",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\tailwindcss-animate\\LICENSE"
+  },
+  "tailwindcss@3.4.17": {
+    "licenses": "MIT",
+    "repository": "https://github.com/tailwindlabs/tailwindcss",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\tailwindcss",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\tailwindcss\\LICENSE"
   },
   "tmp@0.2.4": {
     "licenses": "MIT",
@@ -952,6 +1244,21 @@
     "repository": "https://github.com/uuidjs/uuid",
     "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\uuid",
     "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\uuid\\LICENSE.md"
+  },
+  "validator@13.15.15": {
+    "licenses": "MIT",
+    "repository": "https://github.com/validatorjs/validator.js",
+    "publisher": "Chris O'Hara",
+    "email": "cohara87@gmail.com",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\validator",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\validator\\LICENSE"
+  },
+  "vite-tsconfig-paths@5.1.4": {
+    "licenses": "MIT",
+    "repository": "https://github.com/aleclarson/vite-tsconfig-paths",
+    "publisher": "aleclarson",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\vite-tsconfig-paths",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\vite-tsconfig-paths\\LICENSE"
   },
   "vite@5.4.19": {
     "licenses": "MIT",
