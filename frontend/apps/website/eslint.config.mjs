@@ -19,7 +19,7 @@ export default [
   },
   // Configuration for TypeScript and TSX files
   {
-    files: ['**/*.ts', '**/*.tsx'],
+    files: ['**/*.ts', '**/*.tsx', '**/*.d.ts'],
     languageOptions: {
       parser: tsParser,
       parserOptions: {
@@ -32,6 +32,18 @@ export default [
         document: 'readonly',
         navigator: 'readonly',
         fetch: 'readonly',
+        localStorage: 'readonly',
+        sessionStorage: 'readonly',
+        requestAnimationFrame: 'readonly',
+        cancelAnimationFrame: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        setInterval: 'readonly',
+        clearInterval: 'readonly',
+        URL: 'readonly',
+        File: 'readonly',
+        Request: 'readonly',
+        alert: 'readonly',
         // React globals (when not imported)
         React: 'readonly',
         // DOM element types
@@ -41,6 +53,19 @@ export default [
         HTMLFormElement: 'readonly',
         HTMLDivElement: 'readonly',
         HTMLAnchorElement: 'readonly',
+        HTMLSelectElement: 'readonly',
+        SVGSVGElement: 'readonly',
+        // Event types
+        MouseEvent: 'readonly',
+        TouchEvent: 'readonly',
+        KeyboardEvent: 'readonly',
+        FocusEvent: 'readonly',
+        EventListener: 'readonly',
+        EventListenerObject: 'readonly',
+        // DOM APIs
+        DOMRect: 'readonly',
+        // Node.js types for TypeScript
+        NodeJS: 'readonly',
         // Node.js globals
         process: 'readonly',
         console: 'readonly',
@@ -48,6 +73,9 @@ export default [
         __dirname: 'readonly',
         __filename: 'readonly',
         global: 'readonly',
+        require: 'readonly',
+        module: 'readonly',
+        exports: 'readonly',
       },
     },
     plugins: {
@@ -63,8 +91,8 @@ export default [
           args: 'all',
           argsIgnorePattern: '^_',
           varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
           ignoreRestSiblings: true,
-          caughtErrors: 'all',
         },
       ],
       '@typescript-eslint/no-explicit-any': 'warn',
@@ -78,6 +106,7 @@ export default [
       // General rules
       'prefer-const': 'error',
       'no-console': 'warn',
+      'no-unused-vars': 'off', // Use @typescript-eslint/no-unused-vars instead
     },
   },
   // Configuration for JavaScript files
@@ -131,10 +160,10 @@ export default [
   },
   // Configuration for test files
   {
-    files: ['**/*.spec.ts', '**/*.spec.tsx', '**/*.spec.js', '**/*.spec.tsx'],
+    files: ['**/*.spec.ts', '**/*.spec.tsx', '**/*.spec.js', '**/*.spec.tsx', '**/*.test.ts', '**/*.test.tsx', '**/*.test.js', '**/*.test.tsx'],
     languageOptions: {
       globals: {
-        // Jest globals
+        // Vitest globals
         describe: 'readonly',
         it: 'readonly',
         test: 'readonly',
@@ -143,10 +172,42 @@ export default [
         afterEach: 'readonly',
         beforeAll: 'readonly',
         afterAll: 'readonly',
+        vi: 'readonly',
+        vitest: 'readonly',
         // Browser globals for tests
         window: 'readonly',
         document: 'readonly',
         navigator: 'readonly',
+        // Additional test globals
+        global: 'readonly',
+        process: 'readonly',
+        console: 'readonly',
+        Buffer: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+        require: 'readonly',
+        module: 'readonly',
+        exports: 'readonly',
+      },
+    },
+  },
+  // Configuration for .mjs files (like next.config.mjs)
+  {
+    files: ['*.mjs', '**/*.mjs'],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'module',
+      globals: {
+        // Node.js globals for ESM modules
+        process: 'readonly',
+        console: 'readonly',
+        Buffer: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+        require: 'readonly',
+        module: 'readonly',
+        exports: 'readonly',
+        global: 'readonly',
       },
     },
   },

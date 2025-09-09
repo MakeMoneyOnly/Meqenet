@@ -185,6 +185,7 @@ export default [
       ...react.configs.recommended.rules,
       ...reactHooks.configs.recommended.rules,
       'jsx-a11y/accessible-emoji': 'off', // Deprecated rule
+      'react/react-in-jsx-scope': 'off', // React 17+ JSX transform
       'react/prop-types': 'off', // Not needed with TypeScript
       'react/jsx-no-bind': 'off', // Performance optimization, but not critical
       'react/jsx-no-leaked-render': 'warn',
