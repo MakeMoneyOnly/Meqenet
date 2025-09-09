@@ -5,7 +5,7 @@ import { Formik } from 'formik';
 import * as Yup from 'yup';
 import Input from '../components/auth/Input';
 import Button from '../components/auth/Button';
-import { useAuthStore } from '../../../../libs/mobile-state-management/src/lib/auth-store';
+import { useAuthStore } from '@meqenet/mobile-state-management';
 import { apiClient } from '@frontend/mobile-api-client';
 
 const LoginSchema = Yup.object().shape({

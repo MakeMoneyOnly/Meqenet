@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Button from '../components/auth/Button';
-import { useAuthStore } from '../../../../libs/mobile-state-management/src/lib/auth-store';
+import { useAuthStore } from '@meqenet/mobile-state-management';
 
 const MainScreen = () => {
   const { user, logout } = useAuthStore();

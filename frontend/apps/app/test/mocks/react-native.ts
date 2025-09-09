@@ -163,6 +163,97 @@ export const Platform = {
   },
 };
 
+export const ActivityIndicator = React.forwardRef<
+  HTMLDivElement,
+  PropsWithChildren<{
+    size?: 'small' | 'large';
+    color?: string;
+    testID?: string;
+  }>
+>((props, ref) => {
+  const { size = 'small', color = '#000', testID, ...rest } = props;
+  const sanitized = sanitizeProps(rest);
+  return React.createElement('div', {
+    ...sanitized,
+    ref,
+    style: {
+      width: size === 'large' ? '36px' : '20px',
+      height: size === 'large' ? '36px' : '20px',
+      borderRadius: '50%',
+      border: `2px solid ${color}`,
+      borderTopColor: 'transparent',
+      animation: 'spin 1s linear infinite',
+      ...((rest.style as Record<string, unknown>) || {}),
+    },
+    ...(testID ? { 'data-testid': testID } : {}),
+  });
+});
+ActivityIndicator.displayName = 'ActivityIndicator';
+
+export const TextInput = React.forwardRef<
+  HTMLInputElement,
+  PropsWithChildren<
+    {
+      placeholder?: string;
+      value?: string;
+      onChangeText?: (text: string) => void;
+      secureTextEntry?: boolean;
+      placeholderTextColor?: string;
+      multiline?: boolean;
+      numberOfLines?: number;
+      testID?: string;
+    } & React.InputHTMLAttributes<HTMLInputElement>
+  >
+>((props, ref) => {
+  const {
+    placeholder,
+    value,
+    onChangeText,
+    secureTextEntry,
+    placeholderTextColor,
+    multiline,
+    numberOfLines,
+    testID,
+    ...rest
+  } = props;
+  const sanitized = sanitizeProps(rest);
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
+    onChangeText?.(e.target.value);
+  };
+
+  const inputProps = {
+    ...sanitized,
+    ref: ref as React.Ref<HTMLInputElement>,
+    placeholder,
+    value,
+    onChange: handleChange,
+    type: secureTextEntry ? 'password' : 'text',
+    ...(testID ? { 'data-testid': testID } : {}),
+    ...(placeholderTextColor
+      ? {
+          style: {
+            ...((rest.style as Record<string, unknown>) || {}),
+            '--placeholder-color': placeholderTextColor,
+          } as React.CSSProperties,
+        }
+      : {}),
+  };
+
+  if (multiline) {
+    return React.createElement('textarea', {
+      ...inputProps,
+      ref: ref as React.Ref<HTMLTextAreaElement>,
+      rows: numberOfLines || 4,
+    });
+  }
+
+  return React.createElement('input', inputProps);
+});
+TextInput.displayName = 'TextInput';
+
 export default {
   View,
   Text,
@@ -171,6 +262,8 @@ export default {
   StatusBar,
   TouchableOpacity,
   Button,
+  ActivityIndicator,
+  TextInput,
   StyleSheet,
   Linking,
   Platform,
