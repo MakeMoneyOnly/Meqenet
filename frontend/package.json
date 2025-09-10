@@ -35,7 +35,7 @@
     "@eslint/eslintrc": "^3.2.0",
     "@eslint/js": "^9.15.0",
     "@next/eslint-plugin-next": "^14.2.15",
-    "@nx/eslint": "21.4.0",
+    "@nx/eslint": "21.5.1",
     "@nx/eslint-plugin": "21.4.0",
     "@nx/jest": "21.4.0",
     "@nx/js": "21.4.0",
