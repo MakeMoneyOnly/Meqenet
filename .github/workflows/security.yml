@@ -430,7 +430,7 @@ jobs:
         continue-on-error: true
 
       - name: 🏗️ Build Docker Image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         id: docker_build
         continue-on-error: true
         timeout-minutes: 15
@@ -446,7 +446,7 @@ jobs:
       # Add retry mechanism for Docker build failures
       - name: 🔄 Retry Docker Build (if failed)
         if: steps.docker_build.outcome == 'failure'
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         continue-on-error: true
         timeout-minutes: 15
         with:
