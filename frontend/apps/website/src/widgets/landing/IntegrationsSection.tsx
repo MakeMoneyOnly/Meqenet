@@ -6,8 +6,8 @@ import {
   VSCodium,
   MediaWiki,
   GooglePaLM,
-} from '@/components/logos';
-import { LogoIcon } from '@/components/logo';
+} from '@/shared/ui/logos';
+import { LogoIcon } from '@/shared/ui/logo';
 import { cn } from '@/shared/utils';
 import { Button } from '@/shared/ui/button';
 import Link from 'next/link';

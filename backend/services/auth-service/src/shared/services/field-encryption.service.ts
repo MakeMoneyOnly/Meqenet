@@ -75,6 +75,16 @@ export class FieldEncryptionService implements OnModuleInit {
   }
 
   private initializeEncryptionKey(): void {
+    if (!this.configService.get<string>('KMS_KEY_ID')) {
+      this.logger.error(
+        '❌ KMS_KEY_ID is not configured. Field encryption will be disabled.'
+      );
+      this.isInitialized = false;
+      // In a production environment, you might want to throw an error here
+      // throw new Error('KMS_KEY_ID is not configured.');
+      return;
+    }
+
     if (this.secretManagerService) {
       this.isInitialized = true;
       this.logger.log(
@@ -126,7 +136,7 @@ export class FieldEncryptionService implements OnModuleInit {
           value: {
             encrypted: true,
             value: encryptedValue,
-            keyId: keyId ?? this.secretManagerService.getKmsKeyId(),
+            keyId: keyId ?? this.configService.get<string>('KMS_KEY_ID')!,
             algorithm: 'kms-aes-256-gcm',
           } as EncryptedField,
           enumerable: true,
@@ -141,7 +151,7 @@ export class FieldEncryptionService implements OnModuleInit {
     return {
       data: encryptedData,
       encryptedFields,
-      keyId: keyId ?? this.secretManagerService.getKmsKeyId(),
+      keyId: keyId ?? this.configService.get<string>('KMS_KEY_ID')!,
     };
   }
 
@@ -156,7 +166,7 @@ export class FieldEncryptionService implements OnModuleInit {
       throw new Error('Encryption service not initialized');
 
     const { fields = this.sensitiveFields, excludeFields = [] } = options;
-    const decryptedData = { ...data };
+    const decryptedData: Record<string, unknown> = { ...data };
     const encryptedFields: string[] = [];
 
     for (const field of Object.keys(decryptedData)) {
@@ -167,10 +177,7 @@ export class FieldEncryptionService implements OnModuleInit {
         if (fields.includes(field)) {
           try {
             const decryptedValue = await this.decryptValue(fieldValue);
-            decryptedData[field] = decryptedValue as T[Extract<
-              keyof T,
-              string
-            >];
+            decryptedData[field] = decryptedValue;
             encryptedFields.push(field);
           } catch (error) {
             this.logger.error(`❌ Failed to decrypt field: ${field}`, error);
@@ -181,9 +188,9 @@ export class FieldEncryptionService implements OnModuleInit {
     }
 
     return {
-      data: decryptedData,
+      data: decryptedData as T,
       encryptedFields,
-      keyId: this.secretManagerService.getKmsKeyId(),
+      keyId: this.configService.get<string>('KMS_KEY_ID')!,
     };
   }
 

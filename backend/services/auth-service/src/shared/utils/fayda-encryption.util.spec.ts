@@ -54,8 +54,7 @@ describe('FaydaEncryptionUtil', () => {
 
       expect(mockSecretManagerService.encryptData).toHaveBeenCalledWith(
         faydaId,
-        'aws-kms-key-id-123',
-        undefined
+        'aws-kms-key-id-123'
       );
       expect(result.encryptedData).toBe(`kms_encrypted_${faydaId}`);
       expect(result.keyId).toBe('aws-kms-key-id-123');
@@ -76,8 +75,7 @@ describe('FaydaEncryptionUtil', () => {
       const result = await service.decryptFaydaId(encryptedFaydaId);
 
       expect(mockSecretManagerService.decryptData).toHaveBeenCalledWith(
-        encryptedFaydaId,
-        undefined
+        encryptedFaydaId
       );
       expect(result).toBe('1234567890123456');
     });

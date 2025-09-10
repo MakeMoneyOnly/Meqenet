@@ -13,7 +13,12 @@ describe('FieldEncryptionService', () => {
 
   beforeEach(() => {
     const mockConfigService = {
-      get: vi.fn(),
+      get: vi.fn((key: string) => {
+        if (key === 'KMS_KEY_ID') {
+          return 'aws-kms-key-id-123';
+        }
+        return null;
+      }),
     };
 
     mockSecretManagerService = {

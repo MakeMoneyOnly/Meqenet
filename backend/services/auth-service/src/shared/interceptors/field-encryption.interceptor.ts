@@ -45,10 +45,9 @@ export class FieldEncryptionInterceptor implements NestInterceptor {
       // Decrypt request body if it contains encrypted fields
       if (request.body && typeof request.body === 'object') {
         const decryptionResult =
-          await this.fieldEncryptionService.decryptFromRequest(
-            request.body,
-            this.getSensitiveFieldsForEndpoint(request)
-          );
+          await this.fieldEncryptionService.decryptFields(request.body, {
+            fields: this.getSensitiveFieldsForEndpoint(request),
+          });
 
         if (decryptionResult.encryptedFields.length > 0) {
           // Atomic update to avoid race conditions
@@ -62,9 +61,9 @@ export class FieldEncryptionInterceptor implements NestInterceptor {
       // Decrypt query parameters
       if (request.query && typeof request.query === 'object') {
         const decryptionResult =
-          await this.fieldEncryptionService.decryptFromRequest(
+          await this.fieldEncryptionService.decryptFields(
             request.query,
-            ['search', 'filter', 'q'] // Common query parameter fields that might contain sensitive data
+            { fields: ['search', 'filter', 'q'] } // Common query parameter fields that might contain sensitive data
           );
 
         if (decryptionResult.encryptedFields.length > 0) {
@@ -106,10 +105,9 @@ export class FieldEncryptionInterceptor implements NestInterceptor {
           data.map(async item => {
             if (typeof item === 'object' && item !== null) {
               const encryptionResult =
-                await this.fieldEncryptionService.encryptForResponse(
-                  item,
-                  sensitiveFields
-                );
+                await this.fieldEncryptionService.encryptFields(item, {
+                  fields: sensitiveFields,
+                });
               return encryptionResult.data;
             }
             return item;
@@ -119,9 +117,9 @@ export class FieldEncryptionInterceptor implements NestInterceptor {
       // Handle single object responses
       else if (typeof data === 'object') {
         const encryptionResult =
-          await this.fieldEncryptionService.encryptForResponse(
+          await this.fieldEncryptionService.encryptFields(
             data as Record<string, unknown>,
-            sensitiveFields
+            { fields: sensitiveFields }
           );
 
         if (encryptionResult.encryptedFields.length > 0) {

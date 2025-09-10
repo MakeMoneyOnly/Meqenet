@@ -1,8 +1,8 @@
 import React from 'react';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/shared/ui/card';
 import { Globe } from 'lucide-react';
 import Image from 'next/image';
-import ScrollBlurItem from '@/components/ui/ScrollBlurItem';
+import ScrollBlurItem from '@/shared/ui/ScrollBlurItem';
 
 export default function Features() {
   return (

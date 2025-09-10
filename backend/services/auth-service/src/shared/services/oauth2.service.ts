@@ -10,6 +10,7 @@ import * as crypto from 'crypto';
 
 import { PrismaService } from '../../infrastructure/database/prisma.service';
 import { SecurityMonitoringService } from './security-monitoring.service';
+import { OAuthAccessToken, OAuthRefreshToken } from '@prisma/client';
 
 // Constants for magic numbers
 const AUTHORIZATION_CODE_EXPIRY_MINUTES = 10;
@@ -19,7 +20,7 @@ const MILLISECONDS_PER_SECOND = 1000;
 const SECONDS_PER_MINUTE = 60;
 const MINUTES_PER_HOUR = 60;
 const HOURS_PER_DAY = 24;
-const TOKEN_BYTES = 32;
+const TOKEN_BYTES = 32; // 32 bytes -> 64 hex chars
 const CLIENT_ID_BYTES = 16;
 
 export interface OAuthAuthorizationRequest {
@@ -332,9 +333,9 @@ export class OAuth2Service {
         authCode.scopes
       );
 
-      const refreshToken = await this.generateRefreshToken(
-        authCode.userId,
+      const refreshToken = await this.createRefreshToken(
         authCode.clientId,
+        authCode.userId,
         authCode.scopes,
         accessToken.id
       );
@@ -473,12 +474,12 @@ export class OAuth2Service {
 
       // SECURITY: Implement refresh token rotation
       // Generate a new refresh token to replace the old one
-      const newRefreshToken = await this.generateRefreshToken(
-        refreshTokenRecord.userId,
+      const newRefreshToken = await this.createRefreshToken(
         refreshTokenRecord.clientId,
+        refreshTokenRecord.userId,
         refreshTokenRecord.scopes,
         accessToken.id,
-        refreshTokenRecord.familyId || undefined // Pass the familyId
+        refreshTokenRecord.familyId
       );
 
       // Mark the old refresh token as revoked (security best practice)
@@ -725,14 +726,7 @@ export class OAuth2Service {
     userId: string,
     clientId: string,
     scopes: string[]
-  ): Promise<{
-    id: string;
-    token: string;
-    clientId: string;
-    userId: string;
-    scopes: string[];
-    expiresAt: Date;
-  }> {
+  ): Promise<OAuthAccessToken> {
     const token = crypto.randomBytes(TOKEN_BYTES).toString('hex');
     const expiresAt = new Date(Date.now() + this.ACCESS_TOKEN_EXPIRY);
 
@@ -750,23 +744,14 @@ export class OAuth2Service {
   /**
    * Generate refresh token
    */
-  private async generateRefreshToken(
-    userId: string,
+  private async createRefreshToken(
     clientId: string,
+    userId: string,
     scopes: string[],
     accessTokenId: string,
-    familyId?: string
-  ): Promise<{
-    id: string;
-    token: string;
-    clientId: string;
-    userId: string;
-    scopes: string[];
-    expiresAt: Date;
-    accessTokenId: string | null;
-    familyId: string;
-  }> {
-    const token = crypto.randomBytes(TOKEN_BYTES).toString('hex');
+    familyId?: string | null
+  ): Promise<OAuthRefreshToken> {
+    const token = crypto.randomBytes(48).toString('hex');
     const expiresAt = new Date(Date.now() + this.REFRESH_TOKEN_EXPIRY);
     const newFamilyId = familyId || crypto.randomBytes(16).toString('hex');
 
@@ -794,18 +779,7 @@ export class OAuth2Service {
       redirectUris: string[];
       scopes: string[];
     }
-  ): Promise<{
-    id: string;
-    clientId: string;
-    clientSecret: string;
-    clientName: string;
-    clientDescription?: string | null;
-    redirectUris: string[];
-    scopes: string[];
-    status: string;
-    createdAt: Date;
-    updatedAt: Date;
-  }> {
+  ): Promise<OAuthClientCreateResponse> {
     try {
       const clientId = crypto.randomBytes(CLIENT_ID_BYTES).toString('hex');
       const clientSecret = crypto.randomBytes(TOKEN_BYTES).toString('hex');
@@ -849,40 +823,50 @@ export class OAuth2Service {
   /**
    * Get OAuth client by ID
    */
-  async getClient(clientId: string): Promise<{
-    id: string;
-    clientId: string;
-    clientName: string;
-    clientDescription?: string | null;
-    redirectUris: string[];
-    scopes: string[];
-    status: string;
-    createdAt: Date;
-    updatedAt: Date;
-  } | null> {
-    return await this.prisma.oAuthClient.findUnique({
+  async getClient(clientId: string): Promise<OAuthClientResponse | null> {
+    const client = await this.prisma.oAuthClient.findUnique({
       where: { clientId },
     });
+    if (!client) return null;
+    const { clientSecret, ...rest } = client;
+    return rest;
   }
 
   /**
    * Get user's OAuth clients
    */
-  async getUserClients(userId: string): Promise<
-    {
-      id: string;
-      clientId: string;
-      clientName: string;
-      clientDescription?: string | null;
-      redirectUris: string[];
-      scopes: string[];
-      status: string;
-      createdAt: Date;
-      updatedAt: Date;
-    }[]
-  > {
-    return await this.prisma.oAuthClient.findMany({
+  async getUserClients(userId: string): Promise<OAuthClientResponse[]> {
+    const clients = await this.prisma.oAuthClient.findMany({
       where: { ownerId: userId },
     });
+    return clients.map(c => {
+      const { clientSecret, ...rest } = c;
+      return rest;
+    });
   }
+}
+
+export interface OAuthClientCreateResponse {
+  id: string;
+  clientId: string;
+  clientSecret: string;
+  clientName: string;
+  clientDescription?: string | null;
+  redirectUris: string[];
+  scopes: string[];
+  status: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface OAuthClientResponse {
+  id: string;
+  clientId: string;
+  clientName: string;
+  clientDescription?: string | null;
+  redirectUris: string[];
+  scopes: string[];
+  status: string;
+  createdAt: Date;
+  updatedAt: Date;
 }

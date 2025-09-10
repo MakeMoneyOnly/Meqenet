@@ -32,7 +32,6 @@ export type AppConfig = {
   otelServiceName: string;
   otelExporterJaegerEndpoint?: string;
   otelExporterOtlpEndpoint?: string;
-  faydaEncryptionKey: string;
   faydaHashSalt: string;
 };
 

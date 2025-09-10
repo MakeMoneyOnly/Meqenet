@@ -27,10 +27,7 @@ export class FaydaEncryptionUtil {
   /**
    * Encrypts Fayda National ID data using KMS
    */
-  async encryptFaydaId(
-    faydaId: string,
-    aad?: Record<string, string>
-  ): Promise<EncryptedFaydaIdResult> {
+  async encryptFaydaId(faydaId: string): Promise<EncryptedFaydaIdResult> {
     if (!faydaId || typeof faydaId !== 'string') {
       throw new Error('Fayda ID must be a non-empty string');
     }
@@ -39,8 +36,7 @@ export class FaydaEncryptionUtil {
       const keyId = this.configService.get<string>('KMS_KEY_ID');
       const encryptedData = await this.secretManagerService.encryptData(
         faydaId,
-        keyId,
-        aad
+        keyId
       );
 
       return {
@@ -59,16 +55,13 @@ export class FaydaEncryptionUtil {
   /**
    * Decrypts Fayda National ID data using KMS
    */
-  async decryptFaydaId(
-    encryptedData: string,
-    aad?: Record<string, string>
-  ): Promise<string> {
+  async decryptFaydaId(encryptedData: string): Promise<string> {
     if (!encryptedData || typeof encryptedData !== 'string') {
       throw new Error('Encrypted data must be a non-empty string');
     }
 
     try {
-      return await this.secretManagerService.decryptData(encryptedData, aad);
+      return await this.secretManagerService.decryptData(encryptedData);
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown decryption error';

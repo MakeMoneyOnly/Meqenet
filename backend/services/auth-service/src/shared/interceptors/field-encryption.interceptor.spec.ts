@@ -33,14 +33,14 @@ describe('FieldEncryptionInterceptor', () => {
 
   beforeEach(async () => {
     const mockFieldEncryptionService = {
-      decryptFromRequest: vi.fn().mockResolvedValue({
+      decryptFields: vi.fn().mockResolvedValue({
         data: {
           password: 'decrypted_password',
           email: 'user@example.com',
         },
         encryptedFields: ['password'],
       }),
-      encryptForResponse: vi.fn().mockResolvedValue({
+      encryptFields: vi.fn().mockResolvedValue({
         data: {
           id: 1,
           email: 'encrypted_email@example.com',
@@ -100,7 +100,7 @@ describe('FieldEncryptionInterceptor', () => {
   describe('intercept', () => {
     it('should decrypt request data and encrypt response data', async () => {
       // Mock decryption result
-      fieldEncryptionService.decryptFromRequest
+      fieldEncryptionService.decryptFields
         .mockResolvedValueOnce({
           data: {
             password: 'decrypted_password',
@@ -116,7 +116,7 @@ describe('FieldEncryptionInterceptor', () => {
         });
 
       // Mock encryption result
-      fieldEncryptionService.encryptForResponse.mockResolvedValue({
+      fieldEncryptionService.encryptFields.mockResolvedValue({
         data: {
           id: 1,
           email: 'encrypted_email@example.com',
@@ -132,16 +132,16 @@ describe('FieldEncryptionInterceptor', () => {
         });
       });
 
-      expect(fieldEncryptionService.decryptFromRequest).toHaveBeenCalledTimes(
-        2
-      );
-      expect(fieldEncryptionService.encryptForResponse).toHaveBeenCalledWith(
+      expect(fieldEncryptionService.decryptFields).toHaveBeenCalledTimes(2);
+      expect(fieldEncryptionService.encryptFields).toHaveBeenCalledWith(
         {
           id: 1,
           email: 'decrypted_email@example.com',
           cardNumber: 'decrypted_card_number',
         },
-        ['password', 'email', 'phoneNumber', 'dateOfBirth', 'ssn']
+        {
+          fields: ['password', 'email', 'phoneNumber', 'dateOfBirth', 'ssn'],
+        }
       );
       expect(result).toEqual({
         id: 1,
@@ -158,12 +158,12 @@ describe('FieldEncryptionInterceptor', () => {
 
       mockNext.handle = vi.fn().mockReturnValue(of(arrayResponse));
 
-      fieldEncryptionService.decryptFromRequest.mockResolvedValue({
+      fieldEncryptionService.decryptFields.mockResolvedValue({
         data: mockRequest.body,
         encryptedFields: [],
       });
 
-      fieldEncryptionService.encryptForResponse
+      fieldEncryptionService.encryptFields
         .mockResolvedValueOnce({
           data: { id: 1, email: 'encrypted_user1@example.com' },
           encryptedFields: ['email'],
@@ -191,7 +191,7 @@ describe('FieldEncryptionInterceptor', () => {
 
       mockNext.handle = vi.fn().mockReturnValue(of(stringResponse));
 
-      fieldEncryptionService.decryptFromRequest.mockResolvedValue({
+      fieldEncryptionService.decryptFields.mockResolvedValue({
         data: mockRequest.body,
         encryptedFields: [],
       });
@@ -207,11 +207,11 @@ describe('FieldEncryptionInterceptor', () => {
     });
 
     it('should handle decryption errors gracefully', async () => {
-      fieldEncryptionService.decryptFromRequest.mockRejectedValue(
+      fieldEncryptionService.decryptFields.mockRejectedValue(
         new Error('Decryption failed')
       );
 
-      fieldEncryptionService.encryptForResponse.mockResolvedValue({
+      fieldEncryptionService.encryptFields.mockResolvedValue({
         data: {
           id: 1,
           email: 'decrypted_email@example.com',
@@ -228,7 +228,7 @@ describe('FieldEncryptionInterceptor', () => {
       });
 
       // Should still process the response even if decryption fails
-      expect(fieldEncryptionService.encryptForResponse).toHaveBeenCalled();
+      expect(fieldEncryptionService.encryptFields).toHaveBeenCalled();
       expect(result).toEqual({
         id: 1,
         email: 'decrypted_email@example.com',
@@ -237,12 +237,12 @@ describe('FieldEncryptionInterceptor', () => {
     });
 
     it('should handle encryption errors gracefully', async () => {
-      fieldEncryptionService.decryptFromRequest.mockResolvedValue({
+      fieldEncryptionService.decryptFields.mockResolvedValue({
         data: mockRequest.body,
         encryptedFields: [],
       });
 
-      fieldEncryptionService.encryptForResponse.mockRejectedValue(
+      fieldEncryptionService.encryptFields.mockRejectedValue(
         new Error('Encryption failed')
       );
 
