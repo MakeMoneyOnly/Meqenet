@@ -10,7 +10,7 @@
     "lint": "eslint src/index.ts src/lib/api-client.ts --config eslint.config.mjs"
   },
   "dependencies": {
-    "axios": "^1.11.0"
+    "axios": "^1.12.0"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^8.15.0",
