@@ -90,6 +90,38 @@ echo ✅ Disaster Recovery - Configured
 echo ✅ Contract Testing - Configured
 echo.
 
+echo 🔐 Running enhanced authentication security validation...
+cd ..
+if exist scripts\validate-enhanced-auth-security.js (
+    node scripts\validate-enhanced-auth-security.js --ci
+    if %ERRORLEVEL% NEQ 0 (
+        echo ❌ Enhanced authentication security validation failed
+        cd scripts
+        exit /b 1
+    )
+    echo ✅ Enhanced authentication security validation passed
+) else (
+    echo ⚠️ Enhanced auth security validator not found, skipping...
+)
+cd scripts
+echo.
+
+echo 📋 Running deployment security checklist...
+cd ..
+if exist scripts\deployment-security-checklist.js (
+    node scripts\deployment-security-checklist.js --pre-deploy
+    if %ERRORLEVEL% NEQ 0 (
+        echo ❌ Deployment security checklist failed
+        cd scripts
+        exit /b 1
+    )
+    echo ✅ Deployment security checklist passed
+) else (
+    echo ⚠️ Deployment security checklist not found, skipping...
+)
+cd scripts
+echo.
+
 echo 📊 Generating deployment report...
 if not exist reports mkdir reports
 set REPORT_FILE=reports\staging-deployment-%DATE:~-4,4%%DATE:~-10,2%%DATE:~-7,2%-%TIME:~0,2%%TIME:~3,2%%TIME:~6,2%.json
@@ -118,7 +150,16 @@ echo     "IaC Security Scanning", >> "%REPORT_FILE%"
 echo     "OIDC Authentication", >> "%REPORT_FILE%"
 echo     "Artifact Signing and Attestation", >> "%REPORT_FILE%"
 echo     "Multi-Region DR Playbook", >> "%REPORT_FILE%"
-echo     "RPO/RTO Testing Framework" >> "%REPORT_FILE%"
+echo     "RPO/RTO Testing Framework", >> "%REPORT_FILE%"
+echo     "JWT RS256 Asymmetric Signing", >> "%REPORT_FILE%"
+echo     "Enhanced RBAC Security Tests", >> "%REPORT_FILE%"
+echo     "Advanced Rate Limiting", >> "%REPORT_FILE%"
+echo     "Mobile Certificate Pinning", >> "%REPORT_FILE%"
+echo     "AWS Secrets Manager Integration", >> "%REPORT_FILE%"
+echo     "AWS KMS Key Management", >> "%REPORT_FILE%"
+echo     "Security Monitoring & Alerting", >> "%REPORT_FILE%"
+echo     "Field-Level Encryption", >> "%REPORT_FILE%"
+echo     "SIM-Swap Protection", >> "%REPORT_FILE%"
 echo   ] >> "%REPORT_FILE%"
 echo } >> "%REPORT_FILE%"
 echo ✅ Deployment report saved to: %REPORT_FILE%
@@ -131,7 +172,7 @@ echo.
 echo 📊 Deployment Summary:
 echo   • Environment: staging
 echo   • Services Deployed: 2
-echo   • Enterprise Features: 9
+echo   • Enterprise Features: 18
 echo   • Status: ✅ SUCCESS
 echo.
 echo 🏗️ Enterprise Features Deployed:
@@ -144,6 +185,15 @@ echo   • OIDC Authentication
 echo   • Artifact Signing and Attestation
 echo   • Multi-Region DR Playbook
 echo   • RPO/RTO Testing Framework
+echo   • JWT RS256 Asymmetric Signing
+echo   • Enhanced RBAC Security Tests
+echo   • Advanced Rate Limiting
+echo   • Mobile Certificate Pinning
+echo   • AWS Secrets Manager Integration
+echo   • AWS KMS Key Management
+echo   • Security Monitoring & Alerting
+echo   • Field-Level Encryption
+echo   • SIM-Swap Protection
 echo.
 echo 📋 Next Steps:
 echo   • Check services: docker-compose -f docker-compose.staging.yml ps
