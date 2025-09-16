@@ -8,11 +8,11 @@
  * Get environment variable with type safety
  */
 function getEnvVar(key: string, defaultValue?: string): string {
-  const value = process.env[key];
+  const value = process.env[key as keyof typeof process.env];
   if (value === undefined && defaultValue === undefined) {
     throw new Error(`Environment variable ${key} is required but not defined`);
   }
-  return value || defaultValue!;
+  return value || (defaultValue ?? '');
 }
 
 /**

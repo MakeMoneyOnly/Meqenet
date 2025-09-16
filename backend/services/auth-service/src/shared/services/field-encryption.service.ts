@@ -70,7 +70,7 @@ export class FieldEncryptionService implements OnModuleInit {
     private readonly secretManagerService: SecretManagerService
   ) {}
 
-  onModuleInit() {
+  onModuleInit(): void {
     this.initializeEncryptionKey();
   }
 
@@ -136,7 +136,10 @@ export class FieldEncryptionService implements OnModuleInit {
           value: {
             encrypted: true,
             value: encryptedValue,
-            keyId: keyId ?? this.configService.get<string>('KMS_KEY_ID')!,
+            keyId:
+              keyId ??
+              (this.configService.get<string>('KMS_KEY_ID') ||
+                'default-key-id'),
             algorithm: 'kms-aes-256-gcm',
           } as EncryptedField,
           enumerable: true,
@@ -151,7 +154,9 @@ export class FieldEncryptionService implements OnModuleInit {
     return {
       data: encryptedData,
       encryptedFields,
-      keyId: keyId ?? this.configService.get<string>('KMS_KEY_ID')!,
+      keyId:
+        keyId ??
+        (this.configService.get<string>('KMS_KEY_ID') || 'default-key-id'),
     };
   }
 
@@ -190,7 +195,7 @@ export class FieldEncryptionService implements OnModuleInit {
     return {
       data: decryptedData as T,
       encryptedFields,
-      keyId: this.configService.get<string>('KMS_KEY_ID')!,
+      keyId: this.configService.get<string>('KMS_KEY_ID') || 'default-key-id',
     };
   }
 

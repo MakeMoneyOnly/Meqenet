@@ -11,6 +11,24 @@ const AnimatedActionText = () => {
   const [maxWidth, setMaxWidth] = useState(0);
   const textRef = useRef<HTMLDivElement>(null);
 
+  // Safely get the current action word
+  const getCurrentWord = (wordIndex: number): string => {
+    switch (wordIndex) {
+      case 0:
+        return 'Shop Now';
+      case 1:
+        return 'Buy Now';
+      case 2:
+        return 'Try Now';
+      case 3:
+        return 'Fly Now';
+      case 4:
+        return 'Buy Now';
+      default:
+        return 'Shop Now';
+    }
+  };
+
   // Calculate the width of the widest text
   useEffect(() => {
     if (typeof window !== 'undefined' && textRef.current) {
@@ -41,7 +59,10 @@ const AnimatedActionText = () => {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setIndex((prevIndex) => (prevIndex + 1) % (actionWords.length - 1));
+      setIndex((prevIndex) => {
+        const nextIndex = (prevIndex + 1) % actionWords.length;
+        return nextIndex >= 0 && nextIndex < actionWords.length ? nextIndex : 0;
+      });
     }, 1800); // Slightly faster for better continuous feel
 
     return () => clearInterval(interval);
@@ -55,7 +76,7 @@ const AnimatedActionText = () => {
     >
       <AnimatePresence mode="wait">
         <motion.span
-          key={actionWords[index] || 'Shop Now'}
+          key={getCurrentWord(index)}
           initial={{ y: '0.1em', opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: '-0.1em', opacity: 0 }}
@@ -69,7 +90,7 @@ const AnimatedActionText = () => {
             verticalAlign: 'baseline',
           }}
         >
-          {actionWords[index] || 'Shop Now'}
+          {getCurrentWord(index)}
         </motion.span>
       </AnimatePresence>
     </div>

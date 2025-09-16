@@ -15,6 +15,8 @@ export default [
       '**/build/**',
       'coverage/**',
       'public/**/*',
+      'next-env.d.ts', // Next.js generated file that should not be edited
+      '**/*.d.ts', // Ignore all TypeScript declaration files
     ],
   },
   // Configuration for TypeScript and TSX files

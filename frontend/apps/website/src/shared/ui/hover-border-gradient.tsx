@@ -34,7 +34,20 @@ export function HoverBorderGradient({
       const nextIndex = clockwise
         ? (currentIndex - 1 + directions.length) % directions.length
         : (currentIndex + 1) % directions.length;
-      return directions[nextIndex];
+
+      // Use switch statement to avoid object injection
+      switch (nextIndex) {
+        case 0:
+          return 'TOP';
+        case 1:
+          return 'LEFT';
+        case 2:
+          return 'BOTTOM';
+        case 3:
+          return 'RIGHT';
+        default:
+          return 'TOP';
+      }
     },
     [clockwise],
   );
@@ -46,6 +59,22 @@ export function HoverBorderGradient({
       'radial-gradient(20.7% 50% at 50% 100%, hsl(0, 0%, 100%) 0%, rgba(255, 255, 255, 0) 100%)',
     RIGHT:
       'radial-gradient(16.2% 41.199999999999996% at 100% 50%, hsl(0, 0%, 100%) 0%, rgba(255, 255, 255, 0) 100%)',
+  };
+
+  // Safely get background gradient for direction
+  const getBackgroundForDirection = (dir: Direction): string => {
+    switch (dir) {
+      case 'TOP':
+        return movingMap.TOP;
+      case 'LEFT':
+        return movingMap.LEFT;
+      case 'BOTTOM':
+        return movingMap.BOTTOM;
+      case 'RIGHT':
+        return movingMap.RIGHT;
+      default:
+        return movingMap.TOP;
+    }
   };
 
   const highlight =
@@ -89,11 +118,11 @@ export function HoverBorderGradient({
           width: '100%',
           height: '100%',
         }}
-        initial={{ background: movingMap[direction] || movingMap.TOP }}
+        initial={{ background: getBackgroundForDirection(direction) }}
         animate={{
           background: hovered
-            ? [movingMap[direction] || movingMap.TOP, highlight]
-            : movingMap[direction] || movingMap.TOP,
+            ? [getBackgroundForDirection(direction), highlight]
+            : getBackgroundForDirection(direction),
         }}
         transition={{ ease: 'linear', duration: duration ?? 1 }}
       />

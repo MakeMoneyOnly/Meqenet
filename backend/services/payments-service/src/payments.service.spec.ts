@@ -1,4 +1,4 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { vi } from 'vitest';
 
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { PaymentsService } from './payments.service';
@@ -13,13 +13,23 @@ interface PaymentResult {
 
 describe('PaymentsService', () => {
   let service: PaymentsService;
+  let mockPrismaService: any;
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [PaymentsService],
-    }).compile();
+    // Reset mocks
+    vi.clearAllMocks();
 
-    service = module.get<PaymentsService>(PaymentsService);
+    // Create a mock PrismaService instance
+    mockPrismaService = {
+      user: {
+        findUnique: vi.fn(),
+      },
+      $connect: vi.fn(),
+      enableShutdownHooks: vi.fn(),
+    };
+
+    // Create the service manually with the mock injected
+    service = new PaymentsService(mockPrismaService as any);
   });
 
   it('should be defined', () => {
@@ -27,12 +37,21 @@ describe('PaymentsService', () => {
   });
 
   describe('createPayment', () => {
+    beforeEach(() => {
+      // Setup mock return value for each test
+      mockPrismaService.user.findUnique.mockResolvedValue({
+        id: 'user-12345',
+        phoneUpdatedAt: null,
+      });
+    });
+
     it('should create a payment successfully', async () => {
       const createPaymentDto: CreatePaymentDto = {
         amountMinor: 1000,
         currency: 'ETB',
         merchantId: 'merchant-12345',
         paymentMethod: 'telebirr',
+        userId: 'user-12345',
       };
 
       const result = await service.createPayment(createPaymentDto);
@@ -52,6 +71,7 @@ describe('PaymentsService', () => {
         currency: 'ETB',
         merchantId: 'merchant-12345',
         paymentMethod: 'telebirr',
+        userId: 'user-12345',
       };
 
       // The service may or may not log, this is a simple verification

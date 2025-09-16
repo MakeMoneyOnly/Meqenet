@@ -246,18 +246,7 @@ interface ImageTrailInstance {
   destroy: () => void;
 }
 
-const variantMap: {
-  [key: number]: new (_container: HTMLDivElement) => ImageTrailInstance;
-} = {
-  1: ImageTrailVariant1,
-  2: ImageTrailVariant2, // Replace with actual class if different
-  3: ImageTrailVariant3, // Replace
-  4: ImageTrailVariant4, // Replace
-  5: ImageTrailVariant5, // Replace
-  6: ImageTrailVariant6, // Replace
-  7: ImageTrailVariant7, // Replace
-  8: ImageTrailVariant8, // Replace
-};
+// Variant classes are now handled with switch statement for security
 
 interface ImageTrailProps {
   items?: string[];
@@ -286,12 +275,34 @@ export const ImageTrail: FC<ImageTrailProps> = ({
     if (!containerRef.current || items.length === 0) return;
 
     // Validate variant to prevent object injection
-    const validVariants = Object.keys(variantMap).map(Number);
-    const safeVariant = validVariants.includes(variant) ? variant : 1;
-    const Cls = variantMap[safeVariant];
-    if (!Cls) {
-      // console.error(`ImageTrail: Variant ${variant} class not found.`);
-      return;
+    let Cls: new (_container: HTMLDivElement) => ImageTrailInstance;
+    switch (variant) {
+      case 1:
+        Cls = ImageTrailVariant1;
+        break;
+      case 2:
+        Cls = ImageTrailVariant2;
+        break;
+      case 3:
+        Cls = ImageTrailVariant3;
+        break;
+      case 4:
+        Cls = ImageTrailVariant4;
+        break;
+      case 5:
+        Cls = ImageTrailVariant5;
+        break;
+      case 6:
+        Cls = ImageTrailVariant6;
+        break;
+      case 7:
+        Cls = ImageTrailVariant7;
+        break;
+      case 8:
+        Cls = ImageTrailVariant8;
+        break;
+      default:
+        Cls = ImageTrailVariant1;
     }
 
     const instance = new Cls(containerRef.current);

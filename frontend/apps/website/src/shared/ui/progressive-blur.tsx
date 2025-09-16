@@ -27,6 +27,24 @@ export function ProgressiveBlur({
   const layers = Math.max(blurLayers, 2);
   const segmentSize = 1 / (blurLayers + 1);
 
+  // Safely get gradient angle for direction
+  const getGradientAngle = (
+    direction: keyof typeof GRADIENT_ANGLES,
+  ): number => {
+    switch (direction) {
+      case 'top':
+        return GRADIENT_ANGLES.top;
+      case 'right':
+        return GRADIENT_ANGLES.right;
+      case 'bottom':
+        return GRADIENT_ANGLES.bottom;
+      case 'left':
+        return GRADIENT_ANGLES.left;
+      default:
+        return GRADIENT_ANGLES.bottom;
+    }
+  };
+
   return (
     <div className={cn('relative', className)}>
       {Array.from({ length: layers }).map((_, index) => {
@@ -40,7 +58,7 @@ export function ProgressiveBlur({
             `rgba(255, 255, 255, ${posIndex === 1 || posIndex === 2 ? 1 : 0}) ${pos * 100}%`,
         );
 
-        const angle = GRADIENT_ANGLES[_direction] ?? GRADIENT_ANGLES.bottom;
+        const angle = getGradientAngle(_direction);
         const gradient = `linear-gradient(${angle}deg, ${gradientStops.join(
           ', ',
         )})`;

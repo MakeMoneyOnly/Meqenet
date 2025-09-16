@@ -751,9 +751,13 @@ export class OAuth2Service {
     accessTokenId: string,
     familyId?: string | null
   ): Promise<OAuthRefreshToken> {
-    const token = crypto.randomBytes(48).toString('hex');
+    const REFRESH_TOKEN_BYTE_LENGTH = 48;
+    const FAMILY_ID_BYTE_LENGTH = 16;
+
+    const token = crypto.randomBytes(REFRESH_TOKEN_BYTE_LENGTH).toString('hex');
     const expiresAt = new Date(Date.now() + this.REFRESH_TOKEN_EXPIRY);
-    const newFamilyId = familyId || crypto.randomBytes(16).toString('hex');
+    const newFamilyId =
+      familyId || crypto.randomBytes(FAMILY_ID_BYTE_LENGTH).toString('hex');
 
     return await this.prisma.oAuthRefreshToken.create({
       data: {
