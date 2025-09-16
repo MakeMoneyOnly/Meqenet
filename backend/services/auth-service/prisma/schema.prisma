@@ -65,6 +65,8 @@ model User {
   /// @classification: Internal
   phoneVerifiedAt    DateTime?
   /// @classification: Internal
+  phoneUpdatedAt     DateTime?
+  /// @classification: Internal
   preferredLanguage  String          @default("en")
   /// @classification: Internal
   timezone           String          @default("Africa/Addis_Ababa")

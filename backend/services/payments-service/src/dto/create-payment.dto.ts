@@ -44,4 +44,8 @@ export class CreatePaymentDto {
   @IsString()
   @IsNotEmpty()
   paymentMethod: string; // e.g., 'telebirr', 'cbe-birr'
+
+  @IsString()
+  @IsNotEmpty()
+  userId: string;
 }

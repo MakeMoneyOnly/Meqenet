@@ -2828,6 +2828,51 @@ stages:
                 UX Designer,
                 Marketplace & Merchant Success Manager,
               ]
+  - stage: "Stage 4: Core Service Expansion"
+    tasks:
+      - id: MEQ-ARC-01
+        name: "[BE] Architect and Create Core Services"
+        platform: Both
+        subtasks:
+          - id: ARC-SVC-01
+            description: "[Architecture] Refactor notification logic into a dedicated, event-driven Notification Service."
+            status: In Progress
+            context: [docs/Stage 1 - Foundation/08-Architecture.md]
+            personas:
+              [
+                Financial Software Architect,
+                Senior Backend Developer,
+                FinTech DevOps Engineer,
+              ]
+          - id: ARC-SVC-02
+            description: "[Architecture] Design and create a dedicated Fraud & Risk Detection Service."
+            status: To Do
+            context:
+              [
+                docs/Stage 1 - Foundation/08-Architecture.md,
+                docs/Stage 2 -Development/18-AI_Integration.md,
+              ]
+            personas:
+              [
+                Financial Software Architect,
+                Senior Backend Developer,
+                Data Scientist / ML Engineer,
+                Data Security Specialist,
+              ]
+          - id: ARC-SVC-03
+            description: "[Architecture] Design and create a dedicated Compliance & Reporting Service for AML, KYC, and regulatory reporting."
+            status: To Do
+            context:
+              [
+                docs/Stage 1 - Foundation/08-Architecture.md,
+                docs/Stage 1 - Foundation/05-Compliance_Framework.md,
+              ]
+            personas:
+              [
+                Financial Software Architect,
+                Senior Backend Developer,
+                Compliance & Risk Officer,
+              ]
   - stage: "Stage 5: AI, Deployment & Launch"
     tasks:
       - id: MEQ-AI-01

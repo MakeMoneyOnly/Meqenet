@@ -26,6 +26,7 @@ import { winstonConfig } from '../shared/config/winston.config';
 import { GlobalExceptionFilter } from '../shared/filters/global-exception.filter';
 import { JwtAuthGuard } from '../shared/guards/jwt-auth.guard';
 import { LoggingInterceptor } from '../shared/interceptors/logging.interceptor';
+import { PrismaModule } from '../shared/prisma/prisma.module';
 import { SharedModule } from '../shared/shared.module';
 
 import { AppController } from './app.controller';
@@ -96,6 +97,7 @@ import { AppService } from './app.service';
     AuthModule,
     DatabaseModule,
     MessagingModule,
+    PrismaModule,
   ],
   controllers: [AppController, PaymentsController],
   providers: [
