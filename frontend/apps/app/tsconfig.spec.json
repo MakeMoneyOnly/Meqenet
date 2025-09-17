@@ -5,5 +5,5 @@
     "module": "commonjs",
     "types": ["vitest/globals", "node"]
   },
-  "include": ["src/**/*", "src/**/*.d.ts", "../../../libs/shared/src/**/*"]
+  "include": ["src/**/*", "src/**/*.d.ts"]
 }

@@ -3,11 +3,13 @@ import {
   UnauthorizedException,
   ConflictException,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 
 import { PrismaService } from '../../infrastructure/database/prisma.service';
+import { User } from '@prisma/client';
 import {
   AuthEvent,
   UserRegisteredPayload,
@@ -35,8 +37,15 @@ const LOCKOUT_MINUTES = 15;
 const MILLISECONDS_PER_SECOND = 1000;
 const SECONDS_PER_MINUTE = 60;
 
+// SIM-Swap Protection Constants
+const SIM_SWAP_COOLING_PERIOD_HOURS = 24; // 24 hours cooling period after phone change
+const HIGH_RISK_OPERATION_COOLING_HOURS = 72; // 72 hours for high-risk operations
+const SIM_SWAP_NOTIFICATION_METHODS = ['email', 'sms'] as const;
+
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
@@ -882,5 +891,344 @@ export class AuthService {
             : 'Failed to reset password. Please try again.',
       });
     }
+  }
+
+  /**
+   * Update user phone number with SIM-swap protection
+   */
+  async updateUserPhone(
+    userId: string,
+    newPhoneNumber: string,
+    context?: {
+      ipAddress?: string;
+      userAgent?: string;
+      location?: string;
+      deviceFingerprint?: string;
+    }
+  ): Promise<{ message: string; requiresVerification?: boolean }> {
+    const {
+      ipAddress = 'unknown',
+      userAgent = 'Unknown',
+      location = 'Unknown',
+      deviceFingerprint = 'Unknown',
+    } = context || {};
+
+    try {
+      // Get current user
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
+      });
+
+      if (!user) {
+        throw new UnauthorizedException({
+          errorCode: 'USER_NOT_FOUND',
+          message: 'User not found',
+        });
+      }
+
+      // Check if phone number is actually changing
+      const phoneChanged = user.phone !== newPhoneNumber;
+      const previousPhone = user.phone;
+
+      if (!phoneChanged) {
+        return {
+          message: 'Phone number is already up to date',
+        };
+      }
+
+      // Log phone number change attempt
+      await this.auditLogging.logPhoneNumberChange(
+        {
+          userId: user.id,
+          userEmail: user.email,
+          userRole: user.role,
+          ipAddress,
+          userAgent,
+          location,
+          deviceFingerprint,
+        },
+        {
+          previousPhone: previousPhone || 'none',
+          newPhone: newPhoneNumber,
+        }
+      );
+
+      // Calculate cooling period end time
+      const coolingPeriodEnd = new Date(
+        Date.now() +
+          SIM_SWAP_COOLING_PERIOD_HOURS *
+            SECONDS_PER_MINUTE *
+            SECONDS_PER_MINUTE *
+            MILLISECONDS_PER_SECOND
+      );
+
+      // Update user with new phone and cooling period
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: {
+          phone: newPhoneNumber,
+          phoneUpdatedAt: new Date(),
+          phoneChangeCoolingPeriodEnd: coolingPeriodEnd,
+          updatedAt: new Date(),
+        },
+      });
+
+      // Send notifications to both old and new phone numbers (if available)
+      await this.sendPhoneChangeNotifications(
+        user,
+        previousPhone,
+        newPhoneNumber
+      );
+
+      // Log security event
+      await this.securityMonitoring.recordSecurityEvent({
+        type: 'authentication',
+        severity: 'medium',
+        userId: user.id,
+        description: 'Phone number changed with SIM-swap protection activated',
+        metadata: {
+          coolingPeriodHours: SIM_SWAP_COOLING_PERIOD_HOURS,
+          coolingPeriodEnd: coolingPeriodEnd.toISOString(),
+        },
+      });
+
+      return {
+        message: `Phone number updated successfully. A ${SIM_SWAP_COOLING_PERIOD_HOURS}-hour cooling period is now active for security.`,
+        requiresVerification: true,
+      };
+    } catch (error) {
+      // Handle unexpected errors during phone update
+      if (!(error instanceof UnauthorizedException)) {
+        await this.auditLogging.logPhoneNumberChange(
+          {
+            userEmail: userId, // fallback since we might not have user details
+            ipAddress,
+            userAgent,
+            location,
+            deviceFingerprint,
+          },
+          {
+            error: error instanceof Error ? error.message : 'Unknown error',
+          }
+        );
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Check if user is in SIM-swap cooling period for high-risk operations
+   */
+  async checkSimSwapCoolingPeriod(
+    userId: string,
+    operation: 'high_risk' | 'phone_change' = 'high_risk'
+  ): Promise<{
+    isInCoolingPeriod: boolean;
+    coolingPeriodEnd?: Date;
+    remainingHours?: number;
+    canProceed: boolean;
+  }> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        phoneChangeCoolingPeriodEnd: true,
+      },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException({
+        errorCode: 'USER_NOT_FOUND',
+        message: 'User not found',
+      });
+    }
+
+    const coolingPeriodEnd = user.phoneChangeCoolingPeriodEnd;
+    const isInCoolingPeriod = coolingPeriodEnd && coolingPeriodEnd > new Date();
+
+    let canProceed = true;
+    let remainingHours: number | undefined;
+
+    if (isInCoolingPeriod) {
+      remainingHours = Math.ceil(
+        (coolingPeriodEnd!.getTime() - Date.now()) /
+          (MILLISECONDS_PER_SECOND * SECONDS_PER_MINUTE * SECONDS_PER_MINUTE)
+      );
+
+      // For high-risk operations, enforce stricter cooling period
+      if (operation === 'high_risk') {
+        const highRiskCoolingPeriodEnd = new Date(
+          coolingPeriodEnd!.getTime() -
+            Date.now() +
+            (HIGH_RISK_OPERATION_COOLING_HOURS -
+              SIM_SWAP_COOLING_PERIOD_HOURS) *
+              SECONDS_PER_MINUTE *
+              SECONDS_PER_MINUTE *
+              MILLISECONDS_PER_SECOND
+        );
+        canProceed = highRiskCoolingPeriodEnd <= new Date();
+      }
+    }
+
+    return {
+      isInCoolingPeriod: Boolean(isInCoolingPeriod),
+      coolingPeriodEnd,
+      remainingHours,
+      canProceed,
+    };
+  }
+
+  /**
+   * Send notifications for phone number change
+   */
+  private async sendPhoneChangeNotifications(
+    user: User,
+    oldPhone?: string | null,
+    newPhone?: string
+  ): Promise<void> {
+    const notifications = [];
+
+    // Notify old phone number (if available)
+    if (oldPhone) {
+      for (const method of SIM_SWAP_NOTIFICATION_METHODS) {
+        notifications.push(
+          this.sendNotification(
+            method,
+            oldPhone,
+            'Security Alert: Phone Number Changed',
+            `Your phone number was changed from ${oldPhone} to ${newPhone}. If you did not make this change, please contact support immediately.`,
+            user
+          )
+        );
+      }
+    }
+
+    // Notify new phone number
+    if (newPhone) {
+      for (const method of SIM_SWAP_NOTIFICATION_METHODS) {
+        notifications.push(
+          this.sendNotification(
+            method,
+            newPhone,
+            'Phone Number Verification Required',
+            `Your phone number has been changed to ${newPhone}. A ${SIM_SWAP_COOLING_PERIOD_HOURS}-hour security cooling period is now active.`,
+            user
+          )
+        );
+      }
+    }
+
+    // Notify email (if available)
+    if (user.email) {
+      notifications.push(
+        this.sendNotification(
+          'email',
+          user.email,
+          'Security Alert: Phone Number Changed',
+          `Your phone number has been changed. A ${SIM_SWAP_COOLING_PERIOD_HOURS}-hour security cooling period is now active for high-risk operations.`,
+          user
+        )
+      );
+    }
+
+    // Send all notifications (don't fail if some fail)
+    await Promise.allSettled(notifications);
+  }
+
+  /**
+   * Send notification via specified method
+   */
+  private async sendNotification(
+    method: 'sms' | 'email',
+    destination: string,
+    subject: string,
+    message: string,
+    user: User
+  ): Promise<void> {
+    try {
+      if (method === 'sms') {
+        // TODO: Implement SMS service integration
+        this.logger.log(
+          `SMS notification would be sent to ${destination}: ${message}`
+        );
+      } else if (method === 'email') {
+        await this.emailService.sendSecurityNotification({
+          email: destination,
+          subject,
+          message,
+          userId: user.id,
+        });
+      }
+    } catch (error) {
+      this.logger.error(
+        `Failed to send ${method} notification to ${destination}:`,
+        error
+      );
+    }
+  }
+
+  /**
+   * Validate high-risk operation during SIM-swap cooling period
+   */
+  async validateHighRiskOperation(
+    userId: string,
+    operation: string,
+    context?: {
+      ipAddress?: string;
+      userAgent?: string;
+      location?: string;
+      deviceFingerprint?: string;
+    }
+  ): Promise<{
+    canProceed: boolean;
+    reason?: string;
+    coolingPeriodEnd?: Date;
+    requiresAdditionalVerification?: boolean;
+  }> {
+    const coolingStatus = await this.checkSimSwapCoolingPeriod(
+      userId,
+      'high_risk'
+    );
+
+    if (!coolingStatus.canProceed) {
+      // Log blocked high-risk operation
+      await this.auditLogging.logHighRiskOperationBlock(
+        {
+          userId,
+          ipAddress: context?.ipAddress || 'unknown',
+          userAgent: context?.userAgent || 'Unknown',
+          location: context?.location || 'Unknown',
+          deviceFingerprint: context?.deviceFingerprint || 'Unknown',
+        },
+        {
+          operation,
+          coolingPeriodEnd: coolingStatus.coolingPeriodEnd,
+          remainingHours: coolingStatus.remainingHours,
+        }
+      );
+
+      // Record security event
+      await this.securityMonitoring.recordSecurityEvent({
+        type: 'authorization',
+        severity: 'high',
+        userId,
+        description: `High-risk operation blocked due to SIM-swap cooling period: ${operation}`,
+        metadata: {
+          operation,
+          coolingPeriodEnd: coolingStatus.coolingPeriodEnd?.toISOString(),
+          remainingHours: coolingStatus.remainingHours,
+        },
+      });
+
+      return {
+        canProceed: false,
+        reason: `Operation blocked due to recent phone number change. Cooling period ends in ${coolingStatus.remainingHours} hours.`,
+        coolingPeriodEnd: coolingStatus.coolingPeriodEnd,
+        requiresAdditionalVerification: true,
+      };
+    }
+
+    return {
+      canProceed: true,
+    };
   }
 }

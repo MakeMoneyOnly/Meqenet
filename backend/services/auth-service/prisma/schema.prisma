@@ -66,6 +66,8 @@ model User {
   phoneVerifiedAt    DateTime?
   /// @classification: Internal
   phoneUpdatedAt     DateTime?
+  /// @classification: Sensitive @encrypted
+  phoneChangeCoolingPeriodEnd DateTime?
   /// @classification: Internal
   preferredLanguage  String          @default("en")
   /// @classification: Internal

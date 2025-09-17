@@ -41,10 +41,7 @@
       "!{projectRoot}/src/test-setup.[jt]s",
       "!{projectRoot}/test-setup.[jt]s",
       "!{projectRoot}/.eslintrc.json",
-      "!{projectRoot}/eslint.config.js",
-      "!{projectRoot}/**/*.stories.@(js|jsx|ts|tsx|mdx)",
-      "!{projectRoot}/.storybook/**/*",
-      "!{projectRoot}/tsconfig.storybook.json"
+      "!{projectRoot}/eslint.config.js"
     ],
     "sharedGlobals": []
   },
@@ -68,12 +65,9 @@
       }
     },
     {
-      "plugin": "@nx/storybook/plugin",
+      "plugin": "@nx/vite/plugin",
       "options": {
-        "serveStorybookTargetName": "serve:storybook",
-        "buildStorybookTargetName": "build:storybook",
-        "testStorybookTargetName": "test-storybook",
-        "staticStorybookTargetName": "static-storybook"
+        "targetName": "test"
       }
     }
   ]

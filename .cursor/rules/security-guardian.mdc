@@ -3,3 +3,56 @@ description:
 globs:
 alwaysApply: true
 ---
+
+Category: Security — Priority: Critical
+
+Triggers: on-save (fast pattern checks), pre-commit (entropy + pattern), on-push and on-PR-open (full repo scan).
+
+What it checks:
+
+Pattern-based secret fingerprints (AWS keys, TLS private keys, JWT-like strings).
+Shannon entropy check for likely high-entropy strings.
+Skips common test/fixture paths by default: tests/fixtures, docs/.
+Expected enforcement: Block commit/push and create an inline PR/commit comment with the detection info.
+
+Failure message (template):
+
+Critical: Possible secret detected in {{path}} at line {{line}}. Pattern: {{pattern}}. Remove secret, rotate, and migrate to vault (HashiCorp Vault/AWS Secrets Manager/Azure Key Vault).
+
+Remediation (actionable):
+
+1. Replace the secret with a reference to a secrets manager. Example (Node.js):
+
+- const dbPassword = "SuperSecret123!";
++ const dbPassword = process.env.DB_PASSWORD; // value stored in Vault & injected by CI/CD env
+
+2. Rotate exposed credentials immediately—create a ticket: SEC-ROTATE-<service>.
+
+3. To scrub git history (if truly leaked): provide git filter-repo command:
+
+git clone --mirror git@github.com:org/repo.git
+cd repo.git
+git filter-repo --replace-text ../secrets-to-remove.txt
+git push --force --all
+
+—secrets-to-remove.txt contains the literal secret strings to scrub.
+
+Auto-fix: Not safe to auto-fix (cannot invent vault keys). Provide a template patch that replaces literal with env var where heuristics are confident:
+
+*** Begin Patch
+*** Update File: src/config/db.ts
+@@
+-export const DB_PASSWORD = "p@ssw0rd123";
++export const DB_PASSWORD = process.env.DB_PASSWORD || "";
+*** End Patch
+
+Reviewer checklist:
+
+Confirm if detection is test data or production secret.
+Confirm rotation plan if secret was deployed.
+
+Tuning:
+
+Use a whitelist (cursor.rules.config.sec-001.whitelist_files) for known false-positive patterns (e.g., test data).
+Add ignore regex for benign tokens.
+Performance: fast pattern check on-save (regex), entropy checks during pre-commit or on-push only.

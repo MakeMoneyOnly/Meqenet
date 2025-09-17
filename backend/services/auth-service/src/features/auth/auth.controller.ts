@@ -7,6 +7,8 @@ import {
   UseFilters,
   Headers,
   Req,
+  Put,
+  Param,
 } from '@nestjs/common';
 import { Request } from 'express';
 
@@ -60,5 +62,42 @@ export class AuthController {
     @Body() dto: PasswordResetConfirmDto
   ): Promise<{ message: string }> {
     return this.authService.confirmPasswordReset(dto);
+  }
+
+  @Put('user/:userId/phone')
+  @HttpCode(HttpStatus.OK)
+  async updateUserPhone(
+    @Param('userId') userId: string,
+    @Body() body: { phoneNumber: string },
+    @Req() req: Request
+  ): Promise<{ message: string; requiresVerification?: boolean }> {
+    return this.authService.updateUserPhone(userId, body.phoneNumber, {
+      ipAddress: req.ip || 'unknown',
+      userAgent: (req.headers['user-agent'] as string) || 'Unknown',
+      location: (req.headers['x-forwarded-for'] as string) || 'Unknown',
+      deviceFingerprint:
+        (req.headers['x-device-fingerprint'] as string) || 'Unknown',
+    });
+  }
+
+  @Post('user/:userId/validate-high-risk-operation')
+  @HttpCode(HttpStatus.OK)
+  async validateHighRiskOperation(
+    @Param('userId') userId: string,
+    @Body() body: { operation: string },
+    @Req() req: Request
+  ): Promise<{
+    canProceed: boolean;
+    reason?: string;
+    coolingPeriodEnd?: Date;
+    requiresAdditionalVerification?: boolean;
+  }> {
+    return this.authService.validateHighRiskOperation(userId, body.operation, {
+      ipAddress: req.ip || 'unknown',
+      userAgent: (req.headers['user-agent'] as string) || 'Unknown',
+      location: (req.headers['x-forwarded-for'] as string) || 'Unknown',
+      deviceFingerprint:
+        (req.headers['x-device-fingerprint'] as string) || 'Unknown',
+    });
   }
 }

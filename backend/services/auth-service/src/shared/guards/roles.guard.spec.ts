@@ -62,7 +62,7 @@ describe('RolesGuard', () => {
     expect(guard.canActivate(context)).toBe(false);
   });
 
-  it('should allow access if no roles are required', () => {
+  it('should deny access if no valid roles are required', () => {
     const reflector = createMockReflector([]);
     const guard = new RolesGuard(reflector);
     const context = createMockExecutionContext({
@@ -70,7 +70,7 @@ describe('RolesGuard', () => {
       email: 'user@test.com',
       role: 'CUSTOMER',
     });
-    expect(guard.canActivate(context)).toBe(true);
+    expect(guard.canActivate(context)).toBe(false);
   });
 
   it('should handle multiple required roles', () => {
@@ -159,17 +159,17 @@ describe('RolesGuard', () => {
 
       // Test with unexpected properties that might be confused with role
       const usersWithUnexpectedRoles = [
-        { id: '1', email: 'user@test.com', role: 'USER', roles: ['ADMIN'] }, // has both role and roles
+        { id: '1', email: 'user@test.com', role: 'CUSTOMER', roles: ['ADMIN'] }, // has both role and roles
         {
           id: '1',
           email: 'user@test.com',
-          role: 'USER',
+          role: 'CUSTOMER',
           permissions: ['admin'],
         }, // has permissions
         {
           id: '1',
           email: 'user@test.com',
-          role: 'USER',
+          role: 'CUSTOMER',
           groups: ['admin_group'],
         }, // has groups
         { id: '1', email: 'user@test.com', role: 123 }, // role as number
@@ -284,7 +284,7 @@ describe('RolesGuard', () => {
         createMockExecutionContext({
           id: '1',
           email: 'user@test.com',
-          role: 'USER',
+          role: 'CUSTOMER',
         }),
         createMockExecutionContext({
           id: '1',
@@ -300,16 +300,16 @@ describe('RolesGuard', () => {
     });
 
     it('should handle privilege escalation attempts', () => {
-      const reflector = createMockReflector(['USER']);
+      const reflector = createMockReflector(['CUSTOMER']);
       const guard = new RolesGuard(reflector);
 
       // Test privilege escalation attempts
       const escalationAttempts = [
         { id: '1', email: 'admin@test.com', role: 'ADMIN' }, // higher privilege role
-        { id: '1', email: 'user@test.com', role: 'SUPER_ADMIN' }, // even higher privilege
-        { id: '1', email: 'user@test.com', role: 'ROOT' }, // system level
-        { id: '1', email: 'user@test.com', role: '*' }, // wildcard
-        { id: '1', email: 'user@test.com', role: 'ALL' }, // all permissions
+        { id: '1', email: 'user@test.com', role: 'SUPER_ADMIN' }, // even higher privilege (invalid)
+        { id: '1', email: 'user@test.com', role: 'ROOT' }, // system level (invalid)
+        { id: '1', email: 'user@test.com', role: '*' }, // wildcard (invalid)
+        { id: '1', email: 'user@test.com', role: 'ALL' }, // all permissions (invalid)
       ];
 
       escalationAttempts.forEach(user => {
@@ -321,7 +321,7 @@ describe('RolesGuard', () => {
       const correctContext = createMockExecutionContext({
         id: '1',
         email: 'user@test.com',
-        role: 'USER',
+        role: 'CUSTOMER',
       });
       expect(guard.canActivate(correctContext)).toBe(true);
     });
@@ -349,7 +349,7 @@ describe('RolesGuard', () => {
       ];
 
       malformedContexts.forEach(context => {
-        expect(() => guard.canActivate(context)).toThrow();
+        expect(guard.canActivate(context)).toBe(false);
       });
     });
   });

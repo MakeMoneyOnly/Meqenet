@@ -6,7 +6,8 @@ export type AllowedRole =
   | 'COMPLIANCE'
   | 'CUSTOMER'
   | 'MERCHANT'
-  | 'SUPPORT';
+  | 'SUPPORT'
+  | 'DEVELOPER';
 
 /**
  * Roles decorator to restrict handlers by user roles.

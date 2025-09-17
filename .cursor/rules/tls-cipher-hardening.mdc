@@ -3,3 +3,32 @@ description:
 globs:
 alwaysApply: true
 ---
+
+Category: Security — Priority: High
+
+Trigger: on-PR-open & scheduled.
+Checks: scans runtime TLS options, node/Go/Python server bootstraps, config files for insecure TLS versions or ciphers: ALL.
+Failure message:
+High: In {{file}} found TLS config allowing insecure versions ({{detail}}). Recommend: TLS 1.2+ with TLS 1.3 preferred.
+Remediation examples:
+Node.js (safe patch suggestion):
+
+*** Begin Patch
+*** Update File: src/server.ts
+@@
+-const server = https.createServer({ key, cert });
++const server = https.createServer({
++  key,
++  cert,
++  minVersion: 'TLSv1.2',
++  ciphers: 'TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384'
++});
+*** End Patch
+
+Go: ensure tls.Config{MinVersion: tls.VersionTLS12} is set.
+
+Human review required due to risk of breaking older clients.
+Tuning:
+
+Mark dev-only configs with # dev-only comment to skip checks.
+Notes: No auto-fix for cipher lists — require security engineer signoff.

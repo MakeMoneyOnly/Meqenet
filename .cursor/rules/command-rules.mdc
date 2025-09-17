@@ -3,3 +3,16 @@ description:
 globs:
 alwaysApply: true
 ---
+
+1. Always use Git bash for running any commands.
+2. Never run "--No-Verify" flags on any git commands.
+3. Make sure your git commit message uses the proper formats like the following:
+"📋 REQUIRED FORMAT:"
+    type(scope): description (TICKET-123)"
+
+✅ Valid ticket formats:"
+       (JIRA-123)    (TICKET-456)   (ISSUE-789)
+       (MEQ-101)     (BNPL-202)     (PAY-303)
+       (AUTH-404)    (SEC-505)
+4. Never run git reset Hard command.
+5 .Always run Windows commands only.
