@@ -1,0 +1,1372 @@
+openapi: 3.0.3
+info:
+  title: Meqenet Authentication & Security API
+  description: |
+    Comprehensive authentication and security API for Meqenet.et BNPL platform.
+
+    ## Security Features
+    - JWT RS256 asymmetric signing with automated key rotation
+    - Multi-factor authentication (SMS/Email OTP)
+    - SIM-swap protection with cooling periods
+    - Risk-based adaptive authentication
+    - Field-level encryption for PII data
+    - Advanced rate limiting and DDoS protection
+    - Comprehensive audit logging
+    - Real-time security monitoring and alerting
+
+    ## Authentication Flow
+    1. User registers with email/phone verification
+    2. Login with optional MFA challenge
+    3. Risk assessment for suspicious activities
+    4. JWT tokens with automatic refresh
+    5. Session management with device fingerprinting
+
+    ## Security Standards
+    - PCI DSS compliant for payment data
+    - GDPR compliant for user data protection
+    - Ethiopian FinTech regulatory compliant
+    - SOC 2 Type II ready
+    - ISO 27001 aligned
+  version: 2.0.0
+  contact:
+    name: Meqenet Security Team
+    email: security@meqenet.et
+    url: https://meqenet.et/security
+
+servers:
+  - url: https://api.meqenet.et/v2
+    description: Production server
+  - url: https://staging-api.meqenet.et/v2
+    description: Staging server
+  - url: http://localhost:3000/v2
+    description: Local development
+
+security:
+  - BearerAuth: []
+  - ApiKeyAuth: []
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT access token with RS256 signature.
+        Tokens are short-lived (15 minutes) and must be refreshed.
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key for service-to-service authentication
+
+  schemas:
+    User:
+      type: object
+      required:
+        - id
+        - email
+        - role
+        - status
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique user identifier
+        email:
+          type: string
+          format: email
+          description: User's email address (encrypted at rest)
+        emailVerified:
+          type: boolean
+          default: false
+          description: Email verification status
+        phone:
+          type: string
+          description: User's phone number (encrypted at rest)
+        phoneVerified:
+          type: boolean
+          default: false
+          description: Phone verification status
+        firstName:
+          type: string
+          description: User's first name (encrypted at rest)
+        lastName:
+          type: string
+          description: User's last name (encrypted at rest)
+        role:
+          type: string
+          enum: [CUSTOMER, MERCHANT, ADMIN, COMPLIANCE, SUPPORT, DEVELOPER]
+          description: User's role for RBAC
+        status:
+          type: string
+          enum: [ACTIVE, INACTIVE, SUSPENDED, BANNED, PENDING, DELETED]
+          description: Account status
+        twoFactorEnabled:
+          type: boolean
+          default: false
+          description: MFA enabled status
+        riskLevel:
+          type: string
+          enum: [LOW, MEDIUM, HIGH, CRITICAL]
+          description: Current risk assessment level
+        riskScore:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: Quantitative risk score
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    AuthResponse:
+      type: object
+      required:
+        - accessToken
+        - refreshToken
+        - user
+        - expiresIn
+      properties:
+        accessToken:
+          type: string
+          description: JWT access token (RS256 signed)
+        refreshToken:
+          type: string
+          description: Opaque refresh token for token renewal
+        tokenType:
+          type: string
+          default: Bearer
+        expiresIn:
+          type: integer
+          description: Access token expiration time in seconds
+          default: 900
+        user:
+          $ref: "#/components/schemas/User"
+        requiresMfa:
+          type: boolean
+          description: Whether MFA challenge is required
+        mfaToken:
+          type: string
+          description: MFA challenge token (if MFA required)
+
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          description: User's email address
+        password:
+          type: string
+          minLength: 8
+          description: User's password
+        deviceFingerprint:
+          type: string
+          description: Device fingerprint for risk assessment
+        location:
+          type: string
+          description: User's location for risk assessment
+
+    RegisterRequest:
+      type: object
+      required:
+        - email
+        - password
+        - firstName
+        - lastName
+        - phone
+      properties:
+        email:
+          type: string
+          format: email
+          description: User's email address
+        password:
+          type: string
+          minLength: 8
+          maxLength: 128
+          description: User's password (must contain uppercase, lowercase, number, special char)
+        confirmPassword:
+          type: string
+          description: Password confirmation
+        firstName:
+          type: string
+          minLength: 1
+          maxLength: 50
+          description: User's first name
+        lastName:
+          type: string
+          minLength: 1
+          maxLength: 50
+          description: User's last name
+        phone:
+          type: string
+          pattern: '^\+251[0-9]{9}$'
+          description: Ethiopian phone number in international format
+        preferredLanguage:
+          type: string
+          enum: [en, am]
+          default: en
+          description: User's preferred language
+        timezone:
+          type: string
+          default: Africa/Addis_Ababa
+          description: User's timezone
+
+    PasswordResetRequest:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          format: email
+          description: Email address for password reset
+        clientId:
+          type: string
+          description: OAuth client ID for reset link generation
+
+    PasswordResetConfirm:
+      type: object
+      required:
+        - token
+        - newPassword
+        - confirmPassword
+      properties:
+        token:
+          type: string
+          description: Password reset token from email
+        newPassword:
+          type: string
+          minLength: 8
+          description: New password
+        confirmPassword:
+          type: string
+          description: Password confirmation
+
+    MfaRequest:
+      type: object
+      required:
+        - channel
+      properties:
+        channel:
+          type: string
+          enum: [sms, email]
+          description: MFA channel for OTP delivery
+        phoneNumber:
+          type: string
+          description: Phone number for SMS OTP (if channel is sms)
+
+    MfaVerify:
+      type: object
+      required:
+        - code
+        - channel
+      properties:
+        code:
+          type: string
+          minLength: 6
+          maxLength: 8
+          description: OTP code received via SMS/Email
+        channel:
+          type: string
+          enum: [sms, email]
+          description: MFA channel used
+
+    RiskAssessment:
+      type: object
+      properties:
+        level:
+          type: string
+          enum: [LOW, MEDIUM, HIGH, CRITICAL]
+          description: Risk assessment level
+        score:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: Quantitative risk score
+        factors:
+          type: array
+          items:
+            type: string
+          description: Risk factors identified
+        requiresMfa:
+          type: boolean
+          description: Whether MFA is required
+        requiresStepUp:
+          type: boolean
+          description: Whether step-up authentication is required
+        recommendations:
+          type: array
+          items:
+            type: string
+          description: Security recommendations
+
+    SecurityEvent:
+      type: object
+      properties:
+        type:
+          type: string
+          description: Type of security event
+        severity:
+          type: string
+          enum: [low, medium, high, critical]
+          description: Event severity level
+        userId:
+          type: string
+          description: User ID associated with event
+        ipAddress:
+          type: string
+          description: IP address of the event
+        userAgent:
+          type: string
+          description: User agent string
+        description:
+          type: string
+          description: Human-readable description
+        metadata:
+          type: object
+          description: Additional event metadata
+        timestamp:
+          type: string
+          format: date-time
+
+    BackupMetadata:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique backup identifier
+        timestamp:
+          type: string
+          format: date-time
+          description: Backup creation timestamp
+        status:
+          type: string
+          enum: [pending, running, completed, failed]
+          description: Backup status
+        size:
+          type: integer
+          description: Original backup size in bytes
+        compressedSize:
+          type: integer
+          description: Compressed backup size in bytes
+        encryptedSize:
+          type: integer
+          description: Encrypted backup size in bytes
+        tables:
+          type: array
+          items:
+            type: string
+          description: Tables included in backup
+        checksum:
+          type: string
+          description: SHA-256 checksum of backup
+        encryptionKeyId:
+          type: string
+          description: KMS key ID used for encryption
+
+  responses:
+    UnauthorizedError:
+      description: Authentication failed or token expired
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              errorCode:
+                type: string
+                example: TOKEN_EXPIRED
+              message:
+                type: string
+                example: Access token has expired
+              correlationId:
+                type: string
+                description: Request correlation ID for debugging
+
+    ForbiddenError:
+      description: Insufficient permissions
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              errorCode:
+                type: string
+                example: INSUFFICIENT_PERMISSIONS
+              message:
+                type: string
+                example: User does not have required permissions
+              requiredPermissions:
+                type: array
+                items:
+                  type: string
+                example: ["admin:users:read"]
+
+    RateLimitError:
+      description: Rate limit exceeded
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              errorCode:
+                type: string
+                example: RATE_LIMIT_EXCEEDED
+              message:
+                type: string
+                example: Too many requests. Please try again later.
+              retryAfter:
+                type: integer
+                description: Seconds to wait before retrying
+                example: 300
+
+    ValidationError:
+      description: Input validation failed
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              errorCode:
+                type: string
+                example: VALIDATION_ERROR
+              message:
+                type: string
+                example: Invalid input data
+              errors:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    field:
+                      type: string
+                      example: email
+                    message:
+                      type: string
+                      example: Invalid email format
+
+paths:
+  /auth/register:
+    post:
+      summary: Register new user
+      description: |
+        Register a new user account with email/phone verification.
+
+        **Security Features:**
+        - Input validation and sanitization
+        - Password strength requirements
+        - Email uniqueness validation
+        - Automatic risk assessment
+        - Audit logging
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+            example:
+              email: "user@example.com"
+              password: "SecurePass123!"
+              confirmPassword: "SecurePass123!"
+              firstName: "John"
+              lastName: "Doe"
+              phone: "+251911123456"
+              preferredLanguage: "en"
+      responses:
+        "201":
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "429":
+          $ref: "#/components/responses/RateLimitError"
+
+  /auth/login:
+    post:
+      summary: User login
+      description: |
+        Authenticate user with email/password and optional MFA.
+
+        **Security Features:**
+        - Account lockout protection
+        - Failed login attempt tracking
+        - Risk-based MFA challenges
+        - Device fingerprinting
+        - Geographic risk assessment
+        - SIM-swap protection checks
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+            example:
+              email: "user@example.com"
+              password: "SecurePass123!"
+              deviceFingerprint: "abc123def456"
+              location: "Addis Ababa, Ethiopia"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+              example:
+                accessToken: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
+                refreshToken: "refresh_token_opaque_string"
+                tokenType: "Bearer"
+                expiresIn: 900
+                user:
+                  id: "user-uuid"
+                  email: "user@example.com"
+                  firstName: "John"
+                  lastName: "Doe"
+                  role: "CUSTOMER"
+                  status: "ACTIVE"
+                  twoFactorEnabled: true
+                requiresMfa: true
+                mfaToken: "mfa_challenge_token"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "429":
+          $ref: "#/components/responses/RateLimitError"
+
+  /auth/refresh:
+    post:
+      summary: Refresh access token
+      description: |
+        Exchange refresh token for new access token.
+
+        **Security Features:**
+        - Refresh token reuse detection
+        - Family-based token invalidation
+        - Automatic key rotation support
+        - Session validation
+      tags:
+        - Authentication
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refreshToken
+              properties:
+                refreshToken:
+                  type: string
+                  description: Refresh token from login response
+      responses:
+        "200":
+          description: Token refreshed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                    description: New JWT access token
+                  tokenType:
+                    type: string
+                    default: Bearer
+                  expiresIn:
+                    type: integer
+                    default: 900
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /auth/logout:
+    post:
+      summary: User logout
+      description: |
+        Invalidate current session and refresh token.
+
+        **Security Features:**
+        - Session cleanup
+        - Refresh token invalidation
+        - Audit logging
+      tags:
+        - Authentication
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Logged out successfully"
+
+  /auth/password-reset-request:
+    post:
+      summary: Request password reset
+      description: |
+        Initiate password reset process via email.
+
+        **Security Features:**
+        - Rate limiting per email/IP
+        - Token expiration (24 hours)
+        - Single-use tokens
+        - Audit logging
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PasswordResetRequest"
+      responses:
+        "200":
+          description: Password reset email sent
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "If an account with this email exists, a password reset link has been sent."
+        "429":
+          $ref: "#/components/responses/RateLimitError"
+
+  /auth/password-reset-confirm:
+    post:
+      summary: Confirm password reset
+      description: |
+        Complete password reset with token and new password.
+
+        **Security Features:**
+        - Token validation and expiration
+        - Password strength requirements
+        - Audit logging
+        - Account security notifications
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PasswordResetConfirm"
+      responses:
+        "200":
+          description: Password reset successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Password reset successfully"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /auth/mfa/request:
+    post:
+      summary: Request MFA OTP
+      description: |
+        Request OTP for multi-factor authentication.
+
+        **Security Features:**
+        - Rate limiting per user/channel
+        - SIM-swap protection checks
+        - OTP expiration (5 minutes)
+        - Channel validation
+      tags:
+        - Authentication
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MfaRequest"
+      responses:
+        "200":
+          description: OTP sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "OTP sent successfully"
+                  expiresIn:
+                    type: integer
+                    description: OTP expiration time in seconds
+                    example: 300
+        "429":
+          $ref: "#/components/responses/RateLimitError"
+
+  /auth/mfa/verify:
+    post:
+      summary: Verify MFA OTP
+      description: |
+        Verify OTP for multi-factor authentication completion.
+
+        **Security Features:**
+        - OTP validation and expiration
+        - Single-use OTP enforcement
+        - Failed attempt tracking
+        - Audit logging
+      tags:
+        - Authentication
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MfaVerify"
+      responses:
+        "200":
+          description: MFA verification successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "MFA verification successful"
+                  verified:
+                    type: boolean
+                    example: true
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "429":
+          $ref: "#/components/responses/RateLimitError"
+
+  /auth/risk-assessment:
+    get:
+      summary: Get current risk assessment
+      description: |
+        Retrieve current risk assessment for authenticated user.
+
+        **Security Features:**
+        - Real-time risk calculation
+        - Historical risk tracking
+        - Risk factor analysis
+      tags:
+        - Risk Management
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Risk assessment retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RiskAssessment"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+
+  /auth/user/{userId}/phone:
+    put:
+      summary: Update user phone number
+      description: |
+        Update user's phone number with SIM-swap protection.
+
+        **Security Features:**
+        - SIM-swap cooling period enforcement
+        - Phone verification requirements
+        - Audit logging
+        - High-risk operation flagging
+      tags:
+        - User Management
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: User ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - phoneNumber
+              properties:
+                phoneNumber:
+                  type: string
+                  pattern: '^\+251[0-9]{9}$'
+                  description: New phone number
+      responses:
+        "200":
+          description: Phone number updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Phone number updated successfully"
+                  requiresVerification:
+                    type: boolean
+                    description: Whether verification is required
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "403":
+          $ref: "#/components/responses/ForbiddenError"
+
+  /auth/user/{userId}/validate-high-risk-operation:
+    post:
+      summary: Validate high-risk operation
+      description: |
+        Validate if user can perform high-risk operations.
+
+        **Security Features:**
+        - SIM-swap protection checks
+        - Risk assessment integration
+        - Cooling period validation
+        - MFA requirement verification
+      tags:
+        - Risk Management
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: User ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - operation
+              properties:
+                operation:
+                  type: string
+                  enum:
+                    [
+                      password_change,
+                      email_change,
+                      phone_change,
+                      payment,
+                      loan_application,
+                    ]
+                  description: Type of high-risk operation
+      responses:
+        "200":
+          description: Operation validation result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  canProceed:
+                    type: boolean
+                    description: Whether operation can proceed
+                  reason:
+                    type: string
+                    description: Reason if operation cannot proceed
+                  coolingPeriodEnd:
+                    type: string
+                    format: date-time
+                    description: End of cooling period
+                  requiresAdditionalVerification:
+                    type: boolean
+                    description: Whether additional verification is required
+        "403":
+          $ref: "#/components/responses/ForbiddenError"
+
+  /admin/security/events:
+    get:
+      summary: Get security events
+      description: |
+        Retrieve security events for monitoring and analysis.
+
+        **Required Permissions:** admin:security:read
+      tags:
+        - Security Administration
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: severity
+          in: query
+          schema:
+            type: string
+            enum: [low, medium, high, critical]
+          description: Filter by severity level
+        - name: type
+          in: query
+          schema:
+            type: string
+          description: Filter by event type
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 100
+          description: Maximum number of events to return
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          description: Pagination offset
+      responses:
+        "200":
+          description: Security events retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  events:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/SecurityEvent"
+                  totalCount:
+                    type: integer
+                    description: Total number of events
+                  hasMore:
+                    type: boolean
+                    description: Whether more events are available
+        "403":
+          $ref: "#/components/responses/ForbiddenError"
+
+  /admin/security/monitoring/stats:
+    get:
+      summary: Get security monitoring statistics
+      description: |
+        Retrieve security monitoring statistics and metrics.
+
+        **Required Permissions:** admin:security:read
+      tags:
+        - Security Administration
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: timeRange
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 720
+            default: 24
+          description: Time range in hours for statistics
+      responses:
+        "200":
+          description: Monitoring statistics retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timeRange:
+                    type: string
+                    description: Time range for statistics
+                  totalEvents:
+                    type: integer
+                    description: Total security events
+                  eventsByType:
+                    type: object
+                    description: Events grouped by type
+                  eventsBySeverity:
+                    type: object
+                    description: Events grouped by severity
+                  topRiskFactors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        factor:
+                          type: string
+                        count:
+                          type: integer
+                    description: Most common risk factors
+        "403":
+          $ref: "#/components/responses/ForbiddenError"
+
+  /admin/backups:
+    get:
+      summary: List backups
+      description: |
+        List all encrypted backups with metadata.
+
+        **Required Permissions:** admin:backups:read
+      tags:
+        - Backup Management
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Backups retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  backups:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/BackupMetadata"
+                  totalCount:
+                    type: integer
+        "403":
+          $ref: "#/components/responses/ForbiddenError"
+
+    post:
+      summary: Create backup
+      description: |
+        Create a new encrypted backup of authentication data.
+
+        **Required Permissions:** admin:backups:create
+      tags:
+        - Backup Management
+      security:
+        - BearerAuth: []
+      responses:
+        "202":
+          description: Backup creation initiated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  backupId:
+                    type: string
+                    description: Unique backup identifier
+                  message:
+                    type: string
+                    example: "Backup creation initiated"
+                  estimatedDuration:
+                    type: integer
+                    description: Estimated completion time in seconds
+        "403":
+          $ref: "#/components/responses/ForbiddenError"
+
+  /admin/backups/{backupId}/restore:
+    post:
+      summary: Restore from backup
+      description: |
+        Restore authentication data from encrypted backup.
+
+        **Required Permissions:** admin:backups:restore
+        **⚠️ WARNING:** This operation will overwrite existing data
+      tags:
+        - Backup Management
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: backupId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Backup ID to restore from
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                confirmOverwrite:
+                  type: boolean
+                  description: Must be true to confirm data overwrite
+                  default: false
+                tables:
+                  type: array
+                  items:
+                    type: string
+                  description: Specific tables to restore (optional)
+      responses:
+        "202":
+          description: Restore operation initiated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Restore operation initiated"
+                  backupId:
+                    type: string
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errorCode:
+                    type: string
+                    example: CONFIRMATION_REQUIRED
+                  message:
+                    type: string
+                    example: "Must confirm data overwrite"
+        "403":
+          $ref: "#/components/responses/ForbiddenError"
+
+  /admin/backups/stats:
+    get:
+      summary: Get backup statistics
+      description: |
+        Retrieve backup statistics and metrics.
+
+        **Required Permissions:** admin:backups:read
+      tags:
+        - Backup Management
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Backup statistics retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalBackups:
+                    type: integer
+                    description: Total number of backups
+                  totalSize:
+                    type: string
+                    description: Total backup size (human readable)
+                  totalCompressedSize:
+                    type: string
+                    description: Total compressed size
+                  totalEncryptedSize:
+                    type: string
+                    description: Total encrypted size
+                  compressionRatio:
+                    type: string
+                    description: Average compression ratio
+                  encryptionRatio:
+                    type: string
+                    description: Average encryption overhead
+                  averageBackupSize:
+                    type: string
+                    description: Average backup size
+                  retentionDays:
+                    type: integer
+                    description: Backup retention period
+                  lastBackup:
+                    type: string
+                    format: date-time
+                    description: Timestamp of last backup
+
+  /.well-known/jwks.json:
+    get:
+      summary: Get JSON Web Key Set
+      description: |
+        Retrieve the JSON Web Key Set (JWKS) for JWT verification.
+
+        This endpoint provides the public keys used to verify JWT signatures.
+        Keys are automatically rotated every 90 days for security.
+
+        **Security Features:**
+        - Automatic key rotation
+        - Key versioning support
+        - RS256 algorithm
+        - KMS-managed private keys
+      tags:
+        - Security Infrastructure
+      responses:
+        "200":
+          description: JWKS retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  keys:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        kid:
+                          type: string
+                          description: Key ID
+                        kty:
+                          type: string
+                          description: Key type
+                        alg:
+                          type: string
+                          description: Algorithm
+                        use:
+                          type: string
+                          description: Key use
+                        n:
+                          type: string
+                          description: RSA modulus
+                        e:
+                          type: string
+                          description: RSA exponent
+                      required:
+                        - kid
+                        - kty
+                        - alg
+                        - use
+                        - n
+                        - e
+                required:
+                  - keys
+              example:
+                keys:
+                  - kid: "meqenet-jwt-prod-1735689600000"
+                    kty: "RSA"
+                    alg: "RS256"
+                    use: "sig"
+                    n: "0vx7agoebGcQSuuPiLJXZptN9nndrQmbXEps2aiAFbWhM78LhWx4cbbfAAtmUAmh9K8X1GY...truncated"
+                    e: "AQAB"
+
+webhooks:
+  authentication.anomaly:
+    post:
+      summary: Authentication Anomaly Alert
+      description: |
+        Webhook triggered when authentication anomalies are detected.
+
+        **Supported Events:**
+        - Brute force attacks
+        - Account takeover attempts
+        - SIM-swap attempts
+        - Unusual login patterns
+        - Failed login spikes
+      tags:
+        - Webhooks
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SecurityEvent"
+            examples:
+              brute_force:
+                summary: Brute force attack detected
+                value:
+                  type: "brute_force"
+                  severity: "high"
+                  ipAddress: "192.168.1.100"
+                  description: "Brute force attack detected: 15 failed login attempts from 192.168.1.100"
+                  metadata:
+                    failedAttempts: 15
+                    timeWindow: "15 minutes"
+                    targetUsers: ["user1", "user2", "user3"]
+                  timestamp: "2024-01-15T10:30:00Z"
+              account_takeover:
+                summary: Account takeover attempt
+                value:
+                  type: "account_takeover"
+                  severity: "critical"
+                  userId: "user-uuid"
+                  ipAddress: "10.0.0.50"
+                  description: "Potential account takeover detected for user user-uuid"
+                  metadata:
+                    takeoverIndicators: 5
+                    unusualLocation: true
+                    newDevice: true
+                  timestamp: "2024-01-15T10:30:00Z"
+      responses:
+        "200":
+          description: Webhook received successfully
+        "400":
+          description: Invalid webhook payload
+
+  key.rotation.completed:
+    post:
+      summary: Key Rotation Completed
+      description: |
+        Webhook triggered when JWT key rotation is completed successfully.
+      tags:
+        - Webhooks
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                eventType:
+                  type: string
+                  example: "key_rotation_completed"
+                newKeyId:
+                  type: string
+                  example: "meqenet-jwt-prod-1735689600000"
+                oldKeyId:
+                  type: string
+                  example: "meqenet-jwt-prod-1732992000000"
+                rotationTimestamp:
+                  type: string
+                  format: date-time
+                nextRotation:
+                  type: string
+                  format: date-time
+                  description: "Next scheduled rotation"
+      responses:
+        "200":
+          description: Webhook received successfully
+
+  backup.completed:
+    post:
+      summary: Backup Completed
+      description: |
+        Webhook triggered when encrypted backup is completed successfully.
+      tags:
+        - Webhooks
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/BackupMetadata"
+                - type: object
+                  properties:
+                    eventType:
+                      type: string
+                      example: "backup_completed"
+                    duration:
+                      type: integer
+                      description: "Backup duration in seconds"
+      responses:
+        "200":
+          description: Webhook received successfully

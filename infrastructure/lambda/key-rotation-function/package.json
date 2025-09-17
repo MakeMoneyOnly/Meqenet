@@ -1,0 +1,15 @@
+{
+  "name": "meqenet-key-rotation-lambda",
+  "version": "1.0.0",
+  "description": "AWS Lambda function for automated JWT key rotation",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.1430.0"
+  },
+  "devDependencies": {},
+  "author": "Meqenet Team",
+  "license": "MIT"
+}

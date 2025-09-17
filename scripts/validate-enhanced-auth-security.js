@@ -12,10 +12,12 @@
  * Usage: node scripts/validate-enhanced-auth-security.js [--ci] [--fix]
  */
 
-const { execSync, spawn } = require('child_process');
-const fs = require('fs');
-const path = require('path');
-const crypto = require('crypto');
+import { execSync, spawn } from 'child_process';
+import fs from 'fs';
+import path from 'path';
+import crypto from 'crypto';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 
 class EnhancedAuthSecurityValidator {
   constructor() {
@@ -38,9 +40,10 @@ class EnhancedAuthSecurityValidator {
   }
 
   async validate() {
-    this.log('🔐 Starting Enhanced Authentication Security Validation', 'info');
+    console.log('🔐 Starting Enhanced Authentication Security Validation');
 
     try {
+      console.log('Current working directory:', process.cwd());
       // Validate JWT RS256 Implementation
       await this.validateJWTAlgorithm();
 
@@ -73,6 +76,21 @@ class EnhancedAuthSecurityValidator {
       'backend/services/auth-service/src/features/auth/auth.module.ts';
     const jwksServicePath =
       'backend/services/auth-service/src/features/jwks/jwks.service.ts';
+
+    // Check if files exist before reading
+    const checkFileExists = filePath => {
+      try {
+        fs.accessSync(filePath, fs.constants.F_OK);
+        return true;
+      } catch {
+        return false;
+      }
+    };
+
+    // Log file existence for debugging
+    console.log('JWT Strategy exists:', checkFileExists(jwtStrategyPath));
+    console.log('Auth Module exists:', checkFileExists(authModulePath));
+    console.log('JWKS Service exists:', checkFileExists(jwksServicePath));
 
     try {
       // Check JWT strategy uses RS256
@@ -422,7 +440,10 @@ class EnhancedAuthSecurityValidator {
 }
 
 // Run validation if called directly
-if (require.main === module) {
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+if (process.argv[1].includes('validate-enhanced-auth-security.js')) {
   const validator = new EnhancedAuthSecurityValidator();
   validator.validate().catch(error => {
     console.error('Validation failed:', error);
@@ -430,4 +451,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = EnhancedAuthSecurityValidator;
+export default EnhancedAuthSecurityValidator;
