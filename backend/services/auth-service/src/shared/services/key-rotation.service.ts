@@ -71,10 +71,12 @@ export class KeyRotationService implements OnModuleInit {
     } catch (error) {
       this.logger.error('❌ Failed to initialize key rotation:', error);
       await this.auditLoggingService.logSecurityEvent({
-        type: 'key_rotation',
+        eventType: 'key_rotation',
         severity: 'error',
         description: 'Failed to initialize key rotation system',
-        metadata: { error: error.message },
+        eventData: {
+          error: error instanceof Error ? error.message : 'Unknown error',
+        },
       });
     }
   }
@@ -163,10 +165,10 @@ export class KeyRotationService implements OnModuleInit {
 
       // Log successful rotation
       await this.auditLoggingService.logSecurityEvent({
-        type: 'key_rotation',
+        eventType: 'key_rotation',
         severity: 'info',
         description: `JWT keys rotated successfully - New Key ID: ${kid}`,
-        metadata: {
+        eventData: {
           newKeyId: kid,
           rotationIntervalDays: this.config.rotationIntervalDays,
           expiresAt: expiresAt.toISOString(),
@@ -177,10 +179,12 @@ export class KeyRotationService implements OnModuleInit {
     } catch (error) {
       this.logger.error('❌ Key rotation failed:', error);
       await this.auditLoggingService.logSecurityEvent({
-        type: 'key_rotation',
+        eventType: 'key_rotation',
         severity: 'error',
         description: 'JWT key rotation failed',
-        metadata: { error: error.message },
+        eventData: {
+          error: error instanceof Error ? error.message : 'Unknown error',
+        },
       });
       throw error;
     }

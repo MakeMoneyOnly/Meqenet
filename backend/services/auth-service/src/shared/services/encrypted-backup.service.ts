@@ -126,7 +126,10 @@ export class EncryptedBackupService {
       if (this.config.encryptionEnabled) {
         finalPath = await this.encryptBackup(compressedPath, id);
         metadata.encryptedSize = await this.getFileSize(finalPath);
-        metadata.encryptionKeyId = this.configService.get('KMS_KEY_ID');
+        const keyId = this.configService.get<string>('KMS_KEY_ID');
+        if (keyId) {
+          metadata.encryptionKeyId = keyId;
+        }
       }
 
       // Generate checksum
@@ -143,10 +146,10 @@ export class EncryptedBackupService {
 
       // Log successful backup
       await this.auditLoggingService.logSecurityEvent({
-        type: 'backup_completed',
+        eventType: 'backup_completed',
         severity: 'info',
         description: `Encrypted backup completed successfully: ${id}`,
-        metadata: {
+        eventData: {
           backupId: id,
           size: metadata.size,
           compressedSize: metadata.compressedSize,
@@ -165,17 +168,18 @@ export class EncryptedBackupService {
       this.logger.error(`❌ Backup failed: ${id}`, error);
 
       metadata.status = 'failed';
-      metadata.errorMessage = error.message;
+      metadata.errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
 
       await this.storeBackupMetadata(metadata);
 
       await this.auditLoggingService.logSecurityEvent({
-        type: 'backup_failed',
+        eventType: 'backup_failed',
         severity: 'error',
         description: `Encrypted backup failed: ${id}`,
-        metadata: {
+        eventData: {
           backupId: id,
-          error: error.message,
+          error: error instanceof Error ? error.message : 'Unknown error',
         },
       });
 
@@ -326,7 +330,8 @@ export class EncryptedBackupService {
 
     for (const tableBackup of tableBackups) {
       const tableData = await fs.readFile(tableBackup.path, 'utf8');
-      combinedData.data[tableBackup.table] = JSON.parse(tableData);
+      (combinedData.data as Record<string, unknown>)[tableBackup.table] =
+        JSON.parse(tableData);
     }
 
     await fs.writeFile(
@@ -411,7 +416,11 @@ export class EncryptedBackupService {
     try {
       await fs.mkdir(this.config.backupPath, { recursive: true });
     } catch (error) {
-      if (error.code !== 'EEXIST') {
+      if (
+        error instanceof Error &&
+        'code' in error &&
+        error.code !== 'EEXIST'
+      ) {
         throw error;
       }
     }
@@ -457,10 +466,10 @@ export class EncryptedBackupService {
       // In a real implementation, you'd have a backups table
       // For now, we'll log to audit system
       await this.auditLoggingService.logSecurityEvent({
-        type: 'backup_metadata',
+        eventType: 'backup_metadata',
         severity: 'info',
         description: `Backup metadata stored: ${metadata.id}`,
-        metadata: {
+        eventData: {
           backupId: metadata.id,
           status: metadata.status,
           size: metadata.size,
@@ -481,7 +490,7 @@ export class EncryptedBackupService {
         fs.unlink(path).catch(error => {
           this.logger.warn(
             `Failed to cleanup temp file ${path}:`,
-            error.message
+            error instanceof Error ? error.message : 'Unknown error'
           );
         })
       )
@@ -519,10 +528,10 @@ export class EncryptedBackupService {
       // This would implement the restore logic
       // For now, just log the operation
       await this.auditLoggingService.logSecurityEvent({
-        type: 'backup_restore',
+        eventType: 'backup_restore',
         severity: 'info',
         description: `Backup restore initiated: ${backupId}`,
-        metadata: { backupId },
+        eventData: { backupId },
       });
 
       this.logger.log(`✅ Restore completed from backup: ${backupId}`);
@@ -548,10 +557,10 @@ export class EncryptedBackupService {
       // and update database records
 
       await this.auditLoggingService.logSecurityEvent({
-        type: 'backup_cleanup',
+        eventType: 'backup_cleanup',
         severity: 'info',
         description: `Backup cleanup completed, retained backups from last ${this.config.retentionDays} days`,
-        metadata: {
+        eventData: {
           retentionDays: this.config.retentionDays,
           retentionDate: retentionDate.toISOString(),
         },

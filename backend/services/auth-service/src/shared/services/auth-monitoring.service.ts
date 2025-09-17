@@ -1,9 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { InjectQueue } from '@nestjs/bull';
-import { Queue } from 'bull';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 import { PrismaService } from '../../infrastructure/database/prisma.service';
 import { AuditLoggingService } from './audit-logging.service';
+
+export interface CoolingPeriodMetadata {
+  coolingPeriodActive?: boolean;
+  coolingPeriodEnd?: string;
+}
 
 export interface AuthAnomaly {
   type:
@@ -14,11 +19,11 @@ export interface AuthAnomaly {
     | 'account_takeover'
     | 'sim_swap_attempt';
   severity: 'low' | 'medium' | 'high' | 'critical';
-  userId?: string;
+  userId: string | undefined;
   ipAddress: string;
-  userAgent?: string;
-  location?: string;
-  deviceFingerprint?: string;
+  userAgent: string | undefined;
+  location: string | undefined;
+  deviceFingerprint: string | undefined;
   description: string;
   metadata: Record<string, unknown>;
   detectedAt: Date;
@@ -167,7 +172,7 @@ export class AuthMonitoringService {
         await this.updateUserSecurityMetrics(
           userId,
           eventType,
-          context.success
+          context.success as boolean
         );
       }
     } catch (error) {
@@ -189,7 +194,7 @@ export class AuthMonitoringService {
       // Brute force detection
       if (eventType === 'login_failure') {
         const failedAttempts = await this.getFailedLoginAttempts(
-          context.ipAddress,
+          context.ipAddress as string,
           this.config.monitoringWindows.shortTermMinutes
         );
 
@@ -198,10 +203,10 @@ export class AuthMonitoringService {
             type: 'brute_force',
             severity: 'high',
             userId: userId || undefined,
-            ipAddress: context.ipAddress,
-            userAgent: context.userAgent,
-            location: context.location,
-            deviceFingerprint: context.deviceFingerprint,
+            ipAddress: context.ipAddress as string,
+            userAgent: context.userAgent as string,
+            location: context.location as string,
+            deviceFingerprint: context.deviceFingerprint as string,
             description: `Brute force attack detected: ${failedAttempts} failed login attempts from ${context.ipAddress}`,
             metadata: {
               failedAttempts,
@@ -228,10 +233,10 @@ export class AuthMonitoringService {
             type: 'account_takeover',
             severity: 'critical',
             userId,
-            ipAddress: context.ipAddress,
-            userAgent: context.userAgent,
-            location: context.location,
-            deviceFingerprint: context.deviceFingerprint,
+            ipAddress: context.ipAddress as string,
+            userAgent: context.userAgent as string,
+            location: context.location as string,
+            deviceFingerprint: context.deviceFingerprint as string,
             description: `Potential account takeover detected for user ${userId}`,
             metadata: {
               takeoverIndicators,
@@ -246,19 +251,20 @@ export class AuthMonitoringService {
       // SIM swap attempt detection
       if (
         eventType === 'phone_number_change' &&
-        context.metadata?.coolingPeriodActive
+        (context.metadata as CoolingPeriodMetadata)?.coolingPeriodActive
       ) {
         anomalies.push({
           type: 'sim_swap_attempt',
           severity: 'high',
-          userId,
-          ipAddress: context.ipAddress,
-          userAgent: context.userAgent,
-          location: context.location,
-          deviceFingerprint: context.deviceFingerprint,
+          userId: userId || undefined,
+          ipAddress: context.ipAddress as string,
+          userAgent: context.userAgent as string,
+          location: context.location as string,
+          deviceFingerprint: context.deviceFingerprint as string,
           description: `SIM swap attempt detected: Phone number changed during cooling period`,
           metadata: {
-            coolingPeriodEnd: context.metadata.coolingPeriodEnd,
+            coolingPeriodEnd: (context.metadata as CoolingPeriodMetadata)
+              ?.coolingPeriodEnd,
             eventType,
           },
           detectedAt: new Date(),
@@ -296,13 +302,13 @@ export class AuthMonitoringService {
 
       // Log to audit system
       await this.auditLoggingService.logSecurityEvent({
-        type: 'auth_anomaly',
+        eventType: 'auth_anomaly',
         severity: anomaly.severity,
         userId: anomaly.userId,
         ipAddress: anomaly.ipAddress,
         userAgent: anomaly.userAgent,
         description: anomaly.description,
-        metadata: {
+        eventData: {
           anomalyType: anomaly.type,
           detectionMethod: 'real-time-monitoring',
           ...anomaly.metadata,
@@ -322,15 +328,15 @@ export class AuthMonitoringService {
         data: {
           eventType: `auth_anomaly_${anomaly.type}`,
           entityType: 'user',
-          entityId: anomaly.userId,
-          userId: anomaly.userId,
+          entityId: anomaly.userId ?? null,
+          userId: anomaly.userId ?? null,
           userEmail: anomaly.userId
             ? await this.getUserEmail(anomaly.userId)
             : null,
           ipAddress: anomaly.ipAddress,
-          userAgent: anomaly.userAgent,
-          location: anomaly.location,
-          deviceFingerprint: anomaly.deviceFingerprint,
+          userAgent: anomaly.userAgent ?? null,
+          location: anomaly.location ?? null,
+          deviceFingerprint: anomaly.deviceFingerprint ?? null,
           riskScore: this.getSeverityScore(anomaly.severity),
           complianceFlags: [`anomaly_${anomaly.type}`],
           eventData: anomaly.metadata,
@@ -443,7 +449,7 @@ Metadata: ${JSON.stringify(anomaly.metadata, null, 2)}
     message: string,
     anomaly: AuthAnomaly
   ): Promise<void> {
-    this.logger.info(`ℹ️ LOW PRIORITY ALERT: ${message}`);
+    this.logger.log(`ℹ️ LOW PRIORITY ALERT: ${message}`);
 
     // Log only, no external alerts
     await this.createAlertRecord('low', message, anomaly);
@@ -471,10 +477,13 @@ Metadata: ${JSON.stringify(anomaly.metadata, null, 2)}
 
       return {
         timeRange: `${timeRangeHours} hours`,
-        stats: stats.reduce((acc, stat) => {
-          acc[stat.eventType] = stat._count.id;
-          return acc;
-        }, {}),
+        stats: stats.reduce(
+          (acc: Record<string, number>, stat) => {
+            acc[stat.eventType] = stat._count.id;
+            return acc;
+          },
+          {} as Record<string, number>
+        ),
       };
     } catch (error) {
       this.logger.error('Failed to get monitoring stats:', error);
@@ -494,13 +503,13 @@ Metadata: ${JSON.stringify(anomaly.metadata, null, 2)}
       // In a real implementation, you'd have an alerts table
       // For now, we'll just log to audit system
       await this.auditLoggingService.logSecurityEvent({
-        type: 'auth_alert',
+        eventType: 'auth_alert',
         severity,
         userId: anomaly.userId,
         ipAddress: anomaly.ipAddress,
         userAgent: anomaly.userAgent,
         description: `Auth alert: ${message}`,
-        metadata: {
+        eventData: {
           anomalyType: anomaly.type,
           alertMessage: message,
           alertSeverity: severity,
@@ -674,39 +683,6 @@ Metadata: ${JSON.stringify(anomaly.metadata, null, 2)}
         return 25;
       default:
         return 0;
-    }
-  }
-
-  /**
-   * Get monitoring statistics for dashboard
-   */
-  async getMonitoringStats(
-    timeRangeHours: number = 24
-  ): Promise<Record<string, unknown>> {
-    try {
-      const since = new Date(Date.now() - timeRangeHours * 60 * 60 * 1000);
-
-      const stats = await this.prisma.auditLog.groupBy({
-        by: ['eventType'],
-        where: {
-          createdAt: { gte: since },
-          eventType: { startsWith: 'auth_' },
-        },
-        _count: {
-          id: true,
-        },
-      });
-
-      return {
-        timeRange: `${timeRangeHours} hours`,
-        stats: stats.reduce((acc, stat) => {
-          acc[stat.eventType] = stat._count.id;
-          return acc;
-        }, {}),
-      };
-    } catch (error) {
-      this.logger.error('Failed to get monitoring stats:', error);
-      return { error: 'Failed to retrieve monitoring statistics' };
     }
   }
 }

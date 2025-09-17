@@ -34,17 +34,6 @@ export class RolesGuard implements CanActivate {
     );
   }
 
-  /**
-   * Validates if required roles array contains only valid AllowedRole values
-   */
-  private areValidRequiredRoles(roles: unknown): boolean {
-    return (
-      Array.isArray(roles) &&
-      roles.length > 0 &&
-      roles.every(role => this.isValidRole(role))
-    );
-  }
-
   canActivate(context: ExecutionContext): boolean {
     try {
       const requiredRoles = this.reflector.getAllAndOverride<AllowedRole[]>(

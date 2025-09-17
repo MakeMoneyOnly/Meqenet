@@ -8,6 +8,14 @@ export interface PasswordResetEmailData {
   language?: string;
 }
 
+export interface SecurityNotificationData {
+  email: string;
+  subject: string;
+  message: string;
+  userId: string;
+  language?: string;
+}
+
 @Injectable()
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
@@ -152,6 +160,120 @@ export class EmailService {
       subject,
       html: htmlBody,
       from: 'noreply@meqenet.et',
+    };
+  }
+
+  /**
+   * Sends a security notification email to the user
+   * @param data - Security notification email data
+   * @returns Promise<boolean>
+   */
+  async sendSecurityNotification(
+    data: SecurityNotificationData
+  ): Promise<boolean> {
+    const { email, subject, message, userId, language = 'en' } = data;
+
+    try {
+      // For now, we'll log the security email content instead of sending actual emails
+      // In production, this would integrate with an email service provider
+
+      this.buildSecurityNotificationEmailContent(
+        email,
+        subject,
+        message,
+        userId,
+        language
+      );
+
+      // Log the security email that would be sent
+      this.logger.log(
+        `🔐 Security notification email would be sent to: ${email}`
+      );
+      this.logger.log(`Subject: ${subject}`);
+      this.logger.debug(`Security message: ${message}`);
+
+      // TODO: Integrate with actual email service provider
+      // await this.actualEmailProvider.send(emailContent);
+
+      return true;
+    } catch (error) {
+      this.logger.error(
+        `Failed to send security notification email to ${email}`,
+        error
+      );
+      return false;
+    }
+  }
+
+  /**
+   * Builds the security notification email content based on language preference
+   * @param email - Recipient email
+   * @param subject - Email subject
+   * @param message - Security message
+   * @param userId - User ID for tracking
+   * @param language - User's language preference
+   * @returns Email content object
+   */
+  private buildSecurityNotificationEmailContent(
+    email: string,
+    subject: string,
+    message: string,
+    _userId: string,
+    language: string
+  ): {
+    to: string;
+    from: string;
+    subject: string;
+    html: string;
+    text?: string;
+  } {
+    const isAmharic = language === 'am';
+
+    const htmlBody = isAmharic
+      ? `
+        <div dir="ltr" style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <h2 style="color: #dc3545; margin: 0;">🛡️ የይለፍ ቃል ማሳወቂያ</h2>
+          </div>
+          <p>ጤና ይስጥልኝ!</p>
+          <p>እኛ ከ Meqenet እና አንድ አስፈላጊ የይለፍ ቃል ማሳወቂያ ለመስጠት እንፈልጋለን።</p>
+          <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; border-radius: 4px; padding: 15px; margin: 20px 0;">
+            <p style="margin: 0; color: #856404;"><strong>${message}</strong></p>
+          </div>
+          <p>ያ መልዕክት በራሱ ተልኳል። እባክዎ ካልለመዱት የማትልም።</p>
+          <p>ከማንኛውም ችግር ካለዎት እባክዎ ከእኛ ጋር ያገናኙ።</p>
+          <p>ከህዝብ ጋር በአስተማማኝ መልክ<br>Meqenet ቡድን</p>
+          <hr style="margin: 30px 0;">
+          <p style="font-size: 12px; color: #666;">
+            ያ መልዕክት በራሱ ተልኳል። እባክዎ ካልለመዱት የማትልም።
+          </p>
+        </div>
+      `
+      : `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <h2 style="color: #dc3545; margin: 0;">🛡️ Security Notification</h2>
+          </div>
+          <p>Hello!</p>
+          <p>We from Meqenet are sending you an important security notification.</p>
+          <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; border-radius: 4px; padding: 15px; margin: 20px 0;">
+            <p style="margin: 0; color: #856404;"><strong>${message}</strong></p>
+          </div>
+          <p>This message was sent automatically. Please do not reply to this email.</p>
+          <p>If you have any concerns, please contact our support team.</p>
+          <p>Best regards,<br>Meqenet Team</p>
+          <hr style="margin: 30px 0;">
+          <p style="font-size: 12px; color: #666;">
+            This is an automated message. Please do not reply to this email.
+          </p>
+        </div>
+      `;
+
+    return {
+      to: email,
+      subject: isAmharic ? `🛡️ ${subject}` : `🛡️ ${subject}`,
+      html: htmlBody,
+      from: 'security@meqenet.et',
     };
   }
 }

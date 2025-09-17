@@ -89,7 +89,7 @@ export class AuthController {
   ): Promise<{
     canProceed: boolean;
     reason?: string;
-    coolingPeriodEnd?: Date;
+    coolingPeriodEnd: Date | undefined;
     requiresAdditionalVerification?: boolean;
   }> {
     return this.authService.validateHighRiskOperation(userId, body.operation, {

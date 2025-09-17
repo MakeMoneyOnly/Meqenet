@@ -46,6 +46,7 @@ export interface AuthAuditEvent {
     | 'SESSION_EXPIRED'
     | 'ACCOUNT_LOCKED'
     | 'ACCOUNT_UNLOCKED'
+    | 'ACCOUNT_UPDATE'
     | 'ROLE_CHANGED'
     | 'MFA_ENABLED'
     | 'MFA_DISABLED'
@@ -59,20 +60,22 @@ export interface AuthAuditEvent {
     | 'OAUTH_TOKEN_REVOCATION_SUCCESS'
     | 'OAUTH_TOKEN_REVOCATION_FAILURE'
     | 'OAUTH_CLIENT_CREATION_SUCCESS'
-    | 'OAUTH_CLIENT_CREATION_FAILURE';
-  userId?: string;
-  userEmail?: string;
-  userRole?: string;
+    | 'OAUTH_CLIENT_CREATION_FAILURE'
+    // Security events
+    | 'SECURITY_EVENT';
+  userId?: string | undefined;
+  userEmail?: string | undefined;
+  userRole?: string | undefined;
   ipAddress: string;
-  userAgent?: string;
-  sessionId?: string;
-  location?: string;
-  deviceFingerprint?: string;
+  userAgent?: string | undefined;
+  sessionId?: string | undefined;
+  location?: string | undefined;
+  deviceFingerprint?: string | undefined;
   riskScore?: number;
   eventData?: Record<string, unknown>;
   complianceFlags?: string[];
-  entityType?: string;
-  entityId?: string;
+  entityType?: string | undefined;
+  entityId?: string | undefined;
 }
 
 export interface AuditContext {
@@ -359,6 +362,85 @@ export class AuditLoggingService {
         ...additionalData,
       },
       complianceFlags: ['MFA_OPERATION'],
+    });
+  }
+
+  /**
+   * Log phone number change event
+   */
+  async logPhoneNumberChange(
+    context: AuditContext,
+    changeData: {
+      previousPhone?: string;
+      newPhone: string;
+    }
+  ): Promise<void> {
+    await this.logAuthEvent({
+      eventType: 'ACCOUNT_UPDATE',
+      ...context,
+      eventData: {
+        timestamp: new Date().toISOString(),
+        action: 'PHONE_NUMBER_CHANGE',
+        previousPhone: changeData.previousPhone || 'none',
+        newPhone: changeData.newPhone,
+      },
+      complianceFlags: ['ACCOUNT_MODIFICATION', 'PHONE_CHANGE'],
+      riskScore: MEDIUM_RISK_INCREMENT, // Medium risk for phone changes
+    });
+  }
+
+  /**
+   * Log high risk operation block
+   */
+  async logHighRiskOperationBlock(
+    context: AuditContext,
+    reason: string,
+    additionalData?: Record<string, unknown>
+  ): Promise<void> {
+    await this.logAuthEvent({
+      eventType: 'ACCOUNT_LOCKED',
+      ...context,
+      eventData: {
+        timestamp: new Date().toISOString(),
+        action: 'HIGH_RISK_OPERATION_BLOCKED',
+        reason,
+        ...additionalData,
+      },
+      complianceFlags: ['HIGH_RISK_BLOCK', 'SECURITY_INCIDENT'],
+      riskScore: HIGH_RISK_SCORE,
+    });
+  }
+
+  /**
+   * Log security event
+   */
+  async logSecurityEvent(event: {
+    eventType: string;
+    userId?: string | undefined;
+    userEmail?: string | undefined;
+    userRole?: string | undefined;
+    ipAddress?: string;
+    userAgent?: string | undefined;
+    sessionId?: string | undefined;
+    location?: string | undefined;
+    deviceFingerprint?: string | undefined;
+    eventData?: Record<string, unknown>;
+    complianceFlags?: string[];
+    severity?: string;
+    description?: string;
+  }): Promise<void> {
+    await this.logAuthEvent({
+      eventType: event.eventType as AuthAuditEvent['eventType'],
+      userId: event.userId || undefined,
+      userEmail: event.userEmail || undefined,
+      userRole: event.userRole || undefined,
+      ipAddress: event.ipAddress || 'system',
+      userAgent: event.userAgent || undefined,
+      sessionId: event.sessionId || undefined,
+      location: event.location || undefined,
+      deviceFingerprint: event.deviceFingerprint || undefined,
+      eventData: event.eventData || {},
+      complianceFlags: event.complianceFlags || ['SECURITY_EVENT'],
     });
   }
 

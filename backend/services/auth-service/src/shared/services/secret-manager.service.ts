@@ -301,6 +301,40 @@ export class SecretManagerService implements OnModuleInit {
   }
 
   /**
+   * Store a secret with custom options
+   */
+  async storeSecret(
+    name: string,
+    value: string,
+    options?: {
+      description?: string;
+      tags?: Array<{ Key: string; Value: string }>;
+    }
+  ): Promise<void> {
+    try {
+      const command = new CreateSecretCommand({
+        Name: name,
+        SecretString: value,
+        Description: options?.description || `Meqenet secret: ${name}`,
+        Tags: options?.tags || [
+          { Key: 'Application', Value: 'Meqenet' },
+          {
+            Key: 'Environment',
+            Value: this.configService.get<string>('NODE_ENV', 'development'),
+          },
+          { Key: 'ManagedBy', Value: 'SecretManagerService' },
+        ],
+      });
+
+      await this.secretsManagerClient.send(command);
+      this.logger.log(`✅ Secret stored: ${name}`);
+    } catch (error) {
+      this.logger.error(`❌ Failed to store secret ${name}:`, error);
+      throw error;
+    }
+  }
+
+  /**
    * Encrypt data using AWS KMS
    */
   async encryptData(data: string, keyId?: string): Promise<string> {

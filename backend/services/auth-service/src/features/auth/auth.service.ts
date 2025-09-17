@@ -999,18 +999,17 @@ export class AuthService {
     } catch (error) {
       // Handle unexpected errors during phone update
       if (!(error instanceof UnauthorizedException)) {
-        await this.auditLogging.logPhoneNumberChange(
-          {
-            userEmail: userId, // fallback since we might not have user details
-            ipAddress,
-            userAgent,
-            location,
-            deviceFingerprint,
-          },
-          {
+        await this.auditLogging.logSecurityEvent({
+          eventType: 'phone_change_error',
+          userEmail: userId, // fallback since we might not have user details
+          ipAddress,
+          userAgent,
+          location,
+          deviceFingerprint,
+          eventData: {
             error: error instanceof Error ? error.message : 'Unknown error',
-          }
-        );
+          },
+        });
       }
       throw error;
     }
@@ -1024,8 +1023,8 @@ export class AuthService {
     operation: 'high_risk' | 'phone_change' = 'high_risk'
   ): Promise<{
     isInCoolingPeriod: boolean;
-    coolingPeriodEnd?: Date;
-    remainingHours?: number;
+    coolingPeriodEnd: Date | undefined;
+    remainingHours: number | undefined;
     canProceed: boolean;
   }> {
     const user = await this.prisma.user.findUnique({
@@ -1042,22 +1041,22 @@ export class AuthService {
       });
     }
 
-    const coolingPeriodEnd = user.phoneChangeCoolingPeriodEnd;
+    const coolingPeriodEnd = user.phoneChangeCoolingPeriodEnd || undefined;
     const isInCoolingPeriod = coolingPeriodEnd && coolingPeriodEnd > new Date();
 
     let canProceed = true;
     let remainingHours: number | undefined;
 
-    if (isInCoolingPeriod) {
+    if (isInCoolingPeriod && coolingPeriodEnd) {
       remainingHours = Math.ceil(
-        (coolingPeriodEnd!.getTime() - Date.now()) /
+        (coolingPeriodEnd.getTime() - Date.now()) /
           (MILLISECONDS_PER_SECOND * SECONDS_PER_MINUTE * SECONDS_PER_MINUTE)
       );
 
       // For high-risk operations, enforce stricter cooling period
       if (operation === 'high_risk') {
         const highRiskCoolingPeriodEnd = new Date(
-          coolingPeriodEnd!.getTime() -
+          coolingPeriodEnd.getTime() -
             Date.now() +
             (HIGH_RISK_OPERATION_COOLING_HOURS -
               SIM_SWAP_COOLING_PERIOD_HOURS) *
@@ -1181,7 +1180,7 @@ export class AuthService {
   ): Promise<{
     canProceed: boolean;
     reason?: string;
-    coolingPeriodEnd?: Date;
+    coolingPeriodEnd: Date | undefined;
     requiresAdditionalVerification?: boolean;
   }> {
     const coolingStatus = await this.checkSimSwapCoolingPeriod(
@@ -1199,6 +1198,7 @@ export class AuthService {
           location: context?.location || 'Unknown',
           deviceFingerprint: context?.deviceFingerprint || 'Unknown',
         },
+        `High-risk operation blocked: ${operation}`,
         {
           operation,
           coolingPeriodEnd: coolingStatus.coolingPeriodEnd,
@@ -1229,6 +1229,7 @@ export class AuthService {
 
     return {
       canProceed: true,
+      coolingPeriodEnd: undefined,
     };
   }
 }
