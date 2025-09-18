@@ -339,7 +339,7 @@ export class AuthMonitoringService {
           deviceFingerprint: anomaly.deviceFingerprint ?? null,
           riskScore: this.getSeverityScore(anomaly.severity),
           complianceFlags: [`anomaly_${anomaly.type}`],
-          eventData: anomaly.metadata,
+          eventData: anomaly.metadata as any,
         },
       });
     } catch (error) {

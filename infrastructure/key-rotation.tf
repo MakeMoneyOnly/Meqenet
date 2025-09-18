@@ -1,14 +1,6 @@
 # JWT Key Rotation Infrastructure
 # This file defines the AWS infrastructure for automated JWT key rotation
 
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 5.0"
-    }
-  }
-}
 
 # SNS Topic for key rotation alerts
 resource "aws_sns_topic" "key_rotation_alerts" {
@@ -291,8 +283,7 @@ resource "null_resource" "lambda_code_validation" {
   }
 }
 
-# Get current AWS account ID
-data "aws_caller_identity" "current" {}
+# AWS account ID is obtained from main.tf
 
 # Outputs
 output "key_rotation_lambda_arn" {

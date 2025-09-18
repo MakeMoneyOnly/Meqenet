@@ -95,9 +95,9 @@ fi
 
 # 7. Final dependency check
 echo "📦 Final dependency validation..."
-if ! pnpm install --no-frozen-lockfile --silent 2>&1; then
-  echo "❌ Dependency installation failed!"
-  echo "💡 Try running 'pnpm install' manually to see detailed error messages."
+if ! pnpm install --frozen-lockfile --silent 2>&1; then
+  echo "❌ Dependency validation failed!"
+  echo "💡 The lockfile may be out of sync. Try running 'pnpm install' manually to fix."
   exit 1
 fi
 

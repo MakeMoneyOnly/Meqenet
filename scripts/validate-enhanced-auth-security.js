@@ -266,7 +266,6 @@ class EnhancedAuthSecurityValidator {
       );
       const requiredDeps = [
         'react-native-ssl-pinning',
-        'react-native-certificate-pinning',
       ];
 
       for (const dep of requiredDeps) {

@@ -17,6 +17,7 @@ import { I18nModule, QueryResolver, AcceptLanguageResolver } from 'nestjs-i18n';
 
 import { IdempotencyMiddleware } from '../../../../shared/middleware/idempotency.middleware';
 import { AuthModule } from '../features/auth/auth.module';
+import { BnplModule } from '../bnpl/bnpl.module';
 import { DatabaseModule } from '../infrastructure/database/database.module';
 import { MessagingModule } from '../infrastructure/messaging/messaging.module';
 import { PaymentsController } from '../payments.controller';
@@ -95,6 +96,7 @@ import { AppService } from './app.service';
     // Application modules
     SharedModule,
     AuthModule,
+    BnplModule,
     DatabaseModule,
     MessagingModule,
     PrismaModule,

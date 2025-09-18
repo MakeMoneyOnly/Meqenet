@@ -173,7 +173,8 @@ describe('AuthService - SIM-Swap Protection', () => {
 
       expect(result).toEqual({
         isInCoolingPeriod: false,
-        coolingPeriodEnd: null,
+        coolingPeriodEnd: undefined,
+        remainingHours: undefined,
         canProceed: true,
       });
     });

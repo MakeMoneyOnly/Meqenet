@@ -43,7 +43,7 @@ This document summarizes the security enhancements implemented as part of Stage 
 
 ### 4. Mobile Certificate Pinning
 - **Location**: `frontend/libs/mobile-api-client/src/lib/api-client.ts`
-- **Dependencies**: `react-native-ssl-pinning`, `react-native-certificate-pinning`
+- **Dependencies**: `react-native-ssl-pinning`
 - **Features**:
   - SSL certificate hash validation
   - Certificate rotation utilities

@@ -1,0 +1,637 @@
+// Meqenet BNPL Payment Service Database Schema
+// Ethiopian Financial Super-App - Buy Now, Pay Later Platform
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// ENUMERATIONS
+// ============================================================================
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+  REFUNDED
+  CHARGEBACK
+}
+
+enum ContractStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+  DEFAULTED
+  CANCELLED
+  SUSPENDED
+}
+
+enum InstallmentStatus {
+  PENDING
+  DUE
+  OVERDUE
+  PAID
+  SKIPPED
+  WRITTEN_OFF
+}
+
+enum PaymentMethod {
+  TELEBIRR
+  HELLOCASH
+  CBE_BIRR
+  DASHEN_BANK
+  BANK_TRANSFER
+  MOBILE_MONEY
+  CARD
+}
+
+enum BNPLProduct {
+  PAY_IN_4      // 4 equal payments over 6 weeks, interest-free
+  PAY_IN_30     // Full payment deferred for 30 days, interest-free
+  PAY_IN_FULL   // Immediate payment with cashback
+  FINANCING     // 3-24 month installment plans with interest
+}
+
+enum MerchantCategory {
+  ELECTRONICS
+  FASHION
+  HOME_GOODS
+  HEALTHCARE
+  EDUCATION
+  FOOD_DELIVERY
+  TRAVEL
+  ENTERTAINMENT
+  SERVICES
+  OTHER
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+// ============================================================================
+// CORE BNPL MODELS
+// ============================================================================
+
+model Merchant {
+  /// @classification: Internal
+  id                    String            @id @default(cuid())
+  /// @classification: PII
+  businessName         String
+  /// @classification: PII
+  contactEmail         String
+  /// @classification: PII
+  contactPhone         String
+  /// @classification: Internal
+  businessLicense      String?           @unique
+  /// @classification: Internal
+  taxId               String?           @unique
+  /// @classification: Internal
+  category            MerchantCategory
+  /// @classification: Internal
+  website             String?
+  /// @classification: Internal
+  apiKey              String            @unique
+  /// @classification: Sensitive
+  webhookSecret       String
+  /// @classification: Internal
+  webhookUrl          String?
+  /// @classification: Internal
+  status              String            @default("PENDING") // PENDING, ACTIVE, SUSPENDED, BANNED
+  /// @classification: Internal
+  riskLevel           RiskLevel         @default(LOW)
+  /// @classification: Internal
+  settlementAccount   String? // Bank account for settlements
+  /// @classification: Internal
+  settlementSchedule  String            @default("DAILY") // DAILY, WEEKLY, MONTHLY
+  /// @classification: Internal
+  commissionRate      Decimal           @default(0.03) // 3% default commission
+  /// @classification: Internal
+  cashbackRate        Decimal           @default(0.02) // 2% default cashback
+  /// @classification: Internal
+  createdAt           DateTime          @default(now())
+  /// @classification: Internal
+  updatedAt           DateTime          @updatedAt
+
+  // Relations
+  contracts           Contract[]
+  transactions        Transaction[]
+  settlements         Settlement[]
+  merchantSettings    MerchantSettings?
+
+  @@index([status])
+  @@index([category])
+  @@index([riskLevel])
+}
+
+model Contract {
+  /// @classification: Internal
+  id                    String            @id @default(cuid())
+  /// @classification: Internal
+  contractNumber       String            @unique
+  /// @classification: Internal
+  customerId           String
+  /// @classification: Internal
+  merchantId           String
+  /// @classification: Internal
+  product             BNPLProduct
+  /// @classification: Internal
+  status              ContractStatus    @default(DRAFT)
+  /// @classification: Internal
+  currency            String            @default("ETB")
+  /// @classification: Sensitive
+  principalAmount     Decimal           @db.Decimal(38, 9)
+  /// @classification: Sensitive
+  totalAmount         Decimal           @db.Decimal(38, 9) // Principal + fees + interest
+  /// @classification: Sensitive
+  outstandingBalance  Decimal           @db.Decimal(38, 9)
+  /// @classification: Internal
+  apr                 Decimal?          @db.Decimal(38, 9) // Annual Percentage Rate
+  /// @classification: Internal
+  termMonths          Int?
+  /// @classification: Internal
+  paymentFrequency    String            @default("MONTHLY") // WEEKLY, MONTHLY, QUARTERLY
+  /// @classification: Internal
+  firstPaymentDate    DateTime?
+  /// @classification: Internal
+  maturityDate        DateTime?
+  /// @classification: Internal
+  description         String?
+  /// @classification: Internal
+  merchantReference   String?
+  /// @classification: Internal
+  riskScore           Float?
+  /// @classification: Internal
+  riskLevel           RiskLevel         @default(LOW)
+  /// @classification: Internal
+  ipAddress           String?
+  /// @classification: Internal
+  userAgent           String?
+  /// @classification: Internal
+  deviceFingerprint   String?
+  /// @classification: Internal
+  createdAt           DateTime          @default(now())
+  /// @classification: Internal
+  updatedAt           DateTime          @updatedAt
+  /// @classification: Internal
+  activatedAt         DateTime?
+  /// @classification: Internal
+  completedAt         DateTime?
+  /// @classification: Internal
+  cancelledAt         DateTime?
+
+  // Relations
+  merchant            Merchant           @relation(fields: [merchantId], references: [id])
+  installments        InstallmentSchedule[]
+  transactions        Transaction[]
+  payments            Payment[]
+  contractHistory     ContractHistory[]
+
+  @@index([customerId])
+  @@index([merchantId])
+  @@index([status])
+  @@index([product])
+  @@index([createdAt])
+}
+
+model InstallmentSchedule {
+  /// @classification: Internal
+  id                  String             @id @default(cuid())
+  /// @classification: Internal
+  contractId          String
+  /// @classification: Internal
+  installmentNumber   Int
+  /// @classification: Internal
+  status              InstallmentStatus  @default(PENDING)
+  /// @classification: Sensitive
+  scheduledAmount     Decimal            @db.Decimal(38, 9)
+  /// @classification: Sensitive
+  principalAmount     Decimal            @db.Decimal(38, 9)
+  /// @classification: Sensitive
+  interestAmount      Decimal            @db.Decimal(38, 9)
+  /// @classification: Sensitive
+  feeAmount           Decimal            @db.Decimal(38, 9)
+  /// @classification: Internal
+  dueDate             DateTime
+  /// @classification: Internal
+  paidAt              DateTime?
+  /// @classification: Sensitive
+  paidAmount          Decimal?           @db.Decimal(38, 9)
+  /// @classification: Internal
+  paymentId           String?
+  /// @classification: Internal
+  gracePeriodDays     Int               @default(3)
+  /// @classification: Internal
+  lateFee             Decimal            @db.Decimal(38, 9) @default(50.00)
+  /// @classification: Internal
+  createdAt           DateTime           @default(now())
+  /// @classification: Internal
+  updatedAt           DateTime           @updatedAt
+
+  // Relations
+  contract            Contract           @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  payment             Payment?           @relation(fields: [paymentId], references: [id])
+
+  @@index([contractId])
+  @@index([status])
+  @@index([dueDate])
+}
+
+model Payment {
+  /// @classification: Internal
+  id                  String           @id @default(cuid())
+  /// @classification: Internal
+  paymentReference    String           @unique
+  /// @classification: Internal
+  contractId          String?
+  /// @classification: Internal
+  customerId          String
+  /// @classification: Internal
+  merchantId          String?
+  /// @classification: Internal
+  status              PaymentStatus    @default(PENDING)
+  /// @classification: Internal
+  paymentMethod       PaymentMethod
+  /// @classification: Sensitive
+  amount              Decimal          @db.Decimal(38, 9)
+  /// @classification: Sensitive
+  processingFee       Decimal          @db.Decimal(38, 9) @default(0)
+  /// @classification: Internal
+  currency            String           @default("ETB")
+  /// @classification: Internal
+  idempotencyKey      String?          @unique
+  /// @classification: Internal
+  externalReference   String? // Reference from payment provider
+  /// @classification: Internal
+  paymentProvider     String? // TELEBIRR, HELLOCASH, etc.
+  /// @classification: Internal
+  failureReason       String?
+  /// @classification: Internal
+  failureCode         String?
+  /// @classification: Internal
+  retryCount          Int              @default(0)
+  /// @classification: Internal
+  maxRetries          Int              @default(3)
+  /// @classification: Internal
+  nextRetryAt         DateTime?
+  /// @classification: Internal
+  ipAddress           String?
+  /// @classification: Internal
+  userAgent           String?
+  /// @classification: Internal
+  deviceFingerprint   String?
+  /// @classification: Internal
+  initiatedAt         DateTime         @default(now())
+  /// @classification: Internal
+  processedAt         DateTime?
+  /// @classification: Internal
+  completedAt         DateTime?
+
+  // Relations
+  contract            Contract?         @relation(fields: [contractId], references: [id])
+  merchant            Merchant?         @relation(fields: [merchantId], references: [id])
+  installments        InstallmentSchedule[]
+  transactions        Transaction[]
+  paymentHistory      PaymentHistory[]
+
+  @@index([customerId])
+  @@index([contractId])
+  @@index([status])
+  @@index([idempotencyKey])
+  @@index([initiatedAt])
+}
+
+model Transaction {
+  /// @classification: Internal
+  id                  String           @id @default(cuid())
+  /// @classification: Internal
+  transactionId       String           @unique
+  /// @classification: Internal
+  paymentId           String?
+  /// @classification: Internal
+  contractId          String?
+  /// @classification: Internal
+  customerId          String
+  /// @classification: Internal
+  merchantId          String?
+  /// @classification: Internal
+  type                String // PAYMENT, REFUND, FEE, INTEREST, etc.
+  /// @classification: Internal
+  status              PaymentStatus    @default(PENDING)
+  /// @classification: Sensitive
+  amount              Decimal          @db.Decimal(38, 9)
+  /// @classification: Internal
+  currency            String           @default("ETB")
+  /// @classification: Internal
+  description         String?
+  /// @classification: Internal
+  metadata            Json?
+  /// @classification: Internal
+  processedAt         DateTime?
+  /// @classification: Internal
+  createdAt           DateTime         @default(now())
+
+  // Relations
+  payment             Payment?          @relation(fields: [paymentId], references: [id])
+  contract            Contract?         @relation(fields: [contractId], references: [id])
+  merchant            Merchant?         @relation(fields: [merchantId], references: [id])
+
+  @@index([customerId])
+  @@index([paymentId])
+  @@index([contractId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// FINANCIAL & SETTLEMENT MODELS
+// ============================================================================
+
+model Settlement {
+  /// @classification: Internal
+  id                  String           @id @default(cuid())
+  /// @classification: Internal
+  merchantId          String
+  /// @classification: Internal
+  settlementReference String           @unique
+  /// @classification: Internal
+  periodStart         DateTime
+  /// @classification: Internal
+  periodEnd           DateTime
+  /// @classification: Sensitive
+  totalAmount         Decimal          @db.Decimal(38, 9)
+  /// @classification: Sensitive
+  commissionAmount    Decimal          @db.Decimal(38, 9)
+  /// @classification: Sensitive
+  netAmount           Decimal          @db.Decimal(38, 9) // Amount to be paid to merchant
+  /// @classification: Internal
+  transactionCount    Int              @default(0)
+  /// @classification: Internal
+  status              String           @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED
+  /// @classification: Internal
+  settlementDate      DateTime?
+  /// @classification: Internal
+  bankReference       String?
+  /// @classification: Internal
+  failureReason       String?
+  /// @classification: Internal
+  createdAt           DateTime         @default(now())
+  /// @classification: Internal
+  updatedAt           DateTime         @updatedAt
+
+  // Relations
+  merchant            Merchant          @relation(fields: [merchantId], references: [id])
+
+  @@index([merchantId])
+  @@index([status])
+  @@index([periodStart, periodEnd])
+}
+
+model CashbackReward {
+  /// @classification: Internal
+  id                  String           @id @default(cuid())
+  /// @classification: Internal
+  customerId          String
+  /// @classification: Internal
+  transactionId       String
+  /// @classification: Sensitive
+  amount              Decimal          @db.Decimal(38, 9)
+  /// @classification: Internal
+  currency            String           @default("ETB")
+  /// @classification: Internal
+  status              String           @default("PENDING") // PENDING, EARNED, REDEEMED, EXPIRED
+  /// @classification: Internal
+  earnedAt            DateTime         @default(now())
+  /// @classification: Internal
+  expiresAt           DateTime         // Usually 1 year from earning
+  /// @classification: Internal
+  redeemedAt          DateTime?
+  /// @classification: Internal
+  redemptionTxId      String?
+
+  @@index([customerId])
+  @@index([status])
+  @@index([expiresAt])
+}
+
+// ============================================================================
+// AUDIT & COMPLIANCE MODELS
+// ============================================================================
+
+model ContractHistory {
+  /// @classification: Internal
+  id                  String           @id @default(cuid())
+  /// @classification: Internal
+  contractId          String
+  /// @classification: Internal
+  eventType           String // CREATED, ACTIVATED, MODIFIED, COMPLETED, CANCELLED, DEFAULTED
+  /// @classification: Internal
+  oldValues           Json?
+  /// @classification: Internal
+  newValues           Json?
+  /// @classification: Internal
+  metadata            Json?
+  /// @classification: Internal
+  userId              String?
+  /// @classification: Internal
+  ipAddress           String?
+  /// @classification: Internal
+  userAgent           String?
+  /// @classification: Internal
+  createdAt           DateTime         @default(now())
+
+  // Relations
+  contract            Contract          @relation(fields: [contractId], references: [id], onDelete: Cascade)
+
+  @@index([contractId])
+  @@index([eventType])
+  @@index([createdAt])
+}
+
+model PaymentHistory {
+  /// @classification: Internal
+  id                  String           @id @default(cuid())
+  /// @classification: Internal
+  paymentId           String
+  /// @classification: Internal
+  eventType           String // CREATED, PROCESSING, COMPLETED, FAILED, RETRIED
+  /// @classification: Internal
+  oldStatus           PaymentStatus?
+  /// @classification: Internal
+  newStatus           PaymentStatus
+  /// @classification: Internal
+  metadata            Json?
+  /// @classification: Internal
+  errorMessage        String?
+  /// @classification: Internal
+  userId              String?
+  /// @classification: Internal
+  createdAt           DateTime         @default(now())
+
+  // Relations
+  payment             Payment           @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  @@index([paymentId])
+  @@index([eventType])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// CONFIGURATION & SETTINGS MODELS
+// ============================================================================
+
+model MerchantSettings {
+  /// @classification: Internal
+  id                  String           @id @default(cuid())
+  /// @classification: Internal
+  merchantId          String           @unique
+  /// @classification: Internal
+  bnplEnabled         Boolean          @default(true)
+  /// @classification: Internal
+  payIn4Enabled       Boolean          @default(true)
+  /// @classification: Internal
+  payIn30Enabled      Boolean          @default(true)
+  /// @classification: Internal
+  financingEnabled    Boolean          @default(false)
+  /// @classification: Sensitive
+  maxContractAmount   Decimal          @db.Decimal(38, 9) @default(50000.00)
+  /// @classification: Internal
+  minContractAmount   Decimal          @db.Decimal(38, 9) @default(50.00)
+  /// @classification: Internal
+  customCommissionRate Decimal?        @db.Decimal(38, 9)
+  /// @classification: Internal
+  customCashbackRate   Decimal?        @db.Decimal(38, 9)
+  /// @classification: Internal
+  webhookEvents       String[]         @default(["contract.created", "contract.completed", "payment.succeeded", "payment.failed"])
+  /// @classification: Internal
+  riskThreshold       RiskLevel        @default(MEDIUM)
+  /// @classification: Internal
+  createdAt           DateTime         @default(now())
+  /// @classification: Internal
+  updatedAt           DateTime         @updatedAt
+
+  // Relations
+  merchant            Merchant          @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+}
+
+model SystemSettings {
+  /// @classification: Internal
+  id                  String           @id @default(cuid())
+  /// @classification: Internal
+  key                 String           @unique
+  /// @classification: Internal
+  value               Json
+  /// @classification: Internal
+  description         String?
+  /// @classification: Internal
+  category            String           @default("GENERAL") // PAYMENT, RISK, SETTLEMENT, etc.
+  /// @classification: Internal
+  isEncrypted         Boolean          @default(false)
+  /// @classification: Internal
+  createdAt           DateTime         @default(now())
+  /// @classification: Internal
+  updatedAt           DateTime         @updatedAt
+
+  @@index([category])
+}
+
+// ============================================================================
+// OUTBOX PATTERN FOR RELIABLE MESSAGING
+// ============================================================================
+
+model OutboxMessage {
+  /// @classification: Internal
+  id            String    @id @default(cuid())
+  /// @classification: Internal
+  messageId     String    @unique
+  /// @classification: Internal
+  aggregateType String
+  /// @classification: Internal
+  aggregateId   String
+  /// @classification: Internal
+  eventType     String
+  /// @classification: Confidential
+  payload       Json
+  /// @classification: Internal
+  metadata      Json?
+  /// @classification: Internal
+  status        String    @default("PENDING")
+  /// @classification: Internal
+  retryCount    Int       @default(0)
+  /// @classification: Internal
+  maxRetries    Int       @default(3)
+  /// @classification: Internal
+  errorMessage  String?
+  /// @classification: Internal
+  nextRetryAt   DateTime?
+  /// @classification: Internal
+  createdAt     DateTime  @default(now())
+  /// @classification: Internal
+  processedAt   DateTime?
+  /// @classification: Internal
+  dlqAt         DateTime?
+  /// @classification: Internal
+  dlqReason     String?
+
+  @@index([status])
+  @@index([eventType])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// AUDIT LOG FOR COMPLIANCE
+// ============================================================================
+
+model AuditLog {
+  /// @classification: Internal
+  id                String   @id @default(cuid())
+  /// @classification: Internal
+  eventType         String
+  /// @classification: Internal
+  entityType        String
+  /// @classification: Internal
+  entityId          String?
+  /// @classification: Internal
+  userId            String?
+  /// @classification: PII
+  userEmail         String?
+  /// @classification: Internal
+  userRole          String?
+  /// @classification: PII
+  ipAddress         String
+  /// @classification: Internal
+  userAgent         String?
+  /// @classification: Internal
+  sessionId         String?
+  /// @classification: Internal
+  location          String?
+  /// @classification: Internal
+  deviceFingerprint String?
+  /// @classification: Confidential
+  eventData         Json?
+  /// @classification: Confidential
+  previousValues    Json?
+  /// @classification: Confidential
+  newValues         Json?
+  /// @classification: Internal
+  riskScore         Float?
+  /// @classification: Internal
+  complianceFlags   String[]
+  /// @classification: Internal
+  createdAt         DateTime @default(now())
+
+  @@index([eventType])
+  @@index([entityType])
+  @@index([userId])
+  @@index([createdAt])
+}

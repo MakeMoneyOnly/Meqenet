@@ -3,7 +3,10 @@ import { randomUUID } from 'crypto';
 import { Injectable, Logger, ForbiddenException } from '@nestjs/common';
 
 import { PrismaService } from './shared/prisma/prisma.service';
+import { BnplService } from './bnpl/bnpl.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
+import { CreateContractDto } from './bnpl/dto/create-contract.dto';
+import { ProcessPaymentDto } from './bnpl/dto/process-payment.dto';
 
 const COOLING_OFF_PERIOD_HOURS = 24;
 
@@ -11,7 +14,10 @@ const COOLING_OFF_PERIOD_HOURS = 24;
 export class PaymentsService {
   private readonly logger = new Logger(PaymentsService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly bnplService: BnplService
+  ) {}
 
   async createPayment(createPaymentDto: CreatePaymentDto): Promise<object> {
     this.logger.log('Processing new payment', { ...createPaymentDto });
@@ -50,5 +56,40 @@ export class PaymentsService {
     );
 
     return paymentRecord;
+  }
+
+  /**
+   * Create a BNPL contract
+   */
+  async createBnplContract(createContractDto: CreateContractDto) {
+    this.logger.log('Creating BNPL contract via PaymentsService', {
+      customerId: createContractDto.customerId,
+      merchantId: createContractDto.merchantId,
+      product: createContractDto.product
+    });
+
+    return await this.bnplService.createContract(createContractDto);
+  }
+
+  /**
+   * Process a BNPL payment
+   */
+  async processBnplPayment(processPaymentDto: ProcessPaymentDto) {
+    this.logger.log('Processing BNPL payment via PaymentsService', {
+      contractId: processPaymentDto.contractId,
+      amount: processPaymentDto.amount,
+      paymentMethod: processPaymentDto.paymentMethod
+    });
+
+    return await this.bnplService.processPayment(processPaymentDto);
+  }
+
+  /**
+   * Get BNPL contract details
+   */
+  async getBnplContractDetails(contractId: string) {
+    this.logger.log('Fetching BNPL contract details via PaymentsService', { contractId });
+
+    return await this.bnplService.getContractDetails(contractId);
   }
 }
