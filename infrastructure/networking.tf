@@ -84,11 +84,7 @@ resource "aws_kms_key" "vpc_flow_logs" {
           "kms:Decrypt"
         ]
         Resource = "*"
-        Condition = {
-          StringEquals = {
-            "aws:SourceArn" = aws_flow_log.main.arn
-          }
-        }
+        # Removed condition to avoid circular dependency
       }
     ]
   })

@@ -252,12 +252,6 @@ resource "aws_cloudwatch_dashboard" "key_rotation_dashboard" {
       }
     ]
   })
-
-  tags = {
-    Name        = "meqenet-key-rotation-dashboard"
-    Environment = var.environment
-    Service     = "auth-service"
-  }
 }
 
 # Archive Lambda function code
@@ -281,6 +275,61 @@ resource "null_resource" "lambda_code_validation" {
   provisioner "local-exec" {
     command = "cd ${path.module}/lambda/key-rotation-function && npm install"
   }
+}
+
+# Variables for key rotation infrastructure
+variable "environment" {
+  description = "Environment name (e.g., dev, staging, prod)"
+  type        = string
+  default     = "prod"
+}
+
+variable "key_rotation_schedule" {
+  description = "CloudWatch Events schedule expression for key rotation"
+  type        = string
+  default     = "rate(30 days)"
+}
+
+variable "aws_region" {
+  description = "AWS region"
+  type        = string
+  default     = "us-east-1"
+}
+
+variable "alert_email" {
+  description = "Email address for key rotation alerts"
+  type        = string
+  default     = "security@meqenet.et"
+}
+
+variable "kms_key_arn" {
+  description = "ARN of the KMS key for encryption"
+  type        = string
+  default     = ""
+}
+
+variable "key_rotation_interval_days" {
+  description = "Number of days between key rotations"
+  type        = number
+  default     = 30
+}
+
+variable "max_active_keys" {
+  description = "Maximum number of active keys to maintain"
+  type        = number
+  default     = 3
+}
+
+variable "key_prefix" {
+  description = "Prefix for rotated keys"
+  type        = string
+  default     = "meqenet-jwt-"
+}
+
+variable "log_level" {
+  description = "Log level for the Lambda function"
+  type        = string
+  default     = "INFO"
 }
 
 # AWS account ID is obtained from main.tf

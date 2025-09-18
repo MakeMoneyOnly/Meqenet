@@ -50,7 +50,7 @@ resource "aws_api_gateway_integration" "proxy" {
 
   # The URI should point to the ALB listener
   # The {proxy} path parameter will be forwarded to the ALB
-  uri = aws_lb_listener.http.arn
+  uri = aws_lb_listener.https.arn
 
   request_parameters = {
     "integration.request.path.proxy" = "method.request.path.proxy"

@@ -207,7 +207,7 @@ resource "aws_sqs_queue" "lambda_dlq" {
 # Code signing configuration for Lambda (Fix CKV_AWS_272)
 resource "aws_signer_signing_profile" "lambda_rotation" {
   platform_id = "AWSLambda-SHA384-ECDSA"
-  name_prefix = "meqenet-rotation-"
+  name_prefix = "meqenetrotation"
 
   signature_validity_period {
     value = 5
@@ -380,7 +380,7 @@ resource "aws_db_instance" "default" {
   engine               = "postgres"
   engine_version       = "15.3"
   instance_class       = "db.t3.micro"
-  name                 = "meqenetdb"
+  db_name              = "meqenetdb"
   username             = jsondecode(aws_secretsmanager_secret_version.db_password.secret_string).username
   password             = jsondecode(aws_secretsmanager_secret_version.db_password.secret_string).password
   db_subnet_group_name = aws_db_subnet_group.default.name
@@ -403,7 +403,7 @@ resource "aws_db_instance" "default" {
   monitoring_role_arn = aws_iam_role.rds_enhanced_monitoring.arn
   
   # Fix CKV_AWS_129 & CKV2_AWS_30 - Enable PostgreSQL logging
-  db_parameter_group_name = aws_db_parameter_group.postgres_logging.name
+  parameter_group_name = aws_db_parameter_group.postgres_logging.name
   
   # Fix CKV2_AWS_60 - Enable copy tags to snapshots
   copy_tags_to_snapshot = true

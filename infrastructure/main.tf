@@ -819,7 +819,7 @@ data "aws_iam_policy_document" "cloudtrail_kms" {
       "kms:ScheduleKeyDeletion",
       "kms:CancelKeyDeletion"
     ]
-    resources = [aws_kms_key.cloudtrail.arn]
+    resources = ["*"]
   }
 
   statement {
@@ -833,12 +833,8 @@ data "aws_iam_policy_document" "cloudtrail_kms" {
       "kms:GenerateDataKey*",
       "kms:Decrypt"
     ]
-    resources = [aws_kms_key.cloudtrail.arn]
-    condition {
-      test     = "StringEquals"
-      variable = "aws:SourceArn"
-      values   = [aws_cloudtrail.main.arn]
-    }
+    resources = ["*"]
+    # Removed condition to avoid circular dependency
   }
 
   statement {
@@ -852,12 +848,8 @@ data "aws_iam_policy_document" "cloudtrail_kms" {
       "kms:GenerateDataKey*",
       "kms:Decrypt"
     ]
-    resources = [aws_kms_key.cloudtrail.arn]
-    condition {
-      test     = "StringEquals"
-      variable = "aws:SourceArn"
-      values   = [aws_cloudwatch_log_group.cloudtrail.arn]
-    }
+    resources = ["*"]
+    # Removed condition to avoid circular dependency
   }
 }
 

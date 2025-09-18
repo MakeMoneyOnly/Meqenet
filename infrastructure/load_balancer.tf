@@ -73,6 +73,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "alb_logs" {
 
   rule {
     id     = "alb-access-logs-lifecycle"
+    prefix = "alb-access-logs/"
     status = "Enabled"
 
     expiration {
@@ -469,7 +470,7 @@ resource "aws_wafv2_web_acl_logging_configuration" "main" {
 # Kinesis Firehose for WAF logs
 resource "aws_kinesis_firehose_delivery_stream" "waf_logs" {
   name        = "meqenet-waf-logs-stream"
-  destination = "s3"
+  destination = "extended_s3"
 
   # Fix CKV_AWS_240 & CKV_AWS_241 - Enable encryption for Kinesis Firehose
   server_side_encryption {
@@ -478,21 +479,13 @@ resource "aws_kinesis_firehose_delivery_stream" "waf_logs" {
     key_arn  = aws_kms_key.cloudtrail.arn
   }
 
-  s3_configuration {
+  extended_s3_configuration {
     role_arn   = aws_iam_role.waf_logs.arn
     bucket_arn = aws_s3_bucket.alb_logs.arn
     prefix     = "waf-logs/"
-
     buffering_size     = 64
     buffering_interval = 300
     compression_format = "GZIP"
-
-    # Enable encryption for S3 destination
-    kms_key_arn = aws_kms_key.cloudtrail.arn
-  }
-
-  tags = {
-    Name = "meqenet-waf-logs-stream"
   }
 }
 
