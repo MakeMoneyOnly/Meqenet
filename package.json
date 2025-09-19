@@ -215,7 +215,6 @@
     "zod": "^4.1.5"
   },
   "devDependencies": {
-    "@appthreat/sqlite3": "^6.0.9",
     "@commitlint/cli": "^19.8.1",
     "@commitlint/config-conventional": "^19.8.1",
     "@cyclonedx/cdxgen": "^11.7.0",
@@ -364,7 +363,6 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
-      "@appthreat/sqlite3",
       "@nestjs/core",
       "@parcel/watcher",
       "@prisma/client",
@@ -399,7 +397,12 @@
       "glob": "^11.0.0",
       "inflight": "^1.0.6",
       "rimraf": "^6.0.1",
-      "@types/argon2": "^0.15.4"
+      "@types/argon2": "^0.15.4",
+      "@types/ioredis": "^5.0.0",
+      "detect-libc": "^2.0.3",
+      "env-paths": "^3.0.0",
+      "node-gyp": "^10.0.1",
+      "prebuild-install": "^7.1.2"
     },
     "peerDependencyRules": {
       "ignoreMissing": [
