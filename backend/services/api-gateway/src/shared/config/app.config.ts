@@ -78,12 +78,12 @@ export default registerAs('app', (): AppConfig => {
 
   const parsed = AppConfigSchema.safeParse(cfg);
   if (!parsed.success) {
-    const issues = parsed.error.issues
-      .map(
-        (i: { path: (string | number)[]; message: string }) =>
-          `${i.path.join('.')}: ${i.message}`
-      )
-      .join(', ');
+  const issues = parsed.error.issues
+    .map(
+      (i) =>
+        `${i.path.map((p) => String(p)).join('.')}: ${i.message}`
+    )
+    .join(', ');
     throw new Error(`API Gateway configuration validation failed: ${issues}`);
   }
 

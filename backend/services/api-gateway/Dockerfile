@@ -48,11 +48,13 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
 FROM deps AS builder
 # Copy the rest of the monorepo source (respecting .dockerignore)
 COPY . .
-# Ensure node_modules are properly linked and build the application
-RUN echo "Ensuring dependencies are available..." && \
-    ls -la node_modules/.bin/ | head -10 && \
-    echo "Building api-gateway with tsc..." && \
+# Install service-specific dependencies and build
+RUN echo "Installing api-gateway specific dependencies..." && \
     cd backend/services/api-gateway && \
+    pnpm install && \
+    echo "Ensuring dependencies are available..." && \
+    ls -la ../../node_modules/.bin/ | head -10 && \
+    echo "Building api-gateway with tsc..." && \
     npx tsc --project tsconfig.json --outDir dist
 # Use pnpm's deploy command to create a pruned production-ready deployment folder.
 # This is more efficient and reliable than running 'pnpm install --prod' in the final stage.
