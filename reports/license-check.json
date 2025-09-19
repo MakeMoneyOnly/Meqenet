@@ -1,8 +1,234 @@
 {
+  "@appthreat/sqlite3@6.0.9": {
+    "licenses": "BSD-3-Clause",
+    "repository": "https://github.com/AppThreat/node-sqlite3",
+    "publisher": "Team AppThreat",
+    "email": "cloud@appthreat.com",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@appthreat\\sqlite3",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@appthreat\\sqlite3\\LICENSE"
+  },
+  "@aws-sdk/client-secrets-manager@3.891.0": {
+    "licenses": "Apache-2.0",
+    "repository": "https://github.com/aws/aws-sdk-js-v3",
+    "publisher": "AWS SDK for JavaScript Team",
+    "url": "https://aws.amazon.com/javascript/",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@aws-sdk\\client-secrets-manager",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@aws-sdk\\client-secrets-manager\\LICENSE"
+  },
+  "@commitlint/cli@19.8.1": {
+    "licenses": "MIT",
+    "repository": "https://github.com/conventional-changelog/commitlint",
+    "publisher": "Mario Nebl",
+    "email": "hello@herebecode.com",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@commitlint\\cli",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@commitlint\\cli\\license.md"
+  },
+  "@commitlint/config-conventional@19.8.1": {
+    "licenses": "MIT",
+    "repository": "https://github.com/conventional-changelog/commitlint",
+    "publisher": "Mario Nebl",
+    "email": "hello@herebecode.com",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@commitlint\\config-conventional",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@commitlint\\config-conventional\\license.md"
+  },
+  "@cyclonedx/cdxgen@11.7.0": {
+    "licenses": "Apache-2.0",
+    "repository": "https://github.com/CycloneDX/cdxgen",
+    "publisher": "Prabhu Subramanian",
+    "email": "prabhu@appthreat.com",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@cyclonedx\\cdxgen",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@cyclonedx\\cdxgen\\LICENSE"
+  },
+  "@eslint/plugin-kit@0.3.5": {
+    "licenses": "Apache-2.0",
+    "repository": "https://github.com/eslint/rewrite",
+    "publisher": "Nicholas C. Zakas",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@eslint\\plugin-kit",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@eslint\\plugin-kit\\LICENSE"
+  },
+  "@faker-js/faker@10.0.0": {
+    "licenses": "MIT",
+    "repository": "https://github.com/faker-js/faker",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@faker-js\\faker",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@faker-js\\faker\\LICENSE"
+  },
+  "@grpc/grpc-js@1.14.0": {
+    "licenses": "Apache-2.0",
+    "repository": "https://github.com/grpc/grpc-node/tree/master/packages/grpc-js",
+    "publisher": "Google Inc.",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@grpc\\grpc-js",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@grpc\\grpc-js\\LICENSE"
+  },
+  "@grpc/proto-loader@0.8.0": {
+    "licenses": "Apache-2.0",
+    "repository": "https://github.com/grpc/grpc-node",
+    "publisher": "Google Inc.",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@grpc\\proto-loader",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@grpc\\proto-loader\\LICENSE"
+  },
+  "@headlessui/react@2.2.8": {
+    "licenses": "MIT",
+    "repository": "https://github.com/tailwindlabs/headlessui",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@headlessui\\react",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@headlessui\\react\\LICENSE"
+  },
+  "@heroicons/react@2.2.0": {
+    "licenses": "MIT",
+    "repository": "https://github.com/tailwindlabs/heroicons",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@heroicons\\react",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@heroicons\\react\\LICENSE"
+  },
+  "@hookform/resolvers@5.2.2": {
+    "licenses": "MIT",
+    "repository": "https://github.com/react-hook-form/resolvers",
+    "publisher": "bluebill1049",
+    "email": "bluebill1049@hotmail.com",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@hookform\\resolvers",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@hookform\\resolvers\\LICENSE"
+  },
+  "@nest-lab/throttler-storage-redis@1.1.0": {
+    "licenses": "MIT",
+    "repository": "https://github.com/jmcdo29/nest-lab",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@nest-lab\\throttler-storage-redis",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@nest-lab\\throttler-storage-redis\\README.md"
+  },
+  "@nestjs/axios@4.0.1": {
+    "licenses": "MIT",
+    "repository": "https://github.com/nestjs/axios",
+    "publisher": "Kamil Mysliwiec",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@nestjs\\axios",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@nestjs\\axios\\LICENSE"
+  },
+  "@nestjs/cli@11.0.10": {
+    "licenses": "MIT",
+    "repository": "https://github.com/nestjs/nest-cli",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@nestjs\\cli",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@nestjs\\cli\\LICENSE"
+  },
+  "@nestjs/common@11.1.6": {
+    "licenses": "MIT",
+    "repository": "https://github.com/nestjs/nest",
+    "publisher": "Kamil Mysliwiec",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@nestjs\\common",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@nestjs\\common\\LICENSE"
+  },
+  "@nestjs/config@4.0.2": {
+    "licenses": "MIT",
+    "repository": "https://github.com/nestjs/config",
+    "publisher": "Kamil Mysliwiec",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@nestjs\\config",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@nestjs\\config\\LICENSE"
+  },
+  "@nestjs/core@11.1.6": {
+    "licenses": "MIT",
+    "repository": "https://github.com/nestjs/nest",
+    "publisher": "Kamil Mysliwiec",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@nestjs\\core",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@nestjs\\core\\LICENSE"
+  },
+  "@nestjs/event-emitter@3.0.1": {
+    "licenses": "MIT",
+    "repository": "https://github.com/nestjs/event-emitter",
+    "publisher": "Kamil Mysliwiec",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@nestjs\\event-emitter",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@nestjs\\event-emitter\\LICENSE"
+  },
+  "@nestjs/jwt@11.0.0": {
+    "licenses": "MIT",
+    "repository": "https://github.com/nestjs/jwt",
+    "publisher": "Kamil Mysliwiec",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@nestjs\\jwt",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@nestjs\\jwt\\LICENSE"
+  },
+  "@nestjs/microservices@11.1.6": {
+    "licenses": "MIT",
+    "repository": "https://github.com/nestjs/nest",
+    "publisher": "Kamil Mysliwiec",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@nestjs\\microservices",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@nestjs\\microservices\\LICENSE"
+  },
+  "@nestjs/passport@11.0.5": {
+    "licenses": "MIT",
+    "repository": "https://github.com/nestjs/passport",
+    "publisher": "Kamil Mysliwiec",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@nestjs\\passport",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@nestjs\\passport\\LICENSE"
+  },
+  "@nestjs/platform-express@11.1.6": {
+    "licenses": "MIT",
+    "repository": "https://github.com/nestjs/nest",
+    "publisher": "Kamil Mysliwiec",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@nestjs\\platform-express",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@nestjs\\platform-express\\LICENSE"
+  },
+  "@nestjs/platform-socket.io@11.1.6": {
+    "licenses": "MIT",
+    "repository": "https://github.com/nestjs/nest",
+    "publisher": "Kamil Mysliwiec",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@nestjs\\platform-socket.io",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@nestjs\\platform-socket.io\\LICENSE"
+  },
+  "@nestjs/schematics@11.0.7": {
+    "licenses": "MIT",
+    "repository": "https://github.com/nestjs/schematics",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@nestjs\\schematics",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@nestjs\\schematics\\LICENSE"
+  },
+  "@nestjs/swagger@11.2.0": {
+    "licenses": "MIT",
+    "repository": "https://github.com/nestjs/swagger",
+    "publisher": "Kamil Mysliwiec",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@nestjs\\swagger",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@nestjs\\swagger\\LICENSE"
+  },
+  "@nestjs/terminus@11.0.0": {
+    "licenses": "MIT",
+    "repository": "https://github.com/nestjs/terminus",
+    "publisher": "Livio Brunner",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@nestjs\\terminus",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@nestjs\\terminus\\LICENSE"
+  },
+  "@nestjs/testing@11.1.6": {
+    "licenses": "MIT",
+    "repository": "https://github.com/nestjs/nest",
+    "publisher": "Kamil Mysliwiec",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@nestjs\\testing",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@nestjs\\testing\\LICENSE"
+  },
+  "@nestjs/throttler@6.4.0": {
+    "licenses": "MIT",
+    "repository": "https://github.com/nestjs/throttler",
+    "publisher": "Jay McDoniel",
+    "email": "me@jaymcdoniel.dev",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@nestjs\\throttler",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@nestjs\\throttler\\LICENSE"
+  },
+  "@nestjs/typeorm@11.0.0": {
+    "licenses": "MIT",
+    "repository": "https://github.com/nestjs/typeorm",
+    "publisher": "Kamil Mysliwiec",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@nestjs\\typeorm",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@nestjs\\typeorm\\LICENSE"
+  },
+  "@nestjs/websockets@11.1.6": {
+    "licenses": "MIT",
+    "repository": "https://github.com/nestjs/nest",
+    "publisher": "Kamil Mysliwiec",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@nestjs\\websockets",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@nestjs\\websockets\\LICENSE"
+  },
+  "@nx/eslint@21.5.2": {
+    "licenses": "MIT",
+    "repository": "https://github.com/nrwl/nx",
+    "publisher": "Victor Savkin",
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@nx\\eslint",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@nx\\eslint\\LICENSE"
+  },
   "@nx/js@21.4.1": {
     "licenses": "MIT",
     "repository": "https://github.com/nrwl/nx",
-    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@nx\\js"
+    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@nx\\js",
+    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@nx\\js\\LICENSE"
   },
   "@nx/storybook@21.4.1": {
     "licenses": "MIT",

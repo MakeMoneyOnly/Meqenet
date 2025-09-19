@@ -3,7 +3,79 @@ import { Redis } from 'ioredis';
 
 // Time conversion constants
 const SECONDS_PER_MINUTE = 60;
+const MINUTES_PER_HOUR = 60;
 const MILLISECONDS_PER_SECOND = 1000;
+const MILLISECONDS_PER_MINUTE = SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND;
+const MILLISECONDS_PER_HOUR = MINUTES_PER_HOUR * MILLISECONDS_PER_MINUTE;
+
+// Financial operation rate limiting constants
+const FINANCIAL_OPERATION_WINDOW_MINUTES = 15;
+const FINANCIAL_OPERATION_BLOCK_HOURS = 1;
+
+// Admin operation rate limiting constants
+const ADMIN_OPERATION_WINDOW_MINUTES = 5;
+const ADMIN_OPERATION_BLOCK_MINUTES = 30;
+
+// Time multipliers for calculations
+const ONE_MINUTE_MULTIPLIER = 1;
+const FIVE_MINUTES_MULTIPLIER = 5;
+const FIFTEEN_MINUTES_MULTIPLIER = 15;
+const THIRTY_MINUTES_MULTIPLIER = 30;
+const ONE_HOUR_MULTIPLIER = 1;
+
+// General time constants
+const ONE_MINUTE_MS = ONE_MINUTE_MULTIPLIER * MILLISECONDS_PER_MINUTE;
+const FIVE_MINUTES_MS = FIVE_MINUTES_MULTIPLIER * MILLISECONDS_PER_MINUTE;
+const FIFTEEN_MINUTES_MS = FIFTEEN_MINUTES_MULTIPLIER * MILLISECONDS_PER_MINUTE;
+const THIRTY_MINUTES_MS = THIRTY_MINUTES_MULTIPLIER * MILLISECONDS_PER_MINUTE;
+const ONE_HOUR_MS = ONE_HOUR_MULTIPLIER * MILLISECONDS_PER_HOUR;
+
+// Request limits
+const ADMIN_MAX_REQUESTS_PER_MINUTE = 60;
+const ADMIN_BLOCK_DURATION_MINUTES = 5;
+
+// SUPPORT role limits
+const SUPPORT_MAX_REQUESTS_PER_MINUTE = 30;
+const SUPPORT_SECONDARY_MAX_REQUESTS = 100;
+const SUPPORT_GLOBAL_MAX_REQUESTS = 500;
+const SUPPORT_BLOCK_DURATION_TEN_MINUTES = 10;
+const SUPPORT_BLOCK_DURATION_TWO_HOURS = 2;
+
+// MERCHANT role limits
+const MERCHANT_MAX_REQUESTS_PER_MINUTE = 20;
+const MERCHANT_SECONDARY_MAX_REQUESTS = 60;
+const MERCHANT_BLOCK_DURATION_FIFTEEN_MINUTES = 15;
+const MERCHANT_BLOCK_DURATION_ONE_HOUR = 1;
+
+// CUSTOMER role limits
+const CUSTOMER_MAX_REQUESTS_PER_MINUTE = 10;
+const CUSTOMER_SECONDARY_MAX_REQUESTS = 30;
+const CUSTOMER_GLOBAL_MAX_REQUESTS = 100;
+const CUSTOMER_BLOCK_DURATION_THIRTY_MINUTES = 30;
+const CUSTOMER_BLOCK_DURATION_ONE_HOUR = 1;
+
+// Financial operation limits
+const HIGH_VALUE_TRANSACTION_THRESHOLD = 10000;
+const MEDIUM_VALUE_TRANSACTION_THRESHOLD = 1000;
+const HIGH_VALUE_TRANSACTION_LIMIT_MULTIPLIER = 0.5;
+const MEDIUM_VALUE_TRANSACTION_LIMIT_MULTIPLIER = 0.7;
+
+// Admin operation default limit
+const DEFAULT_ADMIN_OPERATION_LIMIT = 5;
+
+// Global request limits
+const ADMIN_GLOBAL_MAX_REQUESTS = 1000;
+
+// Analytics time window
+const DEFAULT_ANALYTICS_TIME_WINDOW_HOURS = 1;
+
+// Block duration constants
+const MERCHANT_GLOBAL_BLOCK_DURATION_HOURS = 4;
+const CUSTOMER_GLOBAL_BLOCK_DURATION_HOURS = 6;
+
+// Hash function constants
+const HASH_SHIFT_BITS = 5;
+const HASH_BASE = 36;
 
 // Rate limiting constants
 const LOGIN_WINDOW_MINUTES = 15;
@@ -247,9 +319,9 @@ export class RateLimitingService {
 
     // Stricter limits for financial operations
     const financialConfig = {
-      windowMs: 15 * 60 * 1000, // 15 minutes
+      windowMs: FINANCIAL_OPERATION_WINDOW_MINUTES * MILLISECONDS_PER_MINUTE,
       maxRequests: this.getFinancialOperationLimit(userRole, amount),
-      blockDurationMs: 60 * 60 * 1000, // 1 hour block
+      blockDurationMs: FINANCIAL_OPERATION_BLOCK_HOURS * MILLISECONDS_PER_HOUR,
     };
 
     const primaryKey = `${baseKey}:primary`;
@@ -278,9 +350,9 @@ export class RateLimitingService {
 
     // Very strict limits for admin operations
     const adminConfig = {
-      windowMs: 5 * 60 * 1000, // 5 minutes
+      windowMs: ADMIN_OPERATION_WINDOW_MINUTES * MILLISECONDS_PER_MINUTE,
       maxRequests: this.getAdminOperationLimit(adminRole),
-      blockDurationMs: 30 * 60 * 1000, // 30 minutes block
+      blockDurationMs: ADMIN_OPERATION_BLOCK_MINUTES * MILLISECONDS_PER_MINUTE,
     };
 
     const primaryKey = `${baseKey}:primary`;
@@ -299,75 +371,86 @@ export class RateLimitingService {
   /**
    * Get role-based rate limit configuration
    */
-  private getRoleBasedRateLimitConfig(userRole: string) {
+  private getRoleBasedRateLimitConfig(
+    userRole: string
+  ): Record<string, unknown> {
     // Define different rate limits based on user role for security hierarchy
     const configs = {
       ADMIN: {
         primary: {
-          windowMs: 60 * 1000,
-          maxRequests: 60,
-          blockDurationMs: 5 * 60 * 1000,
+          windowMs: ONE_MINUTE_MS,
+          maxRequests: ADMIN_MAX_REQUESTS_PER_MINUTE,
+          blockDurationMs:
+            ADMIN_BLOCK_DURATION_MINUTES * MILLISECONDS_PER_MINUTE,
         }, // 60 req/min
         secondary: {
-          windowMs: 5 * 60 * 1000,
+          windowMs: FIVE_MINUTES_MS,
           maxRequests: 200,
-          blockDurationMs: 15 * 60 * 1000,
+          blockDurationMs: FIFTEEN_MINUTES_MS,
         }, // 200 req/5min
         global: {
-          windowMs: 15 * 60 * 1000,
-          maxRequests: 1000,
-          blockDurationMs: 60 * 60 * 1000,
+          windowMs: FIFTEEN_MINUTES_MS,
+          maxRequests: ADMIN_GLOBAL_MAX_REQUESTS,
+          blockDurationMs: ONE_HOUR_MS,
         }, // 1000 req/15min
       },
       SUPPORT: {
         primary: {
-          windowMs: 60 * 1000,
-          maxRequests: 30,
-          blockDurationMs: 10 * 60 * 1000,
+          windowMs: ONE_MINUTE_MS,
+          maxRequests: SUPPORT_MAX_REQUESTS_PER_MINUTE,
+          blockDurationMs:
+            SUPPORT_BLOCK_DURATION_TEN_MINUTES * MILLISECONDS_PER_MINUTE,
         }, // 30 req/min
         secondary: {
-          windowMs: 5 * 60 * 1000,
-          maxRequests: 100,
-          blockDurationMs: 30 * 60 * 1000,
+          windowMs: FIVE_MINUTES_MS,
+          maxRequests: SUPPORT_SECONDARY_MAX_REQUESTS,
+          blockDurationMs: THIRTY_MINUTES_MS,
         }, // 100 req/5min
         global: {
-          windowMs: 15 * 60 * 1000,
-          maxRequests: 500,
-          blockDurationMs: 2 * 60 * 60 * 1000,
+          windowMs: FIFTEEN_MINUTES_MS,
+          maxRequests: SUPPORT_GLOBAL_MAX_REQUESTS,
+          blockDurationMs:
+            SUPPORT_BLOCK_DURATION_TWO_HOURS * MILLISECONDS_PER_HOUR,
         }, // 500 req/15min
       },
       MERCHANT: {
         primary: {
-          windowMs: 60 * 1000,
-          maxRequests: 20,
-          blockDurationMs: 15 * 60 * 1000,
+          windowMs: ONE_MINUTE_MS,
+          maxRequests: MERCHANT_MAX_REQUESTS_PER_MINUTE,
+          blockDurationMs:
+            MERCHANT_BLOCK_DURATION_FIFTEEN_MINUTES * MILLISECONDS_PER_MINUTE,
         }, // 20 req/min
         secondary: {
-          windowMs: 5 * 60 * 1000,
-          maxRequests: 60,
-          blockDurationMs: 60 * 60 * 1000,
+          windowMs: FIVE_MINUTES_MS,
+          maxRequests: MERCHANT_SECONDARY_MAX_REQUESTS,
+          blockDurationMs:
+            MERCHANT_BLOCK_DURATION_ONE_HOUR * MILLISECONDS_PER_HOUR,
         }, // 60 req/5min
         global: {
-          windowMs: 15 * 60 * 1000,
+          windowMs: FIFTEEN_MINUTES_MS,
           maxRequests: 300,
-          blockDurationMs: 4 * 60 * 60 * 1000,
+          blockDurationMs:
+            MERCHANT_GLOBAL_BLOCK_DURATION_HOURS * MILLISECONDS_PER_HOUR,
         }, // 300 req/15min
       },
       CUSTOMER: {
         primary: {
-          windowMs: 60 * 1000,
-          maxRequests: 10,
-          blockDurationMs: 30 * 60 * 1000,
+          windowMs: ONE_MINUTE_MS,
+          maxRequests: CUSTOMER_MAX_REQUESTS_PER_MINUTE,
+          blockDurationMs:
+            CUSTOMER_BLOCK_DURATION_THIRTY_MINUTES * MILLISECONDS_PER_MINUTE,
         }, // 10 req/min
         secondary: {
-          windowMs: 5 * 60 * 1000,
-          maxRequests: 30,
-          blockDurationMs: 2 * 60 * 60 * 1000,
+          windowMs: FIVE_MINUTES_MS,
+          maxRequests: CUSTOMER_SECONDARY_MAX_REQUESTS,
+          blockDurationMs:
+            CUSTOMER_BLOCK_DURATION_ONE_HOUR * MILLISECONDS_PER_HOUR,
         }, // 30 req/5min
         global: {
-          windowMs: 15 * 60 * 1000,
-          maxRequests: 100,
-          blockDurationMs: 6 * 60 * 60 * 1000,
+          windowMs: FIFTEEN_MINUTES_MS,
+          maxRequests: CUSTOMER_GLOBAL_MAX_REQUESTS,
+          blockDurationMs:
+            CUSTOMER_GLOBAL_BLOCK_DURATION_HOURS * MILLISECONDS_PER_HOUR,
         }, // 100 req/15min
       },
     };
@@ -393,10 +476,10 @@ export class RateLimitingService {
       baseLimits[userRole as keyof typeof baseLimits] || baseLimits.CUSTOMER;
 
     // Reduce limit for high-value transactions
-    if (amount && amount > 10000) {
-      return Math.floor(baseLimit * 0.5); // 50% reduction for high-value tx
-    } else if (amount && amount > 1000) {
-      return Math.floor(baseLimit * 0.7); // 30% reduction for medium-value tx
+    if (amount && amount > HIGH_VALUE_TRANSACTION_THRESHOLD) {
+      return Math.floor(baseLimit * HIGH_VALUE_TRANSACTION_LIMIT_MULTIPLIER);
+    } else if (amount && amount > MEDIUM_VALUE_TRANSACTION_THRESHOLD) {
+      return Math.floor(baseLimit * MEDIUM_VALUE_TRANSACTION_LIMIT_MULTIPLIER);
     }
 
     return baseLimit;
@@ -412,7 +495,9 @@ export class RateLimitingService {
       MERCHANT: 5,
     };
 
-    return limits[adminRole as keyof typeof limits] || 5;
+    return (
+      limits[adminRole as keyof typeof limits] || DEFAULT_ADMIN_OPERATION_LIMIT
+    );
   }
 
   /**
@@ -423,10 +508,10 @@ export class RateLimitingService {
     let hash = 0;
     for (let i = 0; i < userAgent.length; i++) {
       const char = userAgent.charCodeAt(i);
-      hash = (hash << 5) - hash + char;
+      hash = (hash << HASH_SHIFT_BITS) - hash + char;
       hash = hash & hash; // Convert to 32-bit integer
     }
-    return Math.abs(hash).toString(36);
+    return Math.abs(hash).toString(HASH_BASE);
   }
 
   /**
@@ -450,7 +535,10 @@ export class RateLimitingService {
   /**
    * Get rate limit analytics for monitoring and alerting
    */
-  async getRateLimitAnalytics(_timeWindowMs: number = 60 * 60 * 1000): Promise<{
+  async getRateLimitAnalytics(
+    _timeWindowMs: number = DEFAULT_ANALYTICS_TIME_WINDOW_HOURS *
+      MILLISECONDS_PER_HOUR
+  ): Promise<{
     totalRequests: number;
     blockedRequests: number;
     topBlockedIPs: Array<{ ip: string; count: number }>;

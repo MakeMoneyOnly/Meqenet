@@ -14,9 +14,9 @@
  * Usage: node scripts/deployment-security-checklist.js [--pre-deploy] [--post-deploy] [--compliance]
  */
 
-const { execSync } = require('child_process');
+const { execSync: _execSync } = require('child_process'); // Reserved for future command execution
 const fs = require('fs');
-const path = require('path');
+const _path = require('path'); // Reserved for future path operations
 
 class DeploymentSecurityChecklist {
   constructor() {

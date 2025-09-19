@@ -10,6 +10,34 @@ export interface CoolingPeriodMetadata {
   coolingPeriodEnd?: string;
 }
 
+// Time conversion constants
+const SECONDS_PER_MINUTE = 60;
+const MINUTES_PER_HOUR = 60;
+const MILLISECONDS_PER_SECOND = 1000;
+const MILLISECONDS_PER_MINUTE = SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND;
+const MILLISECONDS_PER_HOUR = MINUTES_PER_HOUR * MILLISECONDS_PER_MINUTE;
+
+// Risk score thresholds
+const RISK_SCORE_LOW = 25;
+const RISK_SCORE_MEDIUM = 50;
+const RISK_SCORE_HIGH = 75;
+
+// JSON formatting constants
+const JSON_FORMAT_INDENTATION = 2;
+
+// Default time ranges and scoring
+const DEFAULT_MONITORING_HOURS = 24;
+const RISK_SCORE_PER_FAILED_ATTEMPT = 10;
+const MAX_RISK_SCORE = 100;
+
+// Default configuration values
+const DEFAULT_FAILED_LOGIN_THRESHOLD = 5;
+const DEFAULT_LOCATION_CHANGE_THRESHOLD = 3;
+const DEFAULT_BRUTE_FORCE_THRESHOLD = 10;
+const DEFAULT_TAKEOVER_INDICATORS = 3;
+const DEFAULT_SHORT_TERM_WINDOW_MINUTES = 15;
+const DEFAULT_MEDIUM_TERM_WINDOW_HOURS = 1;
+
 export interface AuthAnomaly {
   type:
     | 'brute_force'
@@ -62,27 +90,48 @@ export class AuthMonitoringService {
     this.config = {
       alertThresholds: {
         failedLoginAttempts: parseInt(
-          this.configService.get('AUTH_FAILED_LOGIN_THRESHOLD', '5')
+          this.configService.get(
+            'AUTH_FAILED_LOGIN_THRESHOLD',
+            DEFAULT_FAILED_LOGIN_THRESHOLD.toString()
+          )
         ),
         suspiciousLocationChanges: parseInt(
-          this.configService.get('AUTH_LOCATION_CHANGE_THRESHOLD', '3')
+          this.configService.get(
+            'AUTH_LOCATION_CHANGE_THRESHOLD',
+            DEFAULT_LOCATION_CHANGE_THRESHOLD.toString()
+          )
         ),
         bruteForceAttempts: parseInt(
-          this.configService.get('AUTH_BRUTE_FORCE_THRESHOLD', '10')
+          this.configService.get(
+            'AUTH_BRUTE_FORCE_THRESHOLD',
+            DEFAULT_BRUTE_FORCE_THRESHOLD.toString()
+          )
         ),
         accountTakeoverIndicators: parseInt(
-          this.configService.get('AUTH_TAKEOVER_INDICATORS', '3')
+          this.configService.get(
+            'AUTH_TAKEOVER_INDICATORS',
+            DEFAULT_TAKEOVER_INDICATORS.toString()
+          )
         ),
       },
       monitoringWindows: {
         shortTermMinutes: parseInt(
-          this.configService.get('AUTH_SHORT_TERM_WINDOW_MINUTES', '15')
+          this.configService.get(
+            'AUTH_SHORT_TERM_WINDOW_MINUTES',
+            DEFAULT_SHORT_TERM_WINDOW_MINUTES.toString()
+          )
         ),
         mediumTermHours: parseInt(
-          this.configService.get('AUTH_MEDIUM_TERM_WINDOW_HOURS', '1')
+          this.configService.get(
+            'AUTH_MEDIUM_TERM_WINDOW_HOURS',
+            DEFAULT_MEDIUM_TERM_WINDOW_HOURS.toString()
+          )
         ),
         longTermHours: parseInt(
-          this.configService.get('AUTH_LONG_TERM_WINDOW_HOURS', '24')
+          this.configService.get(
+            'AUTH_LONG_TERM_WINDOW_HOURS',
+            DEFAULT_MONITORING_HOURS.toString()
+          )
         ),
       },
       anomalyDetection: {
@@ -339,7 +388,7 @@ export class AuthMonitoringService {
           deviceFingerprint: anomaly.deviceFingerprint ?? null,
           riskScore: this.getSeverityScore(anomaly.severity),
           complianceFlags: [`anomaly_${anomaly.type}`],
-          eventData: anomaly.metadata as any,
+          eventData: anomaly.metadata as Record<string, unknown>,
         },
       });
     } catch (error) {
@@ -393,7 +442,7 @@ Time: ${anomaly.detectedAt.toISOString()}
 
 Description: ${anomaly.description}
 
-Metadata: ${JSON.stringify(anomaly.metadata, null, 2)}
+Metadata: ${JSON.stringify(anomaly.metadata, null, JSON_FORMAT_INDENTATION)}
     `.trim();
   }
 
@@ -459,10 +508,12 @@ Metadata: ${JSON.stringify(anomaly.metadata, null, 2)}
    * Get monitoring statistics for dashboard
    */
   async getMonitoringStats(
-    timeRangeHours: number = 24
+    timeRangeHours: number = DEFAULT_MONITORING_HOURS
   ): Promise<Record<string, unknown>> {
     try {
-      const since = new Date(Date.now() - timeRangeHours * 60 * 60 * 1000);
+      const since = new Date(
+        Date.now() - timeRangeHours * MILLISECONDS_PER_HOUR
+      );
 
       const stats = await this.prisma.auditLog.groupBy({
         by: ['eventType'],
@@ -577,11 +628,11 @@ Metadata: ${JSON.stringify(anomaly.metadata, null, 2)}
 
       // Increase risk score based on failed attempts
       if (user.loginAttempts > 0) {
-        newRiskScore += user.loginAttempts * 10;
+        newRiskScore += user.loginAttempts * RISK_SCORE_PER_FAILED_ATTEMPT;
       }
 
-      // Cap risk score at 100
-      newRiskScore = Math.min(newRiskScore, 100);
+      // Cap risk score at maximum
+      newRiskScore = Math.min(newRiskScore, MAX_RISK_SCORE);
 
       await this.prisma.user.update({
         where: { id: userId },
@@ -603,7 +654,7 @@ Metadata: ${JSON.stringify(anomaly.metadata, null, 2)}
     minutes: number
   ): Promise<number> {
     try {
-      const since = new Date(Date.now() - minutes * 60 * 1000);
+      const since = new Date(Date.now() - minutes * MILLISECONDS_PER_MINUTE);
 
       const failedAttempts = await this.prisma.auditLog.count({
         where: {
@@ -628,7 +679,7 @@ Metadata: ${JSON.stringify(anomaly.metadata, null, 2)}
     hours: number
   ): Promise<number> {
     try {
-      const since = new Date(Date.now() - hours * 60 * 60 * 1000);
+      const since = new Date(Date.now() - hours * MILLISECONDS_PER_HOUR);
 
       const indicators = await this.prisma.auditLog.count({
         where: {
@@ -676,11 +727,11 @@ Metadata: ${JSON.stringify(anomaly.metadata, null, 2)}
       case 'critical':
         return 100;
       case 'high':
-        return 75;
+        return RISK_SCORE_HIGH;
       case 'medium':
-        return 50;
+        return RISK_SCORE_MEDIUM;
       case 'low':
-        return 25;
+        return RISK_SCORE_LOW;
       default:
         return 0;
     }

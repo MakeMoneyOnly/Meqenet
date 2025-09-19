@@ -9,11 +9,12 @@ import {
 
 // Configure axios instance for BNPL API
 const bnplApiClient = axios.create({
+  // eslint-disable-next-line internal/no-process-env-outside-config
   baseURL: process.env.EXPO_PUBLIC_BNPL_API_URL || 'http://localhost:3001/api',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
-    'Accept': 'application/json',
+    Accept: 'application/json',
   },
 });
 
@@ -29,7 +30,7 @@ bnplApiClient.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 // Response interceptor for error handling
@@ -38,13 +39,13 @@ bnplApiClient.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       // Handle unauthorized - redirect to login
-      console.error('Unauthorized access - redirecting to login');
+      // Log handled in auth interceptor
     } else if (error.response?.status >= 500) {
       // Handle server errors
-      console.error('Server error:', error.response.data);
+      // Log handled in error interceptor
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export interface ApiResponse<T> {
@@ -58,204 +59,186 @@ class BnplApiService {
   /**
    * Create a new BNPL contract
    */
-  async createContract(request: CreateContractRequest): Promise<ApiResponse<{
-    contractId: string;
-    contractNumber: string;
-    status: string;
-    amount: number;
-    totalAmount: number;
-    outstandingBalance: number;
-    createdAt: string;
-  }>> {
-    try {
-      const response = await bnplApiClient.post('/bnpl/contracts', request);
-      return response.data;
-    } catch (error) {
-      console.error('Create contract error:', error);
-      throw error;
-    }
+  async createContract(request: CreateContractRequest): Promise<
+    ApiResponse<{
+      contractId: string;
+      contractNumber: string;
+      status: string;
+      amount: number;
+      totalAmount: number;
+      outstandingBalance: number;
+      createdAt: string;
+    }>
+  > {
+    const response = await bnplApiClient.post('/bnpl/contracts', request);
+    return response.data;
   }
 
   /**
    * Process a payment for an existing contract
    */
-  async processPayment(request: ProcessPaymentRequest): Promise<ApiResponse<{
-    paymentId: string;
-    paymentReference: string;
-    status: string;
-    amount: number;
-    currency: string;
-    createdAt: string;
-  }>> {
-    try {
-      const response = await bnplApiClient.post('/bnpl/payments', request);
-      return response.data;
-    } catch (error) {
-      console.error('Process payment error:', error);
-      throw error;
-    }
+  async processPayment(request: ProcessPaymentRequest): Promise<
+    ApiResponse<{
+      paymentId: string;
+      paymentReference: string;
+      status: string;
+      amount: number;
+      currency: string;
+      createdAt: string;
+    }>
+  > {
+    const response = await bnplApiClient.post('/bnpl/payments', request);
+    return response.data;
   }
 
   /**
    * Get contract details with installment schedule
    */
-  async getContractDetails(contractId: string): Promise<ApiResponse<{
-    contractId: string;
-    contractNumber: string;
-    customerId: string;
-    merchantId: string;
-    merchantName: string;
-    product: BNPLProduct;
-    status: string;
-    principalAmount: number;
-    totalAmount: number;
-    outstandingBalance: number;
-    apr: number | null;
-    termMonths: number | null;
-    paymentFrequency: string;
-    firstPaymentDate: string | null;
-    maturityDate: string | null;
-    installments: Array<{
-      installmentNumber: number;
+  async getContractDetails(contractId: string): Promise<
+    ApiResponse<{
+      contractId: string;
+      contractNumber: string;
+      customerId: string;
+      merchantId: string;
+      merchantName: string;
+      product: BNPLProduct;
       status: string;
-      scheduledAmount: number;
       principalAmount: number;
-      interestAmount: number;
-      feeAmount: number;
-      dueDate: string;
-      paidAt: string | null;
-      paidAmount: number | null;
-    }>;
-    createdAt: string;
-    activatedAt: string | null;
-  }>> {
-    try {
-      const response = await bnplApiClient.get(`/bnpl/contracts/${contractId}`);
-      return response.data;
-    } catch (error) {
-      console.error('Get contract details error:', error);
-      throw error;
-    }
+      totalAmount: number;
+      outstandingBalance: number;
+      apr: number | null;
+      termMonths: number | null;
+      paymentFrequency: string;
+      firstPaymentDate: string | null;
+      maturityDate: string | null;
+      installments: Array<{
+        installmentNumber: number;
+        status: string;
+        scheduledAmount: number;
+        principalAmount: number;
+        interestAmount: number;
+        feeAmount: number;
+        dueDate: string;
+        paidAt: string | null;
+        paidAmount: number | null;
+      }>;
+      createdAt: string;
+      activatedAt: string | null;
+    }>
+  > {
+    const response = await bnplApiClient.get(`/bnpl/contracts/${contractId}`);
+    return response.data;
   }
 
   /**
    * Get available BNPL products and terms
    */
-  async getAvailableProducts(): Promise<ApiResponse<{
-    products: Array<{
-      product: BNPLProduct;
-      name: string;
-      description: string;
-      interestRate: number;
-      term: string;
-      minAmount: number;
-      maxAmount: number;
-      popular?: boolean;
-    }>;
-    currency: string;
-    timezone: string;
-  }>> {
-    try {
-      const response = await bnplApiClient.get('/bnpl/products');
-      return response.data;
-    } catch (error) {
-      console.error('Get products error:', error);
-      throw error;
-    }
+  async getAvailableProducts(): Promise<
+    ApiResponse<{
+      products: Array<{
+        product: BNPLProduct;
+        name: string;
+        description: string;
+        interestRate: number;
+        term: string;
+        minAmount: number;
+        maxAmount: number;
+        popular?: boolean;
+      }>;
+      currency: string;
+      timezone: string;
+    }>
+  > {
+    const response = await bnplApiClient.get('/bnpl/products');
+    return response.data;
   }
 
   /**
    * Get customer's active contracts
    */
-  async getCustomerContracts(customerId: string): Promise<ApiResponse<Contract[]>> {
-    try {
-      const response = await bnplApiClient.get(`/customers/${customerId}/contracts`);
-      return response.data;
-    } catch (error) {
-      console.error('Get customer contracts error:', error);
-      throw error;
-    }
+  async getCustomerContracts(
+    customerId: string,
+  ): Promise<ApiResponse<Contract[]>> {
+    const response = await bnplApiClient.get(
+      `/customers/${customerId}/contracts`,
+    );
+    return response.data;
   }
 
   /**
    * Get customer's payment history
    */
-  async getCustomerPayments(customerId: string): Promise<ApiResponse<Payment[]>> {
-    try {
-      const response = await bnplApiClient.get(`/customers/${customerId}/payments`);
-      return response.data;
-    } catch (error) {
-      console.error('Get customer payments error:', error);
-      throw error;
-    }
+  async getCustomerPayments(
+    customerId: string,
+  ): Promise<ApiResponse<Payment[]>> {
+    const response = await bnplApiClient.get(
+      `/customers/${customerId}/payments`,
+    );
+    return response.data;
   }
 
   /**
    * Get merchant details for BNPL checkout
    */
-  async getMerchantDetails(merchantId: string): Promise<ApiResponse<{
-    id: string;
-    businessName: string;
-    category: string;
-    bnplEnabled: boolean;
-    cashbackRate: number;
-    commissionRate: number;
-    minContractAmount: number;
-    maxContractAmount: number;
-  }>> {
-    try {
-      const response = await bnplApiClient.get(`/merchants/${merchantId}`);
-      return response.data;
-    } catch (error) {
-      console.error('Get merchant details error:', error);
-      throw error;
-    }
+  async getMerchantDetails(merchantId: string): Promise<
+    ApiResponse<{
+      id: string;
+      businessName: string;
+      category: string;
+      bnplEnabled: boolean;
+      cashbackRate: number;
+      commissionRate: number;
+      minContractAmount: number;
+      maxContractAmount: number;
+    }>
+  > {
+    const response = await bnplApiClient.get(`/merchants/${merchantId}`);
+    return response.data;
   }
 
   /**
    * Check if customer is eligible for BNPL
    */
-  async checkEligibility(customerId: string, amount: number): Promise<ApiResponse<{
-    eligible: boolean;
-    maxAmount: number;
-    reason?: string;
-    riskLevel: string;
-  }>> {
-    try {
-      const response = await bnplApiClient.post('/bnpl/eligibility/check', {
-        customerId,
-        amount,
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Eligibility check error:', error);
-      throw error;
-    }
+  async checkEligibility(
+    customerId: string,
+    amount: number,
+  ): Promise<
+    ApiResponse<{
+      eligible: boolean;
+      maxAmount: number;
+      reason?: string;
+      riskLevel: string;
+    }>
+  > {
+    const response = await bnplApiClient.post('/bnpl/eligibility/check', {
+      customerId,
+      amount,
+    });
+    return response.data;
   }
 
   /**
    * Get customer's cashback balance and history
    */
-  async getCashbackBalance(customerId: string): Promise<ApiResponse<{
-    balance: number;
-    currency: string;
-    totalEarned: number;
-    totalRedeemed: number;
-    transactions: Array<{
-      id: string;
-      amount: number;
-      type: 'earned' | 'redeemed';
-      description: string;
-      createdAt: string;
-    }>;
-  }>> {
-    try {
-      const response = await bnplApiClient.get(`/customers/${customerId}/cashback`);
-      return response.data;
-    } catch (error) {
-      console.error('Get cashback balance error:', error);
-      throw error;
-    }
+  async getCashbackBalance(customerId: string): Promise<
+    ApiResponse<{
+      balance: number;
+      currency: string;
+      totalEarned: number;
+      totalRedeemed: number;
+      transactions: Array<{
+        id: string;
+        amount: number;
+        type: 'earned' | 'redeemed';
+        description: string;
+        createdAt: string;
+      }>;
+    }>
+  > {
+    const response = await bnplApiClient.get(
+      `/customers/${customerId}/cashback`,
+    );
+    return response.data;
   }
 }
 

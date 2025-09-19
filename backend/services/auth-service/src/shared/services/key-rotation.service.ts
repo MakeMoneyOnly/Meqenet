@@ -11,6 +11,19 @@ export interface KeyRotationConfig {
   enableAutoRotation: boolean;
 }
 
+// Time conversion constants
+const SECONDS_PER_MINUTE = 60;
+const MINUTES_PER_HOUR = 60;
+const HOURS_PER_DAY = 24;
+const MILLISECONDS_PER_SECOND = 1000;
+const MILLISECONDS_PER_MINUTE = SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND;
+const MILLISECONDS_PER_HOUR = MINUTES_PER_HOUR * MILLISECONDS_PER_MINUTE;
+const MILLISECONDS_PER_DAY = HOURS_PER_DAY * MILLISECONDS_PER_HOUR;
+
+// Test data constants
+const TEST_DATA_DAYS_AGO = 60;
+const TEST_DATA_EXPIRATION_DAYS = 30;
+
 export interface KeyMetadata {
   kid: string;
   createdAt: Date;
@@ -93,7 +106,7 @@ export class KeyRotationService implements OnModuleInit {
         if (metadata.isActive) {
           const daysSinceCreation =
             (now.getTime() - metadata.createdAt.getTime()) /
-            (1000 * 60 * 60 * 24);
+            MILLISECONDS_PER_DAY;
           if (daysSinceCreation >= this.config.rotationIntervalDays) {
             return true;
           }
@@ -123,7 +136,7 @@ export class KeyRotationService implements OnModuleInit {
       const kid = `${this.config.keyPrefix}-prod-${Date.now()}`;
       const now = new Date();
       const expiresAt = new Date(
-        now.getTime() + this.config.rotationIntervalDays * 24 * 60 * 60 * 1000
+        now.getTime() + this.config.rotationIntervalDays * MILLISECONDS_PER_DAY
       );
 
       // Export keys to PEM format
@@ -212,8 +225,12 @@ export class KeyRotationService implements OnModuleInit {
       return [
         {
           kid: 'meqenet-jwt-prod-current',
-          createdAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000), // 60 days ago
-          expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+          createdAt: new Date(
+            Date.now() - TEST_DATA_DAYS_AGO * MILLISECONDS_PER_DAY
+          ), // 60 days ago
+          expiresAt: new Date(
+            Date.now() + TEST_DATA_EXPIRATION_DAYS * MILLISECONDS_PER_DAY
+          ), // 30 days from now
           isActive: true,
           rotationCount: 1,
           lastUsed: new Date(),

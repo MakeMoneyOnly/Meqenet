@@ -9,6 +9,14 @@ import { PrismaService } from '../../infrastructure/database/prisma.service';
 import { SecretManagerService } from './secret-manager.service';
 import { AuditLoggingService } from './audit-logging.service';
 
+// Backup service constants
+const BACKUP_SCHEDULE_DEFAULT = '0 2 * * *'; // Daily at 2 AM
+const BACKUP_RETENTION_DEFAULT_DAYS = 30;
+const JSON_FORMAT_INDENTATION = 2;
+const KILOBYTE_SIZE = 1024;
+const RANDOM_BYTES_LENGTH = 4;
+const BYTES_FORMAT_DECIMAL_PLACES = 2;
+
 export interface BackupConfig {
   enabled: boolean;
   schedule: string; // cron expression
@@ -46,9 +54,15 @@ export class EncryptedBackupService {
   ) {
     this.config = {
       enabled: this.configService.get('BACKUP_ENABLED', 'true') === 'true',
-      schedule: this.configService.get('BACKUP_SCHEDULE', '0 2 * * *'), // Daily at 2 AM
+      schedule: this.configService.get(
+        'BACKUP_SCHEDULE',
+        BACKUP_SCHEDULE_DEFAULT
+      ),
       retentionDays: parseInt(
-        this.configService.get('BACKUP_RETENTION_DAYS', '30')
+        this.configService.get(
+          'BACKUP_RETENTION_DAYS',
+          BACKUP_RETENTION_DEFAULT_DAYS.toString()
+        )
       ),
       compressionEnabled:
         this.configService.get('BACKUP_COMPRESSION_ENABLED', 'true') === 'true',
@@ -199,7 +213,7 @@ export class EncryptedBackupService {
 
       // Export table data
       const data = await this.exportTableData(tableName);
-      const jsonData = JSON.stringify(data, null, 2);
+      const jsonData = JSON.stringify(data, null, JSON_FORMAT_INDENTATION);
 
       // Write to temporary file
       const filePath = join(
@@ -336,7 +350,7 @@ export class EncryptedBackupService {
 
     await fs.writeFile(
       outputPath,
-      JSON.stringify(combinedData, null, 2),
+      JSON.stringify(combinedData, null, JSON_FORMAT_INDENTATION),
       'utf8'
     );
 
@@ -433,7 +447,7 @@ export class EncryptedBackupService {
     try {
       const stats = await fs.stat(filePath);
       return stats.size;
-    } catch (error) {
+    } catch {
       return 0;
     }
   }
@@ -443,10 +457,16 @@ export class EncryptedBackupService {
    */
   private formatBytes(bytes: number): string {
     if (bytes === 0) return '0 Bytes';
-    const k = 1024;
+    const k = KILOBYTE_SIZE;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return (
+      parseFloat(
+        (bytes / Math.pow(k, i)).toFixed(BYTES_FORMAT_DECIMAL_PLACES)
+      ) +
+      ' ' +
+      sizes[i]
+    );
   }
 
   /**
@@ -454,7 +474,7 @@ export class EncryptedBackupService {
    */
   private generateBackupId(): string {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const random = crypto.randomBytes(4).toString('hex');
+    const random = crypto.randomBytes(RANDOM_BYTES_LENGTH).toString('hex');
     return `backup-${timestamp}-${random}`;
   }
 

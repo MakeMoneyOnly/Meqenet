@@ -69,7 +69,7 @@ export class RolesGuard implements CanActivate {
       }
 
       return validRequiredRoles.includes(user.role);
-    } catch (error) {
+    } catch {
       // If anything goes wrong (malformed context, etc.), deny access
       return false;
     }

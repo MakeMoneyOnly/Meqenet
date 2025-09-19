@@ -142,7 +142,7 @@ export const ContractCreationScreen: React.FC<Props> = ({ route }) => {
       } else {
         throw new Error('Failed to create contract');
       }
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'Failed to create contract. Please try again.', [
         { text: 'OK' },
       ]);

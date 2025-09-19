@@ -12,12 +12,12 @@
  * Usage: node scripts/validate-enhanced-auth-security.js [--ci] [--fix]
  */
 
-import { execSync, spawn } from 'child_process';
-import fs from 'fs';
-import path from 'path';
-import crypto from 'crypto';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
+const { execSync: _execSync, spawn: _spawn } = require('child_process'); // Reserved for future command execution
+const fs = require('fs');
+const path = require('path');
+const crypto = require('crypto');
+const { fileURLToPath } = require('url');
+const { dirname } = require('path');
 
 class EnhancedAuthSecurityValidator {
   constructor() {
@@ -264,9 +264,7 @@ class EnhancedAuthSecurityValidator {
       const packageJson = JSON.parse(
         fs.readFileSync(mobilePackagePath, 'utf8')
       );
-      const requiredDeps = [
-        'react-native-ssl-pinning',
-      ];
+      const requiredDeps = ['react-native-ssl-pinning'];
 
       for (const dep of requiredDeps) {
         if (!packageJson.dependencies || !packageJson.dependencies[dep]) {
