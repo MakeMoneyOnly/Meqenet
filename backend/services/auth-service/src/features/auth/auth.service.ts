@@ -6,7 +6,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcrypt';
+import * as argon2 from 'argon2';
 
 import { PrismaService } from '../../infrastructure/database/prisma.service';
 import { User } from '@prisma/client';
@@ -31,7 +31,12 @@ import { RegisterUserDto } from './dto/register-user.dto';
 import { PasswordResetRequestDto } from './dto/password-reset-request.dto';
 import { PasswordResetConfirmDto } from './dto/password-reset-confirm.dto';
 
-const BCRYPT_SALT_ROUNDS = 12;
+const ARGON2_OPTIONS: argon2.Options = {
+  type: argon2.argon2id, // Most secure variant
+  memoryCost: 2 ** 16, // 64 MB
+  timeCost: 3, // 3 iterations
+  parallelism: 1, // Single thread for server
+};
 const MAX_FAILED_ATTEMPTS = 5;
 const LOCKOUT_MINUTES = 15;
 const MILLISECONDS_PER_SECOND = 1000;
@@ -104,7 +109,7 @@ export class AuthService {
         });
       }
 
-      const hashedPassword = await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
+      const hashedPassword = await argon2.hash(password, ARGON2_OPTIONS);
 
       const createdUser = await this.prisma.user.create({
         data: {
@@ -263,7 +268,7 @@ export class AuthService {
         });
       }
 
-      const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+      const isPasswordValid = await argon2.verify(user.passwordHash, password);
       if (!isPasswordValid) {
         const attempts = (user.loginAttempts ?? 0) + 1;
         const update: Record<string, unknown> = { loginAttempts: attempts };
@@ -744,7 +749,7 @@ export class AuthService {
       }
 
       // Hash the new password
-      const hashedPassword = await bcrypt.hash(newPassword, BCRYPT_SALT_ROUNDS);
+      const hashedPassword = await argon2.hash(newPassword, ARGON2_OPTIONS);
 
       // Update user password and reset security fields
       await this.prisma.user.update({
@@ -813,8 +818,8 @@ export class AuthService {
             : 'Password has been successfully reset.',
       };
     } catch (error) {
-      // Handle bcrypt hashing errors
-      if (error instanceof Error && error.message.includes('hash')) {
+      // Handle argon2 hashing errors
+      if (error instanceof Error && (error.message.includes('hash') || error.message.includes('argon2')))
         await this.auditLogging.logPasswordResetFailure(
           'PASSWORD_HASHING_FAILED',
           {

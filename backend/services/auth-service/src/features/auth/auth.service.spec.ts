@@ -1,6 +1,6 @@
 import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
-import * as bcrypt from 'bcrypt';
+import * as argon2 from 'argon2';
 import { vi } from 'vitest';
 
 import { MessagingProducerService } from '../../infrastructure/messaging/messaging.producer.service';
@@ -58,10 +58,11 @@ interface TestableAuthService extends AuthService {
   >;
 }
 
-// Mock bcrypt
-vi.mock('bcrypt', () => ({
-  compare: vi.fn(),
+// Mock argon2
+vi.mock('argon2', () => ({
   hash: vi.fn(),
+  verify: vi.fn(),
+  argon2id: 'argon2id',
 }));
 
 describe('AuthService', () => {
@@ -246,9 +247,9 @@ describe('AuthService', () => {
         createdAt: new Date(),
       };
 
-      // Mock bcrypt.hash for registration
-      const bcryptHashMock = vi.mocked(bcrypt.hash);
-      bcryptHashMock.mockResolvedValue('hashed-password');
+      // Mock argon2.hash for registration
+      const argon2HashMock = vi.mocked(argon2.hash);
+      argon2HashMock.mockResolvedValue('hashed-password');
 
       mockPrismaService.user.findUnique.mockResolvedValue(null);
       mockPrismaService.user.create.mockResolvedValue(mockUser);
@@ -268,7 +269,10 @@ describe('AuthService', () => {
         })
       );
       expect(mockJwtService.sign).toHaveBeenCalled();
-      expect(bcryptHashMock).toHaveBeenCalledWith(registerUserDto.password, 12);
+      expect(argon2HashMock).toHaveBeenCalledWith(
+        registerUserDto.password,
+        expect.any(Object)
+      );
     });
 
     it('should throw error if user already exists', async () => {
@@ -304,9 +308,9 @@ describe('AuthService', () => {
         createdAt: new Date(),
       };
 
-      // Mock bcrypt.compare to return true for valid password
-      const bcryptCompareMock = vi.mocked(bcrypt.compare);
-      bcryptCompareMock.mockResolvedValue(true);
+      // Mock argon2.verify to return true for valid password
+      const argon2VerifyMock = vi.mocked(argon2.verify);
+      argon2VerifyMock.mockResolvedValue(true);
 
       mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
       mockJwtService.sign.mockReturnValue('jwt-token');
@@ -318,9 +322,9 @@ describe('AuthService', () => {
         where: { email: loginUserDto.email },
       });
       expect(mockJwtService.sign).toHaveBeenCalled();
-      expect(bcryptCompareMock).toHaveBeenCalledWith(
-        loginUserDto.password,
-        mockUser.passwordHash
+      expect(argon2VerifyMock).toHaveBeenCalledWith(
+        mockUser.passwordHash,
+        loginUserDto.password
       );
     });
 
@@ -337,18 +341,18 @@ describe('AuthService', () => {
         createdAt: new Date(),
       };
 
-      // Mock bcrypt.compare to return false for invalid password
-      const bcryptCompareMock = vi.mocked(bcrypt.compare);
-      bcryptCompareMock.mockResolvedValue(false as never);
+      // Mock argon2.verify to return false for invalid password
+      const argon2VerifyMock = vi.mocked(argon2.verify);
+      argon2VerifyMock.mockResolvedValue(false);
 
       mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
 
       await expect(service.login(loginUserDto)).rejects.toThrow(
         'Invalid email or password'
       );
-      expect(bcryptCompareMock).toHaveBeenCalledWith(
-        loginUserDto.password,
-        mockUser.passwordHash
+      expect(argon2VerifyMock).toHaveBeenCalledWith(
+        mockUser.passwordHash,
+        loginUserDto.password
       );
     });
   });
@@ -595,13 +599,11 @@ describe('AuthService', () => {
       mockPrismaService.user.update.mockResolvedValue(updatedUser);
       mockPasswordResetTokenService.consumeToken.mockResolvedValue(true);
 
-      // Mock bcrypt.hash
-      const bcryptHashMock = vi.mocked(bcrypt.hash);
-      bcryptHashMock.mockImplementation(async (password, saltRounds) => {
-        if (
-          password === mockPasswordResetConfirmDto.newPassword &&
-          saltRounds === 12
-        ) {
+      // Mock argon2.hash
+      const argon2HashMock = vi.mocked(argon2.hash);
+      argon2HashMock.mockImplementation(async (password, _options) => {
+        // eslint-disable-next-line security/detect-possible-timing-attacks
+        if (password === mockPasswordResetConfirmDto.newPassword) {
           return 'new-hashed-password';
         }
         return 'password123'; // fallback for other calls
@@ -638,7 +640,7 @@ describe('AuthService', () => {
           eventType: 'PASSWORD_RESET_SUCCESSFUL',
         }
       );
-      expect(bcryptHashMock).toHaveBeenCalledWith(
+      expect(argon2HashMock).toHaveBeenCalledWith(
         mockPasswordResetConfirmDto.newPassword,
         12
       );
@@ -694,10 +696,10 @@ describe('AuthService', () => {
       ).rejects.toThrow('አዲስ የይለፍ ቃል እና ማስተያወቂያ አይመሳሰሉም።');
     });
 
-    it('should handle bcrypt hashing errors', async () => {
-      const bcryptError = new Error('Hashing failed');
-      const bcryptHashMock = vi.mocked(bcrypt.hash);
-      bcryptHashMock.mockRejectedValue(bcryptError);
+    it('should handle argon2 hashing errors', async () => {
+      const argon2Error = new Error('Hashing failed');
+      const argon2HashMock = vi.mocked(argon2.hash);
+      argon2HashMock.mockRejectedValue(argon2Error);
 
       mockPasswordResetTokenService.validateToken.mockResolvedValue({
         userId: mockUserId,
@@ -739,9 +741,9 @@ describe('AuthService', () => {
       });
       mockPasswordResetTokenService.consumeToken.mockResolvedValue(true);
 
-      // Mock bcrypt.hash
-      const bcryptHashMock = vi.mocked(bcrypt.hash);
-      bcryptHashMock.mockResolvedValue('new-hashed-password');
+      // Mock argon2.hash
+      const argon2HashMock = vi.mocked(argon2.hash);
+      argon2HashMock.mockResolvedValue('new-hashed-password');
 
       const result = await service.confirmPasswordReset(
         mockPasswordResetConfirmDto
@@ -774,9 +776,9 @@ describe('AuthService', () => {
       });
       mockPasswordResetTokenService.consumeToken.mockResolvedValue(true);
 
-      // Mock bcrypt.hash for long password
-      const bcryptHashMock = vi.mocked(bcrypt.hash);
-      bcryptHashMock.mockResolvedValue('hashed-long-password');
+      // Mock argon2.hash for long password
+      const argon2HashMock = vi.mocked(argon2.hash);
+      argon2HashMock.mockResolvedValue('hashed-long-password');
 
       const result = await service.confirmPasswordReset(longPasswordDto);
 
@@ -787,9 +789,9 @@ describe('AuthService', () => {
   });
 
   describe('password reset security features', () => {
-    it('should use bcrypt with configured salt rounds', async () => {
-      const bcryptHashMock = vi.mocked(bcrypt.hash);
-      bcryptHashMock.mockResolvedValue('hashed-password');
+    it('should use argon2 with configured options', async () => {
+      const argon2HashMock = vi.mocked(argon2.hash);
+      argon2HashMock.mockResolvedValue('hashed-password');
 
       mockPasswordResetTokenService.validateToken.mockResolvedValue({
         userId: 'user-123',
@@ -814,13 +816,16 @@ describe('AuthService', () => {
         confirmPassword: 'NewP@ssw0rd123',
       });
 
-      expect(bcryptHashMock).toHaveBeenCalledWith('NewP@ssw0rd123', 12);
+      expect(argon2HashMock).toHaveBeenCalledWith(
+        'NewP@ssw0rd123',
+        expect.any(Object)
+      );
     });
 
     it('should update user updatedAt timestamp', async () => {
       const beforeCall = new Date();
-      const bcryptHashMock = vi.mocked(bcrypt.hash);
-      bcryptHashMock.mockResolvedValue('new-hash');
+      const argon2HashMock = vi.mocked(argon2.hash);
+      argon2HashMock.mockResolvedValue('new-hash');
 
       mockPasswordResetTokenService.validateToken.mockResolvedValue({
         userId: 'user-123',
@@ -992,8 +997,8 @@ describe('AuthService', () => {
           password: 'SecureP@ssw0rd123',
         };
 
-        const bcryptHashMock = vi.mocked(bcrypt.hash);
-        bcryptHashMock.mockResolvedValue('hashed-password');
+        const argon2HashMock = vi.mocked(argon2.hash);
+        argon2HashMock.mockResolvedValue('hashed-password');
 
         mockPrismaService.user.findUnique.mockResolvedValue(null);
         mockPrismaService.user.create.mockResolvedValue({
@@ -1035,8 +1040,8 @@ describe('AuthService', () => {
           password: 'SecureP@ssw0rd123',
         };
 
-        const bcryptHashMock = vi.mocked(bcrypt.hash);
-        bcryptHashMock.mockResolvedValue('hashed-password');
+        const argon2HashMock = vi.mocked(argon2.hash);
+        argon2HashMock.mockResolvedValue('hashed-password');
 
         mockPrismaService.user.findUnique.mockResolvedValue(null);
         mockPrismaService.user.create.mockResolvedValue({
@@ -1059,16 +1064,21 @@ describe('AuthService', () => {
     });
 
     describe('password hashing security', () => {
-      const BCRYPT_SALT_ROUNDS = 12;
+      const _ARGON2_OPTIONS = {
+        type: 'argon2id' as const,
+        memoryCost: 2 ** 16,
+        timeCost: 3,
+        parallelism: 1,
+      };
 
-      it('should use configured bcrypt salt rounds for password hashing', async () => {
+      it('should use configured argon2 options for password hashing', async () => {
         const registerUserDto = {
           email: 'newuser@example.com',
           password: 'SecureP@ssw0rd123',
         };
 
-        const bcryptHashMock = vi.mocked(bcrypt.hash);
-        bcryptHashMock.mockResolvedValue('hashed-password');
+        const argon2HashMock = vi.mocked(argon2.hash);
+        argon2HashMock.mockResolvedValue('hashed-password');
 
         mockPrismaService.user.findUnique.mockResolvedValue(null);
         mockPrismaService.user.create.mockResolvedValue({
@@ -1080,13 +1090,13 @@ describe('AuthService', () => {
 
         await service.register(registerUserDto);
 
-        expect(bcryptHashMock).toHaveBeenCalledWith(
+        expect(argon2HashMock).toHaveBeenCalledWith(
           registerUserDto.password,
-          BCRYPT_SALT_ROUNDS
+          expect.any(Object)
         );
       });
 
-      it('should use bcrypt for password comparison during login', async () => {
+      it('should use argon2 for password verification during login', async () => {
         const loginUserDto = {
           email: 'test@example.com',
           password: 'ValidP@ssw0rd123',
@@ -1101,8 +1111,8 @@ describe('AuthService', () => {
           createdAt: new Date(),
         };
 
-        const bcryptCompareMock = vi.mocked(bcrypt.compare);
-        bcryptCompareMock.mockResolvedValue(true);
+        const argon2VerifyMock = vi.mocked(argon2.verify);
+        argon2VerifyMock.mockResolvedValue(true);
 
         mockPrismaService.user.findUnique.mockResolvedValue(loginMockUser);
         mockPrismaService.user.update.mockResolvedValue({
@@ -1114,7 +1124,7 @@ describe('AuthService', () => {
 
         await service.login(loginUserDto);
 
-        expect(bcryptCompareMock).toHaveBeenCalledWith(
+        expect(argon2VerifyMock).toHaveBeenCalledWith(
           loginUserDto.password,
           loginMockUser.passwordHash
         );

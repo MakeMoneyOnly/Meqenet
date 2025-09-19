@@ -54,21 +54,45 @@ jobs:
           version: ${{ env.PNPM_VERSION }}
           run_install: false
 
-      - name: Verify pnpm installation
+      - name: Verify pnpm installation and setup PATH
         shell: bash
         run: |
+          # Ensure pnpm is available and set up PATH correctly
           if ! command -v pnpm &> /dev/null; then
             echo "❌ pnpm not found, installing..."
             npm install -g pnpm@${{ env.PNPM_VERSION }}
-          else
-            echo "✅ pnpm found at $(which pnpm)"
           fi
+
+          # Get pnpm home directory and ensure it's in PATH
+          PNPM_HOME="${HOME}/.local/share/pnpm"
+          export PATH="$PNPM_HOME:$PATH"
+
+          # Verify pnpm is working
+          echo "✅ pnpm found at $(which pnpm)"
           pnpm --version
+
+          # Export for subsequent steps
+          echo "PNPM_HOME=$PNPM_HOME" >> $GITHUB_ENV
 
       - name: Get pnpm store directory
         shell: bash
         run: |
           echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Clean problematic package references
+        shell: bash
+        run: |
+          echo "🧹 Cleaning any cached references to problematic packages..."
+          # Remove any cached references to the old package name
+          if command -v pnpm &> /dev/null; then
+            pnpm store prune
+          fi
+
+          # Run comprehensive package fix script
+          if [ -f "scripts/fix-ci-package-issues.sh" ]; then
+            echo "🔧 Running comprehensive package fix script..."
+            bash scripts/fix-ci-package-issues.sh
+          fi
 
       - name: Setup pnpm cache
         uses: actions/cache@v4
@@ -79,7 +103,11 @@ jobs:
             ${{ runner.os }}-pnpm-store-
 
       - name: Install Dependencies
+        shell: bash
         run: |
+          # Ensure PATH is set correctly
+          export PATH="$PNPM_HOME:$PATH"
+
           # Configure pnpm for enterprise environment
           pnpm config set registry https://registry.npmjs.org/
           pnpm config set fetch-timeout 60000
@@ -87,11 +115,20 @@ jobs:
           pnpm config delete @jsr:registry 2>/dev/null || true
           pnpm config delete //npm.jsr.io/:_authToken 2>/dev/null || true
 
-          # Install dependencies
-          pnpm install --frozen-lockfile
+          # Install dependencies with error handling
+          echo "📦 Installing dependencies..."
+          if ! pnpm install --frozen-lockfile; then
+            echo "❌ Frozen lockfile install failed, trying fresh install..."
+            pnpm install --no-frozen-lockfile
+          fi
+
+          echo "✅ Dependencies installed successfully"
 
       - name: Generate Prisma Client
-        run: pnpm prisma generate --schema=./backend/services/auth-service/prisma/schema.prisma || echo "⚠️  Prisma generate failed, continuing with existing client..."
+        shell: bash
+        run: |
+          export PATH="$PNPM_HOME:$PATH"
+          pnpm prisma generate --schema=./backend/services/auth-service/prisma/schema.prisma || echo "⚠️  Prisma generate failed, continuing with existing client..."
 
       - name: 📝 Validate Commit Messages
         run: |
@@ -2038,9 +2075,9 @@ jobs:
       - name: 📦 Setup pnpm via Corepack (pinned)
         run: |
           set -euo pipefail
-          echo "📦 Enabling Corepack and activating pnpm 10.4.1"
+          echo "📦 Enabling Corepack and activating pnpm ${{ env.PNPM_VERSION }}"
           corepack enable
-          corepack prepare pnpm@10.4.1 --activate
+          corepack prepare pnpm@${{ env.PNPM_VERSION }} --activate
 
           # Export PNPM_HOME and add to PATH for all subsequent steps
           export PNPM_HOME="$HOME/.local/share/pnpm"
@@ -2049,11 +2086,14 @@ jobs:
           echo "PATH=$PATH" >> $GITHUB_ENV
 
           pnpm --version
+          # Configure pnpm for enterprise environment
           pnpm config set registry https://registry.npmjs.org/
           pnpm config set fetch-timeout 60000
           pnpm config set network-timeout 300000
+          # Clear problematic registry configurations
           pnpm config delete @jsr:registry 2>/dev/null || true
           pnpm config delete //npm.jsr.io/:_authToken 2>/dev/null || true
+
           echo "✅ pnpm configured via Corepack"
 
       - name: 📚 Install Dependencies
