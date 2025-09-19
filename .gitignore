@@ -303,6 +303,18 @@ uploads/
 storage/
 
 # =============================================================================
+# Infrastructure as Code
+# =============================================================================
+# Terraform
+.terraform/
+terraform.tfstate*
+*.tfstate.backup
+.terraform.lock.hcl
+.terraform.tfstate.lock.info
+# Terragrunt
+.terragrunt-cache/
+
+# =============================================================================
 # Docker & Deployment
 # =============================================================================
 .dockerignore.bak
