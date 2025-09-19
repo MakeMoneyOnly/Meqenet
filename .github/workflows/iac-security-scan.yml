@@ -234,7 +234,7 @@ jobs:
 
           output_format: sarif
 
-          output_file_path: ./checkov-results.sarif
+          output_file_path: checkov-results.sarif
 
           soft_fail: true
 
@@ -344,7 +344,7 @@ jobs:
 
         with:
 
-          sarif_file: ./checkov-results.sarif
+          sarif_file: checkov-results.sarif
 
           category: "checkov"
 
@@ -370,15 +370,15 @@ jobs:
 
 
 
-          if [ -f "./checkov-results.sarif" ]; then
+          if [ -f "checkov-results.sarif" ]; then
 
             # Extract compliance metrics
 
-            TOTAL_FINDINGS=$(jq '.runs[0].results | length' ./checkov-results.sarif 2>/dev/null || echo "0")
+            TOTAL_FINDINGS=$(jq '.runs[0].results | length' checkov-results.sarif 2>/dev/null || echo "0")
 
-            CRITICAL_FINDINGS=$(jq '[.runs[0].results[] | select(.level == "error")] | length' ./checkov-results.sarif 2>/dev/null || echo "0")
+            CRITICAL_FINDINGS=$(jq '[.runs[0].results[] | select(.level == "error")] | length' checkov-results.sarif 2>/dev/null || echo "0")
 
-            HIGH_FINDINGS=$(jq '[.runs[0].results[] | select(.properties.severity == "HIGH")] | length' ./checkov-results.sarif 2>/dev/null || echo "0")
+            HIGH_FINDINGS=$(jq '[.runs[0].results[] | select(.properties.severity == "HIGH")] | length' checkov-results.sarif 2>/dev/null || echo "0")
 
 
 
@@ -410,7 +410,7 @@ jobs:
 
             # PCI DSS Compliance Check
 
-            PCI_VIOLATIONS=$(jq '[.runs[0].results[] | select(.ruleId | contains("CKV_AWS_"))] | length' ./checkov-results.sarif 2>/dev/null || echo "0")
+            PCI_VIOLATIONS=$(jq '[.runs[0].results[] | select(.ruleId | contains("CKV_AWS_"))] | length' checkov-results.sarif 2>/dev/null || echo "0")
 
             if [ "$PCI_VIOLATIONS" -eq 0 ]; then
 
