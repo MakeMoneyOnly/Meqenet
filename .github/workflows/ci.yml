@@ -54,16 +54,29 @@ jobs:
           echo "🔍 Verifying Node.js version..."
           NODE_VERSION_ACTUAL=$(node --version)
           NODE_VERSION_EXPECTED="v22"
+          NODE_MAJOR_EXPECTED="22"
+
           echo "Expected Node.js version: $NODE_VERSION_EXPECTED"
           echo "Actual Node.js version: $NODE_VERSION_ACTUAL"
 
-          if [[ "$NODE_VERSION_ACTUAL" != *"$NODE_VERSION_EXPECTED"* ]]; then
-            echo "❌ Node.js version mismatch! Expected $NODE_VERSION_EXPECTED, got $NODE_VERSION_ACTUAL"
-            echo "🔧 This may cause dependency resolution issues with @types/argon2 and other packages"
+          # Check major version with stricter validation
+          NODE_MAJOR_ACTUAL=$(node --version | sed 's/v//' | cut -d. -f1)
+
+          if [[ "$NODE_MAJOR_ACTUAL" != "$NODE_MAJOR_EXPECTED" ]]; then
+            echo "❌ Node.js major version mismatch! Expected v$NODE_MAJOR_EXPECTED.x.x, got $NODE_VERSION_ACTUAL"
+            echo "💡 This may cause dependency resolution issues with @types/argon2 and other packages"
+            echo "🔧 Please ensure GitHub Actions runner uses Node.js v22"
+            echo "📋 Check: https://github.com/actions/runner-images"
             exit 1
           else
             echo "✅ Node.js version verified: $NODE_VERSION_ACTUAL"
           fi
+
+          # Additional validation for enterprise environments
+          echo "🔍 Performing additional Node.js ecosystem validation..."
+          node --version | grep -q "v${NODE_MAJOR_EXPECTED}" || { echo "❌ Node.js version validation failed"; exit 1; }
+          npm --version > /dev/null || { echo "❌ npm not available"; exit 1; }
+          echo "✅ Node.js ecosystem validation passed"
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -153,21 +166,49 @@ jobs:
           fi
           echo "✅ Critical dependency versions validated"
 
-          # Install dependencies with error handling
+          # Install dependencies with enhanced error handling for @types/argon2
           echo "📦 Installing dependencies..."
+
+          # Pre-validation for known problematic packages
+          echo "🔍 Pre-validating critical dependencies..."
+          if grep -q "@types/argon2.*[^0-9]1\.[0-9]\." package.json 2>/dev/null; then
+            echo "⚠️  Detected problematic @types/argon2 version in root package.json"
+            echo "🔧 This should be resolved by overrides, continuing..."
+          fi
+
           if ! pnpm install --frozen-lockfile; then
             echo "❌ Frozen lockfile install failed, trying fresh install..."
             if ! pnpm install --no-frozen-lockfile; then
               echo "❌ Fresh install also failed, running package fix script..."
               if [ -f "scripts/fix-ci-package-issues.sh" ]; then
+                echo "🔧 Executing package fix script for @types/argon2 and other issues..."
                 bash scripts/fix-ci-package-issues.sh
                 echo "🔄 Retrying dependency installation after fixes..."
-                pnpm install --no-frozen-lockfile
+
+                # Force clean install after fixes
+                rm -rf node_modules pnpm-lock.yaml
+                echo "🧹 Cleaned node_modules and lock file for fresh install"
+
+                if ! pnpm install; then
+                  echo "❌ Dependency installation still failing after fixes"
+                  echo "🔍 Checking for @types/argon2 specific errors..."
+                  pnpm install 2>&1 | grep -i "argon2" || echo "No argon2-specific errors found"
+                  exit 1
+                fi
               else
                 echo "❌ No fix script available"
                 exit 1
               fi
             fi
+          fi
+
+          # Post-installation validation
+          echo "🔍 Validating critical packages after installation..."
+          if pnpm list @types/argon2 > /dev/null 2>&1; then
+            ARGON2_VERSION=$(pnpm list @types/argon2 | grep @types/argon2 | head -1 | awk '{print $2}')
+            echo "✅ @types/argon2 installed: $ARGON2_VERSION"
+          else
+            echo "⚠️  @types/argon2 not found in installed packages"
           fi
 
           echo "✅ Dependencies installed successfully"
