@@ -14,13 +14,8 @@ class PWATester {
     this.issues = [];
     this.warnings = [];
     this.passed = [];
-    this.websitePath = path.join(
-      __dirname,
-      '..',
-      'frontend',
-      'apps',
-      'website'
-    );
+    // Use absolute path from current working directory
+    this.websitePath = path.resolve('frontend/apps/website');
   }
 
   log(message, type = 'info') {
