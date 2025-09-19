@@ -371,9 +371,11 @@ export class RateLimitingService {
   /**
    * Get role-based rate limit configuration
    */
-  private getRoleBasedRateLimitConfig(
-    userRole: string
-  ): Record<string, unknown> {
+  private getRoleBasedRateLimitConfig(userRole: string): {
+    primary: RateLimitConfig;
+    secondary: RateLimitConfig;
+    global: RateLimitConfig;
+  } {
     // Define different rate limits based on user role for security hierarchy
     const configs = {
       ADMIN: {

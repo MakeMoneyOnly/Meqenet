@@ -4,6 +4,7 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { PrismaService } from '../../infrastructure/database/prisma.service';
 import { AuditLoggingService } from './audit-logging.service';
+import { Prisma } from '@prisma/client';
 
 export interface CoolingPeriodMetadata {
   coolingPeriodActive?: boolean;
@@ -388,7 +389,7 @@ export class AuthMonitoringService {
           deviceFingerprint: anomaly.deviceFingerprint ?? null,
           riskScore: this.getSeverityScore(anomaly.severity),
           complianceFlags: [`anomaly_${anomaly.type}`],
-          eventData: anomaly.metadata as Record<string, unknown>,
+          eventData: anomaly.metadata as Prisma.JsonValue,
         },
       });
     } catch (error) {
