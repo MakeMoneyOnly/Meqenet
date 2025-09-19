@@ -1,12 +1,4 @@
 {
-  "@appthreat/sqlite3@6.0.9": {
-    "licenses": "BSD-3-Clause",
-    "repository": "https://github.com/AppThreat/node-sqlite3",
-    "publisher": "Team AppThreat",
-    "email": "cloud@appthreat.com",
-    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@appthreat\\sqlite3",
-    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@appthreat\\sqlite3\\LICENSE"
-  },
   "@aws-sdk/client-secrets-manager@3.891.0": {
     "licenses": "Apache-2.0",
     "repository": "https://github.com/aws/aws-sdk-js-v3",
@@ -771,7 +763,7 @@
     "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\form-data",
     "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\form-data\\License"
   },
-  "framer-motion@12.23.15": {
+  "framer-motion@12.23.16": {
     "licenses": "MIT",
     "repository": "https://github.com/motiondivision/motion",
     "publisher": "Matt Perry",
@@ -950,7 +942,7 @@
     "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\micromatch",
     "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\micromatch\\LICENSE"
   },
-  "motion@12.23.15": {
+  "motion@12.23.16": {
     "licenses": "MIT",
     "repository": "https://github.com/motiondivision/motion",
     "publisher": "Matt Perry",

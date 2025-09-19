@@ -1,6 +1,6 @@
 {
   "title": "Meqenet Dependency Security Report",
-  "generatedAt": "2025-09-19T13:37:17.217Z",
+  "generatedAt": "2025-09-19T15:37:05.676Z",
   "sections": [
     {
       "name": "NPM Audit",
@@ -32,7 +32,7 @@
     },
     {
       "name": "OWASP Dependency Check",
-      "totalComponents": 4107,
+      "totalComponents": 3886,
       "totalVulnerabilities": 0,
       "status": "SECURE",
       "issues": [],
@@ -45,15 +45,15 @@
     },
     {
       "name": "License Compliance Check",
-      "totalPackages": 186,
+      "totalPackages": 185,
       "licenseBreakdown": {
-        "BSD-3-Clause": 2,
         "Apache-2.0": 28,
         "MIT": 146,
         "BSD-2-Clause": 2,
         "MPL-2.0": 1,
         "ISC": 5,
         "Custom: https://gsap.com/GSAP-share-image.png": 1,
+        "BSD-3-Clause": 1,
         "0BSD": 1
       },
       "status": "COMPLIANT",

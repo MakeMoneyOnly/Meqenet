@@ -107,15 +107,28 @@ jobs:
                   # Only try to regenerate on the first attempt
                   echo "🔄 Regenerating lockfile to resolve configuration mismatch..."
                   pnpm install --no-frozen-lockfile --ignore-scripts
-                  echo "✅ Lockfile regenerated, retrying installation..."
+                  echo "✅ Lockfile regenerated, attempting installation with new lockfile..."
                   if pnpm install --frozen-lockfile --ignore-scripts; then
                     echo "✅ Dependencies installed successfully after lockfile regeneration"
                     break
+                  else
+                    echo "❌ Lockfile regeneration failed, attempting fresh install..."
+                    # If lockfile regeneration still fails, try a fresh install
+                    rm -f pnpm-lock.yaml
+                    if pnpm install --no-frozen-lockfile --ignore-scripts; then
+                      echo "✅ Dependencies installed successfully with fresh lockfile"
+                      break
+                    fi
                   fi
                 fi
               fi
               if [ $attempt -eq 3 ]; then
                 echo "💥 CRITICAL: All dependency installation attempts failed"
+                echo "🔍 Debug information:"
+                echo "Current overrides in package.json:"
+                grep -A 20 '"overrides"' package.json || echo "No overrides found"
+                echo "Lockfile status:"
+                ls -la pnpm-lock.yaml || echo "No lockfile found"
                 exit 1
               fi
               echo "⏳ Waiting before retry..."
@@ -146,7 +159,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: "https://registry.npmjs.org"
 
-      - name: 📦 Install pnpm (Enterprise-Grade with Network Resilience)
+      - name: 📦 Setup pnpm (Enterprise-Grade with Network Resilience)
         run: |
           echo "📦 Installing pnpm with enterprise-grade network resilience..."
 
@@ -352,15 +365,28 @@ jobs:
                   # Only try to regenerate on the first attempt
                   echo "🔄 Regenerating lockfile to resolve configuration mismatch..."
                   pnpm install --no-frozen-lockfile --ignore-scripts
-                  echo "✅ Lockfile regenerated, retrying installation..."
+                  echo "✅ Lockfile regenerated, attempting installation with new lockfile..."
                   if pnpm install --frozen-lockfile --ignore-scripts; then
                     echo "✅ Dependencies installed successfully after lockfile regeneration"
                     break
+                  else
+                    echo "❌ Lockfile regeneration failed, attempting fresh install..."
+                    # If lockfile regeneration still fails, try a fresh install
+                    rm -f pnpm-lock.yaml
+                    if pnpm install --no-frozen-lockfile --ignore-scripts; then
+                      echo "✅ Dependencies installed successfully with fresh lockfile"
+                      break
+                    fi
                   fi
                 fi
               fi
               if [ $attempt -eq 3 ]; then
                 echo "💥 CRITICAL: All dependency installation attempts failed"
+                echo "🔍 Debug information:"
+                echo "Current overrides in package.json:"
+                grep -A 20 '"overrides"' package.json || echo "No overrides found"
+                echo "Lockfile status:"
+                ls -la pnpm-lock.yaml || echo "No lockfile found"
                 exit 1
               fi
               echo "⏳ Waiting before retry..."

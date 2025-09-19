@@ -1,20 +1,20 @@
 {
-  "generatedAt": "2025-09-19T13:37:14.383Z",
+  "generatedAt": "2025-09-19T15:37:02.115Z",
   "summary": {
-    "totalPackages": 186,
-    "compliantPackages": 184,
+    "totalPackages": 185,
+    "compliantPackages": 183,
     "warningPackages": 2,
     "blockingPackages": 0,
     "complianceRate": 99
   },
   "licenseBreakdown": {
-    "BSD-3-Clause": 2,
     "Apache-2.0": 28,
     "MIT": 146,
     "BSD-2-Clause": 2,
     "MPL-2.0": 1,
     "ISC": 5,
     "Custom: https://gsap.com/GSAP-share-image.png": 1,
+    "BSD-3-Clause": 1,
     "0BSD": 1
   },
   "issues": {
