@@ -1,9 +1,4 @@
-import path from 'path';
-import { fileURLToPath } from 'url';
 // import withPWA from 'next-pwa'; // Temporarily disabled - incompatible with Next.js 15
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
