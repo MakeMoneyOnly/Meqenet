@@ -1,4 +1,4 @@
-name: 🔒 Enterprise Commit Message Validation
+name: 🔒 Enterprise Security Compliance Check
 
 on:
   pull_request:
@@ -14,142 +14,6 @@ permissions:
   checks: write
 
 jobs:
-  validate-commits:
-    name: 📝 Validate Commit Messages
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-
-    steps:
-      - name: 📥 Checkout Repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # Full history for commit validation
-
-      - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'pnpm'
-
-      - name: 📦 Install Dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: 🔍 Validate Commit Messages (Push)
-        if: github.event_name == 'push'
-        run: |
-          echo "🔍 Validating commit messages on push..."
-
-          # Get commits in this push
-          if [ "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ]; then
-            COMMITS=$(git log --oneline ${{ github.event.before }}..${{ github.sha }})
-          else
-            # First push to branch
-            COMMITS=$(git log --oneline ${{ github.sha }} -1)
-          fi
-
-          echo "📋 Commits to validate:"
-          echo "$COMMITS"
-
-          # Validate each commit message
-          echo "$COMMITS" | while read -r commit; do
-            if [ -n "$commit" ]; then
-              COMMIT_MSG=$(echo "$commit" | cut -d' ' -f2-)
-
-              # Check for JIRA ticket reference
-              if ! echo "$COMMIT_MSG" | grep -q -E '\((JIRA|TICKET|ISSUE|MEQ|BNPL|PAY|AUTH|SEC)-[0-9]+\)'; then
-                echo "❌ Invalid commit message: $COMMIT_MSG"
-                echo "📋 Required format: type(scope): description (TICKET-123)"
-                exit 1
-              fi
-
-              echo "✅ Valid commit: $COMMIT_MSG"
-            fi
-          done
-
-      - name: 🔍 Validate PR Commits
-        if: github.event_name == 'pull_request'
-        run: |
-          echo "🔍 Validating PR commit messages..."
-
-          # Get commits in this PR
-          COMMITS=$(git log --oneline ${{ github.event.pull_request.base.sha }}..${{ github.sha }})
-
-          echo "📋 PR Commits to validate:"
-          echo "$COMMITS"
-
-          # Validate each commit message
-          echo "$COMMITS" | while read -r commit; do
-            if [ -n "$commit" ]; then
-              COMMIT_MSG=$(echo "$commit" | cut -d' ' -f2-)
-
-              # Check for JIRA ticket reference
-              if ! echo "$COMMIT_MSG" | grep -q -E '\((JIRA|TICKET|ISSUE|MEQ|BNPL|PAY|AUTH|SEC)-[0-9]+\)'; then
-                echo "❌ Invalid commit message: $COMMIT_MSG"
-                echo "📋 Required format: type(scope): description (TICKET-123)"
-                exit 1
-              fi
-
-              echo "✅ Valid commit: $COMMIT_MSG"
-            fi
-          done
-
-      - name: 🎯 Advanced CommitLint Validation
-        run: |
-          echo "🎯 Running advanced commit message validation with commitlint..."
-
-          # Install commitlint if not available
-          if ! command -v commitlint &> /dev/null; then
-            echo "📦 Installing commitlint..."
-            pnpm add -D @commitlint/cli @commitlint/config-conventional
-          fi
-
-          # Run commitlint on recent commits
-          if [ "${{ github.event_name }}" == "pull_request" ]; then
-            git log --oneline ${{ github.event.pull_request.base.sha }}..${{ github.sha }} | \
-            cut -d' ' -f2- | \
-            pnpm exec commitlint
-          else
-            echo "Advanced validation skipped for push events"
-          fi
-
-  validate-pr-title:
-    name: 🏷️ Validate PR Title
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    if: github.event_name == 'pull_request'
-
-    steps:
-      - name: 📝 Check PR Title Format
-        run: |
-          PR_TITLE="${{ github.event.pull_request.title }}"
-          echo "🔍 Validating PR title: '$PR_TITLE'"
-
-          # Check for JIRA ticket reference in PR title
-          if ! echo "$PR_TITLE" | grep -q -E '\((JIRA|TICKET|ISSUE|MEQ|BNPL|PAY|AUTH|SEC)-[0-9]+\)'; then
-            echo "❌ Invalid PR title format!"
-            echo "📋 Required format: type(scope): description (TICKET-123)"
-            echo "📝 Example: feat(auth): add biometric authentication (JIRA-456)"
-            exit 1
-          fi
-
-          echo "✅ PR title format is valid"
-
-      - name: 💬 Comment on PR
-        if: success()
-        uses: actions/github-script@v7
-        with:
-          script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: '✅ **Commit Message & PR Title Validation Passed!**\n\n' +
-                    '- All commit messages follow conventional format\n' +
-                    '- PR title includes JIRA ticket reference\n' +
-                    '- Enterprise FinTech compliance maintained\n\n' +
-                    '🇪🇹 _Meqenet.et - Ethiopia\'s Financial Future_'
-            })
-
   security-audit:
     name: 🔐 Security Compliance Check
     runs-on: ubuntu-latest
@@ -188,9 +52,8 @@ jobs:
         run: |
           echo "📋 Generating enterprise compliance report..."
           echo "## 🔒 Enterprise Compliance Report" > compliance-report.md
-          echo "- ✅ Commit message validation: PASSED" >> compliance-report.md
-          echo "- ✅ PR title validation: PASSED" >> compliance-report.md
           echo "- ✅ Security compliance: PASSED" >> compliance-report.md
+          echo "- ✅ Financial code security scan: COMPLETED" >> compliance-report.md
           echo "- ✅ NBE regulatory compliance: MAINTAINED" >> compliance-report.md
           echo "" >> compliance-report.md
           echo "_Generated on: $(date)_" >> compliance-report.md

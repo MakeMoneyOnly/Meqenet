@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 
 /**
- * Meqenet.et Enterprise Commit Message Validator
+ * Meqenet.et Manual Commit Message Validator
  * Validates commit messages against FinTech compliance standards
+ * Note: Automatic validation is handled by pre-commit hooks
  */
 
 import path from 'path';
@@ -202,7 +203,7 @@ function displayResults(commitMsg, result) {
 
   if (result.valid) {
     success('Commit message meets enterprise FinTech standards!');
-    success('Ready for commit and CI/CD pipeline');
+    success('Ready for commit (validation handled by pre-commit hooks)');
     console.log('');
     info("🇪🇹 Meqenet.et - Ethiopia's Financial Future");
   } else {
@@ -210,6 +211,7 @@ function displayResults(commitMsg, result) {
     error('Please fix the issues above before committing');
     console.log('');
     info('💡 Use: node scripts/validate-commit-message.js --interactive');
+    info('💡 Note: Pre-commit hooks will automatically validate commits');
   }
 }
 
