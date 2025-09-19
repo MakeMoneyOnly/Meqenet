@@ -244,6 +244,19 @@ jobs:
 
 
 
+      - name: Debug Checkov Output
+        if: always()
+        run: |
+          echo "🔧 Debugging Checkov execution..."
+          echo "Checkov step outcome: ${{ steps.checkov.outcome }}"
+          echo "Checkov step conclusion: ${{ steps.checkov.conclusion }}"
+          echo "Files in workspace root:"
+          ls -la | grep -E "(sarif|checkov)"
+          echo "Files in infrastructure directory:"
+          ls -la infrastructure/ | grep -E "(sarif|checkov)"
+          echo "Check if any SARIF files exist anywhere:"
+          find . -name "*.sarif" -type f 2>/dev/null || echo "No SARIF files found"
+
       - name: Validate Checkov SARIF Output
 
         if: always()
