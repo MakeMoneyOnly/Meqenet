@@ -5,9 +5,9 @@
  * Tests Next.js PWA compliance and generates reports
  */
 
-const fs = require('fs');
-const path = require('path');
-const { execSync } = require('child_process');
+import fs from 'fs';
+import path from 'path';
+import { execSync } from 'child_process';
 
 class PWATester {
   constructor() {
@@ -451,7 +451,7 @@ ${report.issues.map(issue => `- ${issue}`).join('\n')}
 }
 
 // Run tests if this script is executed directly
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   const tester = new PWATester();
   tester.runAllTests().catch(error => {
     console.error('PWA testing failed:', error);
@@ -459,4 +459,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = PWATester;
+export default PWATester;

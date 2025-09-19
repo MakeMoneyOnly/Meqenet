@@ -1,5 +1,6 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
+import withPWA from 'next-pwa';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -109,6 +110,7 @@ const nextConfig = {
   experimental: {
     // strictNextHead is deprecated in Next.js 15+
   },
+
 };
 
 export default nextConfig;
