@@ -78,7 +78,7 @@
     "metro-resolver": "~0.82.5",
     "nx": "21.4.0",
     "prettier": "^3.4.0",
-    "react-native-svg": "~15.11.2",
+    "react-native-svg": "~15.13.0",
     "react-native-svg-transformer": "~1.5.1",
     "react-native-svg-web": "~1.0.9",
     "react-native-web": "~0.20.0",
