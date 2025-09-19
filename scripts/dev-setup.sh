@@ -25,7 +25,7 @@ SETUP_LOG="dev-setup-$(date +%Y%m%d-%H%M%S).log"
 export TZ="Africa/Addis_Ababa"
 
 # Configuration
-NODE_VERSION="18.19.0"  # LTS version as per tech stack
+NODE_VERSION="22.17.0"  # LTS version as per tech stack requirements
 PYTHON_VERSION="3.11"
 GO_VERSION="1.21"
 TERRAFORM_VERSION="1.6.0"

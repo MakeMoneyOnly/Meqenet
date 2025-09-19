@@ -7,6 +7,10 @@ on:
     branches: [main, develop]
   workflow_dispatch:
 
+env:
+  NODE_VERSION: "22"
+  PNPM_VERSION: "10.4.1"
+
 permissions:
   contents: read
 
@@ -27,6 +31,23 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: "https://registry.npmjs.org"
+
+      - name: Verify Node.js Version
+        shell: bash
+        run: |
+          echo "🔍 Verifying Node.js version..."
+          NODE_VERSION_ACTUAL=$(node --version)
+          NODE_VERSION_EXPECTED="v22"
+          echo "Expected Node.js version: $NODE_VERSION_EXPECTED"
+          echo "Actual Node.js version: $NODE_VERSION_ACTUAL"
+
+          if [[ "$NODE_VERSION_ACTUAL" != *"$NODE_VERSION_EXPECTED"* ]]; then
+            echo "❌ Node.js version mismatch! Expected $NODE_VERSION_EXPECTED, got $NODE_VERSION_ACTUAL"
+            echo "🔧 This may cause dependency resolution issues"
+            exit 1
+          else
+            echo "✅ Node.js version verified: $NODE_VERSION_ACTUAL"
+          fi
 
       - name: 📦 Setup pnpm via Corepack (pinned)
         run: |

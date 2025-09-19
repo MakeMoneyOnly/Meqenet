@@ -48,6 +48,23 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: "https://registry.npmjs.org"
 
+      - name: Verify Node.js Version
+        shell: bash
+        run: |
+          echo "🔍 Verifying Node.js version..."
+          NODE_VERSION_ACTUAL=$(node --version)
+          NODE_VERSION_EXPECTED="v22"
+          echo "Expected Node.js version: $NODE_VERSION_EXPECTED"
+          echo "Actual Node.js version: $NODE_VERSION_ACTUAL"
+
+          if [[ "$NODE_VERSION_ACTUAL" != *"$NODE_VERSION_EXPECTED"* ]]; then
+            echo "❌ Node.js version mismatch! Expected $NODE_VERSION_EXPECTED, got $NODE_VERSION_ACTUAL"
+            echo "🔧 This may cause dependency resolution issues with @types/argon2 and other packages"
+            exit 1
+          else
+            echo "✅ Node.js version verified: $NODE_VERSION_ACTUAL"
+          fi
+
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -88,11 +105,23 @@ jobs:
             pnpm store prune
           fi
 
+          # Remove lock files that might cause version conflicts
+          echo "🧹 Removing lock files to prevent version conflicts..."
+          find . -name "package-lock.json" -type f -delete
+          find . -name "pnpm-lock.yaml" -type f -delete
+
+          # Clean node_modules in services that might have conflicts
+          echo "🧹 Cleaning problematic service node_modules..."
+          rm -rf backend/services/*/node_modules
+          rm -rf frontend/*/node_modules
+
           # Run comprehensive package fix script
           if [ -f "scripts/fix-ci-package-issues.sh" ]; then
             echo "🔧 Running comprehensive package fix script..."
             bash scripts/fix-ci-package-issues.sh
           fi
+
+          echo "✅ Dependency cleanup completed"
 
       - name: Setup pnpm cache
         uses: actions/cache@v4
@@ -115,11 +144,30 @@ jobs:
           pnpm config delete @jsr:registry 2>/dev/null || true
           pnpm config delete //npm.jsr.io/:_authToken 2>/dev/null || true
 
+          # Validate critical dependency versions before installation
+          echo "🔍 Validating critical dependency versions..."
+          if grep -q '"@types/argon2".*:"[^"]*1\.7\.' package.json; then
+            echo "❌ Found problematic @types/argon2 version in root package.json"
+            echo "🔧 This should be fixed to version 0.15.4"
+            exit 1
+          fi
+          echo "✅ Critical dependency versions validated"
+
           # Install dependencies with error handling
           echo "📦 Installing dependencies..."
           if ! pnpm install --frozen-lockfile; then
             echo "❌ Frozen lockfile install failed, trying fresh install..."
-            pnpm install --no-frozen-lockfile
+            if ! pnpm install --no-frozen-lockfile; then
+              echo "❌ Fresh install also failed, running package fix script..."
+              if [ -f "scripts/fix-ci-package-issues.sh" ]; then
+                bash scripts/fix-ci-package-issues.sh
+                echo "🔄 Retrying dependency installation after fixes..."
+                pnpm install --no-frozen-lockfile
+              else
+                echo "❌ No fix script available"
+                exit 1
+              fi
+            fi
           fi
 
           echo "✅ Dependencies installed successfully"
