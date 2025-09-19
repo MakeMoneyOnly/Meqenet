@@ -390,6 +390,7 @@
       "utf-8-validate"
     ],
     "overrides": {
+      "esbuild": ">=0.25.0",
       "json5": "^2.2.3",
       "tmp": "0.2.4",
       "@types/react": "^19.1.0",
