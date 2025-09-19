@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc",
     "test": "vitest run",
-    "lint": "eslint src/index.ts src/lib/auth-store.ts --config eslint.config.mjs"
+    "lint": "eslint src/index.ts src/lib/auth-store.ts"
   },
   "dependencies": {
     "zustand": "^4.4.7",

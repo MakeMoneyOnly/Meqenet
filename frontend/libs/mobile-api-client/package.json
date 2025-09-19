@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc",
     "test": "vitest run",
-    "lint": "eslint src/index.ts src/lib/api-client.ts --config eslint.config.mjs"
+    "lint": "eslint src/index.ts src/lib/api-client.ts"
   },
   "dependencies": {
     "axios": "^1.12.0"

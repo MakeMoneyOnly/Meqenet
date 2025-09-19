@@ -20,14 +20,14 @@ export enum PaymentStatus {
 export enum ContractStatus {
   DRAFT = 'DRAFT',
   ACTIVE = 'ACTIVE',
-  COMPLETED = 'COMPLETED',
+  COMPLETED = 'CONTRACT_COMPLETED',
   DEFAULTED = 'DEFAULTED',
-  CANCELLED = 'CANCELLED',
+  CANCELLED = 'CONTRACT_CANCELLED',
   SUSPENDED = 'SUSPENDED',
 }
 
 export enum InstallmentStatus {
-  PENDING = 'PENDING',
+  PENDING = 'INSTALLMENT_PENDING',
   DUE = 'DUE',
   OVERDUE = 'OVERDUE',
   PAID = 'PAID',

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -10,7 +10,11 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { BNPLProduct, BNPLProductOption, CreateContractRequest } from '../types/bnpl';
+import {
+  BNPLProduct,
+  BNPLProductOption,
+  CreateContractRequest,
+} from '../types/bnpl';
 import { bnplApi } from '../services/bnplApi';
 
 interface Props {
@@ -33,17 +37,16 @@ interface InstallmentPreview {
 
 export const ContractCreationScreen: React.FC<Props> = ({ route }) => {
   const navigation = useNavigation();
-  const { merchantId, amount, merchantName, product, productDetails } = route.params;
+  const { merchantId, amount, merchantName, product, productDetails } =
+    route.params;
 
   const [isLoading, setIsLoading] = useState(false);
-  const [installmentPreview, setInstallmentPreview] = useState<InstallmentPreview[]>([]);
+  const [installmentPreview, setInstallmentPreview] = useState<
+    InstallmentPreview[]
+  >([]);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
 
-  useEffect(() => {
-    generateInstallmentPreview();
-  }, []);
-
-  const generateInstallmentPreview = () => {
+  const generateInstallmentPreview = useCallback(() => {
     const installments: InstallmentPreview[] = [];
     const now = new Date();
 
@@ -76,7 +79,7 @@ export const ContractCreationScreen: React.FC<Props> = ({ route }) => {
       });
     } else if (product === BNPLProduct.FINANCING) {
       // 12 monthly payments (example)
-      const monthlyAmount = Math.round(amount * 1.15 / 12); // 15% APR over 12 months
+      const monthlyAmount = Math.round((amount * 1.15) / 12); // 15% APR over 12 months
       for (let i = 1; i <= 12; i++) {
         const dueDate = new Date(now);
         dueDate.setMonth(dueDate.getMonth() + i);
@@ -89,11 +92,18 @@ export const ContractCreationScreen: React.FC<Props> = ({ route }) => {
     }
 
     setInstallmentPreview(installments);
-  };
+  }, [product, amount]);
+
+  useEffect(() => {
+    generateInstallmentPreview();
+  }, [generateInstallmentPreview]);
 
   const handleCreateContract = async () => {
     if (!acceptedTerms) {
-      Alert.alert('Terms Required', 'Please accept the terms and conditions to continue.');
+      Alert.alert(
+        'Terms Required',
+        'Please accept the terms and conditions to continue.',
+      );
       return;
     }
 
@@ -127,17 +137,15 @@ export const ContractCreationScreen: React.FC<Props> = ({ route }) => {
                 });
               },
             },
-          ]
+          ],
         );
       } else {
         throw new Error('Failed to create contract');
       }
     } catch (error) {
-      Alert.alert(
-        'Error',
-        'Failed to create contract. Please try again.',
-        [{ text: 'OK' }]
-      );
+      Alert.alert('Error', 'Failed to create contract. Please try again.', [
+        { text: 'OK' },
+      ]);
     } finally {
       setIsLoading(false);
     }
@@ -156,7 +164,11 @@ export const ContractCreationScreen: React.FC<Props> = ({ route }) => {
   };
 
   const getTotalInterest = () => {
-    if (product === BNPLProduct.PAY_IN_4 || product === BNPLProduct.PAY_IN_30 || product === BNPLProduct.PAY_IN_FULL) {
+    if (
+      product === BNPLProduct.PAY_IN_4 ||
+      product === BNPLProduct.PAY_IN_30 ||
+      product === BNPLProduct.PAY_IN_FULL
+    ) {
       return 0;
     }
     return Math.round(amount * 0.15); // 15% APR for financing
@@ -168,7 +180,10 @@ export const ContractCreationScreen: React.FC<Props> = ({ route }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.content}
+      >
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.title}>Review Your Contract</Text>
@@ -185,14 +200,20 @@ export const ContractCreationScreen: React.FC<Props> = ({ route }) => {
 
           {getTotalInterest() > 0 && (
             <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Interest ({productDetails.interestRate}% APR)</Text>
-              <Text style={styles.interestValue}>{formatCurrency(getTotalInterest())}</Text>
+              <Text style={styles.summaryLabel}>
+                Interest ({productDetails.interestRate}% APR)
+              </Text>
+              <Text style={styles.interestValue}>
+                {formatCurrency(getTotalInterest())}
+              </Text>
             </View>
           )}
 
           <View style={[styles.summaryRow, styles.totalRow]}>
             <Text style={styles.totalLabel}>Total Amount</Text>
-            <Text style={styles.totalValue}>{formatCurrency(getTotalAmount())}</Text>
+            <Text style={styles.totalValue}>
+              {formatCurrency(getTotalAmount())}
+            </Text>
           </View>
         </View>
 
@@ -240,8 +261,10 @@ export const ContractCreationScreen: React.FC<Props> = ({ route }) => {
             style={styles.termsCheckbox}
             onPress={() => setAcceptedTerms(!acceptedTerms)}
           >
-            <View style={[styles.checkbox, acceptedTerms && styles.checkedCheckbox]}>
-              {acceptedTerms && <Text style={styles.checkmark}>✓</Text>}
+            <View
+              style={[styles.checkbox, acceptedTerms && styles.checkedCheckbox]}
+            >
+              {acceptedTerms ? <Text style={styles.checkmark}>✓</Text> : null}
             </View>
             <Text style={styles.termsText}>
               I agree to the terms and conditions
@@ -261,10 +284,12 @@ export const ContractCreationScreen: React.FC<Props> = ({ route }) => {
           {isLoading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={[
-              styles.createButtonText,
-              (!acceptedTerms || isLoading) && styles.disabledButtonText,
-            ]}>
+            <Text
+              style={[
+                styles.createButtonText,
+                (!acceptedTerms || isLoading) && styles.disabledButtonText,
+              ]}
+            >
               Create Contract
             </Text>
           )}

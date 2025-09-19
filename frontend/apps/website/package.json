@@ -99,7 +99,7 @@
     "build": "next build",
     "start": "next start",
     "dev": "next dev",
-    "lint": "eslint . --config eslint.config.mjs",
+    "lint": "eslint .",
     "lint:security": "eslint . --ext .js,.jsx,.ts,.tsx --config .eslintrc.security.mjs",
     "test": "vitest run",
     "test:watch": "vitest",

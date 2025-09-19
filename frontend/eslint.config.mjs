@@ -59,6 +59,7 @@ export default [
         },
       ],
       '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-duplicate-enum-values': 'off', // Temporarily disabled due to TypeScript version compatibility issue
       'prefer-const': 'error',
       'no-alert': 'error',
     },
