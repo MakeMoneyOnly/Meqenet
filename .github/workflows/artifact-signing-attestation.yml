@@ -32,13 +32,31 @@ jobs:
 
       - name: Install SLSA verifier
         run: |
-          # Get the latest release version from GitHub API
-          SLSA_VERSION=$(curl -s https://api.github.com/repos/slsa-framework/slsa-verifier/releases/latest | grep '"tag_name"' | cut -d'"' -f4)
+          # Get the latest release version from GitHub API using more robust parsing
+          echo "📡 Fetching latest SLSA verifier version..."
+          API_RESPONSE=$(curl -s https://api.github.com/repos/slsa-framework/slsa-verifier/releases/latest)
+
+          # Extract tag_name using grep and cut with better error handling
+          SLSA_VERSION=$(echo "$API_RESPONSE" | grep '"tag_name"' | head -1 | cut -d'"' -f4)
           echo "Latest SLSA verifier version: $SLSA_VERSION"
+
+          # Validate that we got a version
+          if [ -z "$SLSA_VERSION" ]; then
+            echo "❌ Failed to extract SLSA version from API response"
+            echo "API Response preview:"
+            echo "$API_RESPONSE" | head -10
+            exit 1
+          fi
 
           # Download and install SLSA verifier (direct binary, no tar.gz)
           echo "📥 Downloading SLSA verifier..."
-          curl -sSfL "https://github.com/slsa-framework/slsa-verifier/releases/download/${SLSA_VERSION}/slsa-verifier-linux-amd64" -o slsa-verifier-linux-amd64
+          DOWNLOAD_URL="https://github.com/slsa-framework/slsa-verifier/releases/download/${SLSA_VERSION}/slsa-verifier-linux-amd64"
+          echo "Download URL: $DOWNLOAD_URL"
+
+          if ! curl -sSfL "$DOWNLOAD_URL" -o slsa-verifier-linux-amd64; then
+            echo "❌ Failed to download SLSA verifier from $DOWNLOAD_URL"
+            exit 1
+          fi
 
           # Make executable and move to PATH
           chmod +x slsa-verifier-linux-amd64

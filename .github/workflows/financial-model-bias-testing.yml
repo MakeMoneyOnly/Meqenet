@@ -1,181 +1,362 @@
 name: ⚖️ Credit Scoring Model Bias Testing
 
+
+
 on:
+
   push:
+
     branches: [main, develop]
+
   pull_request:
+
     branches: [main, develop]
+
   workflow_dispatch:
 
+
+
 permissions:
+
   contents: read
+
   actions: read
+
   security-events: write
 
+
+
 env:
+
   NODE_VERSION: "22"
+
   PNPM_VERSION: "10.4.1"
 
+
+
 jobs:
+
   bias-tests:
+
     runs-on: ubuntu-latest
+
     timeout-minutes: 20
 
+
+
     # Set environment variables for all steps in this job
+
     env:
+
       PNPM_HOME: /home/runner/.local/share/pnpm
+
       PATH: /home/runner/.local/share/pnpm:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
+
+
     steps:
+
       - uses: actions/checkout@v5
 
+
+
       - name: 🔧 Setup Node.js
+
         uses: actions/setup-node@v4
+
         with:
+
           node-version: ${{ env.NODE_VERSION }}
+
           registry-url: "https://registry.npmjs.org"
 
+
+
       - name: 📦 Setup pnpm via Corepack (pinned)
+
         run: |
+
           set -euo pipefail
+
           echo "📦 Enabling Corepack and activating pnpm ${{ env.PNPM_VERSION }}"
+
           corepack enable
+
           corepack prepare pnpm@${{ env.PNPM_VERSION }} --activate
 
+
+
           # Export PNPM_HOME and add to PATH for all subsequent steps
+
           export PNPM_HOME="$HOME/.local/share/pnpm"
+
           export PATH="$PNPM_HOME:$PATH"
+
           echo "PNPM_HOME=$PNPM_HOME" >> $GITHUB_ENV
+
           echo "PATH=$PATH" >> $GITHUB_ENV
 
+
+
           pnpm --version
+
           pnpm config set registry https://registry.npmjs.org/
+
           pnpm config set fetch-timeout 60000
+
           pnpm config set network-timeout 300000
+
           pnpm config delete @jsr:registry 2>/dev/null || true
+
           pnpm config delete //npm.jsr.io/:_authToken 2>/dev/null || true
 
+
+
       - name: 📚 Install Dependencies
+
         run: |
+
           export PNPM_HOME="$HOME/.local/share/pnpm"
+
           export PATH="$PNPM_HOME:$PATH"
-          pnpm install --no-frozen-lockfile
+
+          pnpm install --frozen-lockfile
+
       - name: 🔧 Generate Prisma Client
+
         run: |
+
           export PNPM_HOME="$HOME/.local/share/pnpm"
+
           export PATH="$PNPM_HOME:$PATH"
+
+
 
           # Navigate to the auth-service directory
+
           cd backend/services/auth-service
+
+
 
           # Ensure Prisma dependencies are installed
+
           echo "📦 Ensuring Prisma dependencies..."
+
           if ! pnpm list @prisma/client >/dev/null 2>&1; then
+
             echo "Installing Prisma dependencies..."
+
             pnpm add @prisma/client prisma --save-dev
+
           fi
+
+
 
           # Set Prisma binary targets for better compatibility
+
           echo "🔧 Configuring Prisma for reliable engine downloads..."
+
           export PRISMA_CLI_BINARY_TARGETS="linux-musl-openssl-3.0.x"
 
+
+
           # Generate Prisma client with error handling
+
           echo "🏗️ Generating Prisma client..."
+
           if ! pnpm prisma generate --schema=./prisma/schema.prisma; then
+
             echo "❌ Prisma client generation failed, trying alternative approach..."
 
+
+
             # Try installing Prisma CLI globally and generating
+
             if pnpm add -g prisma; then
+
               echo "✅ Prisma CLI installed globally"
+
               prisma generate --schema=./prisma/schema.prisma
+
             else
+
               echo "❌ Failed to install Prisma CLI globally"
+
               exit 1
+
             fi
+
           fi
+
+
 
           # Verify Prisma client was generated using robust find commands
+
           echo "🔍 Verifying Prisma client generation..."
 
+
+
           # Check for Prisma client in pnpm store (most common location)
+
           PNPM_STORE_PRISMA_CLIENT=$(find ../../../node_modules/.pnpm -name "index.d.ts" -path "*/@prisma+client*" 2>/dev/null | head -1)
+
           if [ -n "$PNPM_STORE_PRISMA_CLIENT" ]; then
+
             echo "✅ Prisma client found in pnpm store: $PNPM_STORE_PRISMA_CLIENT"
+
             PRISMA_CLIENT_FOUND=true
+
           fi
+
+
 
           # Check for Prisma client in workspace node_modules
+
           WORKSPACE_PRISMA_CLIENT=$(find ../../node_modules -name "index.d.ts" -path "*/@prisma/client/*" 2>/dev/null | head -1)
+
           if [ -n "$WORKSPACE_PRISMA_CLIENT" ]; then
+
             echo "✅ Prisma client found in workspace node_modules: $WORKSPACE_PRISMA_CLIENT"
+
             PRISMA_CLIENT_FOUND=true
+
           fi
+
+
 
           # Check for Prisma client in auth-service node_modules
+
           AUTH_SERVICE_PRISMA_CLIENT=$(find ./node_modules -name "index.d.ts" -path "*/@prisma/client/*" 2>/dev/null | head -1)
+
           if [ -n "$AUTH_SERVICE_PRISMA_CLIENT" ]; then
+
             echo "✅ Prisma client found in auth-service node_modules: $AUTH_SERVICE_PRISMA_CLIENT"
+
             PRISMA_CLIENT_FOUND=true
+
           fi
+
+
 
           # Check for generated Prisma client directory (post-generation location)
+
           if [ -d "node_modules/.prisma" ]; then
+
             echo "✅ Prisma generated client directory found in auth-service"
+
             PRISMA_CLIENT_FOUND=true
+
           fi
+
+
 
           # Check for workspace generated Prisma client directory
+
           if [ -d "../../node_modules/.prisma" ]; then
+
             echo "✅ Prisma generated client directory found in workspace"
+
             PRISMA_CLIENT_FOUND=true
+
           fi
+
+
 
           if [ "$PRISMA_CLIENT_FOUND" != true ]; then
+
             echo "❌ Prisma client generation verification failed"
+
             echo "🔍 Debugging information:"
+
             echo "Current directory: $(pwd)"
+
             echo "Auth service node_modules exists: $([ -d 'node_modules' ] && echo 'yes' || echo 'no')"
+
             echo "Workspace node_modules exists: $([ -d '../../node_modules' ] && echo 'yes' || echo 'no')"
+
             echo "Pnpm store exists: $([ -d '../../../node_modules/.pnpm' ] && echo 'yes' || echo 'no')"
 
+
+
             # Show pnpm store contents for debugging
+
             if [ -d '../../../node_modules/.pnpm' ]; then
+
               echo "Pnpm store contents (prisma related):"
+
               ls -la ../../../node_modules/.pnpm/ | grep -i prisma || echo "No prisma packages found in pnpm store"
+
             fi
+
+
 
             echo "Searching for any Prisma client files..."
+
             find ../../../node_modules ../../node_modules ./node_modules -name "*.d.ts" -path "*/@prisma/*" 2>/dev/null | head -5 || echo "No Prisma client files found"
 
+
+
             exit 1
+
           else
+
             echo "✅ Prisma client generation verified successfully"
+
           fi
+
       - name: Run Bias Test Suite
+
         run: |
+
           export PNPM_HOME="$HOME/.local/share/pnpm"
+
           export PATH="$PNPM_HOME:$PATH"
 
+
+
           # Navigate to the auth-service directory for testing
+
           cd backend/services/auth-service
 
+
+
           # Check if vitest is available
+
           if pnpm exec vitest --version >/dev/null 2>&1; then
+
             echo "🧪 Running bias and fairness tests..."
 
+
+
             # Run tests with bias/fairness patterns
+
             if pnpm exec vitest --run -t "(Bias|Fairness|DisparateImpact|bias|fairness)" --reporter=verbose; then
+
               echo "✅ Bias and fairness tests completed successfully"
+
             else
+
               # Check if tests failed due to no matching test files
+
               if pnpm exec vitest --run -t "(Bias|Fairness|DisparateImpact|bias|fairness)" --reporter=json 2>/dev/null | grep -q '"numTotalTestSuites":0'; then
+
                 echo "ℹ️ No bias or fairness test files found - this is expected if bias testing hasn't been implemented yet"
+
                 echo "📝 To add bias tests, create test files with patterns: Bias, Fairness, DisparateImpact"
+
               else
+
                 echo "❌ Bias and fairness tests failed"
+
                 exit 1
+
               fi
+
             fi
+
           else
+
             echo "⚠️ Vitest not available, skipping bias tests"
+
           fi
+
