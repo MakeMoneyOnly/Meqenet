@@ -1,6 +1,6 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
-import withPWA from 'next-pwa';
+// import withPWA from 'next-pwa'; // Temporarily disabled - incompatible with Next.js 15
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -103,9 +103,6 @@ const nextConfig = {
     return config;
   },
 
-  // Output file tracing configuration to resolve lockfile warnings
-  outputFileTracingRoot: path.join(__dirname, '../../'),
-
   // Experimental features for enhanced security
   experimental: {
     // strictNextHead is deprecated in Next.js 15+
@@ -113,12 +110,15 @@ const nextConfig = {
 
 };
 
-// PWA Configuration
+// PWA Configuration - Temporarily disabled due to Next.js 15 compatibility
+// TODO: Update next-pwa to version compatible with Next.js 15
+/*
 const withPWAConfig = {
   dest: 'public',
   register: true,
   skipWaiting: true,
   disable: process.env.NODE_ENV === 'development',
 };
+*/
 
-export default withPWA(withPWAConfig)(nextConfig);
+export default nextConfig;
