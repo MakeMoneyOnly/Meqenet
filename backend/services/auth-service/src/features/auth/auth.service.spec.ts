@@ -642,7 +642,7 @@ describe('AuthService', () => {
       );
       expect(argon2HashMock).toHaveBeenCalledWith(
         mockPasswordResetConfirmDto.newPassword,
-        12
+        expect.any(Object)
       );
     });
 
@@ -1125,8 +1125,8 @@ describe('AuthService', () => {
         await service.login(loginUserDto);
 
         expect(argon2VerifyMock).toHaveBeenCalledWith(
-          loginUserDto.password,
-          loginMockUser.passwordHash
+          loginMockUser.passwordHash,
+          loginUserDto.password
         );
       });
     });

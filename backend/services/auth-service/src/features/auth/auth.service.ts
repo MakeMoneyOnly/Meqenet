@@ -31,11 +31,17 @@ import { RegisterUserDto } from './dto/register-user.dto';
 import { PasswordResetRequestDto } from './dto/password-reset-request.dto';
 import { PasswordResetConfirmDto } from './dto/password-reset-confirm.dto';
 
+// Argon2 Constants
+const ARGON2_MEMORY_EXPONENT = 16; // 2^16 = 65536 KB = 64 MB
+const ARGON2_BASE = 2;
+const ARGON2_TIME_COST = 3; // 3 iterations
+const ARGON2_PARALLELISM = 1; // Single thread for server
+
 const ARGON2_OPTIONS: argon2.Options = {
   type: argon2.argon2id, // Most secure variant
-  memoryCost: 2 ** 16, // 64 MB
-  timeCost: 3, // 3 iterations
-  parallelism: 1, // Single thread for server
+  memoryCost: ARGON2_BASE ** ARGON2_MEMORY_EXPONENT, // 64 MB
+  timeCost: ARGON2_TIME_COST, // 3 iterations
+  parallelism: ARGON2_PARALLELISM, // Single thread for server
 };
 const MAX_FAILED_ATTEMPTS = 5;
 const LOCKOUT_MINUTES = 15;
@@ -819,7 +825,10 @@ export class AuthService {
       };
     } catch (error) {
       // Handle argon2 hashing errors
-      if (error instanceof Error && (error.message.includes('hash') || error.message.includes('argon2')))
+      if (
+        error instanceof Error &&
+        (error.message.includes('hash') || error.message.includes('argon2'))
+      ) {
         await this.auditLogging.logPasswordResetFailure(
           'PASSWORD_HASHING_FAILED',
           {
