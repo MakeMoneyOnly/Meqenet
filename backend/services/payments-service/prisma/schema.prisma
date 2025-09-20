@@ -127,6 +127,7 @@ model Merchant {
   contracts           Contract[]
   transactions        Transaction[]
   settlements         Settlement[]
+  payments            Payment[]
   merchantSettings    MerchantSettings?
 
   @@index([status])

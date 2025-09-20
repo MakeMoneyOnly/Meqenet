@@ -1,8 +1,18 @@
-import { Injectable, Logger, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../shared/prisma/prisma.service';
 import { CreateContractDto } from './dto/create-contract.dto';
 import { ProcessPaymentDto } from './dto/process-payment.dto';
-import { Contract, InstallmentSchedule, Payment, BNPLProduct } from '@prisma/client';
+import {
+  Contract,
+  InstallmentSchedule,
+  Payment,
+  BNPLProduct,
+} from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 
 @Injectable()
@@ -14,18 +24,20 @@ export class BnplService {
   /**
    * Create a new BNPL contract
    */
-  async createContract(createContractDto: CreateContractDto): Promise<Contract> {
+  async createContract(
+    createContractDto: CreateContractDto
+  ): Promise<Contract> {
     this.logger.log('Creating BNPL contract', {
       customerId: createContractDto.customerId,
       merchantId: createContractDto.merchantId,
       product: createContractDto.product,
-      amount: createContractDto.amount
+      amount: createContractDto.amount,
     });
 
     // Validate merchant exists and is active
     const merchant = await this.prisma.merchant.findUnique({
       where: { id: createContractDto.merchantId },
-      include: { merchantSettings: true }
+      include: { merchantSettings: true },
     });
 
     if (!merchant || merchant.status !== 'ACTIVE') {
@@ -34,13 +46,21 @@ export class BnplService {
 
     // Check merchant settings and limits
     const settings = merchant.merchantSettings;
-    if (!settings || !this.isProductEnabled(settings, createContractDto.product)) {
-      throw new BadRequestException(`BNPL product ${createContractDto.product} not enabled for this merchant`);
+    if (
+      !settings ||
+      !this.isProductEnabled(settings, createContractDto.product)
+    ) {
+      throw new BadRequestException(
+        `BNPL product ${createContractDto.product} not enabled for this merchant`
+      );
     }
 
     // Validate amount limits
-    if (createContractDto.amount < settings.minContractAmount ||
-        createContractDto.amount > settings.maxContractAmount) {
+    const amountDecimal = new Decimal(createContractDto.amount);
+    if (
+      amountDecimal.lt(settings.minContractAmount) ||
+      amountDecimal.gt(settings.maxContractAmount)
+    ) {
       throw new BadRequestException('Contract amount outside merchant limits');
     }
 
@@ -71,8 +91,8 @@ export class BnplService {
         activatedAt: new Date(),
         ipAddress: createContractDto.ipAddress,
         userAgent: createContractDto.userAgent,
-        deviceFingerprint: createContractDto.deviceFingerprint
-      }
+        deviceFingerprint: createContractDto.deviceFingerprint,
+      },
     });
 
     // Create installment schedule
@@ -84,11 +104,12 @@ export class BnplService {
       entityType: 'Contract',
       entityId: contract.id,
       userId: createContractDto.customerId,
+      ipAddress: createContractDto.ipAddress,
       eventData: {
         product: createContractDto.product,
         amount: createContractDto.amount,
-        merchantId: createContractDto.merchantId
-      }
+        merchantId: createContractDto.merchantId,
+      },
     });
 
     // Publish contract created event
@@ -101,8 +122,8 @@ export class BnplService {
         customerId: createContractDto.customerId,
         merchantId: createContractDto.merchantId,
         amount: createContractDto.amount,
-        product: createContractDto.product
-      }
+        product: createContractDto.product,
+      },
     });
 
     this.logger.log(`BNPL contract created successfully: ${contract.id}`);
@@ -116,13 +137,15 @@ export class BnplService {
     this.logger.log('Processing BNPL payment', {
       contractId: processPaymentDto.contractId,
       amount: processPaymentDto.amount,
-      paymentMethod: processPaymentDto.paymentMethod
+      paymentMethod: processPaymentDto.paymentMethod,
     });
 
     // Get contract and validate
     const contract = await this.prisma.contract.findUnique({
       where: { id: processPaymentDto.contractId },
-      include: { installments: { where: { status: 'DUE' }, orderBy: { dueDate: 'asc' } } }
+      include: {
+        installments: { where: { status: 'DUE' }, orderBy: { dueDate: 'asc' } },
+      },
     });
 
     if (!contract) {
@@ -150,15 +173,21 @@ export class BnplService {
         status: 'PENDING',
         ipAddress: processPaymentDto.ipAddress,
         userAgent: processPaymentDto.userAgent,
-        deviceFingerprint: processPaymentDto.deviceFingerprint
-      }
+        deviceFingerprint: processPaymentDto.deviceFingerprint,
+      },
     });
 
     // Allocate payment to installments
-    await this.allocatePaymentToInstallments(payment.id, processPaymentDto.amount);
+    await this.allocatePaymentToInstallments(
+      payment.id,
+      new Decimal(processPaymentDto.amount)
+    );
 
     // Update contract outstanding balance
-    await this.updateContractBalance(processPaymentDto.contractId, processPaymentDto.amount);
+    await this.updateContractBalance(
+      processPaymentDto.contractId,
+      new Decimal(processPaymentDto.amount)
+    );
 
     // Create audit log
     await this.createAuditLog({
@@ -166,11 +195,12 @@ export class BnplService {
       entityType: 'Payment',
       entityId: payment.id,
       userId: contract.customerId,
+      ipAddress: processPaymentDto.ipAddress,
       eventData: {
         contractId: processPaymentDto.contractId,
         amount: processPaymentDto.amount,
-        paymentMethod: processPaymentDto.paymentMethod
-      }
+        paymentMethod: processPaymentDto.paymentMethod,
+      },
     });
 
     this.logger.log(`Payment initiated successfully: ${payment.id}`);
@@ -180,21 +210,23 @@ export class BnplService {
   /**
    * Get contract details with installment schedule
    */
-  async getContractDetails(contractId: string): Promise<Contract & { installments: InstallmentSchedule[] }> {
+  async getContractDetails(
+    contractId: string
+  ): Promise<Contract & { installments: InstallmentSchedule[] }> {
     const contract = await this.prisma.contract.findUnique({
       where: { id: contractId },
       include: {
         installments: {
-          orderBy: { installmentNumber: 'asc' }
+          orderBy: { installmentNumber: 'asc' },
         },
         merchant: {
           select: {
             id: true,
             businessName: true,
-            category: true
-          }
-        }
-      }
+            category: true,
+          },
+        },
+      },
     });
 
     if (!contract) {
@@ -210,7 +242,7 @@ export class BnplService {
   private calculateContractTerms(dto: CreateContractDto) {
     const { product, amount } = dto;
     const now = new Date();
-    const ethiopianTimezone = 'Africa/Addis_Ababa';
+    // const ethiopianTimezone = 'Africa/Addis_Ababa'; // Reserved for future Ethiopian calendar integration
 
     switch (product) {
       case BNPLProduct.PAY_IN_4:
@@ -222,7 +254,7 @@ export class BnplService {
           firstPaymentDate: new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000), // 2 weeks
           maturityDate: new Date(now.getTime() + 42 * 24 * 60 * 60 * 1000), // 6 weeks
           installmentCount: 4,
-          installmentAmount: new Decimal(amount).div(4)
+          installmentAmount: new Decimal(amount).div(4),
         };
 
       case BNPLProduct.PAY_IN_30:
@@ -234,7 +266,7 @@ export class BnplService {
           firstPaymentDate: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000), // 30 days
           maturityDate: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000), // 30 days
           installmentCount: 1,
-          installmentAmount: amount
+          installmentAmount: amount,
         };
 
       case BNPLProduct.PAY_IN_FULL:
@@ -246,7 +278,7 @@ export class BnplService {
           firstPaymentDate: now,
           maturityDate: now,
           installmentCount: 1,
-          installmentAmount: amount
+          installmentAmount: amount,
         };
 
       case BNPLProduct.FINANCING:
@@ -265,9 +297,11 @@ export class BnplService {
           termMonths,
           paymentFrequency: 'MONTHLY',
           firstPaymentDate: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000), // 30 days
-          maturityDate: new Date(now.getTime() + termMonths * 30 * 24 * 60 * 60 * 1000),
+          maturityDate: new Date(
+            now.getTime() + termMonths * 30 * 24 * 60 * 60 * 1000
+          ),
           installmentCount: termMonths,
-          installmentAmount
+          installmentAmount,
         };
 
       default:
@@ -278,7 +312,19 @@ export class BnplService {
   /**
    * Create installment schedule for a contract
    */
-  private async createInstallmentSchedule(contractId: string, terms: any): Promise<void> {
+  private async createInstallmentSchedule(
+    contractId: string,
+    terms: {
+      totalAmount: Decimal;
+      apr: Decimal;
+      termMonths: number;
+      paymentFrequency: string;
+      firstPaymentDate: Date;
+      maturityDate: Date;
+      installmentCount: number;
+      installmentAmount: Decimal;
+    }
+  ): Promise<void> {
     const installments = [];
 
     for (let i = 1; i <= terms.installmentCount; i++) {
@@ -296,46 +342,55 @@ export class BnplService {
         principalAmount: terms.installmentAmount,
         interestAmount: new Decimal(0),
         feeAmount: new Decimal(0),
-        dueDate
+        dueDate,
       });
     }
 
     await this.prisma.installmentSchedule.createMany({
-      data: installments
+      data: installments,
     });
   }
 
   /**
    * Allocate payment amount to outstanding installments
    */
-  private async allocatePaymentToInstallments(paymentId: string, amount: Decimal): Promise<void> {
+  private async allocatePaymentToInstallments(
+    paymentId: string,
+    amount: Decimal
+  ): Promise<void> {
     let remainingAmount = amount;
 
     const dueInstallments = await this.prisma.installmentSchedule.findMany({
       where: {
         contract: {
           payments: {
-            some: { id: paymentId }
-          }
+            some: { id: paymentId },
+          },
         },
-        status: { in: ['PENDING', 'DUE', 'OVERDUE'] }
+        status: { in: ['PENDING', 'DUE', 'OVERDUE'] },
       },
-      orderBy: { dueDate: 'asc' }
+      orderBy: { dueDate: 'asc' },
     });
 
     for (const installment of dueInstallments) {
       if (remainingAmount.lte(0)) break;
 
-      const paymentAmount = Decimal.min(remainingAmount, installment.scheduledAmount);
+      const paymentAmount = Decimal.min(
+        remainingAmount,
+        installment.scheduledAmount
+      );
 
       await this.prisma.installmentSchedule.update({
         where: { id: installment.id },
         data: {
-          status: paymentAmount.gte(installment.scheduledAmount) ? 'PAID' : 'PENDING',
-          paidAmount: installment.paidAmount?.add(paymentAmount) || paymentAmount,
+          status: paymentAmount.gte(installment.scheduledAmount)
+            ? 'PAID'
+            : 'PENDING',
+          paidAmount:
+            installment.paidAmount?.add(paymentAmount) || paymentAmount,
           paidAt: new Date(),
-          paymentId
-        }
+          paymentId,
+        },
       });
 
       remainingAmount = remainingAmount.sub(paymentAmount);
@@ -345,9 +400,12 @@ export class BnplService {
   /**
    * Update contract outstanding balance
    */
-  private async updateContractBalance(contractId: string, paymentAmount: Decimal): Promise<void> {
+  private async updateContractBalance(
+    contractId: string,
+    paymentAmount: Decimal
+  ): Promise<void> {
     const contract = await this.prisma.contract.findUnique({
-      where: { id: contractId }
+      where: { id: contractId },
     });
 
     if (!contract) return;
@@ -359,8 +417,8 @@ export class BnplService {
       data: {
         outstandingBalance: newBalance,
         status: newBalance.lte(0) ? 'COMPLETED' : contract.status,
-        completedAt: newBalance.lte(0) ? new Date() : null
-      }
+        completedAt: newBalance.lte(0) ? new Date() : null,
+      },
     });
   }
 
@@ -385,7 +443,14 @@ export class BnplService {
   /**
    * Check if BNPL product is enabled for merchant
    */
-  private isProductEnabled(settings: any, product: BNPLProduct): boolean {
+  private isProductEnabled(
+    settings: {
+      payIn4Enabled: boolean;
+      payIn30Enabled: boolean;
+      financingEnabled: boolean;
+    },
+    product: BNPLProduct
+  ): boolean {
     switch (product) {
       case BNPLProduct.PAY_IN_4:
         return settings.payIn4Enabled;
@@ -408,7 +473,8 @@ export class BnplService {
     entityType: string;
     entityId?: string;
     userId?: string;
-    eventData?: any;
+    ipAddress?: string;
+    eventData?: Record<string, unknown>;
   }): Promise<void> {
     await this.prisma.auditLog.create({
       data: {
@@ -416,9 +482,10 @@ export class BnplService {
         entityType: data.entityType,
         entityId: data.entityId,
         userId: data.userId,
+        ipAddress: data.ipAddress || '127.0.0.1',
         eventData: data.eventData || {},
-        createdAt: new Date()
-      }
+        createdAt: new Date(),
+      },
     });
   }
 
@@ -429,7 +496,7 @@ export class BnplService {
     aggregateType: string;
     aggregateId: string;
     eventType: string;
-    payload: any;
+    payload: Record<string, unknown>;
   }): Promise<void> {
     await this.prisma.outboxMessage.create({
       data: {
@@ -438,8 +505,8 @@ export class BnplService {
         aggregateId: data.aggregateId,
         eventType: data.eventType,
         payload: data.payload,
-        status: 'PENDING'
-      }
+        status: 'PENDING',
+      },
     });
   }
 }
