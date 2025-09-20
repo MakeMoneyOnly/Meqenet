@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { ApiConfig } from '@meqenet/shared/config';
 import {
   BNPLProduct,
   CreateContractRequest,
@@ -9,7 +10,7 @@ import {
 
 // Configure axios instance for BNPL API
 const bnplApiClient = axios.create({
-  baseURL: process.env.EXPO_PUBLIC_BNPL_API_URL || 'http://localhost:3001/api',
+  baseURL: ApiConfig.bnplApiUrl,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',

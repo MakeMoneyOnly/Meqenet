@@ -13,7 +13,8 @@ import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { ApiConfig } from '@meqenet/shared/config';
 
 // Environment detection
-const isReactNative = typeof navigator !== 'undefined' && navigator.product === 'ReactNative';
+const isReactNative =
+  typeof navigator !== 'undefined' && navigator.product === 'ReactNative';
 const isDevelopment = ApiConfig.isDevelopment;
 
 // Logger utility for proper logging
@@ -35,12 +36,16 @@ const logger = {
       // eslint-disable-next-line no-console
       console.error(message, ...args);
     }
-  }
+  },
 };
 
 // Conditional imports for React Native SSL pinning (only available on mobile)
-let addSSLPinningHosts: ((hosts: Record<string, unknown>) => Promise<void>) | null = null;
-let initializeSSLPinning: ((config: Record<string, unknown>) => Promise<void>) | null = null;
+let addSSLPinningHosts:
+  | ((hosts: Record<string, unknown>) => Promise<void>)
+  | null = null;
+let initializeSSLPinning:
+  | ((config: Record<string, unknown>) => Promise<void>)
+  | null = null;
 let ReactNativeSSLPinningAdapter: unknown = null;
 
 try {
@@ -53,7 +58,9 @@ try {
   }
 } catch {
   // React Native SSL pinning not available (web environment)
-  logger.warn('⚠️ React Native SSL pinning not available - using standard HTTPS');
+  logger.warn(
+    '⚠️ React Native SSL pinning not available - using standard HTTPS',
+  );
 }
 
 // Types
@@ -85,20 +92,43 @@ const CERTIFICATE_PINNING_CONFIG: CertificatePinningConfig = {
     certificateHashes: [
       // Production certificate hashes - replace with actual hashes
       'sha256/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=',
-      'sha256/BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB='
+      'sha256/BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB=',
     ],
     includeSubdomains: true,
-    enforcePinning: true
+    enforcePinning: true,
   },
   'staging-api.meqenet.et': {
     certificateHashes: [
       // Staging certificate hashes - replace with actual hashes
-      'sha256/CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC='
+      'sha256/CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC=',
     ],
     includeSubdomains: false,
-    enforcePinning: true
-  }
+    enforcePinning: true,
+  },
 };
+
+/**
+ * Safely get certificate pinning configuration for a hostname
+ * Prevents object injection attacks by validating hostname against known configs
+ */
+function getCertificatePinningConfig(
+  hostname: string,
+): CertificatePinningConfig[keyof CertificatePinningConfig] | null {
+  // Whitelist of allowed hostnames to prevent injection attacks
+  const allowedHostnames: (keyof CertificatePinningConfig)[] = [
+    'api.meqenet.et',
+    'staging-api.meqenet.et',
+  ];
+
+  if (!allowedHostnames.includes(hostname as keyof CertificatePinningConfig)) {
+    return null;
+  }
+
+  return (
+    CERTIFICATE_PINNING_CONFIG[hostname as keyof CertificatePinningConfig] ||
+    null
+  );
+}
 
 // Web-specific SSL configuration
 const WEB_SSL_CONFIG = {
@@ -110,12 +140,12 @@ const WEB_SSL_CONFIG = {
     'X-Content-Type-Options': 'nosniff',
     'X-Frame-Options': 'DENY',
     'X-XSS-Protection': '1; mode=block',
-    'Referrer-Policy': 'strict-origin-when-cross-origin'
+    'Referrer-Policy': 'strict-origin-when-cross-origin',
   },
   // Trusted certificate authorities for web
   trustedCAs: [
     // Add specific CA certificates if needed
-  ]
+  ],
 };
 
 // Default configuration
@@ -132,7 +162,9 @@ const DEFAULT_CONFIG: ApiClientConfig = {
 async function initializeCertificatePinning(): Promise<void> {
   // Check if React Native SSL pinning is available
   if (!initializeSSLPinning) {
-    logger.warn('⚠️ SSL certificate pinning not available in this environment (web browser)');
+    logger.warn(
+      '⚠️ SSL certificate pinning not available in this environment (web browser)',
+    );
     logger.log('ℹ️ Using standard HTTPS without certificate pinning');
     return;
   }
@@ -142,25 +174,37 @@ async function initializeCertificatePinning(): Promise<void> {
     if (initializeSSLPinning) {
       await initializeSSLPinning({
         'api.meqenet.et': {
-          certificateHashes: CERTIFICATE_PINNING_CONFIG['api.meqenet.et'].certificateHashes,
-          includeSubdomains: CERTIFICATE_PINNING_CONFIG['api.meqenet.et'].includeSubdomains,
-          enforcePinning: CERTIFICATE_PINNING_CONFIG['api.meqenet.et'].enforcePinning
+          certificateHashes:
+            CERTIFICATE_PINNING_CONFIG['api.meqenet.et'].certificateHashes,
+          includeSubdomains:
+            CERTIFICATE_PINNING_CONFIG['api.meqenet.et'].includeSubdomains,
+          enforcePinning:
+            CERTIFICATE_PINNING_CONFIG['api.meqenet.et'].enforcePinning,
         },
         'staging-api.meqenet.et': {
-          certificateHashes: CERTIFICATE_PINNING_CONFIG['staging-api.meqenet.et'].certificateHashes,
-          includeSubdomains: CERTIFICATE_PINNING_CONFIG['staging-api.meqenet.et'].includeSubdomains,
-          enforcePinning: CERTIFICATE_PINNING_CONFIG['staging-api.meqenet.et'].enforcePinning
-        }
+          certificateHashes:
+            CERTIFICATE_PINNING_CONFIG['staging-api.meqenet.et']
+              .certificateHashes,
+          includeSubdomains:
+            CERTIFICATE_PINNING_CONFIG['staging-api.meqenet.et']
+              .includeSubdomains,
+          enforcePinning:
+            CERTIFICATE_PINNING_CONFIG['staging-api.meqenet.et'].enforcePinning,
+        },
       });
       logger.log('✅ SSL Certificate pinning initialized successfully');
     } else {
-      logger.warn('⚠️ SSL certificate pinning not available in this environment');
+      logger.warn(
+        '⚠️ SSL certificate pinning not available in this environment',
+      );
     }
   } catch (error) {
     logger.error('❌ Failed to initialize SSL certificate pinning:', error);
     // In development, we might want to continue without pinning
     if (isDevelopment) {
-      logger.warn('⚠️ Continuing without certificate pinning in development mode');
+      logger.warn(
+        '⚠️ Continuing without certificate pinning in development mode',
+      );
     } else {
       throw new Error('SSL certificate pinning initialization failed');
     }
@@ -183,9 +227,14 @@ function validateWebSSL(url: string): void {
     }
 
     // Validate against known trusted domains
-    const trustedDomains = ['api.meqenet.et', 'staging-api.meqenet.et', 'localhost'];
-    const isTrusted = trustedDomains.some(domain =>
-      urlObj.hostname === domain || urlObj.hostname.endsWith('.' + domain)
+    const trustedDomains = [
+      'api.meqenet.et',
+      'staging-api.meqenet.et',
+      'localhost',
+    ];
+    const isTrusted = trustedDomains.some(
+      (domain) =>
+        urlObj.hostname === domain || urlObj.hostname.endsWith('.' + domain),
     );
 
     if (!isTrusted && !isDevelopment) {
@@ -199,7 +248,9 @@ function validateWebSSL(url: string): void {
 /**
  * Create API client with mobile-specific configuration
  */
-async function createApiClient(config: ApiClientConfig = {}): Promise<AxiosInstance> {
+async function createApiClient(
+  config: ApiClientConfig = {},
+): Promise<AxiosInstance> {
   const finalConfig = { ...DEFAULT_CONFIG, ...config };
 
   // Validate web SSL configuration
@@ -213,12 +264,14 @@ async function createApiClient(config: ApiClientConfig = {}): Promise<AxiosInsta
     timeout: finalConfig.timeout,
     headers: {
       'Content-Type': 'application/json',
-      'Accept': 'application/json',
+      Accept: 'application/json',
       // Add security headers for web requests
       ...(typeof window !== 'undefined' && WEB_SSL_CONFIG.securityHeaders),
     },
     // Use SSL pinning adapter for certificate validation (only on mobile)
-    ...(ReactNativeSSLPinningAdapter && { adapter: ReactNativeSSLPinningAdapter }),
+    ...(ReactNativeSSLPinningAdapter && {
+      adapter: ReactNativeSSLPinningAdapter,
+    }),
     // Web-specific SSL configuration
     ...(typeof window !== 'undefined' && {
       httpsAgent: WEB_SSL_CONFIG.rejectUnauthorized ? undefined : undefined, // Let browser handle SSL
@@ -233,13 +286,13 @@ async function createApiClient(config: ApiClientConfig = {}): Promise<AxiosInsta
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
-      
+
       // Add correlation ID for tracing
       config.headers['X-Correlation-ID'] = generateCorrelationId();
-      
+
       return config;
     },
-    (error) => Promise.reject(error)
+    (error) => Promise.reject(error),
   );
 
   // Response interceptor for error handling
@@ -249,7 +302,10 @@ async function createApiClient(config: ApiClientConfig = {}): Promise<AxiosInsta
       const originalRequest = error.config;
 
       // Handle certificate pinning errors
-      if (error.code === 'CERTIFICATE_PINNING_ERROR' || error.message?.includes('certificate')) {
+      if (
+        error.code === 'CERTIFICATE_PINNING_ERROR' ||
+        error.message?.includes('certificate')
+      ) {
         logger.error('🚨 Certificate pinning validation failed:', error);
         // Log security event for monitoring
         // In production, this should trigger security alerts
@@ -281,14 +337,15 @@ async function createApiClient(config: ApiClientConfig = {}): Promise<AxiosInsta
 
       // Transform error for consistent handling
       const apiError: ApiError = {
-        message: error.response?.data?.message || error.message || 'Network error',
+        message:
+          error.response?.data?.message || error.message || 'Network error',
         code: error.response?.data?.code || error.code,
         status: error.response?.status,
         data: error.response?.data,
       };
 
       return Promise.reject(apiError);
-    }
+    },
   );
 
   return client;
@@ -319,7 +376,7 @@ async function refreshAuthToken(): Promise<string | null> {
     // This should be replaced with actual refresh API call
     // const response = await axios.post('/auth/refresh', { refreshToken });
     // return response.data.accessToken;
-    
+
     // Placeholder: return null to force re-authentication
     return null;
   } catch {
@@ -382,7 +439,7 @@ export let apiClientInitialized = false;
         timeout: DEFAULT_CONFIG.timeout,
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json',
+          Accept: 'application/json',
         },
       });
       apiClientInitialized = true;
@@ -407,16 +464,16 @@ export { CERTIFICATE_PINNING_CONFIG };
  */
 export async function updateCertificateHashes(
   hostname: string,
-  newHashes: string[]
+  newHashes: string[],
 ): Promise<void> {
   try {
-    if (!Object.prototype.hasOwnProperty.call(CERTIFICATE_PINNING_CONFIG, hostname)) {
-      throw new Error(`Hostname ${hostname} not found in certificate pinning config`);
+    const config = getCertificatePinningConfig(hostname);
+    if (!config) {
+      throw new Error(
+        `Hostname ${hostname} not found in certificate pinning config`,
+      );
     }
 
-    // Safe: hostname validated with Object.prototype.hasOwnProperty above
-     
-    const config = CERTIFICATE_PINNING_CONFIG[hostname];
     config.certificateHashes = newHashes;
 
     // Re-initialize SSL pinning with new hashes (only on mobile)
@@ -425,16 +482,21 @@ export async function updateCertificateHashes(
         [hostname]: {
           certificateHashes: newHashes,
           includeSubdomains: config.includeSubdomains,
-          enforcePinning: config.enforcePinning
-        }
+          enforcePinning: config.enforcePinning,
+        },
       });
     } else {
-      logger.warn(`⚠️ Cannot update SSL pinning for ${hostname} - not available in web environment`);
+      logger.warn(
+        `⚠️ Cannot update SSL pinning for ${hostname} - not available in web environment`,
+      );
     }
 
     logger.log(`✅ Certificate hashes updated for ${hostname}`);
   } catch (error) {
-    logger.error(`❌ Failed to update certificate hashes for ${hostname}:`, error);
+    logger.error(
+      `❌ Failed to update certificate hashes for ${hostname}:`,
+      error,
+    );
     throw error;
   }
 }
@@ -443,22 +505,30 @@ export async function updateCertificateHashes(
  * Utility function to temporarily disable certificate pinning (for debugging)
  * WARNING: This should only be used in development/testing environments
  */
-export async function disableCertificatePinning(hostname: string): Promise<void> {
+export async function disableCertificatePinning(
+  hostname: string,
+): Promise<void> {
   if (!isDevelopment) {
     throw new Error('Certificate pinning cannot be disabled in production');
   }
 
   try {
-    if (!Object.prototype.hasOwnProperty.call(CERTIFICATE_PINNING_CONFIG, hostname)) {
-      throw new Error(`Hostname ${hostname} not found in certificate pinning config`);
+    const config = getCertificatePinningConfig(hostname);
+    if (!config) {
+      throw new Error(
+        `Hostname ${hostname} not found in certificate pinning config`,
+      );
     }
 
-    // Safe: hostname validated with Object.prototype.hasOwnProperty above
-     
-    CERTIFICATE_PINNING_CONFIG[hostname].enforcePinning = false;
-    logger.warn(`⚠️ Certificate pinning disabled for ${hostname} (development only)`);
+    config.enforcePinning = false;
+    logger.warn(
+      `⚠️ Certificate pinning disabled for ${hostname} (development only)`,
+    );
   } catch (error) {
-    logger.error(`❌ Failed to disable certificate pinning for ${hostname}:`, error);
+    logger.error(
+      `❌ Failed to disable certificate pinning for ${hostname}:`,
+      error,
+    );
     throw error;
   }
 }
@@ -467,22 +537,14 @@ export async function disableCertificatePinning(hostname: string): Promise<void>
  * Check if certificate pinning is active for a hostname
  */
 export function isCertificatePinningActive(hostname: string): boolean {
-  if (!Object.prototype.hasOwnProperty.call(CERTIFICATE_PINNING_CONFIG, hostname)) {
-    return false;
-  }
-  // Safe: hostname validated with Object.prototype.hasOwnProperty above
-   
-  return CERTIFICATE_PINNING_CONFIG[hostname].enforcePinning ?? false;
+  const config = getCertificatePinningConfig(hostname);
+  return config?.enforcePinning ?? false;
 }
 
 /**
  * Get current certificate hashes for a hostname
  */
 export function getCertificateHashes(hostname: string): string[] {
-  if (!Object.prototype.hasOwnProperty.call(CERTIFICATE_PINNING_CONFIG, hostname)) {
-    return [];
-  }
-  // Safe: hostname validated with Object.prototype.hasOwnProperty above
-   
-  return CERTIFICATE_PINNING_CONFIG[hostname].certificateHashes ?? [];
+  const config = getCertificatePinningConfig(hostname);
+  return config?.certificateHashes ?? [];
 }
