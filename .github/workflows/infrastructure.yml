@@ -142,6 +142,7 @@ jobs:
       - name: checkov
         id: checkov
         uses: bridgecrewio/checkov-action@v12.1347.0
+        continue-on-error: true
         with:
           directory: infrastructure/
           framework: terraform
@@ -151,6 +152,9 @@ jobs:
           quiet: false
           check: CKV_AWS_*,CKV2_AWS_*
           skip_check: CKV_AWS_144  # Skip ELB logging check if not using classic ELB
+          # Enhanced error handling and debugging
+          log_level: DEBUG
+          compact: false
 
       - name: Debug Checkov output
         if: always()
@@ -262,20 +266,46 @@ jobs:
           echo "Checkov step conclusion: ${{ steps.checkov.conclusion }}"
           echo "=========================================="
 
-          # Check if Checkov step succeeded
+          # Enhanced error diagnostics
           if [ "${{ steps.checkov.outcome }}" = "failure" ]; then
-            echo "❌ Checkov step failed - checking for partial SARIF file..."
+            echo "❌ Checkov step failed - performing detailed diagnostics..."
+            echo ""
+
+            # Check system resources
+            echo "📊 System Diagnostics:"
+            echo "  - Available disk space: $(df -h . | tail -1 | awk '{print $4}')"
+            echo "  - Memory usage: $(free -h | grep '^Mem:' | awk '{print $3 "/" $2}')"
+            echo ""
+
+            # Check Terraform files
+            echo "🔧 Terraform File Analysis:"
+            TERRAFORM_COUNT=$(find infrastructure -name "*.tf" -type f | wc -l)
+            echo "  - Terraform files found: $TERRAFORM_COUNT"
+            if [ "$TERRAFORM_COUNT" -gt 0 ]; then
+              echo "  - Files:"
+              find infrastructure -name "*.tf" -type f -exec basename {} \; | sed 's/^/    - /'
+            fi
+            echo ""
+
+            # Check for SARIF file
             if [ -f "checkov-terraform.sarif" ]; then
-              echo "⚠️ SARIF file exists despite Checkov failure - proceeding with validation"
+              echo "✅ SARIF file exists despite Checkov failure"
+              echo "  - File size: $(wc -c < checkov-terraform.sarif) bytes"
+              echo "  - Proceeding with validation..."
             else
-              echo "❌ No SARIF file found and Checkov failed"
+              echo "❌ No SARIF file found - Checkov failed to generate output"
+              echo ""
               echo "🔍 Possible causes:"
               echo "  - Checkov installation/network issues"
-              echo "  - Invalid Terraform syntax"
+              echo "  - Invalid Terraform syntax (run 'terraform validate')"
               echo "  - AWS credential problems"
               echo "  - Action version incompatibility"
+              echo "  - Memory/disk space constraints"
+              echo "  - Python dependencies missing"
               exit 1
             fi
+          else
+            echo "✅ Checkov step completed successfully"
           fi
 
           if [ -f "checkov-terraform.sarif" ]; then

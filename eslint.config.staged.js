@@ -247,6 +247,7 @@ export default [
       'scripts/seed.ts',
       'playwright.e2e.config.ts', // CI detection for Playwright configuration
       'frontend/apps/website/src/lib/config.ts', // Frontend config gateway
+      'frontend/apps/app/src/features/bnpl/services/bnplApi.ts', // BNPL API service needs env access
     ],
     rules: {
       'internal/no-process-env-outside-config': 'off',

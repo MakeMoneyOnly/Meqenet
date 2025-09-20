@@ -1536,6 +1536,67 @@ stages:
             context:
               [docs/Stage 1 - Foundation/12-User_Experience_Guidelines.md]
             personas: [Senior Mobile Developer, UX Designer, Product Manager]
+      - id: MEQ-AUTH-05
+        name: "[ARCHITECTURE] Complete Feature-Sliced Architecture Implementation"
+        platform: Both
+        subtasks:
+          - id: FSA-ENTITIES-01
+            description: Implement missing FSA entities layer in frontend with business entities and types (User, Product, Contract, etc.)
+            status: To Do
+            context: [docs/Stage 1 - Foundation/01-Architecture_Governance.md]
+            personas: [Senior Frontend Developer, Financial Software Architect]
+          - id: FSA-PAGES-01
+            description: Implement missing FSA pages layer in frontend with page components (Home, Merchant, Admin, etc.)
+            status: To Do
+            context: [docs/Stage 1 - Foundation/01-Architecture_Governance.md]
+            personas: [Senior Frontend Developer, UX Designer]
+          - id: FSA-MOBILE-01
+            description: Implement complete FSA structure in mobile app (entities, features, widgets, pages, shared)
+            status: To Do
+            context: [docs/Stage 1 - Foundation/01-Architecture_Governance.md]
+            personas: [Senior Mobile Developer, Financial Software Architect]
+      - id: MEQ-AUTH-06
+        name: "[ARCHITECTURE] Standardize Backend Architecture Layers"
+        platform: Backend
+        subtasks:
+          - id: ARCH-BE-DOMAIN-01
+            description: Refactor backend services to use domain/app/infra layers instead of features/infrastructure/shared
+            status: To Do
+            context: [docs/Stage 1 - Foundation/01-Architecture_Governance.md]
+            personas: [Senior Backend Developer, Financial Software Architect]
+          - id: ARCH-BE-CONSISTENCY-01
+            description: Ensure all backend services follow consistent domain-driven design patterns
+            status: To Do
+            context: [docs/Stage 1 - Foundation/08-Architecture.md]
+            personas: [Senior Backend Developer, Financial Software Architect]
+      - id: MEQ-AUTH-07
+        name: "[CLEANUP] Remove Temporary Files and Archives"
+        platform: Both
+        subtasks:
+          - id: CLEANUP-TEMP-01
+            description: Remove all temporary files, debug logs, and archives from project root and subdirectories
+            status: To Do
+            context: []
+            personas: [FinTech DevOps Engineer, Senior Backend Developer]
+          - id: CLEANUP-ARCHIVES-01
+            description: Remove downloaded tool archives (terraform.zip, prisma-engines.zip) that should be installed via package managers
+            status: To Do
+            context: [docs/Stage 1 - Foundation/09-Tech_Stack.md]
+            personas: [FinTech DevOps Engineer, Senior Backend Developer]
+      - id: MEQ-AUTH-08
+        name: "[DOCUMENTATION] Update Technology Stack Documentation"
+        platform: Documentation
+        subtasks:
+          - id: DOCS-TECH-STACK-01
+            description: Update tech stack documentation to reflect current implementation vs. documented architecture
+            status: To Do
+            context: [docs/Stage 1 - Foundation/09-Tech_Stack.md]
+            personas: [Technical Writer, Financial Software Architect]
+          - id: DOCS-POLYGLOT-01
+            description: Document polyglot technology decisions and migration guides
+            status: To Do
+            context: [docs/Stage 1 - Foundation/09-Tech_Stack.md]
+            personas: [Technical Writer, Senior Backend Developer]
   - stage: "Stage 3: Core BNPL & Payments"
     tasks:
       - id: MEQ-BNPL-01
@@ -2220,6 +2281,86 @@ stages:
             context:
               [docs/Stage 1 - Foundation/12-User_Experience_Guidelines.md]
             personas: [Senior Mobile Developer, UX Designer]
+      - id: MEQ-BNPL-10
+        name: "[ARCHITECTURE] Implement Marketplace Service"
+        platform: Backend
+        subtasks:
+          - id: MS-MARKETPLACE-01
+            description: Create marketplace-service microservice with product catalog, search, and inventory management
+            status: To Do
+            context: [docs/Stage 1 - Foundation/01-Architecture_Governance.md]
+            personas: [Senior Backend Developer, Financial Software Architect]
+          - id: MS-MARKETPLACE-02
+            description: Implement marketplace database schema with products, categories, merchants, and inventory
+            status: To Do
+            context: [docs/Stage 1 - Foundation/10-Database.md]
+            personas: [Senior Backend Developer, Data Security Specialist]
+          - id: MS-MARKETPLACE-03
+            description: Build marketplace APIs for product search, filtering, and merchant integration
+            status: To Do
+            context:
+              [docs/Stage 1 - Foundation/02-API_Specification_and_Governance.md]
+            personas: [Senior Backend Developer, Financial Software Architect]
+      - id: MEQ-BNPL-11
+        name: "[ARCHITECTURE] Implement Rewards Service"
+        platform: Backend
+        subtasks:
+          - id: MS-REWARDS-01
+            description: Create rewards-service microservice for cashback, loyalty programs, and gamification
+            status: To Do
+            context: [docs/Stage 1 - Foundation/01-Architecture_Governance.md]
+            personas: [Senior Backend Developer, Financial Software Architect]
+          - id: MS-REWARDS-02
+            description: Implement rewards database schema with user balances, transactions, and program rules
+            status: To Do
+            context: [docs/Stage 1 - Foundation/10-Database.md]
+            personas: [Senior Backend Developer, Data Security Specialist]
+          - id: MS-REWARDS-03
+            description: Build rewards calculation engine with real-time balance updates and redemption logic
+            status: To Do
+            context:
+              [docs/Stage 1 - Foundation/02-API_Specification_and_Governance.md]
+            personas: [Senior Backend Developer, Financial Software Architect]
+      - id: MEQ-BNPL-12
+        name: "[ARCHITECTURE] Implement Analytics Service"
+        platform: Backend
+        subtasks:
+          - id: MS-ANALYTICS-01
+            description: Create analytics-service microservice for business intelligence and reporting
+            status: To Do
+            context: [docs/Stage 1 - Foundation/01-Architecture_Governance.md]
+            personas: [Senior Backend Developer, Financial Software Architect]
+          - id: MS-ANALYTICS-02
+            description: Implement analytics database schema with metrics, KPIs, and aggregated data
+            status: To Do
+            context: [docs/Stage 1 - Foundation/10-Database.md]
+            personas: [Senior Backend Developer, Data Security Specialist]
+          - id: MS-ANALYTICS-03
+            description: Build analytics APIs for dashboards, reports, and real-time metrics
+            status: To Do
+            context:
+              [docs/Stage 1 - Foundation/02-API_Specification_and_Governance.md]
+            personas: [Senior Backend Developer, Financial Software Architect]
+      - id: MEQ-BNPL-13
+        name: "[ARCHITECTURE] Implement Notification Service"
+        platform: Backend
+        subtasks:
+          - id: MS-NOTIFICATION-01
+            description: Create notification-service microservice for SMS, email, and push notifications
+            status: To Do
+            context: [docs/Stage 1 - Foundation/01-Architecture_Governance.md]
+            personas: [Senior Backend Developer, Financial Software Architect]
+          - id: MS-NOTIFICATION-02
+            description: Implement notification database schema with templates, delivery status, and user preferences
+            status: To Do
+            context: [docs/Stage 1 - Foundation/10-Database.md]
+            personas: [Senior Backend Developer, Data Security Specialist]
+          - id: MS-NOTIFICATION-03
+            description: Build notification APIs with multi-channel delivery (SMS, Email, Push) and Ethiopian telco integration
+            status: To Do
+            context:
+              [docs/Stage 1 - Foundation/02-API_Specification_and_Governance.md]
+            personas: [Senior Backend Developer, Financial Software Architect]
   - stage: "Stage 4: Merchant & Admin Platforms"
     tasks:
       - id: MEQ-MGT-01

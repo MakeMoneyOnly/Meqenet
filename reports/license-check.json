@@ -422,12 +422,6 @@
     "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@types\\bcrypt",
     "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@types\\bcrypt\\LICENSE"
   },
-  "@types/bcryptjs@2.4.6": {
-    "licenses": "MIT",
-    "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
-    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@types\\bcryptjs",
-    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@types\\bcryptjs\\LICENSE"
-  },
   "@types/compression@1.8.1": {
     "licenses": "MIT",
     "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
@@ -488,26 +482,20 @@
     "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@types\\supertest",
     "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@types\\supertest\\LICENSE"
   },
-  "@types/uuid@10.0.0": {
-    "licenses": "MIT",
-    "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
-    "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@types\\uuid",
-    "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@types\\uuid\\LICENSE"
-  },
   "@types/validator@13.15.3": {
     "licenses": "MIT",
     "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
     "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@types\\validator",
     "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@types\\validator\\LICENSE"
   },
-  "@typescript-eslint/eslint-plugin@6.21.0": {
+  "@typescript-eslint/eslint-plugin@8.44.0": {
     "licenses": "MIT",
     "repository": "https://github.com/typescript-eslint/typescript-eslint",
     "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@typescript-eslint\\eslint-plugin",
     "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@typescript-eslint\\eslint-plugin\\LICENSE"
   },
-  "@typescript-eslint/parser@6.21.0": {
-    "licenses": "BSD-2-Clause",
+  "@typescript-eslint/parser@8.44.0": {
+    "licenses": "MIT",
     "repository": "https://github.com/typescript-eslint/typescript-eslint",
     "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@typescript-eslint\\parser",
     "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\@typescript-eslint\\parser\\LICENSE"
@@ -710,7 +698,7 @@
     "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\eslint-import-resolver-node",
     "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\eslint-import-resolver-node\\LICENSE"
   },
-  "eslint-plugin-import@2.31.0": {
+  "eslint-plugin-import@2.32.0": {
     "licenses": "MIT",
     "repository": "https://github.com/import-js/eslint-plugin-import",
     "publisher": "Ben Mosher",
@@ -718,20 +706,20 @@
     "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\eslint-plugin-import",
     "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\eslint-plugin-import\\LICENSE"
   },
-  "eslint-plugin-jsx-a11y@6.10.1": {
+  "eslint-plugin-jsx-a11y@6.10.2": {
     "licenses": "MIT",
     "repository": "https://github.com/jsx-eslint/eslint-plugin-jsx-a11y",
     "publisher": "Ethan Cohen",
     "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\eslint-plugin-jsx-a11y",
     "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\eslint-plugin-jsx-a11y\\LICENSE.md"
   },
-  "eslint-plugin-react-hooks@4.6.2": {
+  "eslint-plugin-react-hooks@5.2.0": {
     "licenses": "MIT",
     "repository": "https://github.com/facebook/react",
     "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\eslint-plugin-react-hooks",
     "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\eslint-plugin-react-hooks\\LICENSE"
   },
-  "eslint-plugin-react@7.35.0": {
+  "eslint-plugin-react@7.37.5": {
     "licenses": "MIT",
     "repository": "https://github.com/jsx-eslint/eslint-plugin-react",
     "publisher": "Yannick Croissant",
@@ -746,7 +734,7 @@
     "path": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\eslint-plugin-security",
     "licenseFile": "C:\\Users\\Rude Bwoy\\Desktop\\1\\Meqenet\\node_modules\\eslint-plugin-security\\LICENSE"
   },
-  "eslint@8.57.1": {
+  "eslint@9.36.0": {
     "licenses": "MIT",
     "repository": "https://github.com/eslint/eslint",
     "publisher": "Nicholas C. Zakas",

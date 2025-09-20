@@ -104,6 +104,10 @@ eggs/
 .eggs/
 !frontend/apps/website/src/lib/
 lib/
+!frontend/libs/shared/config/src/lib/
+!frontend/libs/mobile-api-client/src/lib/
+!frontend/libs/shared/config/src/lib/api.config.ts
+!frontend/libs/mobile-api-client/src/lib/api-client.ts
 lib64/
 parts/
 sdist/
@@ -197,7 +201,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
 lib64/
 parts/
 sdist/
@@ -364,4 +367,4 @@ tools/**/*.msi
 # Large files (>50MB)
 *.zip
 
-storybook-static
+storybook-static!frontend/libs/shared/config/src/lib/api.config.ts
