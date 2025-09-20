@@ -73,7 +73,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "alb_logs" {
 
   rule {
     id     = "alb-access-logs-lifecycle"
-    prefix = "alb-access-logs/"
+    prefix = "alb-logs/"  # Match ALB access logs prefix
     status = "Enabled"
 
     expiration {
@@ -208,8 +208,8 @@ resource "aws_s3_bucket_logging" "alb_logs_replica" {
   provider = aws.replica
   bucket   = aws_s3_bucket.alb_logs_replica.id
 
-  target_bucket = aws_s3_bucket.alb_logs_replica.arn
-  target_prefix = "access-logs/self/"
+  target_bucket = aws_s3_bucket.cloudtrail_access_logs_replica.arn
+  target_prefix = "alb-logs-replica-access/"
 }
 
 # Fix CKV_AWS_18 - Access logging for ALB logs bucket
@@ -251,23 +251,285 @@ resource "aws_lb" "main" {
   subnets            = [aws_subnet.public_a.id, aws_subnet.public_b.id]
 
   enable_deletion_protection = true
-  
+
   # Fix CKV_AWS_91 - Enable access logging
   access_logs {
     bucket  = aws_s3_bucket.alb_logs.id
     enabled = true
     prefix  = "alb-logs"
   }
-  
+
   # Fix CKV_AWS_131 - Drop invalid HTTP headers
   drop_invalid_header_fields = true
-  
+
   # Fix CKV_AWS_328 - Defensive desync mitigation mode (already satisfied by default)
   desync_mitigation_mode = "defensive"
 
   tags = {
     Name = "meqenet-main-alb"
   }
+}
+
+# Fix CKV2_AWS_76 - WAF WebACL for ALB protection
+resource "aws_wafv2_web_acl" "alb" {
+  name        = "meqenet-alb-waf"
+  description = "WAF for ALB with Log4j vulnerability protection"
+  scope       = "REGIONAL"
+
+  default_action {
+    allow {}
+  }
+
+  # AWSManagedRulesCommonRuleSet - Common web exploits
+  rule {
+    name     = "AWSManagedRulesCommonRuleSet"
+    priority = 1
+
+    override_action {
+      none {}
+    }
+
+    statement {
+      managed_rule_group_statement {
+        name        = "AWSManagedRulesCommonRuleSet"
+        vendor_name = "AWS"
+      }
+    }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "AWSManagedRulesCommonRuleSet"
+      sampled_requests_enabled   = true
+    }
+  }
+
+  # AWSManagedRulesKnownBadInputsRuleSet - Known bad inputs
+  rule {
+    name     = "AWSManagedRulesKnownBadInputsRuleSet"
+    priority = 2
+
+    override_action {
+      none {}
+    }
+
+    statement {
+      managed_rule_group_statement {
+        name        = "AWSManagedRulesKnownBadInputsRuleSet"
+        vendor_name = "AWS"
+      }
+    }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "AWSManagedRulesKnownBadInputsRuleSet"
+      sampled_requests_enabled   = true
+    }
+  }
+
+  # Fix CKV2_AWS_76 - Enhanced Log4j vulnerability protection with Bot Control
+  rule {
+    name     = "AWSManagedRulesBotControlRuleSet"
+    priority = 3
+
+    override_action {
+      none {}
+    }
+
+    statement {
+      managed_rule_group_statement {
+        name        = "AWSManagedRulesBotControlRuleSet"
+        vendor_name = "AWS"
+        # Enable common inspection level for comprehensive protection
+        managed_rule_group_configs {
+          aws_managed_rules_bot_control_rule_set {
+            inspection_level = "COMMON"
+          }
+        }
+      }
+    }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "AWSManagedRulesBotControlRuleSet"
+      sampled_requests_enabled   = true
+    }
+  }
+
+  # Additional Log4j protection - SQL injection rules
+  rule {
+    name     = "AWSManagedRulesSQLiRuleSet"
+    priority = 4
+
+    override_action {
+      none {}
+    }
+
+    statement {
+      managed_rule_group_statement {
+        name        = "AWSManagedRulesSQLiRuleSet"
+        vendor_name = "AWS"
+      }
+    }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "AWSManagedRulesSQLiRuleSet"
+      sampled_requests_enabled   = true
+    }
+  }
+
+  # Anonymous IP list protection
+  rule {
+    name     = "AWSManagedRulesAnonymousIpList"
+    priority = 5
+
+    override_action {
+      none {}
+    }
+
+    statement {
+      managed_rule_group_statement {
+        name        = "AWSManagedRulesAnonymousIpList"
+        vendor_name = "AWS"
+      }
+    }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "AWSManagedRulesAnonymousIpList"
+      sampled_requests_enabled   = true
+    }
+  }
+
+  visibility_config {
+    cloudwatch_metrics_enabled = true
+    metric_name                = "meqenet-alb-waf"
+    sampled_requests_enabled   = true
+  }
+
+  tags = {
+    Name        = "meqenet-alb-waf"
+    Environment = "production"
+  }
+}
+
+# Fix CKV2_AWS_31 - WAF Logging Configuration
+resource "aws_wafv2_web_acl_logging_configuration" "alb" {
+  log_destination_configs = [aws_kinesis_firehose_delivery_stream.waf_logs.arn]
+  resource_arn            = aws_wafv2_web_acl.alb.arn
+
+  logging_filter {
+    default_behavior = "KEEP"
+
+    filter {
+      behavior = "KEEP"
+      condition {
+        action_condition {
+          action = "BLOCK"
+        }
+      }
+      requirement = "MEETS_ANY"
+    }
+  }
+}
+
+# Kinesis Firehose for WAF logs
+resource "aws_kinesis_firehose_delivery_stream" "waf_logs" {
+  name        = "meqenet-waf-logs"
+  destination = "extended_s3"
+
+  # Fix CKV_AWS_240, CKV_AWS_241 - Enable server-side encryption
+  server_side_encryption {
+    enabled  = true
+    key_type = "CUSTOMER_MANAGED_CMK"
+    key_arn  = aws_kms_key.cloudtrail.arn
+  }
+
+  extended_s3_configuration {
+    role_arn            = aws_iam_role.waf_logs.arn
+    bucket_arn          = aws_s3_bucket.alb_logs.arn
+    prefix              = "waf-logs/year=!{timestamp:yyyy}/month=!{timestamp:MM}/day=!{timestamp:dd}/"
+    error_output_prefix = "waf-logs-errors/!{firehose:error-output-type}/year=!{timestamp:yyyy}/month=!{timestamp:MM}/day=!{timestamp:dd}/"
+    buffering_size      = 64
+    buffering_interval  = 300
+    compression_format  = "GZIP"
+  }
+
+  tags = {
+    Name        = "meqenet-waf-logs"
+    Environment = "production"
+  }
+}
+
+# IAM Role for WAF logs
+resource "aws_iam_role" "waf_logs" {
+  name = "meqenet-waf-logs-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "firehose.amazonaws.com"
+        }
+      }
+    ]
+  })
+
+  tags = {
+    Name = "meqenet-waf-logs-role"
+  }
+}
+
+# IAM Policy for WAF logs
+resource "aws_iam_role_policy" "waf_logs" {
+  name = "meqenet-waf-logs-policy"
+  role = aws_iam_role.waf_logs.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:AbortMultipartUpload",
+          "s3:GetBucketLocation",
+          "s3:GetObject",
+          "s3:ListBucket",
+          "s3:ListBucketMultipartUploads",
+          "s3:PutObject"
+        ]
+        Resource = [
+          aws_s3_bucket.alb_logs.arn,
+          "${aws_s3_bucket.alb_logs.arn}/*"
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:PutLogEvents"
+        ]
+        Resource = "*"
+      },
+      # Fix CKV_AWS_240, CKV_AWS_241 - KMS permissions for Firehose encryption
+      {
+        Effect = "Allow"
+        Action = [
+          "kms:Decrypt",
+          "kms:GenerateDataKey"
+        ]
+        Resource = aws_kms_key.cloudtrail.arn
+      }
+    ]
+  })
+}
+
+# Associate WAF with ALB
+resource "aws_wafv2_web_acl_association" "alb" {
+  resource_arn = aws_lb.main.arn
+  web_acl_arn  = aws_wafv2_web_acl.alb.arn
 }
 
 resource "aws_lb_target_group" "main" {

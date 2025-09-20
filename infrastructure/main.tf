@@ -819,7 +819,8 @@ data "aws_iam_policy_document" "cloudtrail_kms" {
       "kms:ScheduleKeyDeletion",
       "kms:CancelKeyDeletion"
     ]
-    resources = ["*"]
+    # Fix CKV_AWS_109, CKV_AWS_111, CKV_AWS_356 - Specify exact KMS key ARN instead of wildcard
+    resources = [aws_kms_key.cloudtrail.arn]
   }
 
   statement {
@@ -833,7 +834,8 @@ data "aws_iam_policy_document" "cloudtrail_kms" {
       "kms:GenerateDataKey*",
       "kms:Decrypt"
     ]
-    resources = ["*"]
+    # Fix CKV_AWS_356 - Specify exact KMS key ARN instead of wildcard
+    resources = [aws_kms_key.cloudtrail.arn]
     # Removed condition to avoid circular dependency
   }
 
@@ -848,8 +850,23 @@ data "aws_iam_policy_document" "cloudtrail_kms" {
       "kms:GenerateDataKey*",
       "kms:Decrypt"
     ]
-    resources = ["*"]
+    # Fix CKV_AWS_356 - Specify exact KMS key ARN instead of wildcard
+    resources = [aws_kms_key.cloudtrail.arn]
     # Removed condition to avoid circular dependency
+  }
+
+  statement {
+    sid    = "Allow Firehose to encrypt logs"
+    effect = "Allow"
+    principals {
+      type        = "Service"
+      identifiers = ["firehose.amazonaws.com"]
+    }
+    actions = [
+      "kms:Decrypt",
+      "kms:GenerateDataKey"
+    ]
+    resources = [aws_kms_key.cloudtrail.arn]
   }
 }
 

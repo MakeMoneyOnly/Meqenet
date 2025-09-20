@@ -6,6 +6,9 @@
 resource "aws_sns_topic" "key_rotation_alerts" {
   name = "meqenet-key-rotation-alerts"
 
+  # Fix CKV_AWS_26 - Encrypt SNS topic messages with KMS
+  kms_master_key_id = aws_kms_key.sns.id
+
   tags = {
     Name        = "meqenet-key-rotation-alerts"
     Environment = var.environment
@@ -122,6 +125,9 @@ resource "aws_lambda_function" "key_rotation" {
   timeout         = 300
   memory_size     = 256
 
+  # Fix CKV_AWS_173 - Encrypt environment variables with KMS
+  kms_key_arn = aws_kms_key.secrets.arn
+
   environment {
     variables = {
       AWS_REGION                    = var.aws_region
@@ -133,6 +139,25 @@ resource "aws_lambda_function" "key_rotation" {
     }
   }
 
+  # Fix CKV_AWS_117 - Configure Lambda inside VPC for security
+  vpc_config {
+    subnet_ids         = [aws_subnet.private_a.id, aws_subnet.private_b.id]
+    security_group_ids = [aws_security_group.lambda.id]
+  }
+
+  # Fix CKV_AWS_116 - Add Dead Letter Queue (DLQ)
+  dead_letter_config {
+    target_arn = aws_sqs_queue.key_rotation_dlq.arn
+  }
+
+  # Fix CKV_AWS_50 - Enable X-Ray tracing
+  tracing_config {
+    mode = "Active"
+  }
+
+  # Fix CKV_AWS_115 - Set concurrent execution limit
+  reserved_concurrent_executions = 5
+
   tags = {
     Name        = "meqenet-key-rotation-lambda"
     Environment = var.environment
@@ -142,19 +167,63 @@ resource "aws_lambda_function" "key_rotation" {
 
   depends_on = [
     aws_iam_role_policy.key_rotation_lambda_policy,
-    aws_cloudwatch_log_group.key_rotation_lambda_logs
+    aws_cloudwatch_log_group.key_rotation_lambda_logs,
+    aws_sqs_queue.key_rotation_dlq
   ]
 }
 
 # CloudWatch Log Group for Lambda
 resource "aws_cloudwatch_log_group" "key_rotation_lambda_logs" {
   name              = "/aws/lambda/meqenet-key-rotation"
-  retention_in_days = 30
+  # Fix CKV_AWS_338 - Increase retention to 1 year minimum
+  retention_in_days = 365
+  # Fix CKV_AWS_158 - Encrypt log group with KMS
+  kms_key_id        = aws_kms_key.cloudtrail.arn
 
   tags = {
     Name        = "meqenet-key-rotation-lambda-logs"
     Environment = var.environment
     Service     = "auth-service"
+  }
+}
+
+# SQS Queue for Lambda Dead Letter Queue (DLQ)
+resource "aws_sqs_queue" "key_rotation_dlq" {
+  name = "meqenet-key-rotation-dlq"
+  # Fix CKV_AWS_27 - Encrypt SQS messages with KMS
+  kms_master_key_id = aws_kms_key.sqs.id
+
+  # Set message retention to 14 days (maximum allowed)
+  message_retention_seconds = 1209600
+
+  tags = {
+    Name        = "meqenet-key-rotation-dlq"
+    Environment = var.environment
+    Service     = "auth-service"
+    Purpose     = "dead-letter-queue"
+  }
+}
+
+# Security Group for Lambda function
+resource "aws_security_group" "lambda" {
+  name_prefix = "meqenet-lambda-"
+  vpc_id      = aws_vpc.main.id
+  description = "Security group for Lambda functions in Meqenet"
+
+  # Fix CKV_AWS_23 - Add descriptions to security group rules
+  egress {
+    description      = "Allow all outbound traffic for Lambda function"
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
+
+  tags = {
+    Name        = "meqenet-lambda-sg"
+    Environment = var.environment
+    Service     = "lambda"
   }
 }
 
