@@ -55,7 +55,7 @@
     "@swc/cli": "^0.6.0",
     "@swc/core": "^1.10.0",
     "@swc/helpers": "^0.5.15",
-    "@testing-library/dom": "10.4.0",
+    "@testing-library/dom": "10.4.1",
     "@testing-library/react": "16.1.0",
     "@testing-library/react-native": "~13.2.2",
     "@types/node": "^22.10.0",
