@@ -174,8 +174,9 @@ function main() {
   process.exit(success ? 0 : 1);
 }
 
-if (require.main === module) {
+// ES Module equivalent of require.main === module
+if (import.meta.url === `file://${process.argv[1]}`) {
   main();
 }
 
-module.exports = { generateSBOM };
+export { generateSBOM };
