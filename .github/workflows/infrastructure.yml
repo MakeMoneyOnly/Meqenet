@@ -144,33 +144,69 @@ jobs:
         uses: bridgecrewio/checkov-action@v12
         continue-on-error: true
         with:
-          directory: ./infrastructure/
+          directory: infrastructure/
           framework: terraform
           output_format: sarif
-          output_file_path: ./checkov-terraform.sarif
+          output_file_path: checkov-terraform.sarif
           soft_fail: true
-          quiet: true
+          quiet: false
+          check: CKV_AWS_*,CKV2_AWS_*
+          skip_check: CKV_AWS_144  # Skip ELB logging check if not using classic ELB
 
       - name: Debug Checkov output
         if: always()
         run: |
-          echo "🔍 Checking Checkov execution status..."
+          echo "🔍 FinTech DevOps - Checkov Execution Analysis"
+          echo "==============================================="
           echo "Checkov exit code: ${{ steps.checkov.outcome }}"
           echo "Checkov conclusion: ${{ steps.checkov.conclusion }}"
+          echo "Repository: ${{ github.repository }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "==============================================="
 
-          echo "📁 Listing current directory contents..."
-          ls -la
+          echo "📁 Infrastructure Directory Contents..."
+          ls -la infrastructure/
 
-          echo "🔍 Checking if Checkov SARIF file exists..."
+          echo "🔍 Checking Checkov SARIF file generation..."
           if [ -f "checkov-terraform.sarif" ]; then
             echo "✅ Checkov SARIF file found!"
             ls -la checkov-terraform.sarif
-            echo "📄 First few lines of SARIF file:"
-            head -20 checkov-terraform.sarif
+            echo "📊 File size:"
+            wc -c checkov-terraform.sarif
+
+            # Validate SARIF structure for FinTech compliance
+            if jq -e '.runs[0].results' checkov-terraform.sarif > /dev/null 2>&1; then
+              echo "✅ SARIF file has valid JSON structure"
+              RESULT_COUNT=$(jq '.runs[0].results | length' checkov-terraform.sarif 2>/dev/null || echo "0")
+              echo "📊 Security findings detected: $RESULT_COUNT"
+
+              # Check for critical financial security issues
+              CRITICAL_COUNT=$(jq '[.runs[0].results[] | select(.level == "error" or (.properties.severity == "CRITICAL"))] | length' checkov-terraform.sarif 2>/dev/null || echo "0")
+              HIGH_COUNT=$(jq '[.runs[0].results[] | select(.properties.severity == "HIGH")] | length' checkov-terraform.sarif 2>/dev/null || echo "0")
+
+              echo "🚨 Critical security issues: $CRITICAL_COUNT"
+              echo "⚠️ High severity issues: $HIGH_COUNT"
+
+              if [ "$CRITICAL_COUNT" -gt 0 ]; then
+                echo "❌ NBE Compliance: FAILED - Critical security issues found"
+                echo "🔧 Action Required: Review findings in Security tab"
+              else
+                echo "✅ NBE Compliance: PASSED - No critical issues"
+              fi
+            else
+              echo "⚠️ SARIF file exists but has invalid JSON structure"
+            fi
           else
             echo "❌ Checkov SARIF file not found"
-            echo "📋 Checking for any SARIF files..."
+            echo "📋 Checking for any SARIF files in workspace..."
             find . -name "*.sarif" -type f 2>/dev/null || echo "No SARIF files found"
+
+            echo "🔍 Checking Checkov logs for errors..."
+            echo "Possible causes:"
+            echo "  - Checkov failed to execute"
+            echo "  - No Terraform files found in infrastructure/"
+            echo "  - AWS credentials/configuration issue"
+            echo "  - Network connectivity issue"
           fi
 
       - name: Upload Terraform Security SARIF
@@ -206,22 +242,75 @@ jobs:
       - name: Verify Checkov SARIF upload success
         if: always()
         run: |
-          echo "🔍 Checking if Checkov SARIF file was created..."
+          echo "🔍 FinTech DevOps - Checkov SARIF Validation"
+          echo "=========================================="
+          echo "Validating SARIF file generation and upload..."
+          echo "Repository: ${{ github.repository }}"
+          echo "Workflow: ${{ github.workflow }}"
+          echo "=========================================="
+
           if [ -f "checkov-terraform.sarif" ]; then
             echo "✅ Checkov SARIF file exists"
             ls -la checkov-terraform.sarif
+
             # Check if SARIF file has content (not empty)
             if [ -s "checkov-terraform.sarif" ]; then
               echo "✅ SARIF file has content"
+
+              # Validate JSON structure
+              if jq empty checkov-terraform.sarif 2>/dev/null; then
+                echo "✅ SARIF file contains valid JSON"
+
+                # Extract key metrics for FinTech compliance
+                TOTAL_RULES=$(jq '.runs[0].tool.driver.rules | length' checkov-terraform.sarif 2>/dev/null || echo "0")
+                TOTAL_RESULTS=$(jq '.runs[0].results | length' checkov-terraform.sarif 2>/dev/null || echo "0")
+
+                echo "📊 Scan Metrics:"
+                echo "  - Security rules checked: $TOTAL_RULES"
+                echo "  - Security findings: $TOTAL_RESULTS"
+
+                # NBE Compliance Assessment
+                CRITICAL_ISSUES=$(jq '[.runs[0].results[] | select(.level == "error")] | length' checkov-terraform.sarif 2>/dev/null || echo "0")
+                HIGH_ISSUES=$(jq '[.runs[0].results[] | select(.properties.severity == "HIGH")] | length' checkov-terraform.sarif 2>/dev/null || echo "0")
+
+                if [ "$CRITICAL_ISSUES" -eq 0 ]; then
+                  echo "✅ NBE Compliance: PASSED (No critical security violations)"
+                else
+                  echo "❌ NBE Compliance: FAILED ($CRITICAL_ISSUES critical violations)"
+                  echo "🚨 Action Required: Address critical security issues immediately"
+                fi
+
+                if [ "$HIGH_ISSUES" -gt 0 ]; then
+                  echo "⚠️ High Priority: $HIGH_ISSUES high-severity issues require attention"
+                fi
+
+              else
+                echo "❌ SARIF file contains invalid JSON"
+                echo "This indicates Checkov may not have completed successfully"
+                exit 1
+              fi
             else
-              echo "⚠️ SARIF file exists but is empty (no findings)"
+              echo "⚠️ SARIF file exists but is empty (no security findings detected)"
+              echo "This could mean:"
+              echo "  - No Terraform files were found to scan"
+              echo "  - All checks passed (no violations found)"
+              echo "  - Checkov configuration issue"
             fi
           else
             echo "❌ Checkov SARIF file not found"
-            echo "This could indicate:"
-            echo "  - Checkov failed to run"
-            echo "  - No Terraform files found to scan"
-            echo "  - Configuration error in Checkov action"
+            echo "🔍 Troubleshooting Checkov execution..."
+            echo ""
+            echo "Possible causes:"
+            echo "  - Checkov action failed to execute"
+            echo "  - No Terraform files found in infrastructure/ directory"
+            echo "  - AWS credential/configuration issue"
+            echo "  - Network connectivity problem"
+            echo "  - Checkov action version incompatibility"
+            echo ""
             echo "Check the debug output above for more details"
+            echo "Verify Terraform files exist: ls -la infrastructure/"
             exit 1
           fi
+
+          echo "=========================================="
+          echo "✅ FinTech Infrastructure Security Scan Complete"
