@@ -36,6 +36,8 @@ export default [
       '**/.next/**/*',
       '**/public/**/*',
       'apps/website/public/**/*',
+      '**/*.d.ts', // TypeScript declaration files
+      'apps/website/next-env.d.ts', // Next.js generated types
     ],
   },
   {
@@ -62,6 +64,32 @@ export default [
       '@typescript-eslint/no-duplicate-enum-values': 'off', // Temporarily disabled due to TypeScript version compatibility issue
       'prefer-const': 'error',
       'no-alert': 'error',
+      // Custom rule to prevent process.env usage outside of config files
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'MemberExpression[object.name="process"][property.name="env"]',
+          message: 'Do not use process.env directly outside of config files. Use environment variables through a config module.',
+        },
+      ],
+    },
+  },
+  {
+    // Allow process.env in specific file patterns
+    files: [
+      '**/*.config.{ts,js,mjs}',
+      '**/config/**/*.{ts,js,mjs}',
+      '**/*config*/**/*.{ts,js,mjs}',
+      '**/*.setup.{ts,js,mjs}',
+      '**/next-i18next.config.{ts,js,mjs}',
+      '**/vitest.setup.{ts,js,mjs}',
+      '**/jest.setup.{ts,js,mjs}',
+      '**/test-setup/**/*.{ts,js,mjs}',
+      '**/security/**/*.{ts,js,mjs}',
+      'src/lib/security/**/*.{ts,js,mjs}',
+    ],
+    rules: {
+      'no-restricted-syntax': 'off',
     },
   },
   {

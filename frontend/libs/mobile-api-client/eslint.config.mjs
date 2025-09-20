@@ -1,5 +1,6 @@
 import tsparser from '@typescript-eslint/parser';
 import tsplugin from '@typescript-eslint/eslint-plugin';
+import security from 'eslint-plugin-security';
 
 export default [
   {
@@ -13,6 +14,7 @@ export default [
     },
     plugins: {
       '@typescript-eslint': tsplugin,
+      security,
     },
     rules: {
       '@typescript-eslint/no-unused-vars': [

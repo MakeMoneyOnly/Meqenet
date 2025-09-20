@@ -1,5 +1,6 @@
 import tsPlugin from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
+import security from 'eslint-plugin-security';
 
 // Internal plugin: restrict process.env usage to files under **/shared/config/** only
 const internalSecurityPlugin = {
@@ -146,6 +147,7 @@ export default [
     plugins: {
       '@typescript-eslint': tsPlugin,
       internal: internalSecurityPlugin,
+      security,
     },
     rules: {
       // === SECURITY RULES - CRITICAL FOR FINTECH ===

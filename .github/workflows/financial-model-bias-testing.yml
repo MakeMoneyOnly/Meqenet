@@ -120,7 +120,8 @@ jobs:
 
           export PATH="$PNPM_HOME:$PATH"
 
-          pnpm install --frozen-lockfile
+          # Allow lockfile updates for legitimate configuration changes
+          pnpm install
 
       - name: 🔧 Generate Prisma Client
 

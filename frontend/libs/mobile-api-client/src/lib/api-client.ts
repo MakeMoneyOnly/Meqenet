@@ -415,6 +415,7 @@ export async function updateCertificateHashes(
     }
 
     // Safe: hostname validated with Object.prototype.hasOwnProperty above
+     
     const config = CERTIFICATE_PINNING_CONFIG[hostname];
     config.certificateHashes = newHashes;
 
@@ -453,6 +454,7 @@ export async function disableCertificatePinning(hostname: string): Promise<void>
     }
 
     // Safe: hostname validated with Object.prototype.hasOwnProperty above
+     
     CERTIFICATE_PINNING_CONFIG[hostname].enforcePinning = false;
     logger.warn(`⚠️ Certificate pinning disabled for ${hostname} (development only)`);
   } catch (error) {
@@ -469,6 +471,7 @@ export function isCertificatePinningActive(hostname: string): boolean {
     return false;
   }
   // Safe: hostname validated with Object.prototype.hasOwnProperty above
+   
   return CERTIFICATE_PINNING_CONFIG[hostname].enforcePinning ?? false;
 }
 
@@ -480,5 +483,6 @@ export function getCertificateHashes(hostname: string): string[] {
     return [];
   }
   // Safe: hostname validated with Object.prototype.hasOwnProperty above
+   
   return CERTIFICATE_PINNING_CONFIG[hostname].certificateHashes ?? [];
 }

@@ -9,7 +9,6 @@ import {
 
 // Configure axios instance for BNPL API
 const bnplApiClient = axios.create({
-  // eslint-disable-next-line internal/no-process-env-outside-config
   baseURL: process.env.EXPO_PUBLIC_BNPL_API_URL || 'http://localhost:3001/api',
   timeout: 10000,
   headers: {
