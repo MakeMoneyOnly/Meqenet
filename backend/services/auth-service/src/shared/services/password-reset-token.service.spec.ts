@@ -7,10 +7,9 @@ import { PrismaService } from '../../infrastructure/database/prisma.service';
 
 // Test constants - using descriptive values for cryptographic standards
 const TOKEN_LENGTH_BYTES = 256 / 8; // 256 bits = 32 bytes for secure token generation
-const TOKEN_EXPIRY_HOURS = 24; // 24 hours = 1 day standard expiry
+const TOKEN_EXPIRY_MINUTES = 15; // 15 minutes standard expiry
 const MILLISECONDS_PER_SECOND = 1000;
 const SECONDS_PER_MINUTE = 60;
-const MINUTES_PER_HOUR = 60;
 
 // Mock crypto functions
 vi.mock('crypto', () => ({
@@ -132,10 +131,7 @@ describe('PasswordResetTokenService', () => {
         userAgent,
         expiresAt: new Date(
           Date.now() +
-            TOKEN_EXPIRY_HOURS *
-              MINUTES_PER_HOUR *
-              SECONDS_PER_MINUTE *
-              MILLISECONDS_PER_SECOND
+            TOKEN_EXPIRY_MINUTES * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND
         ),
         isUsed: false,
         createdAt: new Date(),
@@ -182,10 +178,7 @@ describe('PasswordResetTokenService', () => {
         userAgent: null,
         expiresAt: new Date(
           Date.now() +
-            TOKEN_EXPIRY_HOURS *
-              MINUTES_PER_HOUR *
-              SECONDS_PER_MINUTE *
-              MILLISECONDS_PER_SECOND
+            TOKEN_EXPIRY_MINUTES * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND
         ),
         isUsed: false,
         createdAt: new Date(),
@@ -209,7 +202,7 @@ describe('PasswordResetTokenService', () => {
       });
     });
 
-    it('should set expiry time correctly (24 hours from now)', async () => {
+    it('should set expiry time correctly (15 minutes from now)', async () => {
       const beforeCall = new Date();
       const mockCreatedRecord = {
         id: 'reset-123',
@@ -220,10 +213,7 @@ describe('PasswordResetTokenService', () => {
         userAgent,
         expiresAt: new Date(
           Date.now() +
-            TOKEN_EXPIRY_HOURS *
-              MINUTES_PER_HOUR *
-              SECONDS_PER_MINUTE *
-              MILLISECONDS_PER_SECOND
+            TOKEN_EXPIRY_MINUTES * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND
         ),
         isUsed: false,
         createdAt: new Date(),
@@ -241,18 +231,12 @@ describe('PasswordResetTokenService', () => {
 
       expect(expiresAt.getTime()).toBeGreaterThanOrEqual(
         beforeCall.getTime() +
-          TOKEN_EXPIRY_HOURS *
-            MINUTES_PER_HOUR *
-            SECONDS_PER_MINUTE *
-            MILLISECONDS_PER_SECOND -
+          TOKEN_EXPIRY_MINUTES * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND -
           1000
       );
       expect(expiresAt.getTime()).toBeLessThanOrEqual(
         afterCall.getTime() +
-          TOKEN_EXPIRY_HOURS *
-            MINUTES_PER_HOUR *
-            SECONDS_PER_MINUTE *
-            MILLISECONDS_PER_SECOND +
+          TOKEN_EXPIRY_MINUTES * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND +
           1000
       );
     });
@@ -554,10 +538,7 @@ describe('PasswordResetTokenService', () => {
         userAgent: 'Mozilla/5.0',
         expiresAt: new Date(
           Date.now() +
-            TOKEN_EXPIRY_HOURS *
-              MINUTES_PER_HOUR *
-              SECONDS_PER_MINUTE *
-              MILLISECONDS_PER_SECOND
+            TOKEN_EXPIRY_MINUTES * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND
         ),
         isUsed: false,
         createdAt: new Date(),
@@ -582,10 +563,7 @@ describe('PasswordResetTokenService', () => {
         userAgent: 'Mozilla/5.0',
         expiresAt: new Date(
           Date.now() +
-            TOKEN_EXPIRY_HOURS *
-              MINUTES_PER_HOUR *
-              SECONDS_PER_MINUTE *
-              MILLISECONDS_PER_SECOND
+            TOKEN_EXPIRY_MINUTES * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND
         ),
         isUsed: false,
         createdAt: new Date(),
@@ -602,7 +580,7 @@ describe('PasswordResetTokenService', () => {
       expect(callArgs.data.hashedToken).toBe('hashedtoken'); // Should be hashed
     });
 
-    it('should enforce 24-hour token expiry', async () => {
+    it('should enforce 15-minute token expiry', async () => {
       const beforeCall = new Date();
       const mockCreatedRecord = {
         id: 'reset-123',
@@ -613,10 +591,7 @@ describe('PasswordResetTokenService', () => {
         userAgent: 'Mozilla/5.0',
         expiresAt: new Date(
           Date.now() +
-            TOKEN_EXPIRY_HOURS *
-              MINUTES_PER_HOUR *
-              SECONDS_PER_MINUTE *
-              MILLISECONDS_PER_SECOND
+            TOKEN_EXPIRY_MINUTES * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND
         ),
         isUsed: false,
         createdAt: new Date(),
@@ -631,13 +606,10 @@ describe('PasswordResetTokenService', () => {
       const callArgs = _mockPrismaService.passwordReset.create.mock.calls[0][0];
       const expiresAt = callArgs.data.expiresAt;
 
-      // Check that expiry is approximately 24 hours from now
+      // Check that expiry is approximately 15 minutes from now
       const expectedExpiry = new Date(
         beforeCall.getTime() +
-          TOKEN_EXPIRY_HOURS *
-            MINUTES_PER_HOUR *
-            SECONDS_PER_MINUTE *
-            MILLISECONDS_PER_SECOND
+          TOKEN_EXPIRY_MINUTES * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND
       );
       const tolerance = 1000; // 1 second tolerance
 

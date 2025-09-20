@@ -144,13 +144,17 @@ export class OAuth2Service {
         });
       }
 
-      // Validate PKCE parameters
-      if (request.codeChallenge) {
-        this.validatePKCEParameters(
-          request.codeChallenge,
-          request.codeChallengeMethod
-        );
+      // Validate PKCE parameters (now mandatory)
+      if (!request.codeChallenge) {
+        throw new BadRequestException({
+          error: 'invalid_request',
+          errorDescription: 'PKCE code challenge is required',
+        });
       }
+      this.validatePKCEParameters(
+        request.codeChallenge,
+        request.codeChallengeMethod
+      );
 
       return {
         client,

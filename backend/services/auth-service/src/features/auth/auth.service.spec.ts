@@ -110,11 +110,13 @@ describe('AuthService', () => {
 
   const mockEmailService = {
     sendPasswordResetEmail: vi.fn(),
+    sendSecurityNotification: vi.fn(),
   };
 
   const mockSecurityMonitoringService = {
     recordRegister: vi.fn(),
     recordLogin: vi.fn(),
+    recordSecurityEvent: vi.fn(),
   };
 
   const mockAuditLoggingService = {
@@ -125,6 +127,9 @@ describe('AuthService', () => {
     logPasswordResetSuccess: vi.fn(),
     logPasswordResetFailure: vi.fn(),
     logAccountLockout: vi.fn(),
+    logHighRiskOperationBlock: vi.fn(),
+    logSecurityEvent: vi.fn(),
+    logPhoneNumberChange: vi.fn(),
   };
 
   const mockRateLimitingService = {
@@ -458,6 +463,14 @@ describe('AuthService', () => {
       });
 
       expect(
+        mockAuditLoggingService.logPasswordResetFailure
+      ).toHaveBeenCalledWith(
+        'USER_INACTIVE',
+        expect.any(Object),
+        expect.any(Object)
+      );
+
+      expect(
         mockPasswordResetTokenService.generateToken
       ).not.toHaveBeenCalled();
       expect(mockEmailService.sendPasswordResetEmail).not.toHaveBeenCalled();
@@ -525,6 +538,13 @@ describe('AuthService', () => {
         service.requestPasswordReset(mockPasswordResetRequestDto, {})
       ).rejects.toThrow(
         'Failed to send password reset email. Please try again.'
+      );
+
+      expect(
+        mockAuditLoggingService.logPasswordResetFailure
+      ).toHaveBeenCalledWith(
+        'EMAIL_SEND_FAILED',
+        expect.objectContaining({ userId: mockUser.id })
       );
     });
 
@@ -646,6 +666,26 @@ describe('AuthService', () => {
       );
     });
 
+    it('should throw error if user not found for valid token', async () => {
+      mockPasswordResetTokenService.validateToken.mockResolvedValue({
+        userId: mockUserId,
+        isValid: true,
+      });
+      mockPrismaService.user.findUnique.mockResolvedValue(null);
+
+      await expect(
+        service.confirmPasswordReset(mockPasswordResetConfirmDto)
+      ).rejects.toThrow('Invalid or expired password reset token.');
+
+      expect(
+        mockAuditLoggingService.logPasswordResetFailure
+      ).toHaveBeenCalledWith(
+        'USER_NOT_FOUND',
+        expect.any(Object),
+        expect.objectContaining({ userId: mockUserId })
+      );
+    });
+
     it('should throw error when passwords do not match', async () => {
       const mismatchedDto = {
         ...mockPasswordResetConfirmDto,
@@ -706,6 +746,19 @@ describe('AuthService', () => {
         isValid: true,
       });
       mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
+
+      await expect(
+        service.confirmPasswordReset(mockPasswordResetConfirmDto)
+      ).rejects.toThrow('Failed to reset password. Please try again.');
+    });
+
+    it('should handle database find errors', async () => {
+      const dbError = new Error('Database find failed');
+      mockPasswordResetTokenService.validateToken.mockResolvedValue({
+        userId: mockUserId,
+        isValid: true,
+      });
+      mockPrismaService.user.findUnique.mockRejectedValue(dbError);
 
       await expect(
         service.confirmPasswordReset(mockPasswordResetConfirmDto)
@@ -957,6 +1010,62 @@ describe('AuthService', () => {
       ).not.toHaveBeenCalled();
     });
 
+    describe('updateUserPhone', () => {
+      const userId = 'user-123';
+      const existingPhoneNumber = '+251911223344';
+      const newPhoneNumber = '+251955667788';
+      const mockUser = {
+        id: userId,
+        phone: existingPhoneNumber,
+      };
+
+      it('should update phone number successfully and activate cooling period', async () => {
+        mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
+        mockPrismaService.user.update.mockResolvedValue({
+          ...mockUser,
+          phone: newPhoneNumber,
+        });
+
+        const result = await service.updateUserPhone(userId, newPhoneNumber);
+
+        expect(result.message).toContain('cooling period is now active');
+        expect(mockPrismaService.user.update).toHaveBeenCalledWith({
+          where: { id: userId },
+          data: {
+            phone: newPhoneNumber,
+            phoneUpdatedAt: expect.any(Date),
+            phoneChangeCoolingPeriodEnd: expect.any(Date),
+            updatedAt: expect.any(Date),
+          },
+        });
+        expect(
+          mockSecurityMonitoringService.recordSecurityEvent
+        ).toHaveBeenCalled();
+      });
+
+      it('should log an error if notification sending fails', async () => {
+        const loggerErrorSpy = vi.spyOn((service as any).logger, 'error');
+        mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
+        mockPrismaService.user.update.mockResolvedValue({
+          ...mockUser,
+          phone: newPhoneNumber,
+        });
+        mockEmailService.sendSecurityNotification.mockRejectedValue(
+          new Error('Email provider down')
+        );
+
+        const result = await service.updateUserPhone(userId, newPhoneNumber);
+
+        expect(result.message).toContain('cooling period is now active');
+        expect(loggerErrorSpy).toHaveBeenCalledWith(
+          expect.stringContaining('Failed to send email notification'),
+          expect.any(Error)
+        );
+
+        loggerErrorSpy.mockRestore();
+      });
+    });
+
     it('should handle database transaction failures', async () => {
       const dbError = new Error('Transaction failed');
       mockPrismaService.user.update.mockRejectedValue(dbError);
@@ -977,6 +1086,38 @@ describe('AuthService', () => {
           confirmPassword: 'NewP@ssw0rd123',
         })
       ).rejects.toThrow('Failed to reset password. Please try again.');
+    });
+  });
+
+  describe('validateHighRiskOperation', () => {
+    it('should block operation if user is in cooling period', async () => {
+      const userId = 'user-123';
+      const operation = 'high_risk_transaction';
+      const coolingPeriodEnd = new Date(Date.now() + 3600000);
+
+      // Mock the private method directly on the service
+      const checkSimSwapCoolingPeriodSpy = vi
+        .spyOn(service as any, 'checkSimSwapCoolingPeriod')
+        .mockResolvedValue({
+          canProceed: false,
+          reason: 'In cooling period',
+          coolingPeriodEnd,
+          remainingHours: 1,
+          requiresAdditionalVerification: true,
+        });
+
+      const result = await service.validateHighRiskOperation(userId, operation);
+
+      expect(result.canProceed).toBe(false);
+      expect(result.reason).toContain('Operation blocked');
+      expect(
+        mockAuditLoggingService.logHighRiskOperationBlock
+      ).toHaveBeenCalled();
+      expect(
+        mockSecurityMonitoringService.recordSecurityEvent
+      ).toHaveBeenCalled();
+
+      checkSimSwapCoolingPeriodSpy.mockRestore();
     });
   });
 

@@ -49,11 +49,38 @@ export class MfaService {
     code: string
   ): Promise<{ verified: boolean }> {
     const key = `otp:${channel}:${userId}`;
+
+    // Rate limit OTP verification attempts
+    await this.rateLimiter.checkRateLimit(
+      userId,
+      'unknown',
+      `mfa:${channel}`,
+      'VERIFY'
+    );
+
     const data = await this.cache.get<string | undefined>(key);
     const payload = data ? (JSON.parse(data) as { code: string }) : undefined;
-    if (!payload) throw new UnauthorizedException('OTP expired or not found');
-    if (payload.code !== code) throw new UnauthorizedException('Invalid OTP');
+
+    if (!payload) {
+      await this.rateLimiter.recordFailedRequest(
+        userId,
+        'unknown',
+        'OTP_EXPIRED'
+      );
+      throw new UnauthorizedException('OTP expired or not found');
+    }
+
+    if (payload.code !== code) {
+      await this.rateLimiter.recordFailedRequest(
+        userId,
+        'unknown',
+        'INVALID_OTP'
+      );
+      throw new UnauthorizedException('Invalid OTP');
+    }
+
     await this.cache.del(key);
+    await this.rateLimiter.recordSuccessfulRequest(userId, 'unknown');
     return { verified: true };
   }
 }

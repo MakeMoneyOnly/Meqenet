@@ -1,7 +1,7 @@
 import { Logger, ValidationPipe, BadRequestException } from '@nestjs/common';
 import { ValidationError } from 'class-validator';
 import { ConfigService } from '@nestjs/config';
-import { NestFactory } from '@nestjs/core';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import compression from 'compression';
@@ -25,6 +25,7 @@ import { initializeOpenTelemetry } from './shared/observability/otel';
 import { GlobalExceptionFilter } from './shared/filters/global-exception.filter';
 import { LatencyMetricsInterceptor } from './shared/interceptors/latency-metrics.interceptor';
 import { AccessLogMiddleware } from './shared/middleware/access-log.middleware';
+import { JwtAuthGuard } from './shared/guards/jwt-auth.guard';
 
 const DEFAULT_PORT = 3001;
 const DEFAULT_GRPC_URL = 'localhost:5000';
@@ -188,6 +189,10 @@ async function bootstrap(): Promise<void> {
 
     // Global exception filter for bilingual error responses (NBE compliance)
     app.useGlobalFilters(new GlobalExceptionFilter());
+
+    // Apply global JWT authentication guard
+    const reflector = app.get(Reflector);
+    app.useGlobalGuards(new JwtAuthGuard(reflector));
 
     // Global latency metrics interceptor
     app.useGlobalInterceptors(new LatencyMetricsInterceptor());

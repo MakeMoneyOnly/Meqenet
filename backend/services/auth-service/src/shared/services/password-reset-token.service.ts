@@ -13,7 +13,7 @@ export interface PasswordResetTokenData {
 export class PasswordResetTokenService {
   private readonly logger = new Logger(PasswordResetTokenService.name);
   // eslint-disable-next-line no-magic-numbers
-  private readonly TOKEN_EXPIRY_HOURS = 24; // Tokens expire after 24 hours (1 day)
+  private readonly TOKEN_EXPIRY_MINUTES = 15; // Tokens expire after 15 minutes
   // eslint-disable-next-line no-magic-numbers
   private readonly TOKEN_LENGTH = 256 / 8; // 256 bits = 32 bytes = 64 hex characters for secure token
 
@@ -39,7 +39,7 @@ export class PasswordResetTokenService {
 
     // Calculate expiry time
     const expiresAt = new Date();
-    expiresAt.setHours(expiresAt.getHours() + this.TOKEN_EXPIRY_HOURS);
+    expiresAt.setMinutes(expiresAt.getMinutes() + this.TOKEN_EXPIRY_MINUTES);
 
     try {
       // Store the hashed token in database
