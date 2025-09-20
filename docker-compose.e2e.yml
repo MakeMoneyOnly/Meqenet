@@ -37,6 +37,9 @@ services:
     environment:
       REDIS_HOST: redis_test
       REDIS_PORT: 6379
+      AUTH_SERVICE_URL: http://auth_service:3001
+      PAYMENTS_SERVICE_URL: http://payments_service:3004
+      NODE_ENV: test
     depends_on:
       auth_service:
         condition: service_healthy
@@ -44,24 +47,33 @@ services:
         condition: service_healthy
       redis_test:
         condition: service_healthy
+    healthcheck:
+      # Health check for API Gateway
+      test: ["CMD", "wget", "--spider", "http://api_gateway:3000/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   auth_service:
     build:
       context: .
       dockerfile: backend/services/auth-service/Dockerfile
+    ports:
+      - "3001:3001"
     environment:
       DATABASE_URL: postgresql://testuser:testpassword@postgres_test:5432/meqenet_test
       REDIS_HOST: redis_test
       REDIS_PORT: 6379
       E2E_DB_ENCRYPTION_KEY: ${E2E_DB_ENCRYPTION_KEY}
+      PORT: 3001
     depends_on:
       postgres_test:
         condition: service_healthy
       redis_test:
         condition: service_healthy
     healthcheck:
-      # This assumes the service exposes a health check endpoint on port 3001
-      test: ["CMD", "wget", "--spider", "http://localhost:3001/health"]
+      # Health check using the service name within Docker network
+      test: ["CMD", "wget", "--spider", "http://auth_service:3001/health"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -70,18 +82,21 @@ services:
     build:
       context: .
       dockerfile: backend/services/payments-service/Dockerfile
+    ports:
+      - "3004:3004"
     environment:
       DATABASE_URL: postgresql://testuser:testpassword@postgres_test:5432/meqenet_test
       REDIS_HOST: redis_test
       REDIS_PORT: 6379
+      PORT: 3004
     depends_on:
       postgres_test:
         condition: service_healthy
       redis_test:
         condition: service_healthy
     healthcheck:
-      # This assumes the service exposes a health check endpoint on port 3002
-      test: ["CMD", "wget", "--spider", "http://localhost:3002/health"]
+      # Health check using the service name within Docker network
+      test: ["CMD", "wget", "--spider", "http://payments_service:3004/health"]
       interval: 10s
       timeout: 5s
       retries: 5

@@ -160,6 +160,7 @@ export class AppController {
    * Note: Using /auth/* paths since proxy middleware is disabled
    */
   @Post('/auth/register')
+  @HttpCode(201)
   mockAuthRegister(): { message: string; userId: string } {
     return { message: 'User registered successfully', userId: 'test-user-123' };
   }

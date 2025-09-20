@@ -10,26 +10,13 @@
  */
 
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
-
-// Environment detection utility
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const getEnvVar = (key: string): string | undefined => {
-  // eslint-disable-next-line internal/no-process-env-outside-config
-  if (typeof process !== 'undefined' && process.env) {
-    // eslint-disable-next-line internal/no-process-env-outside-config
-    return process.env[key];
-  }
-  return undefined;
-};
+import { ApiConfig } from '@meqenet/shared/config';
 
 // Environment detection
 const isReactNative = typeof navigator !== 'undefined' && navigator.product === 'ReactNative';
-const isDevelopment = (getEnvVar('NODE_ENV') === 'development') ||
-                      (typeof globalThis !== 'undefined' && (globalThis as Record<string, unknown>).__DEV__ as boolean) ||
-                      false;
+const isDevelopment = ApiConfig.isDevelopment;
 
 // Logger utility for proper logging
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const logger = {
   warn: (message: string, ...args: unknown[]) => {
     if (isDevelopment && typeof console !== 'undefined') {
@@ -64,7 +51,7 @@ try {
     initializeSSLPinning = sslPinning.initializeSSLPinning;
     ReactNativeSSLPinningAdapter = sslPinning.default;
   }
-} catch (error) {
+} catch {
   // React Native SSL pinning not available (web environment)
   logger.warn('⚠️ React Native SSL pinning not available - using standard HTTPS');
 }
@@ -133,9 +120,9 @@ const WEB_SSL_CONFIG = {
 
 // Default configuration
 const DEFAULT_CONFIG: ApiClientConfig = {
-  baseURL: getEnvVar('EXPO_PUBLIC_API_URL') || 'http://localhost:3000/api',
-  timeout: 10000, // 10 seconds
-  retries: 3,
+  baseURL: ApiConfig.baseUrl,
+  timeout: ApiConfig.timeout,
+  retries: ApiConfig.retries,
   retryDelay: 1000, // 1 second
 };
 
