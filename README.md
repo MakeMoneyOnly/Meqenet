@@ -289,6 +289,11 @@ Comprehensive documentation is available in the `docs/` directory:
 - **[Product Requirements](docs/Stage%201%20-%20Foundation/04-PRD.md)**: Complete product
   specification
 
+### Archived Implementations
+
+- **[Go Implementation Archive](archive/go-implementation/README.md)**: Complete Go-based BNPL
+  platform archived as reference (developed August 2025, archived September 2025)
+
 ## 🚀 Deployment
 
 ### Environments
