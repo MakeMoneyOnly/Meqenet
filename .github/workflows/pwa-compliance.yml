@@ -459,8 +459,8 @@ jobs:
         with:
           urls: http://localhost:3001
           configPath: .github/lighthouse/pwa-config.json
-          uploadArtifacts: true
-          temporaryPublicStorage: true
+          uploadArtifacts: false
+          temporaryPublicStorage: false
 
       - name: 📊 Upload Lighthouse Report
         uses: actions/upload-artifact@v4
