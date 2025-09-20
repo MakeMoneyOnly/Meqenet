@@ -141,8 +141,7 @@ jobs:
           exit-code: "0" # Don't fail the build, just report
       - name: checkov
         id: checkov
-        uses: bridgecrewio/checkov-action@v12
-        continue-on-error: true
+        uses: bridgecrewio/checkov-action@v12.1347.0
         with:
           directory: infrastructure/
           framework: terraform
@@ -231,8 +230,20 @@ jobs:
             exit 1
           fi
 
-      - name: Checkov SARIF Upload
+      - name: Check SARIF file existence
+        id: check_sarif
         if: always()
+        run: |
+          if [ -f "checkov-terraform.sarif" ] && [ -s "checkov-terraform.sarif" ]; then
+            echo "sarif_exists=true" >> $GITHUB_OUTPUT
+            echo "✅ Checkov SARIF file ready for upload"
+          else
+            echo "sarif_exists=false" >> $GITHUB_OUTPUT
+            echo "⚠️ Checkov SARIF file not found or empty, skipping upload"
+          fi
+
+      - name: Upload Checkov SARIF
+        if: always() && steps.check_sarif.outputs.sarif_exists == 'true'
         uses: github/codeql-action/upload-sarif@v3
         continue-on-error: true
         with:
@@ -247,7 +258,25 @@ jobs:
           echo "Validating SARIF file generation and upload..."
           echo "Repository: ${{ github.repository }}"
           echo "Workflow: ${{ github.workflow }}"
+          echo "Checkov step outcome: ${{ steps.checkov.outcome }}"
+          echo "Checkov step conclusion: ${{ steps.checkov.conclusion }}"
           echo "=========================================="
+
+          # Check if Checkov step succeeded
+          if [ "${{ steps.checkov.outcome }}" = "failure" ]; then
+            echo "❌ Checkov step failed - checking for partial SARIF file..."
+            if [ -f "checkov-terraform.sarif" ]; then
+              echo "⚠️ SARIF file exists despite Checkov failure - proceeding with validation"
+            else
+              echo "❌ No SARIF file found and Checkov failed"
+              echo "🔍 Possible causes:"
+              echo "  - Checkov installation/network issues"
+              echo "  - Invalid Terraform syntax"
+              echo "  - AWS credential problems"
+              echo "  - Action version incompatibility"
+              exit 1
+            fi
+          fi
 
           if [ -f "checkov-terraform.sarif" ]; then
             echo "✅ Checkov SARIF file exists"
