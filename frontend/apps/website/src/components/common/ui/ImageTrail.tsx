@@ -82,11 +82,11 @@ class ImageTrailVariant1 {
   private container: HTMLDivElement;
   private images: ImageItem[];
   private imagesTotal: number;
-  private imgPosition: number = 0;
-  private zIndexVal: number = 1;
-  private activeImagesCount: number = 0;
-  private isIdle: boolean = true;
-  private threshold: number = 80;
+  private imgPosition = 0;
+  private zIndexVal = 1;
+  private activeImagesCount = 0;
+  private isIdle = true;
+  private threshold = 80;
   private mousePos: { x: number; y: number } = { x: 0, y: 0 };
   private lastMousePos: { x: number; y: number } = { x: 0, y: 0 };
   private cacheMousePos: { x: number; y: number } = { x: 0, y: 0 };
@@ -107,10 +107,16 @@ class ImageTrailVariant1 {
 
     if (this.imagesTotal === 0) {
       Logger.warn('ImageTrailVariant1: No images found to animate.');
-      // Initialize bound functions even if no images, to prevent errors in destroy
-      this.boundHandlePointerMove = () => {};
-      this.boundInitRender = () => {};
-      this.boundRenderLoop = () => {};
+      // Initialize bound functions as no-ops when no images are available
+      this.boundHandlePointerMove = () => {
+        // No-op: no images to handle pointer movement for
+      };
+      this.boundInitRender = () => {
+        // No-op: no images to render
+      };
+      this.boundRenderLoop = () => {
+        // No-op: no render loop needed without images
+      };
       return;
     }
 
@@ -175,6 +181,7 @@ class ImageTrailVariant1 {
     if (this.imagesTotal === 0) return;
     ++this.zIndexVal;
     this.imgPosition = (this.imgPosition + 1) % this.imagesTotal;
+    // Safe array access - imgPosition is bounded by imagesTotal
     const img = this.images[this.imgPosition];
     if (!img || !img.DOM.el || !img.rect) return;
 
@@ -300,7 +307,8 @@ export const ImageTrail: FC<ImageTrailProps> = ({
   useEffect(() => {
     if (!containerRef.current || items.length === 0) return;
 
-    const Cls = variantMap[variant] || variantMap[1];
+    // Safe dynamic access - variant is typed as 1-8 union type
+    const Cls = variantMap[variant] ?? variantMap[1];
     if (!Cls) {
       Logger.error(`ImageTrail: Variant ${variant} class not found.`);
       return;

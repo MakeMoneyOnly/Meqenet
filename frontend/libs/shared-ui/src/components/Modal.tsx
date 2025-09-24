@@ -28,7 +28,6 @@ export const Modal = ({
       }}
       aria-label="Close modal overlay"
     >
-      {/* eslint-disable-next-line */}
       <dialog
         open
         aria-labelledby="modal-title"

@@ -4,6 +4,7 @@ import tsParser from '@typescript-eslint/parser';
 import tsPlugin from '@typescript-eslint/eslint-plugin';
 import reactPlugin from 'eslint-plugin-react';
 import reactHooksPlugin from 'eslint-plugin-react-hooks';
+import securityPlugin from 'eslint-plugin-security';
 
 export default [
   js.configs.recommended,
@@ -84,6 +85,7 @@ export default [
       '@typescript-eslint': tsPlugin,
       react: reactPlugin,
       'react-hooks': reactHooksPlugin,
+      security: securityPlugin,
     },
     rules: {
       // TypeScript rules
@@ -104,6 +106,12 @@ export default [
       'react/prop-types': 'off',
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',
+
+      // Security rules (critical for FinTech)
+      'security/detect-object-injection': 'warn',
+      'security/detect-eval-with-expression': 'error',
+      'security/detect-unsafe-regex': 'warn',
+      'security/detect-child-process': 'error',
 
       // General rules
       'prefer-const': 'error',

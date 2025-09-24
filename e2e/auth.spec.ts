@@ -17,9 +17,9 @@ const newUser = {
 };
 
 // API interceptors for mocking
-const setupAuthInterceptors = (page: any) => {
+const setupAuthInterceptors = (page: import('playwright').Page) => {
   // Mock successful login
-  page.route('**/api/auth/login', async (route: any) => {
+  page.route('**/api/auth/login', async (route: import('playwright').Route) => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -38,43 +38,52 @@ const setupAuthInterceptors = (page: any) => {
   });
 
   // Mock successful registration
-  page.route('**/api/auth/register', async (route: any) => {
-    await route.fulfill({
-      status: 201,
-      contentType: 'application/json',
-      body: JSON.stringify({
-        message: 'User registered successfully',
-        user: {
-          id: '2',
-          email: newUser.email,
-          firstName: newUser.firstName,
-          lastName: newUser.lastName,
-        },
-      }),
-    });
-  });
+  page.route(
+    '**/api/auth/register',
+    async (route: import('playwright').Route) => {
+      await route.fulfill({
+        status: 201,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          message: 'User registered successfully',
+          user: {
+            id: '2',
+            email: newUser.email,
+            firstName: newUser.firstName,
+            lastName: newUser.lastName,
+          },
+        }),
+      });
+    }
+  );
 
   // Mock password reset request
-  page.route('**/api/auth/request-password-reset', async (route: any) => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({
-        message: 'Password reset email sent',
-      }),
-    });
-  });
+  page.route(
+    '**/api/auth/request-password-reset',
+    async (route: import('playwright').Route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          message: 'Password reset email sent',
+        }),
+      });
+    }
+  );
 
   // Mock password reset confirmation
-  page.route('**/api/auth/confirm-password-reset', async (route: any) => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({
-        message: 'Password reset successfully',
-      }),
-    });
-  });
+  page.route(
+    '**/api/auth/confirm-password-reset',
+    async (route: import('playwright').Route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          message: 'Password reset successfully',
+        }),
+      });
+    }
+  );
 };
 
 test.describe('Authentication Flow', () => {
@@ -129,16 +138,19 @@ test.describe('Authentication Flow', () => {
 
     test('should handle login failure', async ({ page }) => {
       // Override the login interceptor for this test
-      page.route('**/api/auth/login', async (route: any) => {
-        await route.fulfill({
-          status: 401,
-          contentType: 'application/json',
-          body: JSON.stringify({
-            errorCode: 'INVALID_CREDENTIALS',
-            message: 'Invalid email or password',
-          }),
-        });
-      });
+      page.route(
+        '**/api/auth/login',
+        async (route: import('playwright').Route) => {
+          await route.fulfill({
+            status: 401,
+            contentType: 'application/json',
+            body: JSON.stringify({
+              errorCode: 'INVALID_CREDENTIALS',
+              message: 'Invalid email or password',
+            }),
+          });
+        }
+      );
 
       await page.goto('/auth/login');
 
@@ -321,29 +333,32 @@ test.describe('Authentication Flow', () => {
     test('should prevent brute force attacks', async ({ page }) => {
       // Override login to simulate rate limiting
       let attemptCount = 0;
-      page.route('**/api/auth/login', async (route: any) => {
-        attemptCount++;
-        if (attemptCount >= 5) {
-          await route.fulfill({
-            status: 429,
-            contentType: 'application/json',
-            body: JSON.stringify({
-              errorCode: 'RATE_LIMIT_EXCEEDED',
-              message: 'Too many login attempts. Please try again later.',
-              retryAfter: 900,
-            }),
-          });
-        } else {
-          await route.fulfill({
-            status: 401,
-            contentType: 'application/json',
-            body: JSON.stringify({
-              errorCode: 'INVALID_CREDENTIALS',
-              message: 'Invalid email or password',
-            }),
-          });
+      page.route(
+        '**/api/auth/login',
+        async (route: import('playwright').Route) => {
+          attemptCount++;
+          if (attemptCount >= 5) {
+            await route.fulfill({
+              status: 429,
+              contentType: 'application/json',
+              body: JSON.stringify({
+                errorCode: 'RATE_LIMIT_EXCEEDED',
+                message: 'Too many login attempts. Please try again later.',
+                retryAfter: 900,
+              }),
+            });
+          } else {
+            await route.fulfill({
+              status: 401,
+              contentType: 'application/json',
+              body: JSON.stringify({
+                errorCode: 'INVALID_CREDENTIALS',
+                message: 'Invalid email or password',
+              }),
+            });
+          }
         }
-      });
+      );
 
       await page.goto('/auth/login');
 

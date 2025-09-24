@@ -235,11 +235,9 @@ export class FaydaEncryptionUtil {
    */
   private validateFaydaIdFormat(faydaId: string): void {
     // Basic validation - actual format may vary
-    // Ethiopian Fayda ID format: typically numeric, specific length
-    // eslint-disable-next-line security/detect-non-literal-regexp
-    const faydaIdPattern = new RegExp(
-      `^[0-9]{${FAYDA_ENCRYPTION_CONFIG.FAYDA_ID_MIN_LENGTH},${FAYDA_ENCRYPTION_CONFIG.FAYDA_ID_MAX_LENGTH}}$`
-    );
+    // Ethiopian Fayda ID format: typically numeric, specific length (10-16 digits)
+    // Using literal regex pattern for security compliance
+    const faydaIdPattern = /^[0-9]{10,16}$/;
 
     if (!faydaId || typeof faydaId !== 'string') {
       throw new Error('Invalid Fayda ID: must be a non-empty string');

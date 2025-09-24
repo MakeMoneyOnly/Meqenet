@@ -192,6 +192,7 @@ export const AccessibilityExamples: Story = {
         variant="secondary"
         aria-describedby="download-description"
         onClick={() => {
+          // Intentional alert for Storybook demonstration
           // eslint-disable-next-line no-alert
           alert('Download started');
         }}

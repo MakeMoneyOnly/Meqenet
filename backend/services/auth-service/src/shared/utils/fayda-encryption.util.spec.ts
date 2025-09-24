@@ -16,7 +16,7 @@ describe('FaydaEncryptionUtil', () => {
   beforeEach(() => {
     mockConfigService = {
       get: vi.fn().mockReturnValue('aws-kms-key-id-123'),
-    } as any;
+    } as import('vitest').MockedObject<ConfigService>;
 
     mockSecretManagerService = {
       encryptData: vi
@@ -27,7 +27,7 @@ describe('FaydaEncryptionUtil', () => {
         .mockImplementation(async (data: string) =>
           data.replace('kms_encrypted_', '')
         ),
-    } as any;
+    } as import('vitest').MockedObject<SecretManagerService>;
 
     vi.spyOn(Logger.prototype, 'log').mockImplementation();
     vi.spyOn(Logger.prototype, 'error').mockImplementation();

@@ -5,6 +5,7 @@ import {
   CallHandler,
   Logger,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
@@ -16,6 +17,8 @@ import { tap } from 'rxjs/operators';
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
   private readonly logger = new Logger(LoggingInterceptor.name);
+
+  constructor(private readonly configService: ConfigService) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const request = context.switchToHttp().getRequest();
@@ -75,7 +78,7 @@ export class LoggingInterceptor implements NestInterceptor {
   ): void {
     const logLevel = status === 'ERROR' ? 'error' : 'log';
 
-    // eslint-disable-next-line security/detect-object-injection
+    // Using bracket notation for dynamic log level - validated to be 'log' or 'error'
     this.logger[logLevel]('Request completed', {
       method: request.method,
       url: request.url,
@@ -116,7 +119,7 @@ export class LoggingInterceptor implements NestInterceptor {
     for (const header of sensitiveHeaders) {
       const headerValue = sanitized[header as keyof typeof sanitized];
       if (headerValue && typeof headerValue === 'string') {
-        // eslint-disable-next-line security/detect-object-injection
+        // Using bracket notation for header redaction - header is from controlled sensitiveHeaders array
         (sanitized as Record<string, string>)[header] = '[REDACTED]';
       }
     }
@@ -146,7 +149,7 @@ export class LoggingInterceptor implements NestInterceptor {
     for (const field of sensitiveFields) {
       const fieldValue = sanitized[field as keyof typeof sanitized];
       if (fieldValue && typeof fieldValue === 'string') {
-        // eslint-disable-next-line security/detect-object-injection
+        // Using bracket notation for field redaction - field is from controlled sensitiveFields array
         (sanitized as Record<string, string>)[field] = '[REDACTED]';
       }
     }
@@ -165,8 +168,10 @@ export class LoggingInterceptor implements NestInterceptor {
       name: error.name,
       status: (error as Record<string, unknown>).status,
       // Don't include stack trace in production logs for security
-      // Note: This is a controlled access to process.env for logging configuration only
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+      stack:
+        this.configService.get<string>('NODE_ENV') === 'development'
+          ? error.stack
+          : undefined,
     };
   }
 }

@@ -1,5 +1,6 @@
 // Minimal security linting - focus on critical issues only
 import security from 'eslint-plugin-security';
+import reactHooks from 'eslint-plugin-react-hooks';
 
 export default [
   {
@@ -40,7 +41,26 @@ export default [
       'frontend/apps/website/public/workbox-*.js',
     ],
   },
-  // Very minimal security checks - only the most critical issues
+  // React files - additional React-specific rules
+  {
+    files: ['**/*.tsx', '**/*.jsx'],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'module',
+      parser: (await import('@typescript-eslint/parser')).default,
+    },
+    plugins: {
+      security,
+      '@typescript-eslint': (await import('@typescript-eslint/eslint-plugin')).default,
+      'react-hooks': reactHooks,
+    },
+    rules: {
+      // React Hooks rules
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'warn',
+    },
+  },
+  // All TypeScript/JavaScript files - minimal security checks
   {
     files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx', '**/*.mjs', '**/*.cjs'],
     languageOptions: {
