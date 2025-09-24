@@ -1,6 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+
+  // Transpile packages for monorepo support
+  transpilePackages: ['@meqenet/shared', '@meqenet/shared/config'],
   
   // Security configurations for FinTech applications
   poweredByHeader: false, // Hide X-Powered-By header

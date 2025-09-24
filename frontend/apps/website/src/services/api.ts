@@ -1,3 +1,4 @@
+// API service for Meqenet frontend
 import axios from 'axios';
 import { ApiConfig } from '@meqenet/shared/config';
 

@@ -41,11 +41,11 @@ export function LocomotiveScrollProvider({
 
     // Clear any pending updates to prevent accumulation
     if (updateTimeoutRef.current) {
-      clearTimeout(updateTimeoutRef.current);
+      window.clearTimeout(updateTimeoutRef.current);
     }
 
     // Minimal debounce for maximum smoothness while preventing infinite loops
-    updateTimeoutRef.current = setTimeout(() => {
+    updateTimeoutRef.current = window.setTimeout(() => {
       lastScrollYRef.current = newScrollY;
       setScrollY(newScrollY);
 
@@ -111,7 +111,7 @@ export function LocomotiveScrollProvider({
       if (cleanup) cleanup();
       // Clear any pending timeout on cleanup
       if (updateTimeoutRef.current) {
-        clearTimeout(updateTimeoutRef.current);
+        window.clearTimeout(updateTimeoutRef.current);
         updateTimeoutRef.current = null;
       }
     };
