@@ -1,0 +1,137 @@
+{
+  "name": "flexpay-web",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=18.19.0",
+    "npm": ">=9.0.0"
+  },
+  "scripts": {
+    "dev": "next dev -p 3001",
+    "build": "next build",
+    "start": "next start -p 3001",
+    "lint": "next lint",
+    "lint:security": "eslint . --ext .js,.jsx,.ts,.tsx --config .eslintrc.security.mjs",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage --coverageThreshold='{\"global\":{\"branches\":80,\"functions\":80,\"lines\":80,\"statements\":80}}'",
+    "test:security": "npm audit && snyk test",
+    "clean": "rimraf .next",
+    "reinstall": "rimraf node_modules package-lock.json yarn.lock && pnpm install",
+    "dev:pnpm": "pnpm dev",
+    "build:pnpm": "pnpm build",
+    "setup": "pnpm install --frozen-lockfile",
+    "security:audit": "pnpm audit && snyk test",
+    "security:fix": "pnpm audit --fix",
+    "compliance:check": "pnpm run lint:security && pnpm run test:security"
+  },
+  "dependencies": {
+    "@headlessui/react": "^2.2.0",
+    "@heroicons/react": "^2.2.0",
+    "@radix-ui/react-accordion": "^1.2.11",
+    "@radix-ui/react-label": "^2.1.7",
+    "@radix-ui/react-slot": "^1.2.3",
+    "@tanstack/react-query": "^5.80.0",
+    "@vercel/analytics": "^1.5.0",
+    "@vercel/speed-insights": "^1.2.0",
+    "axios": "^1.10.0",
+    "bcryptjs": "^2.4.3",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "crypto-js": "^4.2.0",
+    "date-fns": "^4.1.0",
+    "framer-motion": "^12.18.0",
+    "gsap": "^3.13.0",
+    "helmet": "^8.0.0",
+    "jose": "^6.0.0",
+    "js-cookie": "^3.0.5",
+    "jsonwebtoken": "^9.0.2",
+    "lenis": "^1.3.4",
+    "locomotive-scroll": "^4.1.4",
+    "lucide-react": "^0.515.0",
+    "motion": "^12.18.0",
+    "next": "^15.3.0",
+    "next-auth": "^4.24.11",
+    "next-secure-headers": "^2.2.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-hook-form": "^7.58.0",
+    "react-use-measure": "^2.1.7",
+    "redoc": "^2.5.0",
+    "tailwind-merge": "^3.3.0",
+    "tailwindcss-animate": "^1.0.7",
+    "uuid": "^10.0.0",
+    "validator": "^13.12.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.29.0",
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/jest-dom": "^6.6.0",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.5.0",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/crypto-js": "^4.2.2",
+    "@types/jest": "^30.0.0",
+    "@types/js-cookie": "^3.0.6",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/node": "^24.0.3",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.0",
+    "@types/uuid": "^10.0.0",
+    "@types/validator": "^13.12.2",
+    "@typescript-eslint/eslint-plugin": "^8.15.0",
+    "@typescript-eslint/parser": "^8.15.0",
+    "autoprefixer": "^10.4.21",
+    "eslint": "^9.29.0",
+    "eslint-config-next": "^15.3.0",
+    "eslint-plugin-security": "^3.0.1",
+    "husky": "^9.1.7",
+    "jest": "^30.0.0",
+    "jest-environment-jsdom": "^30.0.0",
+    "lint-staged": "^15.2.10",
+    "postcss": "^8.5.0",
+    "prettier": "^3.4.2",
+    "rimraf": "^6.0.0",
+    "snyk": "^1.1297.1",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.8.3"
+  },
+  "packageManager": "pnpm@10.12.1",
+  "pnpm": {
+    "overrides": {
+      "@types/react": "^19.1.0",
+      "@types/react-dom": "^19.1.0",
+      "@testing-library/dom": "^10.4.0",
+      "glob": "^11.0.0",
+      "inflight": "^1.0.6",
+      "rimraf": "^6.0.1"
+    },
+    "peerDependencyRules": {
+      "ignoreMissing": [
+        "@testing-library/dom"
+      ]
+    },
+    "onlyBuiltDependencies": [
+      "snyk"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged",
+      "pre-push": "pnpm run test && pnpm run security:audit"
+    }
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write",
+      "git add"
+    ],
+    "*.{json,md}": [
+      "prettier --write",
+      "git add"
+    ]
+  }
+}

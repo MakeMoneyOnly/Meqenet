@@ -1,0 +1,420 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String           @id @default(uuid())
+  email           String?          @unique
+  phoneNumber     String           @unique
+  password        String
+  // --- PIN authentication fields ---
+  pinHash         String?  // Hashed PIN, nullable if not set
+  pinFailedAttempts Int    @default(0) // Failed PIN attempts for lockout
+  role            String           @default("USER")
+  isActive        Boolean          @default(true)
+  emailVerified   Boolean          @default(false)
+  phoneVerified   Boolean          @default(true)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  userProfile     UserProfile?
+  account         Account?
+  transactions    Transaction[]
+  paymentPlans    PaymentPlan[]
+  paymentMethods  PaymentMethod[]
+  notifications   Notification[]
+  kycVerifications KycVerification[]
+  virtualCards    VirtualCard[]
+
+  @@map("users")
+}
+
+model UserProfile {
+  id                String   @id @default(uuid())
+  userId            String   @unique
+  firstName         String
+  lastName          String
+  dateOfBirth       DateTime?
+  gender            String?
+  address           String?
+  city              String?
+  state             String?
+  country           String   @default("Ethiopia")
+  preferredLanguage String   @default("am")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_profiles")
+}
+
+model KycVerification {
+  id                String   @id @default(uuid())
+  userId            String
+  documentType      String   // FAYDA_ID, PASSPORT, RESIDENCE_PERMIT
+  documentNumber    String
+  documentFrontPath String
+  documentBackPath  String?
+  selfiePath        String
+  status            String   @default("PENDING") // NOT_SUBMITTED, PENDING, APPROVED, REJECTED
+  rejectionReason   String?
+  verifiedAt        DateTime?
+  metadata          Json?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("kyc_verifications")
+}
+
+model Account {
+  id                  String              @id @default(uuid())
+  userId              String              @unique
+  accountNumber       String              @unique
+  creditLimit         Float               @default(1000)
+  availableCredit     Float               @default(1000)
+  totalOutstanding    Float               @default(0)
+  autopayEnabled      Boolean             @default(false)
+  autopayPaymentMethodId String?
+  status              String              @default("ACTIVE")
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  user                User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  creditLimitHistory  CreditLimitHistory[]
+  autopayPaymentMethod PaymentMethod?     @relation(name: "AccountAutopayMethod", fields: [autopayPaymentMethodId], references: [id])
+
+  @@map("accounts")
+}
+
+model CreditLimitHistory {
+  id            String   @id @default(uuid())
+  accountId     String
+  previousLimit Float
+  newLimit      Float
+  reason        String
+  createdAt     DateTime @default(now())
+  account       Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@map("credit_limit_history")
+}
+
+model Transaction {
+  id              String            @id @default(uuid())
+  userId          String
+  reference       String            @unique
+  type            TransactionType
+  amount          Float
+  transactionFee  Float             @default(0)
+  totalAmount     Float             @default(0)
+  currency        String            @default("ETB")
+  status          TransactionStatus
+  paymentMethodId String?
+  paymentPlanId   String?
+  merchantId      String?
+  description     String?
+  metadata        Json?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  paymentMethod   PaymentMethod?    @relation(fields: [paymentMethodId], references: [id])
+  paymentPlan     PaymentPlan?      @relation(fields: [paymentPlanId], references: [id])
+  merchant        Merchant?         @relation(fields: [merchantId], references: [id])
+  settlement      Settlement?
+  fraudChecks     FraudCheck[]
+
+  @@map("transactions")
+}
+
+model PaymentPlan {
+  id              String            @id @default(uuid())
+  userId          String
+  reference       String            @unique
+  totalAmount     Float
+  remainingAmount Float
+  currency        String            @default("ETB")
+  numberOfInstallments Int
+  installmentAmount Float
+  startDate       DateTime
+  endDate         DateTime
+  status          PaymentPlanStatus @default(ACTIVE)
+  merchantId      String?
+  description     String?
+  metadata        Json?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions    Transaction[]
+  merchant        Merchant?         @relation(fields: [merchantId], references: [id])
+  installments    Installment[]
+
+  @@map("payment_plans")
+}
+
+model Installment {
+  id                String   @id @default(uuid())
+  paymentPlanId     String
+  amount            Float
+  dueDate           DateTime
+  paidDate          DateTime?
+  paidAmount        Float?
+  status            String   @default("PENDING") // PENDING, UPCOMING, PAID, LATE
+  installmentNumber Int
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  paymentPlan       PaymentPlan @relation(fields: [paymentPlanId], references: [id], onDelete: Cascade)
+
+  @@map("installments")
+}
+
+model PaymentMethod {
+  id              String            @id @default(uuid())
+  userId          String
+  type            PaymentMethodType
+  provider        String            @default("TELEBIRR")
+  accountNumber   String?
+  accountName     String?
+  isDefault       Boolean           @default(false)
+  isVerified      Boolean           @default(false)
+  metadata        Json?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions    Transaction[]
+  autopayAccounts Account[]         @relation("AccountAutopayMethod")
+  virtualCard     VirtualCard?
+
+  @@map("payment_methods")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  type      String
+  message   String
+  isRead    Boolean  @default(false)
+  readAt    DateTime?
+  data      Json?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+model Merchant {
+  id                String   @id @default(uuid())
+  name              String
+  businessType      String
+  tradeLicense      String?
+  tinNumber         String?  @unique
+  contactPerson     String
+  email             String   @unique
+  phoneNumber       String   @unique
+  address           String?
+  city              String?
+  state             String?
+  country           String   @default("Ethiopia")
+  status            MerchantStatus @default(PENDING)
+  commissionRate    Float    @default(0.04) // Default 4% commission
+  settlementPeriod  String   @default("IMMEDIATE") // Changed default to IMMEDIATE
+  bankName          String?
+  bankAccountNumber String?
+  bankAccountName   String?
+  apiKey            String?  @unique
+  apiSecret         String?
+  webhookUrl        String?
+  logoUrl           String?
+  websiteUrl        String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  transactions      Transaction[]
+  paymentPlans      PaymentPlan[]
+  apiKeys           MerchantApiKey[]
+  settlements       Settlement[]
+
+  @@map("merchants")
+}
+
+model MerchantApiKey {
+  id          String   @id @default(uuid())
+  merchantId  String
+  name        String
+  key         String   @unique
+  secret      String
+  isActive    Boolean  @default(true)
+  expiresAt   DateTime?
+  lastUsedAt  DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  merchant    Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  @@map("merchant_api_keys")
+}
+
+enum TransactionType {
+  PAYMENT
+  REFUND
+  FEE
+  ADJUSTMENT
+}
+
+enum TransactionStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum PaymentPlanStatus {
+  ACTIVE
+  COMPLETED
+  LATE
+  DEFAULTED
+  CANCELLED
+}
+
+enum PaymentMethodType {
+  MOBILE_MONEY
+  BANK_ACCOUNT
+  CARD
+  VIRTUAL_CARD
+}
+
+enum UserRole {
+  USER
+  MERCHANT
+  ADMIN
+  CREDIT_MANAGER
+  CUSTOMER_SUPPORT
+  COMPLIANCE_OFFICER
+}
+
+enum AccountStatus {
+  ACTIVE
+  SUSPENDED
+  CLOSED
+}
+
+enum VerificationCodeType {
+  EMAIL
+  PHONE
+  PASSWORD_RESET
+  TWO_FACTOR
+}
+
+enum MerchantStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+  REJECTED
+}
+
+enum SettlementStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+model Settlement {
+  id                String           @id @default(uuid())
+  merchantId        String
+  transactionId     String           @unique
+  reference         String           @unique
+  amount            Float
+  feeAmount         Float
+  currency          String           @default("ETB")
+  status            SettlementStatus @default(PENDING)
+  transferReference String?
+  transferMethod    String           @default("BANK_TRANSFER")
+  metadata          Json?
+  completedAt       DateTime?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  merchant          Merchant         @relation(fields: [merchantId], references: [id])
+  transaction       Transaction      @relation(fields: [transactionId], references: [id])
+
+  @@map("settlements")
+}
+
+model FraudCheck {
+  id              String   @id @default(uuid())
+  transactionId   String
+  riskScore       Float
+  action          String   // ALLOW, FLAG, BLOCK
+  flaggedRules    String[] // Array of rule names that were flagged
+  checkedAt       DateTime @default(now())
+  reviewedBy      String?  // User ID of admin who reviewed this check
+  reviewedAt      DateTime?
+  reviewNotes     String?
+  transaction     Transaction @relation(fields: [transactionId], references: [id])
+
+  @@map("fraud_checks")
+}
+
+model FraudRule {
+  id              String   @id @default(uuid())
+  name            String   @unique
+  description     String
+  riskScore       Float    // 0-100, how much this rule contributes to risk score
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdBy       String?  // User ID of admin who created this rule
+  parameters      Json?    // Rule-specific parameters
+
+  @@map("fraud_rules")
+}
+
+model SystemLog {
+  id          String   @id @default(uuid())
+  level       String   // error, warn, info, etc.
+  message     String
+  context     String?
+  trace       String?
+  timestamp   DateTime @default(now())
+  metadata    Json?    // Additional log data
+
+  @@index([level])
+  @@index([timestamp])
+  @@index([context])
+  @@map("system_logs")
+}
+
+model VirtualCard {
+  id                String   @id @default(uuid())
+  userId            String
+  paymentMethodId   String   @unique
+  cardNumber        String   @unique
+  cardHolderName    String
+  expiryMonth       Int
+  expiryYear        Int
+  cvv               String
+  status            VirtualCardStatus @default(ACTIVE)
+  limitAmount       Float    @default(0)
+  usedAmount        Float    @default(0)
+  currency          String   @default("ETB")
+  isDefault         Boolean  @default(false)
+  metadata          Json?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  paymentMethod     PaymentMethod @relation(fields: [paymentMethodId], references: [id], onDelete: Cascade)
+
+  @@map("virtual_cards")
+}
+
+enum VirtualCardStatus {
+  ACTIVE
+  SUSPENDED
+  CANCELLED
+  EXPIRED
+}
+

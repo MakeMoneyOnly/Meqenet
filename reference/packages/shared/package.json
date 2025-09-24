@@ -1,0 +1,37 @@
+{
+  "name": "@meqenet/shared",
+  "version": "1.0.0",
+  "description": "Shared types, utilities, and constants for Meqenet.et BNPL ecosystem",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "lint": "eslint src --ext .ts,.tsx",
+    "test": "jest"
+  },
+  "keywords": [
+    "fintech",
+    "bnpl",
+    "shared",
+    "types",
+    "utilities"
+  ],
+  "author": "Meqenet.et",
+  "license": "PROPRIETARY",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "jest": "^29.0.0",
+    "@types/jest": "^29.0.0",
+    "eslint": "^8.0.0"
+  },
+  "dependencies": {
+    "zod": "^3.22.0",
+    "date-fns": "^2.30.0"
+  },
+  "publishConfig": {
+    "access": "restricted"
+  }
+} 

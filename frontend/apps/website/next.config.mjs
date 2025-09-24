@@ -1,19 +1,38 @@
-// import withPWA from 'next-pwa'; // Temporarily disabled - incompatible with Next.js 15
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-
+  
   // Security configurations for FinTech applications
   poweredByHeader: false, // Hide X-Powered-By header
-
+  
   // Image optimization with security considerations
   images: {
-    domains: ['localhost', 'api.flexpay.et', 'staging-api.flexpay.et', 'images.unsplash.com', 'randomuser.me'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'randomuser.me',
+      },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+      },
+      {
+        protocol: 'https',
+        hostname: 'api.flexpay.et',
+      },
+      {
+        protocol: 'https',
+        hostname: 'staging-api.flexpay.et',
+      },
+    ],
     dangerouslyAllowSVG: false, // Prevent SVG-based attacks
-    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    qualities: [25, 50, 75, 100],
   },
-
+  
   // Security headers for financial applications
   async headers() {
     return [
@@ -50,7 +69,7 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-eval' 'unsafe-inline'", // Note: Consider removing unsafe-* in production
+              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://va.vercel-scripts.com", // Note: Consider removing unsafe-* in production
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https:",
               "font-src 'self'",
@@ -70,7 +89,7 @@ const nextConfig = {
       },
     ];
   },
-
+  
   // API rewrites with security considerations
   async rewrites() {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1';
@@ -82,38 +101,24 @@ const nextConfig = {
       },
     ];
   },
-
+  
   // Environment variable validation
   env: {
     CUSTOM_KEY: process.env.CUSTOM_KEY,
   },
-
+  
   // Webpack configuration for security
-  webpack: (config, { dev }) => {
+  webpack: (config, { dev, isServer }) => {
     // Security: Disable source maps in production
     if (!dev) {
       config.devtool = false;
     }
-
+    
     return config;
   },
-
-  // Experimental features for enhanced security
-  experimental: {
-    // strictNextHead is deprecated in Next.js 15+
-  },
-
+  
+  // Output tracing configuration
+  outputFileTracingRoot: undefined,
 };
-
-// PWA Configuration - Temporarily disabled due to Next.js 15 compatibility
-// TODO: Update next-pwa to version compatible with Next.js 15
-/*
-const withPWAConfig = {
-  dest: 'public',
-  register: true,
-  skipWaiting: true,
-  disable: process.env.NODE_ENV === 'development',
-};
-*/
 
 export default nextConfig;

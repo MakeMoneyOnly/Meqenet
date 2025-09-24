@@ -1,0 +1,1 @@
+Meqenet: የ {{amount}} ብር ክፍያዎን ተቀብለናል። ቀሪ ሂሳብዎ {{remainingBalance}} ብር ነው። ስለ ክፍያዎ እናመሰግናለን።
