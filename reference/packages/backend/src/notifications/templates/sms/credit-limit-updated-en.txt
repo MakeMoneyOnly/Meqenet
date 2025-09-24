@@ -1,1 +1,0 @@
-Meqenet: Your credit limit has been updated to {{newLimit}} ETB (previous: {{oldLimit}} ETB). Log in to the app to view details.

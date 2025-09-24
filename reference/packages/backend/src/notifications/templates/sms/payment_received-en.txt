@@ -1,1 +1,0 @@
-Meqenet: We've received your payment of ETB {{amount}}. Your remaining balance is ETB {{remainingBalance}}. Thank you for your payment.

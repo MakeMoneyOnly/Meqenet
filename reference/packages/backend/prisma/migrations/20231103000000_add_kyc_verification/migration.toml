@@ -1,4 +1,0 @@
-# This is an empty migration.toml file, used by Prisma Migrate
-# https://pris.ly/d/migration-files
-
-migration_name = "20231103000000_add_kyc_verification"

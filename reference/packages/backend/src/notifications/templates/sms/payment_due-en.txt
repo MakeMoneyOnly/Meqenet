@@ -1,1 +1,0 @@
-Meqenet: Your payment of ETB {{amount}} is due on {{dueDate}}. Please ensure your account has sufficient funds. Thank you.
