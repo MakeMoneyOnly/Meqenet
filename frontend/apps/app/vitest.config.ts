@@ -28,6 +28,7 @@ export default defineConfig({
         __dirname,
         './test/mocks/sentry-react-native.ts',
       ),
+      '@meqenet/shared/config': resolve(__dirname, '../../libs/shared/config/src/index.ts'),
     },
   },
   test: {
