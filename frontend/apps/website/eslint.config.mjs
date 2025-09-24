@@ -111,6 +111,13 @@ export default [
       'no-unused-vars': 'off', // Use @typescript-eslint/no-unused-vars instead
     },
   },
+  // Configuration for Logger utility (allow console statements)
+  {
+    files: ['**/lib/security/index.ts'],
+    rules: {
+      'no-console': 'off', // Allow console statements in Logger class
+    },
+  },
   // Configuration for JavaScript files
   {
     files: ['**/*.js', '**/*.jsx'],

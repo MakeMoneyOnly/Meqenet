@@ -116,6 +116,9 @@ export default [
         ...globals.browser,
         ...globals.node,
         ...globals.es2022,
+        // Additional DOM types
+        EventListener: 'readonly',
+        EventListenerObject: 'readonly',
       },
       parserOptions: {
         // IMPORTANT: No project reference for performance

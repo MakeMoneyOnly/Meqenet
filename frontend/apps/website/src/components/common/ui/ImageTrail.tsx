@@ -1,7 +1,8 @@
-"use client";
+'use client';
 
-import React, { useRef, useEffect, FC } from "react";
-import { gsap } from "gsap";
+import React, { useRef, useEffect, FC } from 'react';
+import { gsap } from 'gsap';
+import { Logger } from '@/lib/security';
 
 // --- Helper Functions ---
 function lerp(a: number, b: number, n: number): number {
@@ -10,14 +11,14 @@ function lerp(a: number, b: number, n: number): number {
 
 function getLocalPointerPos(
   e: MouseEvent | TouchEvent,
-  rect: DOMRect | null // Allow rect to be null
+  rect: DOMRect | null, // Allow rect to be null
 ): { x: number; y: number } {
   let clientX = 0,
     clientY = 0;
-  if ("touches" in e && e.touches && e.touches.length > 0) {
+  if ('touches' in e && e.touches && e.touches.length > 0) {
     clientX = e.touches[0].clientX;
     clientY = e.touches[0].clientY;
-  } else if ("clientX" in e) {
+  } else if ('clientX' in e) {
     clientX = (e as MouseEvent).clientX;
     clientY = (e as MouseEvent).clientY;
   }
@@ -30,7 +31,7 @@ function getLocalPointerPos(
 
 function getMouseDistance(
   p1: { x: number; y: number },
-  p2: { x: number; y: number }
+  p2: { x: number; y: number },
 ): number {
   const dx = p1.x - p2.x;
   const dy = p1.y - p2.y;
@@ -46,8 +47,11 @@ class ImageItem {
 
   constructor(DOM_el: HTMLDivElement) {
     this.DOM = { el: DOM_el, inner: null }; // Initialize inner properly
-    if (this.DOM.el) { // Ensure el exists before querying
-        this.DOM.inner = this.DOM.el.querySelector<HTMLDivElement>(".content__img-inner");
+    if (this.DOM.el) {
+      // Ensure el exists before querying
+      this.DOM.inner = this.DOM.el.querySelector<HTMLDivElement>(
+        '.content__img-inner',
+      );
     }
     this.resizeHandler = () => {
       if (!this.DOM.el) return;
@@ -59,11 +63,11 @@ class ImageItem {
   }
 
   private initEvents() {
-    window.addEventListener("resize", this.resizeHandler);
+    window.addEventListener('resize', this.resizeHandler);
   }
 
   public destroy() {
-    window.removeEventListener("resize", this.resizeHandler);
+    window.removeEventListener('resize', this.resizeHandler);
   }
 
   private getRect() {
@@ -95,19 +99,21 @@ class ImageTrailVariant1 {
 
   constructor(container: HTMLDivElement) {
     this.container = container;
-    const imgElements = Array.from(container.querySelectorAll<HTMLDivElement>(".content__img"));
+    const imgElements = Array.from(
+      container.querySelectorAll<HTMLDivElement>('.content__img'),
+    );
     this.images = imgElements.map((img) => new ImageItem(img));
     this.imagesTotal = this.images.length;
 
     if (this.imagesTotal === 0) {
-        console.warn("ImageTrailVariant1: No images found to animate.");
-        // Initialize bound functions even if no images, to prevent errors in destroy
-        this.boundHandlePointerMove = () => {};
-        this.boundInitRender = () => {};
-        this.boundRenderLoop = () => {};
-        return;
+      Logger.warn('ImageTrailVariant1: No images found to animate.');
+      // Initialize bound functions even if no images, to prevent errors in destroy
+      this.boundHandlePointerMove = () => {};
+      this.boundInitRender = () => {};
+      this.boundRenderLoop = () => {};
+      return;
     }
-    
+
     this.boundRenderLoop = this.render.bind(this);
 
     this.boundHandlePointerMove = (ev: MouseEvent | TouchEvent) => {
@@ -119,23 +125,37 @@ class ImageTrailVariant1 {
       const rect = this.container.getBoundingClientRect();
       this.mousePos = getLocalPointerPos(ev, rect);
       this.cacheMousePos = { ...this.mousePos };
-      if (this.animationFrameId === null) { // Start render loop only once
+      if (this.animationFrameId === null) {
+        // Start render loop only once
         this.animationFrameId = requestAnimationFrame(this.boundRenderLoop);
       }
-      this.container.removeEventListener("mousemove", this.boundInitRender as EventListener);
-      this.container.removeEventListener("touchmove", this.boundInitRender as EventListener);
+      this.container.removeEventListener(
+        'mousemove',
+        this.boundInitRender as EventListener,
+      );
+      this.container.removeEventListener(
+        'touchmove',
+        this.boundInitRender as EventListener,
+      );
     };
 
-    this.container.addEventListener("mousemove", this.boundHandlePointerMove);
-    this.container.addEventListener("touchmove", this.boundHandlePointerMove);
-    this.container.addEventListener("mousemove", this.boundInitRender as EventListener);
-    this.container.addEventListener("touchmove", this.boundInitRender as EventListener);
+    this.container.addEventListener('mousemove', this.boundHandlePointerMove);
+    this.container.addEventListener('touchmove', this.boundHandlePointerMove);
+    this.container.addEventListener(
+      'mousemove',
+      this.boundInitRender as EventListener,
+    );
+    this.container.addEventListener(
+      'touchmove',
+      this.boundInitRender as EventListener,
+    );
   }
 
   private render() {
-    if (!this.container) { // Safety check
-        if (this.animationFrameId) cancelAnimationFrame(this.animationFrameId);
-        return;
+    if (!this.container) {
+      // Safety check
+      if (this.animationFrameId) cancelAnimationFrame(this.animationFrameId);
+      return;
     }
     const distance = getMouseDistance(this.mousePos, this.lastMousePos);
     this.cacheMousePos.x = lerp(this.cacheMousePos.x, this.mousePos.x, 0.1);
@@ -164,15 +184,38 @@ class ImageTrailVariant1 {
         onStart: () => this.onImageActivated(),
         onComplete: () => this.onImageDeactivated(),
       })
-      .fromTo( img.DOM.el,
-        { opacity: 1, scale: 1, zIndex: this.zIndexVal, x: this.cacheMousePos.x - img.rect.width / 2, y: this.cacheMousePos.y - img.rect.height / 2, },
-        { duration: 0.4, ease: "power1", x: this.mousePos.x - img.rect.width / 2, y: this.mousePos.y - img.rect.height / 2, },0
+      .fromTo(
+        img.DOM.el,
+        {
+          opacity: 1,
+          scale: 1,
+          zIndex: this.zIndexVal,
+          x: this.cacheMousePos.x - img.rect.width / 2,
+          y: this.cacheMousePos.y - img.rect.height / 2,
+        },
+        {
+          duration: 0.4,
+          ease: 'power1',
+          x: this.mousePos.x - img.rect.width / 2,
+          y: this.mousePos.y - img.rect.height / 2,
+        },
+        0,
       )
-      .to( img.DOM.el, { duration: 0.4, ease: "power3", opacity: 0, scale: 0.2, }, 0.4 );
+      .to(
+        img.DOM.el,
+        { duration: 0.4, ease: 'power3', opacity: 0, scale: 0.2 },
+        0.4,
+      );
   }
 
-  private onImageActivated() { this.activeImagesCount++; this.isIdle = false; }
-  private onImageDeactivated() { this.activeImagesCount--; if (this.activeImagesCount === 0) this.isIdle = true; }
+  private onImageActivated() {
+    this.activeImagesCount++;
+    this.isIdle = false;
+  }
+  private onImageDeactivated() {
+    this.activeImagesCount--;
+    if (this.activeImagesCount === 0) this.isIdle = true;
+  }
 
   public destroy() {
     if (this.animationFrameId !== null) {
@@ -180,12 +223,24 @@ class ImageTrailVariant1 {
       this.animationFrameId = null;
     }
     if (this.container) {
-        this.container.removeEventListener("mousemove", this.boundHandlePointerMove);
-        this.container.removeEventListener("touchmove", this.boundHandlePointerMove);
-        this.container.removeEventListener("mousemove", this.boundInitRender as EventListener);
-        this.container.removeEventListener("touchmove", this.boundInitRender as EventListener);
+      this.container.removeEventListener(
+        'mousemove',
+        this.boundHandlePointerMove,
+      );
+      this.container.removeEventListener(
+        'touchmove',
+        this.boundHandlePointerMove,
+      );
+      this.container.removeEventListener(
+        'mousemove',
+        this.boundInitRender as EventListener,
+      );
+      this.container.removeEventListener(
+        'touchmove',
+        this.boundInitRender as EventListener,
+      );
     }
-    this.images.forEach(img => img.destroy());
+    this.images.forEach((img) => img.destroy());
     // console.log("ImageTrailVariant1 destroyed");
   }
 }
@@ -206,7 +261,9 @@ interface ImageTrailInstance {
   destroy: () => void;
 }
 
-const variantMap: { [key: number]: new (container: HTMLDivElement) => ImageTrailInstance } = {
+const variantMap: {
+  [key: number]: new (container: HTMLDivElement) => ImageTrailInstance;
+} = {
   1: ImageTrailVariant1,
   2: ImageTrailVariant2, // Replace with actual class if different
   3: ImageTrailVariant3, // Replace
@@ -231,10 +288,10 @@ interface ImageTrailProps {
 export const ImageTrail: FC<ImageTrailProps> = ({
   items = [],
   variant = 1,
-  className = "",
+  className = '',
   style = {},
-  imageClassName = "w-[190px] aspect-[1.1] rounded-[15px]", // Default from your code
-  imageInnerClassName = "bg-center bg-cover w-[calc(100%+20px)] h-[calc(100%+20px)] absolute top-[-10px] left-[-10px]", // Default
+  imageClassName = 'w-[190px] aspect-[1.1] rounded-[15px]', // Default from your code
+  imageInnerClassName = 'bg-center bg-cover w-[calc(100%+20px)] h-[calc(100%+20px)] absolute top-[-10px] left-[-10px]', // Default
   imageWidth,
   imageAspectRatio,
 }) => {
@@ -242,13 +299,13 @@ export const ImageTrail: FC<ImageTrailProps> = ({
 
   useEffect(() => {
     if (!containerRef.current || items.length === 0) return;
-    
+
     const Cls = variantMap[variant] || variantMap[1];
     if (!Cls) {
-        console.error(`ImageTrail: Variant ${variant} class not found.`);
-        return;
+      Logger.error(`ImageTrail: Variant ${variant} class not found.`);
+      return;
     }
-    
+
     const instance = new Cls(containerRef.current);
 
     return () => {
@@ -256,14 +313,17 @@ export const ImageTrail: FC<ImageTrailProps> = ({
         instance.destroy();
       }
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [variant, items]); // Keying on items as well, in case the image list changes
 
   let finalImageClasses = `content__img absolute top-0 left-0 opacity-0 overflow-hidden pointer-events-none select-none ${imageClassName}`;
-  const imageStyles: React.CSSProperties = { willChange: "transform, opacity, filter" };
+  const imageStyles: React.CSSProperties = {
+    willChange: 'transform, opacity, filter',
+  };
 
   if (imageWidth) {
-    finalImageClasses = finalImageClasses.replace(/w-\[.*?\]/g, '').replace(/w-\d+/g, ''); // Remove Tailwind width
+    finalImageClasses = finalImageClasses
+      .replace(/w-\[.*?\]/g, '')
+      .replace(/w-\d+/g, ''); // Remove Tailwind width
     imageStyles.width = imageWidth;
   }
   if (imageAspectRatio) {
@@ -271,9 +331,15 @@ export const ImageTrail: FC<ImageTrailProps> = ({
     imageStyles.aspectRatio = imageAspectRatio;
   }
 
-
   if (items.length === 0) {
-    return <div className={`w-full h-full flex justify-center items-center ${className}`} style={style}><p>No images for trail.</p></div>;
+    return (
+      <div
+        className={`w-full h-full flex justify-center items-center ${className}`}
+        style={style}
+      >
+        <p>No images for trail.</p>
+      </div>
+    );
   }
 
   return (
@@ -296,4 +362,4 @@ export const ImageTrail: FC<ImageTrailProps> = ({
       ))}
     </div>
   );
-}; 
+};
