@@ -4,13 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 // import { cn } from '@/lib/utils';
 
-const actionWords = [
-  'Shop Now',
-  'Buy Now',
-  'Try Now',
-  'Fly Now',
-  'Buy Now'
-];
+const actionWords = ['Shop Now', 'Buy Now', 'Try Now', 'Fly Now', 'Buy Now'];
 
 const AnimatedActionText = () => {
   const [index, setIndex] = useState(0);
@@ -25,17 +19,21 @@ const AnimatedActionText = () => {
       tempSpan.style.whiteSpace = 'nowrap';
       tempSpan.style.position = 'absolute';
       tempSpan.style.pointerEvents = 'none';
-      tempSpan.style.fontSize = window.getComputedStyle(textRef.current).fontSize;
-      tempSpan.style.fontFamily = window.getComputedStyle(textRef.current).fontFamily;
+      tempSpan.style.fontSize = window.getComputedStyle(
+        textRef.current,
+      ).fontSize;
+      tempSpan.style.fontFamily = window.getComputedStyle(
+        textRef.current,
+      ).fontFamily;
       document.body.appendChild(tempSpan);
-      
+
       // Find the widest text
       let max = 0;
-      actionWords.forEach(word => {
+      actionWords.forEach((word) => {
         tempSpan.textContent = word;
         max = Math.max(max, tempSpan.offsetWidth);
       });
-      
+
       document.body.removeChild(tempSpan);
       setMaxWidth(max);
     }
@@ -50,28 +48,28 @@ const AnimatedActionText = () => {
   }, []);
 
   return (
-    <div 
+    <div
       ref={textRef}
       className="relative inline-block"
       style={{ minWidth: maxWidth > 0 ? `${maxWidth}px` : 'auto' }}
     >
       <AnimatePresence mode="wait">
         <motion.span
-          key={actionWords[index]}
+          key={actionWords[index] ?? 'Shop Now'}
           initial={{ y: '0.1em', opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: '-0.1em', opacity: 0 }}
           transition={{
             duration: 0.4,
-            ease: [0.4, 0, 0.2, 1]
+            ease: [0.4, 0, 0.2, 1],
           }}
           className="inline-block whitespace-nowrap"
           style={{
             backfaceVisibility: 'hidden',
-            verticalAlign: 'baseline'
+            verticalAlign: 'baseline',
           }}
         >
-          {actionWords[index]}
+          {actionWords[index] ?? 'Shop Now'}
         </motion.span>
       </AnimatePresence>
     </div>

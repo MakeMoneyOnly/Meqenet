@@ -9,7 +9,6 @@ import { PerformanceMiddleware } from './monitoring/middleware/performance.middl
 import { PerformanceMonitoringService } from './monitoring/services/performance-monitoring.service';
 import { RequestLoggingInterceptor } from './logging/interceptors/request-logging.interceptor';
 import { ErrorLoggingInterceptor } from './logging/interceptors/error-logging.interceptor';
-import { LoggingService } from './logging/services/logging.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -58,7 +57,7 @@ async function bootstrap() {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
-    }),
+    })
   );
 
   // API prefix
@@ -67,7 +66,9 @@ async function bootstrap() {
   // Swagger documentation
   const config = new DocumentBuilder()
     .setTitle('Meqenet BNPL API')
-    .setDescription('API documentation for Meqenet Buy Now Pay Later service - Ethiopian Market')
+    .setDescription(
+      'API documentation for Meqenet Buy Now Pay Later service - Ethiopian Market'
+    )
     .setVersion('1.0')
     .addTag('auth', 'Authentication and user verification endpoints')
     .addTag('users', 'User management endpoints')
@@ -91,17 +92,19 @@ async function bootstrap() {
       in: 'header',
       description: 'API key for merchant integration',
     })
-    .setContact('Meqenet Support', 'https://meqenet.et/support', 'support@meqenet.et')
+    .setContact(
+      'Meqenet Support',
+      'https://meqenet.et/support',
+      'support@meqenet.et'
+    )
     .setLicense('Proprietary', 'https://meqenet.et/terms')
     .setExternalDoc('Additional Documentation', 'https://meqenet.et/docs')
     .build();
 
   const document = SwaggerModule.createDocument(app, config, {
     deepScanRoutes: true,
-    operationIdFactory: (
-      controllerKey: string,
-      methodKey: string,
-    ) => methodKey,
+    operationIdFactory: (_controllerKey: string, methodKey: string) =>
+      methodKey,
   });
 
   SwaggerModule.setup('docs', app, document, {
@@ -114,6 +117,5 @@ async function bootstrap() {
   });
 
   await app.listen(port);
-  console.log(`Application is running on: http://localhost:${port}/${apiPrefix}`);
 }
 bootstrap();

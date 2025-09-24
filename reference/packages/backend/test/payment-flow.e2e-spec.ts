@@ -4,16 +4,16 @@ import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as _uuidv4 } from 'uuid';
 
 describe('Payment Flow (e2e)', () => {
   let app: INestApplication;
-  let prisma: PrismaService;
-  let jwtService: JwtService;
+  let _prisma: PrismaService;
+  let _jwtService: JwtService;
   let userToken: string;
   let merchantToken: string;
   let userId: string;
-  let merchantId: string;
+  let _merchantId: string;
   let transactionId: string;
 
   beforeAll(async () => {
@@ -24,18 +24,19 @@ describe('Payment Flow (e2e)', () => {
     app = moduleFixture.createNestApplication();
     await app.init();
 
-    prisma = app.get<PrismaService>(PrismaService);
-    jwtService = app.get<JwtService>(JwtService);
+    _prisma = app.get<PrismaService>(PrismaService);
+    _jwtService = app.get<JwtService>(JwtService);
 
     // Clean the database
-    await prisma.cleanDatabase();
+    await _prisma.cleanDatabase();
 
     // Create test user
-    const user = await prisma.user.create({
+    const user = await _prisma.user.create({
       data: {
         email: 'test@example.com',
         phoneNumber: '+251912345678',
-        password: '$2b$10$EpRnTzVlqHNP0.fUbXUwSOyuiXe/QLSUG6xNekdHgTGmrpHEfIoxm', // Password: 'password123'
+        password:
+          '$2b$10$EpRnTzVlqHNP0.fUbXUwSOyuiXe/QLSUG6xNekdHgTGmrpHEfIoxm', // Password: 'password123'
         role: 'USER',
         emailVerified: true,
         phoneVerified: true,
@@ -62,7 +63,7 @@ describe('Payment Flow (e2e)', () => {
     userId = user.id;
 
     // Create test merchant
-    const merchant = await prisma.merchant.create({
+    const merchant = await _prisma.merchant.create({
       data: {
         name: 'Test Merchant',
         businessType: 'RETAIL',
@@ -79,24 +80,24 @@ describe('Payment Flow (e2e)', () => {
       },
     });
 
-    merchantId = merchant.id;
+    _merchantId = merchant.id;
 
     // Generate tokens
-    userToken = jwtService.sign({
+    userToken = _jwtService.sign({
       sub: user.id,
       email: user.email,
-      role: user.role
+      role: user.role,
     });
 
-    merchantToken = jwtService.sign({
+    merchantToken = _jwtService.sign({
       sub: merchant.id,
       email: merchant.email,
-      role: 'MERCHANT'
+      role: 'MERCHANT',
     });
   });
 
   afterAll(async () => {
-    await prisma.cleanDatabase();
+    await _prisma.cleanDatabase();
     await app.close();
   });
 

@@ -1,7 +1,12 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { User, PaymentPlan } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
-import { CreditAssessmentDto, EmploymentStatus, IncomeFrequency } from '../dto/credit-assessment.dto';
+import {
+  CreditAssessmentDto,
+  EmploymentStatus,
+  IncomeFrequency,
+} from '../dto/credit-assessment.dto';
 import { NotificationsService } from '../../notifications/services/notifications.service';
 import { NotificationType } from '../../notifications/enums/notification-type.enum';
 
@@ -20,9 +25,12 @@ export class CreditAssessmentService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
-    private readonly notificationsService: NotificationsService,
+    private readonly notificationsService: NotificationsService
   ) {
-    this.baseMultiplier = this.configService.get<number>('CREDIT_BASE_MULTIPLIER', 2);
+    this.baseMultiplier = this.configService.get<number>(
+      'CREDIT_BASE_MULTIPLIER',
+      2
+    );
     this.maxLimit = this.configService.get<number>('CREDIT_MAX_LIMIT', 50000);
     this.minLimit = this.configService.get<number>('CREDIT_MIN_LIMIT', 1000);
   }
@@ -34,7 +42,10 @@ export class CreditAssessmentService {
    * @param data Credit assessment data
    * @returns Assessed credit limit in ETB
    */
-  async assessCreditLimit(userId: string, data: CreditAssessmentDto): Promise<number> {
+  async assessCreditLimit(
+    userId: string,
+    data: CreditAssessmentDto
+  ): Promise<number> {
     try {
       this.logger.log(`Assessing credit limit for user ${userId}`);
 
@@ -55,19 +66,32 @@ export class CreditAssessmentService {
       let creditLimit = this.calculateBaseCreditLimit(data);
 
       // Apply adjustments based on employment status
-      creditLimit = this.applyEmploymentAdjustment(creditLimit, data.employmentStatus);
+      creditLimit = this.applyEmploymentAdjustment(
+        creditLimit,
+        data.employmentStatus
+      );
 
       // Apply adjustments based on income frequency
-      creditLimit = this.applyIncomeFrequencyAdjustment(creditLimit, data.incomeFrequency);
+      creditLimit = this.applyIncomeFrequencyAdjustment(
+        creditLimit,
+        data.incomeFrequency
+      );
 
       // Apply additional adjustments
       creditLimit = this.applyAdditionalAdjustments(creditLimit, data);
 
       // Apply Ethiopian market specific adjustments
-      creditLimit = this.applyEthiopianMarketAdjustments(creditLimit, data, user);
+      creditLimit = this.applyEthiopianMarketAdjustments(
+        creditLimit,
+        data,
+        user
+      );
 
       // Ensure credit limit is within allowed range
-      creditLimit = Math.max(this.minLimit, Math.min(this.maxLimit, creditLimit));
+      creditLimit = Math.max(
+        this.minLimit,
+        Math.min(this.maxLimit, creditLimit)
+      );
 
       // Round to nearest 100 (for cleaner limits in ETB)
       creditLimit = Math.floor(creditLimit / 100) * 100;
@@ -76,8 +100,12 @@ export class CreditAssessmentService {
       await this.storeCreditAssessment(userId, creditLimit, data);
 
       // Get old limit for comparison
-      const oldLimit: number = user.userProfile && 'creditLimit' in user.userProfile ?
-        (typeof user.userProfile.creditLimit === 'number' ? user.userProfile.creditLimit : 0) : 0;
+      const oldLimit: number =
+        user.userProfile && 'creditLimit' in user.userProfile
+          ? typeof user.userProfile.creditLimit === 'number'
+            ? user.userProfile.creditLimit
+            : 0
+          : 0;
 
       // Create or update account
       if (!user.account) {
@@ -94,7 +122,8 @@ export class CreditAssessmentService {
       } else {
         // Calculate the change in available credit
         const additionalCredit = creditLimit - oldLimit;
-        const newAvailableCredit = user.account.availableCredit + additionalCredit;
+        const newAvailableCredit =
+          user.account.availableCredit + additionalCredit;
 
         await this.prisma.account.update({
           where: { id: user.account.id },
@@ -143,10 +172,15 @@ export class CreditAssessmentService {
         });
       }
 
-      this.logger.log(`Credit limit for user ${userId} set to ${creditLimit} ETB`);
+      this.logger.log(
+        `Credit limit for user ${userId} set to ${creditLimit} ETB`
+      );
       return creditLimit;
     } catch (error) {
-      this.logger.error(`Error assessing credit limit: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error assessing credit limit: ${error.message}`,
+        error.stack
+      );
       throw error;
     }
   }
@@ -174,7 +208,9 @@ export class CreditAssessmentService {
       }
 
       if (!user.userProfile) {
-        throw new NotFoundException(`User profile not found for user ${userId}`);
+        throw new NotFoundException(
+          `User profile not found for user ${userId}`
+        );
       }
 
       if (!user.account) {
@@ -190,7 +226,8 @@ export class CreditAssessmentService {
       });
 
       // Calculate payment reliability score (0-1)
-      const reliabilityScore = this.calculatePaymentReliabilityScore(paymentPlans);
+      const reliabilityScore =
+        this.calculatePaymentReliabilityScore(paymentPlans);
 
       // Get current credit limit
       const currentLimit = user.account.creditLimit;
@@ -225,7 +262,8 @@ export class CreditAssessmentService {
       if (newLimit !== currentLimit) {
         // Calculate the change in available credit
         const additionalCredit = newLimit - currentLimit;
-        const newAvailableCredit = user.account.availableCredit + additionalCredit;
+        const newAvailableCredit =
+          user.account.availableCredit + additionalCredit;
 
         // Update account
         await this.prisma.account.update({
@@ -262,57 +300,74 @@ export class CreditAssessmentService {
         });
       }
 
-      this.logger.log(`Credit limit for user ${userId} reassessed from ${currentLimit} to ${newLimit} ETB`);
+      this.logger.log(
+        `Credit limit for user ${userId} reassessed from ${currentLimit} to ${newLimit} ETB`
+      );
       return newLimit;
     } catch (error) {
-      this.logger.error(`Error reassessing credit limit: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error reassessing credit limit: ${error.message}`,
+        error.stack
+      );
       throw error;
     }
   }
 
   private calculateBaseCreditLimit(data: CreditAssessmentDto): number {
     // Calculate disposable income
-    const disposableIncome = data.monthlyIncome - data.monthlyExpenses - (data.existingLoanPayments || 0);
+    const disposableIncome =
+      data.monthlyIncome -
+      data.monthlyExpenses -
+      (data.existingLoanPayments || 0);
 
     // Base credit limit is disposable income multiplied by a factor
     return disposableIncome * this.baseMultiplier;
   }
 
-  private applyEmploymentAdjustment(baseLimit: number, employmentStatus: EmploymentStatus): number {
+  private applyEmploymentAdjustment(
+    baseLimit: number,
+    employmentStatus: EmploymentStatus
+  ): number {
     // Apply multipliers based on employment stability
     switch (employmentStatus) {
       case EmploymentStatus.FULL_TIME:
-        return baseLimit * 1.2; // 20% increase for stable employment
+        return Number(baseLimit) * 1.2; // 20% increase for stable employment
       case EmploymentStatus.SELF_EMPLOYED:
-        return baseLimit * 1.0; // No adjustment
+        return Number(baseLimit) * 1.0; // No adjustment
       case EmploymentStatus.PART_TIME:
-        return baseLimit * 0.8; // 20% decrease for less stable income
+        return Number(baseLimit) * 0.8; // 20% decrease for less stable income
       case EmploymentStatus.CONTRACT:
-        return baseLimit * 0.9; // 10% decrease for temporary employment
+        return Number(baseLimit) * 0.9; // 10% decrease for temporary employment
       case EmploymentStatus.STUDENT:
-        return baseLimit * 0.6; // 40% decrease for students
+        return Number(baseLimit) * 0.6; // 40% decrease for students
       case EmploymentStatus.UNEMPLOYED:
-        return baseLimit * 0.3; // 70% decrease for unemployed
+        return Number(baseLimit) * 0.3; // 70% decrease for unemployed
       default:
-        return baseLimit;
+        return Number(baseLimit);
     }
   }
 
-  private applyIncomeFrequencyAdjustment(baseLimit: number, incomeFrequency: IncomeFrequency): number {
+  private applyIncomeFrequencyAdjustment(
+    baseLimit: number,
+    incomeFrequency: IncomeFrequency
+  ): number {
     // Apply multipliers based on income stability
     switch (incomeFrequency) {
       case IncomeFrequency.MONTHLY:
-        return baseLimit * 1.1; // 10% increase for stable monthly income
+        return Number(baseLimit) * 1.1; // 10% increase for stable monthly income
       case IncomeFrequency.WEEKLY:
-        return baseLimit * 1.0; // No adjustment
+        return Number(baseLimit) * 1.0; // No adjustment
       case IncomeFrequency.IRREGULAR:
-        return baseLimit * 0.8; // 20% decrease for irregular income
+        return Number(baseLimit) * 0.8; // 20% decrease for irregular income
       default:
-        return baseLimit;
+        return Number(baseLimit);
     }
   }
 
-  private applyAdditionalAdjustments(baseLimit: number, data: CreditAssessmentDto): number {
+  private applyAdditionalAdjustments(
+    baseLimit: number,
+    data: CreditAssessmentDto
+  ): number {
     let adjustedLimit = baseLimit;
 
     // Adjust based on existing loans
@@ -357,7 +412,11 @@ export class CreditAssessmentService {
    * @param user User data
    * @returns Adjusted credit limit
    */
-  private applyEthiopianMarketAdjustments(baseLimit: number, data: CreditAssessmentDto, user: any): number {
+  private applyEthiopianMarketAdjustments(
+    baseLimit: number,
+    data: CreditAssessmentDto,
+    user: User
+  ): number {
     let adjustedLimit = baseLimit;
 
     // Adjust based on KYC verification status
@@ -366,7 +425,10 @@ export class CreditAssessmentService {
       adjustedLimit *= 1.15; // 15% increase for verified identity
     } else if (user.userProfile?.kycStatus === 'PENDING') {
       adjustedLimit *= 0.7; // 30% decrease for pending verification
-    } else if (!user.userProfile?.kycStatus || user.userProfile?.kycStatus === 'NOT_SUBMITTED') {
+    } else if (
+      !user.userProfile?.kycStatus ||
+      user.userProfile?.kycStatus === 'NOT_SUBMITTED'
+    ) {
       adjustedLimit *= 0.5; // 50% decrease for unverified users
     }
 
@@ -416,7 +478,8 @@ export class CreditAssessmentService {
     let score = 50; // Start with middle score
 
     // Factor 1: Income to expense ratio (30 points)
-    const incomeToExpenseRatio = data.monthlyIncome / (data.monthlyExpenses || 1);
+    const incomeToExpenseRatio =
+      data.monthlyIncome / (data.monthlyExpenses || 1);
     if (incomeToExpenseRatio > 3) {
       score += 30;
     } else if (incomeToExpenseRatio > 2) {
@@ -486,15 +549,24 @@ export class CreditAssessmentService {
    * @param creditLimit Assessed credit limit
    * @param data Credit assessment data
    */
-  private async storeCreditAssessment(userId: string, creditLimit: number, data: CreditAssessmentDto): Promise<void> {
+  private async storeCreditAssessment(
+    userId: string,
+    creditLimit: number,
+    data: CreditAssessmentDto
+  ): Promise<void> {
     try {
       const score = this.calculateAssessmentScore(data);
 
       // Store assessment data in a log or custom table if needed
-      this.logger.log(`Credit assessment for user ${userId}: score=${score}, limit=${creditLimit}`);
+      this.logger.log(
+        `Credit assessment for user ${userId}: score=${score}, limit=${creditLimit}`
+      );
     } catch (error) {
       // Log error but don't fail the assessment
-      this.logger.error(`Error storing credit assessment: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error storing credit assessment: ${error.message}`,
+        error.stack
+      );
     }
   }
 
@@ -503,7 +575,9 @@ export class CreditAssessmentService {
    * @param paymentPlans User's payment plans
    * @returns Reliability score (0-1)
    */
-  private calculatePaymentReliabilityScore(paymentPlans: any[]): number {
+  private calculatePaymentReliabilityScore(
+    paymentPlans: PaymentPlan[]
+  ): number {
     // If no payment history, return neutral score
     if (!paymentPlans.length) {
       return 0.7;
@@ -525,7 +599,10 @@ export class CreditAssessmentService {
 
           // Payment is late if completed after due date
           if (paymentDate > dueDate) {
-            const daysLate = Math.floor((paymentDate.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24));
+            const daysLate = Math.floor(
+              (paymentDate.getTime() - dueDate.getTime()) /
+                (1000 * 60 * 60 * 24)
+            );
 
             if (daysLate > 30) {
               missedPayments++; // Consider as missed if more than 30 days late
@@ -547,6 +624,3 @@ export class CreditAssessmentService {
     return Math.max(0, Math.min(1, 1 - (0.2 * lateRatio + 0.8 * missedRatio)));
   }
 }
-
-
-

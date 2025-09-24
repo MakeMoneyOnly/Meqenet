@@ -1,5 +1,13 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsOptional, IsNumber, Min, IsBoolean, IsObject, IsEnum } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsNumber,
+  Min,
+  IsBoolean,
+  IsObject,
+  IsEnum,
+} from 'class-validator';
 import { VirtualCardStatus } from '@prisma/client';
 
 export class UpdateVirtualCardDto {
@@ -47,5 +55,5 @@ export class UpdateVirtualCardDto {
   })
   @IsObject()
   @IsOptional()
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }

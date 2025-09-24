@@ -1,6 +1,6 @@
 {
   "title": "Meqenet Dependency Security Report",
-  "generatedAt": "2025-09-20T13:38:04.966Z",
+  "generatedAt": "2025-09-24T18:50:58.142Z",
   "sections": [
     {
       "name": "NPM Audit",
@@ -32,7 +32,7 @@
     },
     {
       "name": "OWASP Dependency Check",
-      "totalComponents": 3939,
+      "totalComponents": 4383,
       "totalVulnerabilities": 0,
       "status": "SECURE",
       "issues": [],

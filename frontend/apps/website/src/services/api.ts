@@ -1,6 +1,7 @@
 import axios from 'axios';
+import { ApiConfig } from '@meqenet/shared/config';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1';
+const API_URL = ApiConfig.nextJsApiUrl;
 
 // Type definitions for better type safety
 interface UserRegistrationData {
@@ -66,16 +67,17 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     // Get token from localStorage or cookies
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-    
+    const token =
+      typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+
     // If token exists, add to headers
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    
+
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 // Add response interceptor for error handling
@@ -83,30 +85,30 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    
+
     // If error is 401 and not already retrying
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-      
+
       try {
         // Try to refresh token
         const refreshToken = localStorage.getItem('refreshToken');
         if (!refreshToken) {
           throw new Error('No refresh token available');
         }
-        
+
         const response = await axios.post(`${API_URL}/auth/refresh`, {
           refreshToken,
         });
-        
+
         const { token } = response.data;
-        
+
         // Save new token
         localStorage.setItem('token', token);
-        
+
         // Update authorization header
         originalRequest.headers.Authorization = `Bearer ${token}`;
-        
+
         // Retry original request
         return api(originalRequest);
       } catch (refreshError) {
@@ -115,87 +117,76 @@ api.interceptors.response.use(
           // Clear tokens
           localStorage.removeItem('token');
           localStorage.removeItem('refreshToken');
-          
+
           // Redirect to login
           window.location.href = '/app?session=expired';
         }
         return Promise.reject(refreshError);
       }
     }
-    
+
     return Promise.reject(error);
-  }
+  },
 );
 
 // Auth API
 export const authApi = {
-  login: (phoneNumber: string, password: string) => 
+  login: (phoneNumber: string, password: string) =>
     api.post('/auth/login', { phoneNumber, password }),
-  
-  register: (userData: UserRegistrationData) => 
+
+  register: (userData: UserRegistrationData) =>
     api.post('/auth/register', userData),
-  
-  verifyOtp: (phoneNumber: string, otp: string) => 
+
+  verifyOtp: (phoneNumber: string, otp: string) =>
     api.post('/auth/verify', { phoneNumber, otp }),
-  
-  refreshToken: (refreshToken: string) => 
+
+  refreshToken: (refreshToken: string) =>
     api.post('/auth/refresh', { refreshToken }),
 };
 
 // User API
 export const userApi = {
-  getProfile: () => 
-    api.get('/users/profile'),
-  
-  updateProfile: (profileData: ProfileData) => 
+  getProfile: () => api.get('/users/profile'),
+
+  updateProfile: (profileData: ProfileData) =>
     api.put('/users/profile', profileData),
-  
-  getKycStatus: () => 
-    api.get('/kyc/status'),
-  
-  submitKyc: (kycData: KycData) => 
-    api.post('/kyc/submit', kycData),
+
+  getKycStatus: () => api.get('/kyc/status'),
+
+  submitKyc: (kycData: KycData) => api.post('/kyc/submit', kycData),
 };
 
 // Credit API
 export const creditApi = {
-  getCreditLimit: () => 
-    api.get('/credit/limit'),
-  
-  getPaymentSchedule: () => 
-    api.get('/credit/payment-schedule'),
-  
-  getTransactions: () => 
-    api.get('/transactions'),
-  
-  getTransaction: (id: string) => 
-    api.get(`/transactions/${id}`),
+  getCreditLimit: () => api.get('/credit/limit'),
+
+  getPaymentSchedule: () => api.get('/credit/payment-schedule'),
+
+  getTransactions: () => api.get('/transactions'),
+
+  getTransaction: (id: string) => api.get(`/transactions/${id}`),
 };
 
 // Merchant API
 export const merchantApi = {
-  register: (merchantData: MerchantData) => 
+  register: (merchantData: MerchantData) =>
     api.post('/merchants', merchantData),
-  
-  getProfile: () => 
-    api.get('/merchants/profile'),
-  
-  updateProfile: (profileData: ProfileData) => 
+
+  getProfile: () => api.get('/merchants/profile'),
+
+  updateProfile: (profileData: ProfileData) =>
     api.put('/merchants/profile', profileData),
-  
-  generateApiKey: (name: string) => 
-    api.post('/merchants/api-keys', { name }),
-  
-  getApiKeys: () => 
-    api.get('/merchants/api-keys'),
-  
-  revokeApiKey: (id: string) => 
-    api.delete(`/merchants/api-keys/${id}`),
-  
-  getTransactions: (params?: TransactionParams) => 
+
+  generateApiKey: (name: string) => api.post('/merchants/api-keys', { name }),
+
+  getApiKeys: () => api.get('/merchants/api-keys'),
+
+  revokeApiKey: (id: string) => api.delete(`/merchants/api-keys/${id}`),
+
+  getTransactions: (params?: TransactionParams) =>
     api.get('/merchants/transactions', { params }),
-  
-  createTransaction: (transactionData: TransactionData) => 
+
+  createTransaction: (transactionData: TransactionData) =>
     api.post('/merchants/transactions', transactionData),
 };
 

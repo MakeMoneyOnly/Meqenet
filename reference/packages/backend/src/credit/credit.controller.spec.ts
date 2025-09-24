@@ -3,13 +3,17 @@ import { CreditController } from './credit.controller';
 import { CreditService } from './credit.service';
 import { CreditAssessmentService } from './services/credit-assessment.service';
 import { UpdateCreditLimitDto } from './dto/update-credit-limit.dto';
-import { CreditAssessmentDto, EmploymentStatus, IncomeFrequency } from './dto/credit-assessment.dto';
+import {
+  CreditAssessmentDto,
+  EmploymentStatus,
+  IncomeFrequency,
+} from './dto/credit-assessment.dto';
 import { Logger } from '@nestjs/common';
 
 describe('CreditController', () => {
   let controller: CreditController;
-  let creditService: CreditService;
-  let creditAssessmentService: CreditAssessmentService;
+  let _creditService: CreditService;
+  let _creditAssessmentService: CreditAssessmentService;
 
   // Mock data
   const mockUserId = 'user-123';
@@ -72,8 +76,10 @@ describe('CreditController', () => {
     }).compile();
 
     controller = module.get<CreditController>(CreditController);
-    creditService = module.get<CreditService>(CreditService);
-    creditAssessmentService = module.get<CreditAssessmentService>(CreditAssessmentService);
+    _creditService = module.get<CreditService>(CreditService);
+    _creditAssessmentService = module.get<CreditAssessmentService>(
+      CreditAssessmentService
+    );
 
     // Reset mocks
     jest.clearAllMocks();
@@ -108,13 +114,17 @@ describe('CreditController', () => {
   describe('getCreditLimitHistory', () => {
     it('should return user credit limit history', async () => {
       // Setup mocks
-      mockCreditService.getCreditLimitHistory.mockResolvedValue(mockCreditLimitHistory);
+      mockCreditService.getCreditLimitHistory.mockResolvedValue(
+        mockCreditLimitHistory
+      );
 
       // Call the controller method
       const result = await controller.getCreditLimitHistory(mockUserId);
 
       // Assertions
-      expect(mockCreditService.getCreditLimitHistory).toHaveBeenCalledWith(mockUserId);
+      expect(mockCreditService.getCreditLimitHistory).toHaveBeenCalledWith(
+        mockUserId
+      );
       expect(result).toEqual(mockCreditLimitHistory);
     });
   });
@@ -129,7 +139,9 @@ describe('CreditController', () => {
       });
 
       // Call the controller method
-      const result = await controller.updateCreditLimit(mockUpdateCreditLimitDto);
+      const result = await controller.updateCreditLimit(
+        mockUpdateCreditLimitDto
+      );
 
       // Assertions
       expect(mockCreditService.updateCreditLimit).toHaveBeenCalledWith(
@@ -154,7 +166,9 @@ describe('CreditController', () => {
       const result = await controller.getCreditAssessment(mockUserId);
 
       // Assertions
-      expect(mockCreditService.assessCreditLimit).toHaveBeenCalledWith(mockUserId);
+      expect(mockCreditService.assessCreditLimit).toHaveBeenCalledWith(
+        mockUserId
+      );
       expect(result).toEqual({ suggestedLimit: 12000 });
     });
   });
@@ -165,13 +179,15 @@ describe('CreditController', () => {
       mockCreditAssessmentService.assessCreditLimit.mockResolvedValue(15000);
 
       // Call the controller method
-      const result = await controller.submitCreditAssessment(mockUserId, mockCreditAssessmentDto);
-
-      // Assertions
-      expect(mockCreditAssessmentService.assessCreditLimit).toHaveBeenCalledWith(
+      const result = await controller.submitCreditAssessment(
         mockUserId,
         mockCreditAssessmentDto
       );
+
+      // Assertions
+      expect(
+        mockCreditAssessmentService.assessCreditLimit
+      ).toHaveBeenCalledWith(mockUserId, mockCreditAssessmentDto);
       expect(result).toEqual({
         success: true,
         creditLimit: 15000,
@@ -189,12 +205,15 @@ describe('CreditController', () => {
       const result = await controller.reassessCreditLimit(mockUserId);
 
       // Assertions
-      expect(mockCreditAssessmentService.reassessCreditLimit).toHaveBeenCalledWith(mockUserId);
+      expect(
+        mockCreditAssessmentService.reassessCreditLimit
+      ).toHaveBeenCalledWith(mockUserId);
       expect(result).toEqual({
         success: true,
         userId: mockUserId,
         newLimit: 12000,
-        message: 'Credit limit reassessed to 12000 ETB based on payment history',
+        message:
+          'Credit limit reassessed to 12000 ETB based on payment history',
       });
     });
   });

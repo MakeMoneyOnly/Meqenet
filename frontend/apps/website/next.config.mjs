@@ -108,12 +108,12 @@ const nextConfig = {
   },
   
   // Webpack configuration for security
-  webpack: (config, { dev, isServer }) => {
+  webpack: (config, { dev }) => {
     // Security: Disable source maps in production
     if (!dev) {
       config.devtool = false;
     }
-    
+
     return config;
   },
   

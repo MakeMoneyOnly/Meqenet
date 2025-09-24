@@ -1,9 +1,12 @@
-import { Injectable, Logger, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { VirtualCard, VirtualCardStatus, PaymentMethodType } from '@prisma/client';
+import {
+  VirtualCard,
+  VirtualCardStatus,
+  PaymentMethodType,
+} from '@prisma/client';
 import { CreateVirtualCardDto } from '../dto/create-virtual-card.dto';
 import { UpdateVirtualCardDto } from '../dto/update-virtual-card.dto';
-import { randomBytes, createHash } from 'crypto';
 
 @Injectable()
 export class VirtualCardsService {
@@ -18,7 +21,9 @@ export class VirtualCardsService {
   private generateCardNumber(): string {
     // Generate a 16-digit card number starting with 4 (like Visa)
     const prefix = '4';
-    const randomDigits = Math.floor(Math.random() * 1000000000000000).toString().padStart(15, '0');
+    const randomDigits = Math.floor(Math.random() * 1000000000000000)
+      .toString()
+      .padStart(15, '0');
     return prefix + randomDigits.substring(1);
   }
 
@@ -27,7 +32,9 @@ export class VirtualCardsService {
    * @returns A 3-digit CVV
    */
   private generateCVV(): string {
-    return Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    return Math.floor(Math.random() * 1000)
+      .toString()
+      .padStart(3, '0');
   }
 
   /**
@@ -49,7 +56,10 @@ export class VirtualCardsService {
    * @param createVirtualCardDto DTO for creating a virtual card
    * @returns The created virtual card
    */
-  async create(userId: string, createVirtualCardDto: CreateVirtualCardDto): Promise<VirtualCard> {
+  async create(
+    userId: string,
+    createVirtualCardDto: CreateVirtualCardDto
+  ): Promise<VirtualCard> {
     this.logger.log(`Creating virtual card for user ${userId}`);
 
     // Check if user exists
@@ -141,7 +151,10 @@ export class VirtualCardsService {
    * @param updateVirtualCardDto DTO for updating a virtual card
    * @returns The updated virtual card
    */
-  async update(id: string, updateVirtualCardDto: UpdateVirtualCardDto): Promise<VirtualCard> {
+  async update(
+    id: string,
+    updateVirtualCardDto: UpdateVirtualCardDto
+  ): Promise<VirtualCard> {
     const virtualCard = await this.findById(id);
 
     // If setting as default, unset other cards as default

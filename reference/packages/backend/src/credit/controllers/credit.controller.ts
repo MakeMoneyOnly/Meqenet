@@ -7,9 +7,15 @@ import {
   Logger,
   Get,
   HttpException,
-  HttpStatus
+  HttpStatus,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { UserProfile } from '@prisma/client';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { CreditAssessmentService } from '../services/credit-assessment.service';
 import { CreditAssessmentDto } from '../dto/credit-assessment.dto';
@@ -24,23 +30,27 @@ export class CreditController {
 
   constructor(
     private readonly creditAssessmentService: CreditAssessmentService,
-    private readonly notificationsService: NotificationsService,
+    private readonly notificationsService: NotificationsService
   ) {}
 
   @Post('assess')
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Assess credit limit for the current user' })
-  @ApiResponse({ status: 201, description: 'Credit limit assessed successfully' })
+  @ApiResponse({
+    status: 201,
+    description: 'Credit limit assessed successfully',
+  })
   async assessCreditLimit(
-    @Request() req: {
+    @Request()
+    req: {
       user: {
         id: string;
         email: string;
         phoneNumber: string;
-        profile: any;
-      }
+        profile: Promise<UserProfile | null>;
+      };
     },
-    @Body() data: CreditAssessmentDto,
+    @Body() data: CreditAssessmentDto
   ) {
     try {
       const userId = req.user.id;
@@ -51,7 +61,10 @@ export class CreditController {
       const oldLimit = userProfile?.creditLimit || 0;
 
       // Assess credit limit
-      const newLimit = await this.creditAssessmentService.assessCreditLimit(userId, data);
+      const newLimit = await this.creditAssessmentService.assessCreditLimit(
+        userId,
+        data
+      );
 
       // Send notification if credit limit changed
       if (newLimit !== oldLimit) {
@@ -75,10 +88,13 @@ export class CreditController {
         change: newLimit - oldLimit,
       };
     } catch (error) {
-      this.logger.error(`Error assessing credit limit: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error assessing credit limit: ${error.message}`,
+        error.stack
+      );
       throw new HttpException(
         'Failed to assess credit limit',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -86,8 +102,16 @@ export class CreditController {
   @Get('limit')
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Get current credit limit for the user' })
-  @ApiResponse({ status: 200, description: 'Credit limit retrieved successfully' })
-  async getCreditLimit(@Request() req: { user: { id: string; profile: any } }) {
+  @ApiResponse({
+    status: 200,
+    description: 'Credit limit retrieved successfully',
+  })
+  async getCreditLimit(
+    @Request()
+    req: {
+      user: { id: string; profile: Promise<UserProfile | null> };
+    }
+  ) {
     try {
       // We're using the profile directly, so no need to store userId separately
       const userProfile = await req.user.profile;
@@ -107,10 +131,13 @@ export class CreditController {
         assessed: true,
       };
     } catch (error) {
-      this.logger.error(`Error getting credit limit: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error getting credit limit: ${error.message}`,
+        error.stack
+      );
       throw new HttpException(
         'Failed to retrieve credit limit',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
   }
@@ -118,15 +145,21 @@ export class CreditController {
   @Post('reassess')
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Reassess credit limit based on payment history' })
-  @ApiResponse({ status: 200, description: 'Credit limit reassessed successfully' })
-  async reassessCreditLimit(@Request() req: {
-    user: {
-      id: string;
-      email: string;
-      phoneNumber: string;
-      profile: any;
+  @ApiResponse({
+    status: 200,
+    description: 'Credit limit reassessed successfully',
+  })
+  async reassessCreditLimit(
+    @Request()
+    req: {
+      user: {
+        id: string;
+        email: string;
+        phoneNumber: string;
+        profile: Record<string, unknown>;
+      };
     }
-  }) {
+  ) {
     try {
       const userId = req.user.id;
       this.logger.log(`Reassessing credit limit for user ${userId}`);
@@ -137,14 +170,15 @@ export class CreditController {
       if (!userProfile || !userProfile.creditLimit) {
         throw new HttpException(
           'No existing credit assessment found',
-          HttpStatus.BAD_REQUEST,
+          HttpStatus.BAD_REQUEST
         );
       }
 
       const oldLimit = userProfile.creditLimit;
 
       // Reassess credit limit
-      const newLimit = await this.creditAssessmentService.reassessCreditLimit(userId);
+      const newLimit =
+        await this.creditAssessmentService.reassessCreditLimit(userId);
 
       // Send notification if credit limit changed
       if (newLimit !== oldLimit) {
@@ -168,10 +202,15 @@ export class CreditController {
         change: newLimit - oldLimit,
       };
     } catch (error) {
-      this.logger.error(`Error reassessing credit limit: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error reassessing credit limit: ${error.message}`,
+        error.stack
+      );
       throw new HttpException(
         error.message || 'Failed to reassess credit limit',
-        error instanceof HttpException ? error.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR,
+        error instanceof HttpException
+          ? error.getStatus()
+          : HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
   }

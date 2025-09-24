@@ -1,5 +1,13 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsNumber, Min, IsOptional, IsBoolean, IsObject } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsNumber,
+  Min,
+  IsOptional,
+  IsBoolean,
+  IsObject,
+} from 'class-validator';
 
 export class CreateVirtualCardDto {
   @ApiProperty({
@@ -46,5 +54,5 @@ export class CreateVirtualCardDto {
   })
   @IsObject()
   @IsOptional()
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }

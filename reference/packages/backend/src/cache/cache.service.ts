@@ -24,7 +24,7 @@ export class CacheService {
    * @param value Value to cache
    * @param ttl Time to live in seconds (optional)
    */
-  async set(key: string, value: any, ttl?: number): Promise<void> {
+  async set<T>(key: string, value: T, ttl?: number): Promise<void> {
     try {
       const namespacedKey = this.getNamespacedKey(key);
       await this.cacheManager.set(namespacedKey, value, ttl);
@@ -46,7 +46,10 @@ export class CacheService {
       this.logger.debug(`Cache ${value ? 'hit' : 'miss'}: ${namespacedKey}`);
       return value;
     } catch (error) {
-      this.logger.error(`Error getting from cache: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error getting from cache: ${error.message}`,
+        error.stack
+      );
       return null;
     }
   }
@@ -61,7 +64,10 @@ export class CacheService {
       await this.cacheManager.del(namespacedKey);
       this.logger.debug(`Cache deleted: ${namespacedKey}`);
     } catch (error) {
-      this.logger.error(`Error deleting from cache: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error deleting from cache: ${error.message}`,
+        error.stack
+      );
     }
   }
 
@@ -74,7 +80,11 @@ export class CacheService {
    * @param ttl Time to live in seconds (optional)
    * @returns Cached or computed value
    */
-  async getOrSet<T>(key: string, factory: () => Promise<T>, ttl?: number): Promise<T> {
+  async getOrSet<T>(
+    key: string,
+    factory: () => Promise<T>,
+    ttl?: number
+  ): Promise<T> {
     try {
       const namespacedKey = this.getNamespacedKey(key);
       const cachedValue = await this.cacheManager.get<T>(namespacedKey);
@@ -104,18 +114,22 @@ export class CacheService {
       // This is a Redis-specific implementation
       // For memory cache, we would need a different approach
       const namespacedPrefix = this.getNamespacedKey(prefix);
-      const store = (this.cacheManager as any).stores?.[0];
+      const store = (this.cacheManager as unknown as { stores?: unknown[] })
+        .stores?.[0];
 
       if (store.getClient) {
         const client = store.getClient();
         const keys = await new Promise<string[]>((resolve, reject) => {
-          client.keys(`${namespacedPrefix}*`, (err: Error | null, result: string[]) => {
-            if (err) {
-              reject(err);
-            } else {
-              resolve(result);
+          client.keys(
+            `${namespacedPrefix}*`,
+            (err: Error | null, result: string[]) => {
+              if (err) {
+                reject(err);
+              } else {
+                resolve(result);
+              }
             }
-          });
+          );
         });
 
         if (keys.length > 0) {
@@ -128,13 +142,20 @@ export class CacheService {
               }
             });
           });
-          this.logger.debug(`Cleared ${keys.length} cache entries with prefix: ${namespacedPrefix}`);
+          this.logger.debug(
+            `Cleared ${keys.length} cache entries with prefix: ${namespacedPrefix}`
+          );
         }
       } else {
-        this.logger.warn('Cache store does not support getClient method, cannot clear by prefix');
+        this.logger.warn(
+          'Cache store does not support getClient method, cannot clear by prefix'
+        );
       }
     } catch (error) {
-      this.logger.error(`Error clearing cache prefix: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error clearing cache prefix: ${error.message}`,
+        error.stack
+      );
     }
   }
 

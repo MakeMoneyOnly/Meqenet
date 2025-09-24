@@ -8,8 +8,8 @@ import { NotFoundException, BadRequestException } from '@nestjs/common';
 
 describe('VerificationService', () => {
   let service: VerificationService;
-  let prismaService: PrismaService;
-  let notificationsService: NotificationsService;
+  let _prismaService: PrismaService;
+  let _notificationsService: NotificationsService;
 
   // Mock data
   const mockUser = {
@@ -82,8 +82,9 @@ describe('VerificationService', () => {
     }).compile();
 
     service = module.get<VerificationService>(VerificationService);
-    prismaService = module.get<PrismaService>(PrismaService);
-    notificationsService = module.get<NotificationsService>(NotificationsService);
+    _prismaService = module.get<PrismaService>(PrismaService);
+    _notificationsService =
+      module.get<NotificationsService>(NotificationsService);
 
     // Reset mocks
     jest.clearAllMocks();
@@ -96,7 +97,9 @@ describe('VerificationService', () => {
   describe('sendEmailVerificationCode', () => {
     it('should generate and send email verification code', async () => {
       // Setup mocks
-      mockPrismaService.verificationCode.create.mockResolvedValue(mockVerificationCode);
+      mockPrismaService.verificationCode.create.mockResolvedValue(
+        mockVerificationCode
+      );
       mockNotificationsService.sendNotification.mockResolvedValue(undefined);
 
       // Call the service method
@@ -175,7 +178,9 @@ describe('VerificationService', () => {
   describe('verifyCode', () => {
     it('should verify a valid code', async () => {
       // Setup mocks
-      mockPrismaService.verificationCode.findFirst.mockResolvedValue(mockVerificationCode);
+      mockPrismaService.verificationCode.findFirst.mockResolvedValue(
+        mockVerificationCode
+      );
       mockPrismaService.verificationCode.update.mockResolvedValue({
         ...mockVerificationCode,
         isVerified: true,
@@ -194,18 +199,22 @@ describe('VerificationService', () => {
       );
 
       // Assertions
-      expect(mockPrismaService.verificationCode.findFirst).toHaveBeenCalledWith({
-        where: {
-          userId: mockUser.id,
-          type: VerificationCodeType.EMAIL,
-          isVerified: false,
-        },
-        orderBy: {
-          createdAt: 'desc',
-        },
-      });
+      expect(mockPrismaService.verificationCode.findFirst).toHaveBeenCalledWith(
+        {
+          where: {
+            userId: mockUser.id,
+            type: VerificationCodeType.EMAIL,
+            isVerified: false,
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+        }
+      );
 
-      expect(mockPrismaService.verificationCode.update).toHaveBeenCalledTimes(2);
+      expect(mockPrismaService.verificationCode.update).toHaveBeenCalledTimes(
+        2
+      );
       expect(mockPrismaService.user.update).toHaveBeenCalledWith({
         where: { id: mockUser.id },
         data: { isEmailVerified: true },
@@ -219,7 +228,9 @@ describe('VerificationService', () => {
 
     it('should return failure for invalid code', async () => {
       // Setup mocks
-      mockPrismaService.verificationCode.findFirst.mockResolvedValue(mockVerificationCode);
+      mockPrismaService.verificationCode.findFirst.mockResolvedValue(
+        mockVerificationCode
+      );
       mockPrismaService.verificationCode.update.mockResolvedValue({
         ...mockVerificationCode,
         attempts: 1,
@@ -233,7 +244,9 @@ describe('VerificationService', () => {
       );
 
       // Assertions
-      expect(mockPrismaService.verificationCode.update).toHaveBeenCalledTimes(1);
+      expect(mockPrismaService.verificationCode.update).toHaveBeenCalledTimes(
+        1
+      );
       expect(mockPrismaService.user.update).not.toHaveBeenCalled();
 
       expect(result).toEqual({
@@ -261,7 +274,11 @@ describe('VerificationService', () => {
 
       // Assertions
       await expect(
-        service.verifyCode(mockUser.id, mockVerificationCode.code, VerificationCodeType.EMAIL)
+        service.verifyCode(
+          mockUser.id,
+          mockVerificationCode.code,
+          VerificationCodeType.EMAIL
+        )
       ).rejects.toThrow(BadRequestException);
     });
 
@@ -274,7 +291,11 @@ describe('VerificationService', () => {
 
       // Assertions
       await expect(
-        service.verifyCode(mockUser.id, mockVerificationCode.code, VerificationCodeType.EMAIL)
+        service.verifyCode(
+          mockUser.id,
+          mockVerificationCode.code,
+          VerificationCodeType.EMAIL
+        )
       ).rejects.toThrow(BadRequestException);
     });
   });

@@ -24,7 +24,14 @@ export const ApiConfig = {
    * Base API URL for backend services
    */
   get baseUrl(): string {
-    return getEnvVar('EXPO_PUBLIC_API_URL', 'http://localhost:3000/api');
+    return getEnvVar('EXPO_PUBLIC_API_URL', getEnvVar('NEXT_PUBLIC_API_URL', 'http://localhost:3000/api'));
+  },
+
+  /**
+   * Next.js API URL for web application
+   */
+  get nextJsApiUrl(): string {
+    return getEnvVar('NEXT_PUBLIC_API_URL', 'http://localhost:3000/api/v1');
   },
 
   /**

@@ -1,4 +1,10 @@
-import { Injectable, UnauthorizedException, ConflictException, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  ConflictException,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
@@ -11,15 +17,21 @@ import { SetPinDto } from '../dto/set-pin.dto';
 import { VerifyPinDto } from '../dto/verify-pin.dto';
 import { ResetPinDto } from '../dto/reset-pin.dto';
 
+// Type for user data without sensitive information
+export type SafeUser = Omit<PrismaUser, 'password' | 'pinHash'>;
+
 @Injectable()
 export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
-    private readonly configService: ConfigService,
+    private readonly configService: ConfigService
   ) {}
 
-  async validateUser(emailOrPhone: string, userPassword: string): Promise<any> {
+  async validateUser(
+    emailOrPhone: string,
+    userPassword: string
+  ): Promise<SafeUser | null> {
     // Determine if input is email or phone
     const isEmail = emailOrPhone.includes('@');
 
@@ -46,12 +58,16 @@ export class AuthService {
 
   async register(registerDto: RegisterDto) {
     // Check if user already exists
-    const existingUserByEmail = await this.usersService.findByEmail(registerDto.email);
+    const existingUserByEmail = await this.usersService.findByEmail(
+      registerDto.email
+    );
     if (existingUserByEmail) {
       throw new ConflictException('Email already in use');
     }
 
-    const existingUserByPhone = await this.usersService.findByPhoneNumber(registerDto.phone_number);
+    const existingUserByPhone = await this.usersService.findByPhoneNumber(
+      registerDto.phone_number
+    );
     if (existingUserByPhone) {
       throw new ConflictException('Phone number already in use');
     }
@@ -71,7 +87,7 @@ export class AuthService {
     return result;
   }
 
-  async login(user: any) {
+  async login(user: SafeUser) {
     return this.generateTokens(user);
   }
 
@@ -80,12 +96,12 @@ export class AuthService {
    * @param user User object
    * @returns Token response
    */
-  async generateTokens(user: any) {
+  async generateTokens(user: SafeUser) {
     const payload: JwtPayload = {
       sub: user.id,
       email: user.email,
       phone_number: user.phoneNumber,
-      role: user.role
+      role: user.role,
     };
 
     const accessToken = this.generateAccessToken(payload);
@@ -98,7 +114,9 @@ export class AuthService {
       access_token: accessToken,
       refresh_token: refreshToken,
       expires_in: this.configService.get<number>('JWT_EXPIRATION'),
-      refresh_expires_in: this.configService.get<number>('JWT_REFRESH_EXPIRATION'),
+      refresh_expires_in: this.configService.get<number>(
+        'JWT_REFRESH_EXPIRATION'
+      ),
       user_id: user.id,
     };
   }
@@ -114,7 +132,7 @@ export class AuthService {
       const user = await this.usersService.findById(payload.sub);
       const isValidRefreshToken = await this.usersService.validateRefreshToken(
         payload.sub,
-        refreshToken,
+        refreshToken
       );
 
       if (!user || !isValidRefreshToken) {
@@ -125,14 +143,14 @@ export class AuthService {
       const newPayload: JwtPayload = {
         sub: user.id,
         email: user.email || '',
-        phone_number: user.phoneNumber
+        phone_number: user.phoneNumber,
       };
 
       return {
         access_token: this.generateAccessToken(newPayload),
         expires_in: this.configService.get<number>('JWT_EXPIRATION'),
       };
-    } catch (error) {
+    } catch {
       throw new UnauthorizedException('Invalid refresh token');
     }
   }
@@ -168,9 +186,11 @@ export class AuthService {
 
     // If user already has a PIN, require currentPin and verify
     if (user.pinHash) {
-      if (!dto.currentPin) throw new BadRequestException('Current PIN required');
+      if (!dto.currentPin)
+        throw new BadRequestException('Current PIN required');
       const isCurrentValid = await bcrypt.compare(dto.currentPin, user.pinHash);
-      if (!isCurrentValid) throw new UnauthorizedException('Current PIN is incorrect');
+      if (!isCurrentValid)
+        throw new UnauthorizedException('Current PIN is incorrect');
     }
 
     // Hash new PIN and save
@@ -190,7 +210,9 @@ export class AuthService {
 
     // Lockout after 5 failed attempts
     if ((user.pinFailedAttempts ?? 0) >= 5) {
-      throw new UnauthorizedException('Too many failed attempts. Please reset your PIN or contact support.');
+      throw new UnauthorizedException(
+        'Too many failed attempts. Please reset your PIN or contact support.'
+      );
     }
 
     const isValid = await bcrypt.compare(dto.pin, user.pinHash);

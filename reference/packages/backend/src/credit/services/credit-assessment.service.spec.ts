@@ -3,13 +3,16 @@ import { ConfigService } from '@nestjs/config';
 import { CreditAssessmentService } from './credit-assessment.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { NotificationsService } from '../../notifications/services/notifications.service';
-import { EmploymentStatus, IncomeFrequency } from '../dto/credit-assessment.dto';
+import {
+  EmploymentStatus,
+  IncomeFrequency,
+} from '../dto/credit-assessment.dto';
 import { NotFoundException } from '@nestjs/common';
 
 describe('CreditAssessmentService', () => {
   let service: CreditAssessmentService;
-  let prismaService: PrismaService;
-  let notificationsService: NotificationsService;
+  let _prismaService: PrismaService;
+  let _notificationsService: NotificationsService;
 
   // Mock data
   const mockUser = {
@@ -105,8 +108,9 @@ describe('CreditAssessmentService', () => {
     }).compile();
 
     service = module.get<CreditAssessmentService>(CreditAssessmentService);
-    prismaService = module.get<PrismaService>(PrismaService);
-    notificationsService = module.get<NotificationsService>(NotificationsService);
+    _prismaService = module.get<PrismaService>(PrismaService);
+    _notificationsService =
+      module.get<NotificationsService>(NotificationsService);
 
     // Reset mocks
     jest.clearAllMocks();
@@ -139,7 +143,10 @@ describe('CreditAssessmentService', () => {
       });
 
       // Call the service method
-      const result = await service.assessCreditLimit(mockUser.id, mockCreditAssessmentDto);
+      const result = await service.assessCreditLimit(
+        mockUser.id,
+        mockCreditAssessmentDto
+      );
 
       // Assertions
       expect(mockPrismaService.user.findUnique).toHaveBeenCalledWith({
@@ -234,9 +241,9 @@ describe('CreditAssessmentService', () => {
       mockPrismaService.user.findUnique.mockResolvedValue(null);
 
       // Assertions
-      await expect(service.reassessCreditLimit('non-existent-user')).rejects.toThrow(
-        NotFoundException
-      );
+      await expect(
+        service.reassessCreditLimit('non-existent-user')
+      ).rejects.toThrow(NotFoundException);
     });
   });
 

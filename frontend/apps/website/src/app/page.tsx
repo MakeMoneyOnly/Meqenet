@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import HeroSection from '@/components/landing/HeroSection';
 import Header from '@/components/landing/Header';
 import ServicesSection from '@/components/services-section';
@@ -32,7 +32,10 @@ export default function Home() {
       return;
     };
 
-    let scroll: { on: (event: string, callback: () => void) => void; destroy: () => void } | null = null;
+    let scroll: {
+      on: (event: string, callback: () => void) => void;
+      destroy: () => void;
+    } | null = null;
     let cleanup: (() => void) | undefined;
     const initSmoothScrolling = async () => {
       try {
@@ -45,19 +48,27 @@ export default function Home() {
             multiplier: 1,
             lerp: 0.05,
             smartphone: { smooth: true },
-            tablet: { smooth: true }
+            tablet: { smooth: true },
           });
           scroll.on('scroll', updateBlurStates);
           // Initial check
           setTimeout(updateBlurStates, 100);
           return () => scroll?.destroy();
         }
-        return () => {};
-      } catch {
-        return () => {};
+        return () => {
+          // No cleanup needed when scroll container not found
+        };
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to initialize smooth scrolling:', error);
+        return () => {
+          // No cleanup needed on initialization failure
+        };
       }
     };
-    initSmoothScrolling().then(fn => { cleanup = fn; });
+    initSmoothScrolling().then((fn) => {
+      cleanup = fn;
+    });
     window.addEventListener('resize', updateBlurStates);
     return () => {
       if (cleanup) cleanup();
@@ -75,15 +86,34 @@ export default function Home() {
         id="scroll-container"
       >
         {/* Hero Section */}
-        <div ref={heroRef as React.RefObject<HTMLDivElement>} className="w-full min-h-screen" data-scroll-section>
-          {wrapContentWithScrollBlurItem(<HeroSection nextSectionRef={clientsProjectsRef as React.RefObject<HTMLDivElement>} />)}
+        <div
+          ref={heroRef as React.RefObject<HTMLDivElement>}
+          className="w-full min-h-screen"
+          data-scroll-section
+        >
+          {wrapContentWithScrollBlurItem(
+            <HeroSection
+              nextSectionRef={
+                clientsProjectsRef as React.RefObject<HTMLDivElement>
+              }
+            />,
+          )}
         </div>
         {/* Clients and Projects Section */}
-        <div ref={clientsProjectsRef as React.RefObject<HTMLDivElement>} className="relative z-10 w-full" data-scroll-section data-scroll-target="#scroll-container">
+        <div
+          ref={clientsProjectsRef as React.RefObject<HTMLDivElement>}
+          className="relative z-10 w-full"
+          data-scroll-section
+          data-scroll-target="#scroll-container"
+        >
           {wrapContentWithScrollBlurItem(<ClientsProjectsSection />)}
         </div>
         {/* Services Section */}
-        <div ref={servicesRef as React.RefObject<HTMLDivElement>} className="w-full min-h-screen" data-scroll-section>
+        <div
+          ref={servicesRef as React.RefObject<HTMLDivElement>}
+          className="w-full min-h-screen"
+          data-scroll-section
+        >
           {wrapContentWithScrollBlurItem(<ServicesSection />)}
         </div>
         {/* Pricing Section */}
@@ -91,15 +121,27 @@ export default function Home() {
           {wrapContentWithScrollBlurItem(<PricingSection />)}
         </div>
         {/* Team Section */}
-        <div ref={teamRef as React.RefObject<HTMLDivElement>} className="w-full" data-scroll-section>
+        <div
+          ref={teamRef as React.RefObject<HTMLDivElement>}
+          className="w-full"
+          data-scroll-section
+        >
           {wrapContentWithScrollBlurItem(<TeamSection />)}
         </div>
         {/* FAQ Section */}
-        <div ref={faqRef as React.RefObject<HTMLDivElement>} className="w-full" data-scroll-section>
+        <div
+          ref={faqRef as React.RefObject<HTMLDivElement>}
+          className="w-full"
+          data-scroll-section
+        >
           {wrapContentWithScrollBlurItem(<FAQSection />)}
         </div>
         {/* Trends Section */}
-        <div ref={trendsRef as React.RefObject<HTMLDivElement>} className="w-full" data-scroll-section>
+        <div
+          ref={trendsRef as React.RefObject<HTMLDivElement>}
+          className="w-full"
+          data-scroll-section
+        >
           {wrapContentWithScrollBlurItem(<TrendsSection />)}
         </div>
         {/* Contact Card Section */}
@@ -111,13 +153,22 @@ export default function Home() {
           {wrapContentWithScrollBlurItem(<NewsletterSection />)}
         </div>
         {/* Content Section */}
-        <div ref={contentRef as React.RefObject<HTMLDivElement>} className="relative z-30 w-full min-h-screen bg-white text-black flex items-center justify-center px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-20" data-scroll-section data-scroll-target="#scroll-container">
+        <div
+          ref={contentRef as React.RefObject<HTMLDivElement>}
+          className="relative z-30 w-full min-h-screen bg-white text-black flex items-center justify-center px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-20"
+          data-scroll-section
+          data-scroll-target="#scroll-container"
+        >
           <div className="w-full max-w-7xl mx-auto">
             {wrapContentWithScrollBlurItem(<ContentSection />)}
           </div>
         </div>
         {/* Footer Section */}
-        <div ref={footerRef as React.RefObject<HTMLDivElement>} className="relative z-50 w-full bg-white text-black px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-20 pb-16 sm:pb-24 md:pb-32" data-scroll-section>
+        <div
+          ref={footerRef as React.RefObject<HTMLDivElement>}
+          className="relative z-50 w-full bg-white text-black px-4 sm:px-6 md:px-8 py-12 sm:py-16 md:py-20 pb-16 sm:pb-24 md:pb-32"
+          data-scroll-section
+        >
           <div className="w-full max-w-7xl mx-auto">
             {wrapContentWithScrollBlurItem(<FooterSection />)}
           </div>

@@ -45,15 +45,19 @@ const Header = () => {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50">
-      <div 
+      <div
         ref={headerRef}
         className={`relative w-full bg-white transition-all duration-300 z-50 ${isScrolled ? 'shadow-md' : 'shadow-none'}`}
       >
         {/* Top bar */}
         <div className="bg-white h-5 flex items-center justify-center text-xs font-medium">
           <div className="flex items-center space-x-6">
-            <a href="#" className="font-bold text-black">For shoppers</a>
-            <a href="#" className="text-gray-500 hover:text-black">For business</a>
+            <button className="font-bold text-black bg-transparent border-none cursor-pointer">
+              For shoppers
+            </button>
+            <button className="text-gray-500 hover:text-black bg-transparent border-none cursor-pointer">
+              For business
+            </button>
           </div>
         </div>
 
@@ -72,25 +76,56 @@ const Header = () => {
                 />
               </div>
             </Link>
-            <button 
+            <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="p-2 transition-colors duration-200"
               aria-label="Toggle menu"
             >
-              <svg width="28" height="14" viewBox="0 0 28 14" fill="none" className="text-black">
-                <path d="M0 7h28M0 1h28M0 13h28" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+              <svg
+                width="28"
+                height="14"
+                viewBox="0 0 28 14"
+                fill="none"
+                className="text-black"
+              >
+                <path
+                  d="M0 7h28M0 1h28M0 13h28"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                />
               </svg>
             </button>
           </div>
 
           {/* Desktop Header */}
-          <div className={`hidden lg:flex items-center justify-between w-full h-full transition-opacity duration-300`}>
+          <div className="hidden lg:flex items-center justify-between w-full h-full transition-opacity duration-300">
             {/* Left: Nav Links */}
             <nav className="flex items-center space-x-6">
-              <a href="#how-it-works" className="font-aeonik text-[14px] text-black hover:text-gray-600 transition-colors duration-200">How It Works</a>
-              <a href="#shop" className="font-aeonik text-[14px] text-black hover:text-gray-600 transition-colors duration-200">Shop</a>
-              <a href="#for-business" className="font-aeonik text-[14px] text-black hover:text-gray-600 transition-colors duration-200">For Business</a>
-              <a href="#help" className="font-aeonik text-[14px] text-black hover:text-gray-600 transition-colors duration-200">Help</a>
+              <a
+                href="#how-it-works"
+                className="font-aeonik text-[14px] text-black hover:text-gray-600 transition-colors duration-200"
+              >
+                How It Works
+              </a>
+              <a
+                href="#shop"
+                className="font-aeonik text-[14px] text-black hover:text-gray-600 transition-colors duration-200"
+              >
+                Shop
+              </a>
+              <a
+                href="#for-business"
+                className="font-aeonik text-[14px] text-black hover:text-gray-600 transition-colors duration-200"
+              >
+                For Business
+              </a>
+              <a
+                href="#help"
+                className="font-aeonik text-[14px] text-black hover:text-gray-600 transition-colors duration-200"
+              >
+                Help
+              </a>
             </nav>
             {/* Center: Logo */}
             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
@@ -120,10 +155,15 @@ const Header = () => {
                       transition={{ duration: 0.3, ease: 'easeInOut' }}
                       className="relative flex items-center"
                     >
+                      <label htmlFor="search-input" className="sr-only">
+                        Search for products or brands
+                      </label>
                       <input
+                        id="search-input"
                         ref={searchInputRef}
                         type="text"
                         placeholder="Search for any product or brand"
+                        aria-label="Search for products or brands"
                         className="w-full h-8 pl-10 pr-8 rounded-full bg-gray-100 text-black font-aeonik text-[13px] focus:outline-none focus:ring-1 focus:ring-gray-300 placeholder-gray-500"
                         onBlur={() => setIsSearchOpen(false)}
                       />
@@ -192,8 +232,17 @@ const Header = () => {
               </div>
               {/* Sign In Button */}
               <button className="flex items-center space-x-2 px-3 h-8 rounded-full bg-gray-100 text-black font-aeonik text-[13px] font-medium shadow-none hover:bg-gray-200 transition-colors">
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M8 8C10.2091 8 12 6.20914 12 4C12 1.79086 10.2091 0 8 0C5.79086 0 4 1.79086 4 4C4 6.20914 5.79086 8 8 8ZM2 14C2 11.7909 4.68629 10 8 10C11.3137 10 14 11.7909 14 14H2Z" fill="currentColor"/>
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M8 8C10.2091 8 12 6.20914 12 4C12 1.79086 10.2091 0 8 0C5.79086 0 4 1.79086 4 4C4 6.20914 5.79086 8 8 8ZM2 14C2 11.7909 4.68629 10 8 10C11.3137 10 14 11.7909 14 14H2Z"
+                    fill="currentColor"
+                  />
                 </svg>
                 <span>Sign in</span>
               </button>
@@ -203,8 +252,18 @@ const Header = () => {
                 className="p-2 transition-colors duration-200"
                 aria-label="Toggle menu"
               >
-                <svg width="24" height="12" viewBox="0 0 28 14" fill="none" className="text-black">
-                  <path d="M0 7h28M0 1h28M0 13h28" stroke="currentColor" strokeWidth="2"/>
+                <svg
+                  width="24"
+                  height="12"
+                  viewBox="0 0 28 14"
+                  fill="none"
+                  className="text-black"
+                >
+                  <path
+                    d="M0 7h28M0 1h28M0 13h28"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  />
                 </svg>
               </button>
             </div>
@@ -214,7 +273,7 @@ const Header = () => {
 
       {/* Menu Page Overlay */}
       <AnimatePresence>
-        {isMenuOpen && (
+        {isMenuOpen ? (
           <>
             {/* Backdrop */}
             <motion.div
@@ -225,7 +284,7 @@ const Header = () => {
               className="fixed inset-0 bg-black/50 z-40"
               onClick={() => setIsMenuOpen(false)}
             />
-            
+
             {/* Menu Panel */}
             <motion.div
               initial={{ y: '-100%' }}
@@ -234,7 +293,7 @@ const Header = () => {
               transition={{ duration: 0.9, ease: [0.83, 0, 0.17, 1] }}
               className="fixed top-0 left-0 right-0 bg-white z-40 shadow-2xl rounded-b-2xl"
             >
-              <div 
+              <div
                 className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col"
                 style={{ paddingTop: headerHeight }}
               >
@@ -251,28 +310,69 @@ const Header = () => {
                       <nav className="flex flex-col space-y-10">
                         {/* Account Section */}
                         <div className="flex flex-col space-y-4">
-                          <h2 className="text-sm font-bold uppercase tracking-widest text-gray-400 mb-2">Account</h2>
-                          <a href="#" onClick={() => setIsMenuOpen(false)} className="font-aeonik text-2xl font-medium text-gray-700 hover:text-black transition-colors">Profile & Settings</a>
-                          <a href="#" onClick={() => setIsMenuOpen(false)} className="font-aeonik text-2xl font-medium text-gray-700 hover:text-black transition-colors">Order History</a>
-                          <a href="#" onClick={() => setIsMenuOpen(false)} className="font-aeonik text-2xl font-medium text-gray-700 hover:text-black transition-colors">Payment Methods</a>
+                          <h2 className="text-sm font-bold uppercase tracking-widest text-gray-400 mb-2">
+                            Account
+                          </h2>
+                          <button
+                            onClick={() => setIsMenuOpen(false)}
+                            className="font-aeonik text-2xl font-medium text-gray-700 hover:text-black transition-colors text-left bg-transparent border-none cursor-pointer"
+                          >
+                            Profile & Settings
+                          </button>
+                          <button
+                            onClick={() => setIsMenuOpen(false)}
+                            className="font-aeonik text-2xl font-medium text-gray-700 hover:text-black transition-colors text-left bg-transparent border-none cursor-pointer"
+                          >
+                            Order History
+                          </button>
+                          <button
+                            onClick={() => setIsMenuOpen(false)}
+                            className="font-aeonik text-2xl font-medium text-gray-700 hover:text-black transition-colors text-left bg-transparent border-none cursor-pointer"
+                          >
+                            Payment Methods
+                          </button>
                         </div>
-                        
+
                         {/* Shopping Section */}
                         <div className="flex flex-col space-y-4">
-                          <h2 className="text-sm font-bold uppercase tracking-widest text-gray-400 mb-2">Shopping</h2>
-                          <a href="#" onClick={() => setIsMenuOpen(false)} className="font-aeonik text-2xl font-medium text-gray-700 hover:text-black transition-colors">Shop Directory</a>
-                          <a href="#" onClick={() => setIsMenuOpen(false)} className="font-aeonik text-2xl font-medium text-gray-700 hover:text-black transition-colors">How It Works</a>
+                          <h2 className="text-sm font-bold uppercase tracking-widest text-gray-400 mb-2">
+                            Shopping
+                          </h2>
+                          <button
+                            onClick={() => setIsMenuOpen(false)}
+                            className="font-aeonik text-2xl font-medium text-gray-700 hover:text-black transition-colors text-left bg-transparent border-none cursor-pointer"
+                          >
+                            Shop Directory
+                          </button>
+                          <button
+                            onClick={() => setIsMenuOpen(false)}
+                            className="font-aeonik text-2xl font-medium text-gray-700 hover:text-black transition-colors text-left bg-transparent border-none cursor-pointer"
+                          >
+                            How It Works
+                          </button>
                         </div>
-                          
+
                         {/* Support Section */}
                         <div className="flex flex-col space-y-4">
-                          <h2 className="text-sm font-bold uppercase tracking-widest text-gray-400 mb-2">Support</h2>
-                          <a href="#" onClick={() => setIsMenuOpen(false)} className="font-aeonik text-2xl font-medium text-gray-700 hover:text-black transition-colors">Help Center</a>
-                          <a href="#" onClick={() => setIsMenuOpen(false)} className="font-aeonik text-2xl font-medium text-gray-700 hover:text-black transition-colors">Contact Us</a>
+                          <h2 className="text-sm font-bold uppercase tracking-widest text-gray-400 mb-2">
+                            Support
+                          </h2>
+                          <button
+                            onClick={() => setIsMenuOpen(false)}
+                            className="font-aeonik text-2xl font-medium text-gray-700 hover:text-black transition-colors text-left bg-transparent border-none cursor-pointer"
+                          >
+                            Help Center
+                          </button>
+                          <button
+                            onClick={() => setIsMenuOpen(false)}
+                            className="font-aeonik text-2xl font-medium text-gray-700 hover:text-black transition-colors text-left bg-transparent border-none cursor-pointer"
+                          >
+                            Contact Us
+                          </button>
                         </div>
                       </nav>
                     </div>
-                    
+
                     {/* Right Column: BNPL Feature Highlight */}
                     <div className="hidden md:block relative">
                       <div className="h-full flex flex-col">
@@ -282,13 +382,18 @@ const Header = () => {
                           <div className="w-full md:w-1/4 mb-8 md:mb-0 md:self-center">
                             <div className="md:max-w-xs">
                               <h3 className="font-aeonik text-2xl font-bold leading-tight">
-                                <span className="block whitespace-nowrap">Pay your way,</span>
+                                <span className="block whitespace-nowrap">
+                                  Pay your way,
+                                </span>
                                 <span className="block">anytime</span>
                               </h3>
-                              <p className="text-gray-600 text-sm leading-normal mt-2">Seamless shopping with flexible payments at your fingertips — the smarter way to buy.</p>
+                              <p className="text-gray-600 text-sm leading-normal mt-2">
+                                Seamless shopping with flexible payments at your
+                                fingertips — the smarter way to buy.
+                              </p>
                             </div>
                           </div>
-                          
+
                           {/* App Image and CTA - Extra large */}
                           <div className="w-full md:w-3/4">
                             <div className="relative">
@@ -300,16 +405,26 @@ const Header = () => {
                                 className="w-full h-auto transform scale-150"
                                 style={{ transformOrigin: 'center' }}
                               />
-                              
+
                               {/* CTA Button - Extra fancy, elegant design - moved up */}
                               <div className="mt-[-12px] flex justify-center">
-                                <a href="#" className="group inline-flex items-center text-xs font-medium text-gray-700 hover:text-black transition-all duration-300 relative px-1 py-0.5">
-                                  <span className="tracking-wider uppercase">Download the app</span>
-                                  <svg className="ml-1 w-3 h-3 transform group-hover:translate-x-1 transition-all duration-300 ease-out" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fillRule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                                <button className="group inline-flex items-center text-xs font-medium text-gray-700 hover:text-black transition-all duration-300 relative px-1 py-0.5 bg-transparent border-none cursor-pointer">
+                                  <span className="tracking-wider uppercase">
+                                    Download the app
+                                  </span>
+                                  <svg
+                                    className="ml-1 w-3 h-3 transform group-hover:translate-x-1 transition-all duration-300 ease-out"
+                                    viewBox="0 0 20 20"
+                                    fill="currentColor"
+                                  >
+                                    <path
+                                      fillRule="evenodd"
+                                      d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z"
+                                      clipRule="evenodd"
+                                    />
                                   </svg>
-                                  <span className="absolute bottom-0 left-0 w-0 h-px bg-black group-hover:w-full transition-all duration-300 ease-out"></span>
-                                </a>
+                                  <span className="absolute bottom-0 left-0 w-0 h-px bg-black group-hover:w-full transition-all duration-300 ease-out" />
+                                </button>
                               </div>
                             </div>
                           </div>
@@ -321,10 +436,10 @@ const Header = () => {
               </div>
             </motion.div>
           </>
-        )}
+        ) : null}
       </AnimatePresence>
     </header>
   );
 };
 
-export default Header; 
+export default Header;
