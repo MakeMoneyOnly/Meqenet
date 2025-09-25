@@ -27,9 +27,9 @@
     "compliance:check": "pnpm run lint:security && pnpm run test:security"
   },
   "dependencies": {
-    "@meqenet/shared/config": "workspace:*",
     "@headlessui/react": "^2.2.0",
     "@heroicons/react": "^2.2.0",
+    "@meqenet/shared/config": "workspace:*",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-label": "^2.1.7",
     "@radix-ui/react-slot": "^1.2.3",
@@ -54,6 +54,7 @@
     "motion": "^12.18.0",
     "next": "^15.3.0",
     "next-auth": "^4.24.11",
+    "next-pwa": "^5.6.0",
     "next-secure-headers": "^2.2.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

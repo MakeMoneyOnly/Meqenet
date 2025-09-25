@@ -1,0 +1,64 @@
+{
+  "name": "Meqenet - Ethiopia's Financial Super-App",
+  "short_name": "Meqenet",
+  "description": "Ethiopia's first comprehensive financial super-app combining BNPL services, rewards, and financial wellness tools",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1f2937",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en",
+  "categories": ["finance", "shopping", "productivity"],
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Pay in 4",
+      "short_name": "Pay in 4",
+      "description": "Apply for interest-free payment in 4 installments",
+      "url": "/pay-in-4",
+      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Pay in 30",
+      "short_name": "Pay in 30",
+      "description": "Full payment deferred for 30 days",
+      "url": "/pay-in-30",
+      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "My Rewards",
+      "short_name": "Rewards",
+      "description": "View cashback and rewards balance",
+      "url": "/rewards",
+      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/screenshot-desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ]
+}
