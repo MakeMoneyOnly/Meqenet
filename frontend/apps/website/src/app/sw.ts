@@ -1,10 +1,9 @@
 /// <reference lib="webworker" />
+/* eslint-disable no-undef */
 import { precacheAndRoute, createHandlerBoundToURL } from '@serwist/precaching';
 import { registerRoute, NavigationRoute } from '@serwist/routing';
 import { CacheFirst, NetworkFirst } from '@serwist/strategies';
 import { ExpirationPlugin } from '@serwist/expiration';
-
-// eslint-disable-next-line no-undef
 declare const self: ServiceWorkerGlobalScope & {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   __SW_MANIFEST: any[];
@@ -70,9 +69,13 @@ registerRoute(
 self.addEventListener('fetch', (event) => {
   if (event.request.mode === 'navigate') {
     event.respondWith(
-      fetch(event.request).catch(() => {
+      fetch(event.request).catch(async () => {
         // Return cached offline page
-        return caches.match('/~offline') || caches.match('/') || fetch('/');
+        const cachedResponse =
+          (await caches.match('/~offline')) ||
+          (await caches.match('/')) ||
+          (await fetch('/'));
+        return cachedResponse || new Response('Offline', { status: 503 });
       }),
     );
   }
@@ -93,6 +96,7 @@ self.addEventListener('activate', (event) => {
           ) {
             return caches.delete(cacheName);
           }
+          return Promise.resolve(); // Return resolved promise for caches we want to keep
         }),
       );
 
