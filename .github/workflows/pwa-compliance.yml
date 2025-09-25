@@ -382,23 +382,45 @@ jobs:
             ps aux | grep -E "(next|node)" | grep -v grep | awk '{print $2}' | xargs kill -9 2>/dev/null || true
           }
 
-          # Health check function with proper HTTP status validation
+          # Enterprise-grade health check function with comprehensive validation
           check_server_health() {
-            echo "🔍 Checking server health on port $PORT..."
-            if curl -f -s --max-time 10 --retry 3 --retry-delay 2 http://localhost:$PORT >/dev/null 2>&1; then
-              # Additional check for proper HTTP response
-              local status_code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:$PORT)
-              if [ "$status_code" -ge 200 ] && [ "$status_code" -lt 400 ]; then
-                echo "✅ Server is healthy (HTTP $status_code)"
-                return 0
-              else
-                echo "⚠️ Server responded but with status $status_code"
-                return 1
-              fi
-            else
-              echo "❌ Server health check failed"
+            echo "🔍 Performing enterprise-grade server health check on port $PORT..."
+
+            # Test 1: Basic connectivity
+            if ! curl -f -s --max-time 5 --retry 1 http://localhost:$PORT >/dev/null 2>&1; then
+              echo "❌ Basic connectivity test failed"
               return 1
             fi
+
+            # Test 2: HTTP status validation
+            local status_code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 5 http://localhost:$PORT)
+            if [ -z "$status_code" ] || [ "$status_code" -lt 200 ] || [ "$status_code" -ge 400 ]; then
+              echo "❌ HTTP status check failed (status: $status_code)"
+              return 1
+            fi
+
+            # Test 3: Content validation - check for HTML response
+            local response=$(curl -s --max-time 5 http://localhost:$PORT | head -5)
+            if [ -z "$response" ] || ! echo "$response" | grep -q "<!DOCTYPE html>\|<html"; then
+              echo "❌ Content validation failed - no valid HTML response"
+              return 1
+            fi
+
+            # Test 4: Next.js specific validation - check for Next.js scripts
+            if ! curl -s --max-time 5 http://localhost:$PORT | grep -q "_next/static\|_next/webpack"; then
+              echo "⚠️ Next.js assets not detected, but server is responding (may still be starting)"
+              # Don't fail here as this might be normal during startup
+            fi
+
+            # Test 5: Lighthouse-specific readiness check - ensure key routes work
+            local lighthouse_test_url="http://localhost:$PORT"
+            if ! curl -f -s --max-time 5 "$lighthouse_test_url" >/dev/null 2>&1; then
+              echo "❌ Lighthouse target URL not accessible: $lighthouse_test_url"
+              return 1
+            fi
+
+            echo "✅ Enterprise-grade health check passed (HTTP $status_code)"
+            return 0
           }
 
           # Set up cleanup trap
@@ -416,6 +438,9 @@ jobs:
           echo "  - NODE_ENV=$NODE_ENV"
           echo "  - NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL"
 
+          # Initialize server readiness flag
+          SERVER_READY=false
+
           # Start Next.js production server with proper error handling and retry logic
           MAX_RETRIES=3
           RETRY_COUNT=0
@@ -429,26 +454,64 @@ jobs:
 
             echo "📝 Server PID: $SERVER_PID"
 
-            # Wait for server to be ready with timeout (Next.js takes longer to start)
-            TIMEOUT=90  # Increased timeout for production builds
-            COUNTER=0
+            # Enterprise-grade server readiness with exponential backoff
+            MAX_WAIT_TIME=120  # Maximum total wait time
+            BASE_CHECK_INTERVAL=3  # Base interval between checks
+            MAX_CHECK_INTERVAL=15  # Maximum interval between checks
+            BACKOFF_MULTIPLIER=1.5  # Exponential backoff multiplier
+            HEALTH_CHECK_COUNT=0
 
-            while [ $COUNTER -lt $TIMEOUT ]; do
-              if check_server_health; then
-                echo "✅ Next.js server is ready and healthy on port $PORT"
+            echo "⏳ Starting enterprise-grade server readiness monitoring..."
+            echo "📊 Max wait time: ${MAX_WAIT_TIME}s, Base interval: ${BASE_CHECK_INTERVAL}s"
+
+            START_TIME=$(date +%s)
+            CURRENT_INTERVAL=$BASE_CHECK_INTERVAL
+
+            while true; do
+              CURRENT_TIME=$(date +%s)
+              ELAPSED_TIME=$((CURRENT_TIME - START_TIME))
+
+              # Check if we've exceeded maximum wait time
+              if [ $ELAPSED_TIME -ge $MAX_WAIT_TIME ]; then
+                echo "❌ Server readiness timeout after ${MAX_WAIT_TIME}s"
+                echo "📋 Final server logs:"
+                tail -50 server.log || echo "No server logs available"
+                echo "🔍 Process status:"
+                ps aux | grep -E "(next|node.*3001)" | grep -v grep || echo "No server processes found"
                 break
               fi
 
-              # Check if server process is still running
+              HEALTH_CHECK_COUNT=$((HEALTH_CHECK_COUNT + 1))
+              echo "🔄 Health check #$HEALTH_CHECK_COUNT (elapsed: ${ELAPSED_TIME}s, next check in: ${CURRENT_INTERVAL}s)"
+
+              # Check if server process is still alive
               if ! kill -0 $SERVER_PID 2>/dev/null; then
-                echo "❌ Next.js server process died, checking logs..."
-                cat server.log
+                echo "❌ Next.js server process died unexpectedly"
+                echo "📋 Server logs (last 20 lines):"
+                tail -20 server.log || echo "No server logs available"
                 break
               fi
 
-              echo "⏳ Waiting for Next.js server... ($COUNTER/$TIMEOUT)"
-              sleep 5  # Increased check interval
-              COUNTER=$((COUNTER + 5))
+              # Perform comprehensive health check
+              if check_server_health; then
+                echo "✅ Next.js server is fully ready and healthy on port $PORT"
+                echo "📊 Server readiness achieved in ${ELAPSED_TIME}s after $HEALTH_CHECK_COUNT checks"
+                SERVER_READY=true
+                break
+              fi
+
+              # Exponential backoff with jitter
+              JITTER=$((RANDOM % 3))  # Add up to 3 seconds of random jitter
+              SLEEP_TIME=$((CURRENT_INTERVAL + JITTER))
+
+              echo "⏳ Server not ready yet, waiting ${SLEEP_TIME}s before next check..."
+              sleep $SLEEP_TIME
+
+              # Calculate next interval with exponential backoff
+              CURRENT_INTERVAL=$(echo "scale=0; $CURRENT_INTERVAL * $BACKOFF_MULTIPLIER" | bc 2>/dev/null || echo $((CURRENT_INTERVAL * 2)))
+              if [ $CURRENT_INTERVAL -gt $MAX_CHECK_INTERVAL ]; then
+                CURRENT_INTERVAL=$MAX_CHECK_INTERVAL
+              fi
             done
 
             if check_server_health; then
@@ -471,39 +534,162 @@ jobs:
             fi
           done
 
-          # Final verification with detailed logging
-          echo "🔍 Performing final server verification..."
-          if check_server_health; then
+          # Final verification with enterprise-grade logging and monitoring
+          echo "🔍 Performing final enterprise-grade server verification..."
+
+          if [ "$SERVER_READY" = true ] && check_server_health; then
             echo "✅ Next.js production server startup completed successfully"
             echo "🌐 Server is accessible at: http://localhost:$PORT"
+            echo "📊 Server process health: $(ps -p $SERVER_PID -o pid,ppid,cmd,pcpu,pmem,etime --no-headers 2>/dev/null || echo 'Process info unavailable')"
 
-            # Additional verification - check if basic HTML is served
-            echo "📄 Testing basic page load..."
-            curl -s http://localhost:$PORT | head -20 | grep -q "<!DOCTYPE html>" && echo "✅ HTML response detected" || echo "⚠️ HTML response not detected"
+            # Additional enterprise-grade verification
+            echo "🔬 Running comprehensive server validation suite..."
+
+            # Test 1: Response headers validation
+            echo "📋 Testing HTTP headers..."
+            RESPONSE_HEADERS=$(curl -s -I http://localhost:$PORT | head -10)
+            if echo "$RESPONSE_HEADERS" | grep -q "HTTP/.*200"; then
+              echo "✅ HTTP 200 response confirmed"
+            else
+              echo "⚠️ Non-200 response detected"
+            fi
+
+            # Test 2: Content-Type validation
+            if echo "$RESPONSE_HEADERS" | grep -q "Content-Type.*text/html"; then
+              echo "✅ HTML content type confirmed"
+            else
+              echo "⚠️ HTML content type not detected"
+            fi
+
+            # Test 3: Lighthouse readiness validation
+            echo "🌊 Testing Lighthouse accessibility..."
+            if curl -f -s --max-time 5 http://localhost:$PORT >/dev/null 2>&1; then
+              echo "✅ Lighthouse target URL is accessible and responding"
+            else
+              echo "⚠️ Lighthouse target URL validation failed"
+            fi
+
+            # Test 4: Server process stability check
+            echo "🔧 Checking server process stability..."
+            if kill -0 $SERVER_PID 2>/dev/null; then
+              PROCESS_UPTIME=$(ps -p $SERVER_PID -o etime= 2>/dev/null | tr -d ' ')
+              echo "✅ Server process stable (uptime: ${PROCESS_UPTIME:-unknown})"
+            else
+              echo "❌ Server process not found"
+              SERVER_READY=false
+            fi
+
+            if [ "$SERVER_READY" = true ]; then
+              echo "🎉 Enterprise-grade server validation completed successfully"
+              echo "🚀 Server is production-ready for Lighthouse PWA audit"
+            fi
           else
             echo "💥 CRITICAL: Next.js server failed to start after $MAX_RETRIES attempts"
-            echo "📋 Server logs:"
-            cat server.log 2>/dev/null || echo "No server logs available"
-            echo "🔍 Checking system resources..."
-            ps aux | grep -E "(next|node)" | grep -v grep || echo "No Next.js processes found"
-            echo "🔍 Checking port usage..."
-            lsof -i :$PORT || echo "Port $PORT is not in use"
+            echo "📋 Comprehensive failure diagnostics:"
+
+            # Enterprise-grade failure diagnostics
+            echo "🔍 === FAILURE DIAGNOSTICS ==="
+            echo "📊 Attempted retries: $MAX_RETRIES"
+            echo "⏰ Total time spent: $(($(date +%s) - START_TIME))s"
+
+            echo "📋 Server logs (last 50 lines):"
+            echo "--- SERVER LOGS START ---"
+            tail -50 server.log 2>/dev/null || echo "No server logs available"
+            echo "--- SERVER LOGS END ---"
+
+            echo "🔍 System resource analysis:"
+            echo "CPU Usage: $(top -bn1 | grep "Cpu(s)" | sed "s/.*, *\([0-9.]*\)%* id.*/\1/" | awk '{print 100 - $1"%"}' 2>/dev/null || echo "Unable to determine")"
+            echo "Memory Usage: $(free -h | grep "^Mem:" | awk '{print $3 "/" $2}' 2>/dev/null || echo "Unable to determine")"
+
+            echo "🔍 Process analysis:"
+            ps aux | grep -E "(next|node)" | grep -v grep | head -10 || echo "No relevant processes found"
+
+            echo "🔍 Network analysis:"
+            netstat -tlnp 2>/dev/null | grep ":$PORT " || echo "Port $PORT not bound"
+            lsof -i :$PORT 2>/dev/null || echo "No processes using port $PORT"
+
+            echo "🔍 Build artifacts check:"
+            ls -la frontend/apps/website/.next/ 2>/dev/null || echo "Build directory not found or empty"
+
+            echo "=== END DIAGNOSTICS ==="
             exit 1
           fi
 
       - name: 🌊 Run Lighthouse PWA Audit with Enterprise-Grade Monitoring
         run: |
-          echo "🌊 Starting Lighthouse PWA Audit..."
+          echo "🌊 Starting Lighthouse PWA Audit with enterprise-grade monitoring..."
 
-          # Verify server is still healthy before starting audit
-          if ! curl -f -s --max-time 10 http://localhost:3001 >/dev/null 2>&1; then
-            echo "❌ Server is not responding before Lighthouse audit"
+          # Enterprise-grade pre-flight checks
+          echo "🔍 Performing enterprise-grade Lighthouse pre-flight checks..."
+
+          # Check 1: Verify server process is still running
+          if ! ps -p $SERVER_PID > /dev/null 2>&1; then
+            echo "❌ CRITICAL: Server process (PID: $SERVER_PID) is no longer running"
+            echo "📋 Checking for any remaining server processes..."
+            ps aux | grep -E "(next|node.*3001)" | grep -v grep || echo "No server processes found"
             exit 1
           fi
 
-          # Additional wait to ensure server is fully stabilized
-          echo "⏳ Allowing additional time for server stabilization..."
-          sleep 5
+          # Check 2: Verify server is responding with comprehensive health check
+          echo "🔍 Running comprehensive server health check before Lighthouse audit..."
+          if ! check_server_health; then
+            echo "❌ CRITICAL: Server health check failed before Lighthouse audit"
+            echo "📋 Server health diagnostics:"
+            curl -v --max-time 5 http://localhost:3001 2>&1 | head -10 || echo "Curl failed"
+            exit 1
+          fi
+
+          # Check 3: Verify Lighthouse configuration
+          echo "🔍 Validating Lighthouse configuration..."
+          if [ ! -f ".github/lighthouse/pwa-config.json" ]; then
+            echo "❌ Lighthouse configuration file not found"
+            exit 1
+          fi
+
+          # Check 4: Verify Lighthouse can access the target URL
+          echo "🔍 Testing Lighthouse target URL accessibility..."
+          LIGHTHOUSE_URL="http://localhost:3001"
+          if ! curl -f -s --max-time 5 --retry 2 "$LIGHTHOUSE_URL" >/dev/null 2>&1; then
+            echo "❌ Lighthouse target URL not accessible: $LIGHTHOUSE_URL"
+            echo "📋 URL accessibility test details:"
+            curl -v --max-time 5 "$LIGHTHOUSE_URL" 2>&1 | head -10 || echo "Curl failed completely"
+            exit 1
+          fi
+
+          # Check 5: Verify system resources for Lighthouse execution
+          echo "🔍 Checking system resources for Lighthouse execution..."
+          AVAILABLE_MEMORY=$(free -m | grep "^Mem:" | awk '{print $7}')  # Available memory in MB
+          if [ "$AVAILABLE_MEMORY" -lt 512 ]; then
+            echo "⚠️ WARNING: Low available memory (${AVAILABLE_MEMORY}MB). Lighthouse may be slow."
+          else
+            echo "✅ Sufficient memory available (${AVAILABLE_MEMORY}MB)"
+          fi
+
+          # Enterprise-grade stabilization period
+          echo "⏳ Allowing enterprise-grade stabilization period for server..."
+          STABILIZATION_TIME=10
+          echo "📊 Stabilization time: ${STABILIZATION_TIME}s"
+
+          # Progressive stabilization checks
+          for i in $(seq 1 $STABILIZATION_TIME); do
+            if check_server_health >/dev/null 2>&1; then
+              echo -n "✅"
+            else
+              echo -n "⚠️"
+            fi
+            sleep 1
+          done
+          echo ""  # New line after progress indicators
+
+          # Final health check before Lighthouse
+          echo "🔍 Final server health validation before Lighthouse execution..."
+          if ! check_server_health; then
+            echo "❌ CRITICAL: Server failed final health check"
+            exit 1
+          fi
+
+          echo "🎯 All enterprise-grade pre-flight checks passed!"
+          echo "🚀 Ready to execute Lighthouse PWA audit..."
 
           # Run Lighthouse audit with retry logic
           MAX_AUDIT_RETRIES=3
