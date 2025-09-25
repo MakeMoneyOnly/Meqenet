@@ -1,3 +1,9 @@
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -113,13 +119,13 @@ const nextConfig = {
     }
 
     // Add path alias for @ to src directory
-    config.resolve.alias['@'] = new URL('./src', import.meta.url).pathname;
+    config.resolve.alias['@'] = join(__dirname, 'src');
 
     return config;
   },
 
-  // Output tracing configuration
-  outputFileTracingRoot: undefined,
+  // Output tracing configuration - explicitly set workspace root
+  outputFileTracingRoot: join(__dirname, '../../..'),
 };
 
 export default nextConfig;

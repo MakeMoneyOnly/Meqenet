@@ -1,4 +1,5 @@
 'use client';
+
 import React, { useState, useEffect, useCallback } from 'react';
 
 import { motion } from 'motion/react';
@@ -55,10 +56,10 @@ export function HoverBorderGradient({
         : (currentIndex + 1) % directions.length;
 
       // Safe array access with bounds checking
-
-      return nextIndex >= 0 && nextIndex < directions.length
-        ? directions[nextIndex]
-        : directions[0];
+      if (nextIndex >= 0 && nextIndex < directions.length) {
+        return directions[nextIndex];
+      }
+      return directions[0];
     },
     [clockwise],
   );

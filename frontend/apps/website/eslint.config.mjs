@@ -6,9 +6,11 @@ import reactPlugin from 'eslint-plugin-react';
 import reactHooksPlugin from 'eslint-plugin-react-hooks';
 import jsxA11yPlugin from 'eslint-plugin-jsx-a11y';
 import securityPlugin from 'eslint-plugin-security';
+import nextConfig from 'eslint-config-next';
 
 export default [
   js.configs.recommended,
+  nextConfig,
   {
     ignores: [
       '.next/**/*',

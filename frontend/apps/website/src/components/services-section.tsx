@@ -518,35 +518,35 @@ export default function ServicesSection() {
             <ScrollBlurItem>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-8 gap-y-10 items-center">
                 {/* Replace with actual partner logos */}
-                <img
+                <Image
                   src="/assets/images/partners/telebirr.svg"
                   alt="Telebirr"
                   width={140}
                   height={40}
                   className="opacity-70 grayscale hover:opacity-100 hover:grayscale-0 transition"
                 />
-                <img
+                <Image
                   src="/assets/images/partners/cbe.svg"
                   alt="CBE Birr"
                   width={140}
                   height={40}
                   className="opacity-70 grayscale hover:opacity-100 hover:grayscale-0 transition"
                 />
-                <img
+                <Image
                   src="/assets/images/partners/ethio-telecom.svg"
                   alt="Ethio Telecom"
                   width={140}
                   height={40}
                   className="opacity-70 grayscale hover:opacity-100 hover:grayscale-0 transition"
                 />
-                <img
+                <Image
                   src="/assets/images/partners/boa.svg"
                   alt="Bank of Abyssinia"
                   width={140}
                   height={40}
                   className="opacity-70 grayscale hover:opacity-100 hover:grayscale-0 transition"
                 />
-                <img
+                <Image
                   src="/assets/images/partners/dashen.svg"
                   alt="Dashen Bank"
                   width={140}
