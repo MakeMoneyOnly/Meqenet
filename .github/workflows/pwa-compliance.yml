@@ -336,9 +336,9 @@ jobs:
           cd frontend/apps/website
           npm run build
 
-      - name: 🚀 Start Development Server with Enterprise-Grade Process Management
+      - name: 🚀 Start Production Server for PWA Testing
         run: |
-          echo "🔧 Enterprise-grade server startup with resource isolation..."
+          echo "🔧 Starting production server for PWA testing..."
 
           # Set unique port for Lighthouse testing to prevent conflicts
           export PORT=3001
@@ -365,8 +365,8 @@ jobs:
           # Enterprise-grade process cleanup
           cleanup() {
             echo "🧹 Performing enterprise-grade cleanup..."
-            # Kill any node processes that might be using our port
-            pkill -f "next.*start" 2>/dev/null || true
+            # Kill any processes that might be using our port
+            pkill -f "serve.*3001" 2>/dev/null || true
             pkill -f "node.*3001" 2>/dev/null || true
 
             # Clean up any remaining processes on our port
@@ -375,7 +375,7 @@ jobs:
             fi
 
             # Clean up any zombie processes
-            ps aux | grep -E "(next|node)" | grep -v grep | awk '{print $2}' | xargs kill -9 2>/dev/null || true
+            ps aux | grep -E "(serve|node)" | grep -v grep | awk '{print $2}' | xargs kill -9 2>/dev/null || true
           }
 
           # Set up cleanup trap
@@ -387,23 +387,29 @@ jobs:
 
           cd frontend/apps/website
 
-          echo "🚀 Starting Next.js server on port $PORT..."
+          echo "🚀 Starting production server on port $PORT..."
 
-          # Start server with proper error handling and retry logic
+          # Install serve globally if not available
+          if ! command -v serve &> /dev/null; then
+            echo "📦 Installing serve for static file hosting..."
+            npm install -g serve
+          fi
+
+          # Start production server with proper error handling and retry logic
           MAX_RETRIES=3
           RETRY_COUNT=0
 
           while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
             echo "🔄 Attempt $((RETRY_COUNT + 1))/$MAX_RETRIES to start server..."
 
-            # Start server in background with proper logging
-            PORT=$PORT npm start > server.log 2>&1 &
+            # Start production server in background with proper logging
+            serve -s . -l $PORT > server.log 2>&1 &
             SERVER_PID=$!
 
             echo "📝 Server PID: $SERVER_PID"
 
             # Wait for server to be ready with timeout
-            TIMEOUT=60
+            TIMEOUT=30
             COUNTER=0
 
             while [ $COUNTER -lt $TIMEOUT ]; do
@@ -452,7 +458,7 @@ jobs:
             exit 1
           fi
 
-          echo "✅ Enterprise-grade server startup completed successfully"
+          echo "✅ Production server startup completed successfully"
 
       - name: 🌊 Run Lighthouse PWA Audit with Enterprise-Grade Monitoring
         uses: treosh/lighthouse-ci-action@v10
@@ -477,7 +483,7 @@ jobs:
           echo "🧹 Performing enterprise-grade resource cleanup..."
 
           # Kill any remaining processes from our test
-          pkill -f "next.*start" 2>/dev/null || true
+          pkill -f "serve.*3001" 2>/dev/null || true
           pkill -f "node.*3001" 2>/dev/null || true
 
           # Clean up any processes on our test port
@@ -487,7 +493,7 @@ jobs:
           fi
 
           # Clean up any zombie processes
-          ps aux | grep -E "(next|node|lighthouse)" | grep -v grep | awk '{print $2}' | xargs kill -9 2>/dev/null || true
+          ps aux | grep -E "(serve|node|lighthouse)" | grep -v grep | awk '{print $2}' | xargs kill -9 2>/dev/null || true
 
           # Clean up temporary files
           rm -f server.log 2>/dev/null || true
