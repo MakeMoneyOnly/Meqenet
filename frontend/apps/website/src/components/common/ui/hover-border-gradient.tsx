@@ -84,8 +84,9 @@ export function HoverBorderGradient({
       return () => clearInterval(interval);
     }
     // Return empty cleanup function when hovered is true
-
-    return () => {};
+    return () => {
+      // No cleanup needed when hovered
+    };
   }, [hovered, duration, rotateDirection]);
   return (
     <Tag
