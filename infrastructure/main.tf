@@ -704,7 +704,71 @@ resource "aws_kms_key" "cloudtrail" {
   deletion_window_in_days = 30
   enable_key_rotation     = true
 
-  policy = data.aws_iam_policy_document.cloudtrail_kms.json
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "Enable IAM User Permissions"
+        Effect = "Allow"
+        Principal = {
+          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
+        }
+        Action = [
+          "kms:Create*",
+          "kms:Describe*",
+          "kms:Enable*",
+          "kms:List*",
+          "kms:Put*",
+          "kms:Update*",
+          "kms:Revoke*",
+          "kms:Disable*",
+          "kms:Get*",
+          "kms:Delete*",
+          "kms:TagResource",
+          "kms:UntagResource",
+          "kms:ScheduleKeyDeletion",
+          "kms:CancelKeyDeletion"
+        ]
+        Resource = "*"
+      },
+      {
+        Sid    = "Allow CloudTrail to encrypt logs"
+        Effect = "Allow"
+        Principal = {
+          Service = "cloudtrail.amazonaws.com"
+        }
+        Action = [
+          "kms:GenerateDataKey*",
+          "kms:Decrypt"
+        ]
+        Resource = "*"
+      },
+      {
+        Sid    = "Allow CloudWatch Logs to encrypt logs"
+        Effect = "Allow"
+        Principal = {
+          Service = "logs.amazonaws.com"
+        }
+        Action = [
+          "kms:GenerateDataKey*",
+          "kms:Decrypt"
+        ]
+        Resource = "*"
+      },
+      {
+        Sid    = "Allow Firehose to encrypt logs"
+        Effect = "Allow"
+        Principal = {
+          Service = "firehose.amazonaws.com"
+        }
+        Action = [
+          "kms:Decrypt",
+          "kms:GenerateDataKey"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
 
   tags = {
     Name = "meqenet-cloudtrail-kms"
@@ -795,81 +859,6 @@ resource "random_id" "suffix" {
 
 # Data sources for Ethiopian compliance
 # Fix CKV_AWS_356, CKV_AWS_111, CKV_AWS_109 - Remove wildcards from KMS policy
-data "aws_iam_policy_document" "cloudtrail_kms" {
-  statement {
-    sid    = "Enable IAM User Permissions"
-    effect = "Allow"
-    principals {
-      type        = "AWS"
-      identifiers = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"]
-    }
-    actions   = [
-      "kms:Create*",
-      "kms:Describe*",
-      "kms:Enable*",
-      "kms:List*",
-      "kms:Put*",
-      "kms:Update*",
-      "kms:Revoke*",
-      "kms:Disable*",
-      "kms:Get*",
-      "kms:Delete*",
-      "kms:TagResource",
-      "kms:UntagResource",
-      "kms:ScheduleKeyDeletion",
-      "kms:CancelKeyDeletion"
-    ]
-    # Fix CKV_AWS_109, CKV_AWS_111, CKV_AWS_356 - Specify exact KMS key ARN instead of wildcard
-    resources = [aws_kms_key.cloudtrail.arn]
-  }
-
-  statement {
-    sid    = "Allow CloudTrail to encrypt logs"
-    effect = "Allow"
-    principals {
-      type        = "Service"
-      identifiers = ["cloudtrail.amazonaws.com"]
-    }
-    actions = [
-      "kms:GenerateDataKey*",
-      "kms:Decrypt"
-    ]
-    # Fix CKV_AWS_356 - Specify exact KMS key ARN instead of wildcard
-    resources = [aws_kms_key.cloudtrail.arn]
-    # Removed condition to avoid circular dependency
-  }
-
-  statement {
-    sid    = "Allow CloudWatch Logs to encrypt logs"
-    effect = "Allow"
-    principals {
-      type        = "Service"
-      identifiers = ["logs.amazonaws.com"]
-    }
-    actions = [
-      "kms:GenerateDataKey*",
-      "kms:Decrypt"
-    ]
-    # Fix CKV_AWS_356 - Specify exact KMS key ARN instead of wildcard
-    resources = [aws_kms_key.cloudtrail.arn]
-    # Removed condition to avoid circular dependency
-  }
-
-  statement {
-    sid    = "Allow Firehose to encrypt logs"
-    effect = "Allow"
-    principals {
-      type        = "Service"
-      identifiers = ["firehose.amazonaws.com"]
-    }
-    actions = [
-      "kms:Decrypt",
-      "kms:GenerateDataKey"
-    ]
-    resources = [aws_kms_key.cloudtrail.arn]
-  }
-}
-
 data "aws_caller_identity" "current" {}
 
 data "aws_region" "current" {}

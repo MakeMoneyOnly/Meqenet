@@ -483,49 +483,6 @@ resource "aws_iam_role" "waf_logs" {
   }
 }
 
-# IAM Policy for WAF logs
-resource "aws_iam_role_policy" "waf_logs" {
-  name = "meqenet-waf-logs-policy"
-  role = aws_iam_role.waf_logs.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "s3:AbortMultipartUpload",
-          "s3:GetBucketLocation",
-          "s3:GetObject",
-          "s3:ListBucket",
-          "s3:ListBucketMultipartUploads",
-          "s3:PutObject"
-        ]
-        Resource = [
-          aws_s3_bucket.alb_logs.arn,
-          "${aws_s3_bucket.alb_logs.arn}/*"
-        ]
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "logs:PutLogEvents"
-        ]
-        Resource = "*"
-      },
-      # Fix CKV_AWS_240, CKV_AWS_241 - KMS permissions for Firehose encryption
-      {
-        Effect = "Allow"
-        Action = [
-          "kms:Decrypt",
-          "kms:GenerateDataKey"
-        ]
-        Resource = aws_kms_key.cloudtrail.arn
-      }
-    ]
-  })
-}
-
 # Associate WAF with ALB
 resource "aws_wafv2_web_acl_association" "alb" {
   resource_arn = aws_lb.main.arn
@@ -729,48 +686,6 @@ resource "aws_wafv2_web_acl_logging_configuration" "main" {
   }
 }
 
-# Kinesis Firehose for WAF logs
-resource "aws_kinesis_firehose_delivery_stream" "waf_logs" {
-  name        = "meqenet-waf-logs-stream"
-  destination = "extended_s3"
-
-  # Fix CKV_AWS_240 & CKV_AWS_241 - Enable encryption for Kinesis Firehose
-  server_side_encryption {
-    enabled  = true
-    key_type = "CUSTOMER_MANAGED_CMK"
-    key_arn  = aws_kms_key.cloudtrail.arn
-  }
-
-  extended_s3_configuration {
-    role_arn   = aws_iam_role.waf_logs.arn
-    bucket_arn = aws_s3_bucket.alb_logs.arn
-    prefix     = "waf-logs/"
-    buffering_size     = 64
-    buffering_interval = 300
-    compression_format = "GZIP"
-  }
-}
-
-# IAM role for WAF logs delivery
-resource "aws_iam_role" "waf_logs" {
-  name = "meqenet-waf-logs-role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Action = "sts:AssumeRole"
-      Effect = "Allow"
-      Principal = {
-        Service = "firehose.amazonaws.com"
-      }
-    }]
-  })
-
-  tags = {
-    Name = "meqenet-waf-logs-role"
-  }
-}
-
 # IAM policy for WAF logs delivery
 resource "aws_iam_role_policy" "waf_logs" {
   name = "meqenet-waf-logs-policy"
@@ -801,14 +716,14 @@ resource "aws_iam_role_policy" "waf_logs" {
           "logs:PutLogEvents"
         ]
         Resource = [
-          "arn:aws:logs:*:*:log-group:/aws/kinesisfirehose/meqenet-waf-logs-stream:*"
+          "arn:aws:logs:*:*:log-group:/aws/kinesisfirehose/meqenet-waf-logs:*"
         ]
       },
       {
         Effect = "Allow"
         Action = [
           "kms:Decrypt",
-          "kms:GenerateDataKey*"
+          "kms:GenerateDataKey"
         ]
         Resource = aws_kms_key.cloudtrail.arn
       }

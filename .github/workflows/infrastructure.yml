@@ -156,6 +156,18 @@ jobs:
           log_level: DEBUG
           compact: false
 
+      - name: Fix Checkov SARIF output path
+        if: always()
+        run: |
+          # Checkov creates a directory structure, but our workflow expects a flat file
+          if [ -d "checkov-terraform.sarif" ] && [ -f "checkov-terraform.sarif/results_sarif.sarif" ]; then
+            echo "🔧 Fixing Checkov SARIF output path..."
+            mv checkov-terraform.sarif/results_sarif.sarif checkov-terraform.sarif.tmp
+            rm -rf checkov-terraform.sarif
+            mv checkov-terraform.sarif.tmp checkov-terraform.sarif
+            echo "✅ SARIF file path fixed"
+          fi
+
       - name: Debug Checkov output
         if: always()
         run: |
