@@ -22,6 +22,15 @@ export const metadata = {
     statusBarStyle: 'default',
     title: 'Meqenet',
   },
+  other: {
+    'apple-touch-icon': '/icon-192x192.png',
+    'apple-mobile-web-app-capable': 'yes',
+    'apple-mobile-web-app-status-bar-style': 'default',
+    'apple-mobile-web-app-title': 'Meqenet',
+    'application-name': 'Meqenet',
+    'msapplication-TileColor': '#1f2937',
+    'msapplication-config': '/browserconfig.xml',
+  },
 };
 
 export default function RootLayout({
@@ -31,7 +40,28 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <head />
+      <head>
+        {/* PWA meta tags for better detection */}
+        <meta name="application-name" content="Meqenet" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="Meqenet" />
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="msapplication-config" content="/browserconfig.xml" />
+        <meta name="msapplication-TileColor" content="#1f2937" />
+        <meta name="msapplication-tap-highlight" content="no" />
+        <link rel="apple-touch-icon" href="/icon-192x192.png" />
+        <link rel="apple-touch-icon" sizes="192x192" href="/icon-192x192.png" />
+        <link rel="apple-touch-icon" sizes="512x512" href="/icon-512x512.png" />
+        {/* Preconnect to external domains for performance */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
+      </head>
       <body className={inter.className + ' bg-[#f7fdfc]'}>
         <PWAProvider />
         <CursorFollower />

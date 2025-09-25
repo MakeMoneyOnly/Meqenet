@@ -51,7 +51,7 @@ pluginManagement {
             def pluginPath = new File(settingsDir, path)
             if (pluginPath.exists() && pluginPath.isDirectory()) {
                 // Convert to URI for Windows compatibility
-                url = pluginPath.toURI().toURL()
+                url uri(pluginPath.toURI().toURL())
                 println "✅ Found React Native Gradle plugin at: ${pluginPath.absolutePath}"
                 rnPluginFound = true
                 break

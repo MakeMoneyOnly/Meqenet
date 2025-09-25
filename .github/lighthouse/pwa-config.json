@@ -2,8 +2,6 @@
   "ci": {
     "collect": {
       "numberOfRuns": 3,
-      "startServerCommand": "cd frontend/apps/website && PORT=3001 npm start",
-      "startServerReadyPattern": "ready - started server on",
       "url": ["http://localhost:3001"],
       "settings": {
         "emulatedFormFactor": "mobile",
