@@ -204,11 +204,11 @@ jobs:
 
           # Post-installation validation
           echo "🔍 Validating critical packages after installation..."
-          if pnpm list @types/argon2 > /dev/null 2>&1; then
-            ARGON2_VERSION=$(pnpm list @types/argon2 | grep @types/argon2 | head -1 | awk '{print $2}')
-            echo "✅ @types/argon2 installed: $ARGON2_VERSION"
+          if cd backend/services/auth-service && pnpm list @types/argon2 --depth=0 > /dev/null 2>&1; then
+            echo "✅ @types/argon2 installed in auth-service workspace"
           else
-            echo "⚠️  @types/argon2 not found in installed packages"
+            echo "❌ @types/argon2 not found in auth-service workspace"
+            exit 1
           fi
 
           echo "✅ Dependencies installed successfully"
