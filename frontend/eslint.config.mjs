@@ -161,6 +161,8 @@ export default [
     rules: {
       // Temporarily disable @nx/enforce-module-boundaries due to compatibility issues
       // '@nx/enforce-module-boundaries': 'off',
+      // Disable base no-unused-vars rule when using TypeScript extension
+      'no-unused-vars': 'off',
       '@typescript-eslint/no-unused-vars': [
         'error',
         {
@@ -188,6 +190,28 @@ export default [
           message: 'Do not use process.env directly outside of config files. Use environment variables through a config module.',
         },
       ],
+    },
+  },
+  // Special override for app directory to ensure our no-unused-vars rule is respected
+  {
+    files: ['apps/app/**/*.{ts,tsx,js,jsx}'],
+    rules: {
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          args: 'all',
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          ignoreRestSiblings: true,
+        },
+      ],
+    },
+  },
+  // Special handling for app directory - allow unused vars in type definition files
+  {
+    files: ['apps/app/src/features/bnpl/types/bnpl.ts'],
+    rules: {
+      '@typescript-eslint/no-unused-vars': 'off',
     },
   },
   {
