@@ -1,12 +1,12 @@
 import React, { PropsWithChildren } from 'react';
 
 function make(
-  tag: string,
-): (props: PropsWithChildren<Record<string, unknown>>) => React.JSX.Element {
+  _tag: string,
+): (_props: PropsWithChildren<Record<string, unknown>>) => React.JSX.Element {
   return function Component(
     _props: PropsWithChildren<Record<string, unknown>>,
   ): React.JSX.Element {
-    return React.createElement(tag, _props, _props.children);
+    return React.createElement(_tag, _props, _props.children);
   };
 }
 

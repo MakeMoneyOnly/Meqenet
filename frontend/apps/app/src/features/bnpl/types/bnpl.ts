@@ -1,4 +1,5 @@
 // BNPL Types for Meqenet Mobile App
+// These enums are defined for future BNPL feature implementation
 
 export enum BNPLProduct {
   PAY_IN_4 = 'PAY_IN_4',

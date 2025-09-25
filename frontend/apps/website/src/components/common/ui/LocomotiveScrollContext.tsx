@@ -85,6 +85,7 @@ export function LocomotiveScrollProvider({
           scrollInstance as {
             on: (
               event: string,
+
               callback: (data: Record<string, unknown>) => void,
             ) => void;
             destroy: () => void;

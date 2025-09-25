@@ -93,7 +93,9 @@ class ImageTrailVariant1 {
   private animationFrameId: number | null = null;
 
   // Store bound event handlers for easy removal
+
   private boundHandlePointerMove: (ev: MouseEvent | TouchEvent) => void;
+
   private boundInitRender: (ev: MouseEvent | TouchEvent) => void;
   private boundRenderLoop: () => void;
 
@@ -295,6 +297,7 @@ export const ImageTrail: FC<ImageTrailProps> = ({
     if (!containerRef.current || items.length === 0) return;
 
     // Safe variant selection using explicit type checking
+
     let Cls: new (container: HTMLDivElement) => ImageTrailInstance;
     switch (variant) {
       case 1:

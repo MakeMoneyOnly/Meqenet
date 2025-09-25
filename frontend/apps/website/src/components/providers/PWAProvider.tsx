@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { ApiConfig } from '@meqenet/shared/config';
 
+// Type definitions for PWA events
 declare global {
   interface BeforeInstallPromptEvent extends Event {
     readonly platforms: string[];

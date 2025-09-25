@@ -20,6 +20,7 @@ import {
 
 export interface UseI18nReturn {
   // Core translation function
+
   t: (key: string, options?: Record<string, unknown>) => string;
 
   // Current language
@@ -29,14 +30,18 @@ export interface UseI18nReturn {
   direction: 'ltr' | 'rtl';
 
   // Change language function
+
   changeLanguage: (lng: SupportedLanguageCode) => Promise<void>;
 
   // Available languages
   languages: Array<{ code: string; name: string; dir: string }>;
 
   // Formatting functions
+
   formatCurrency: (amount: number) => string;
+
   formatDate: (date: Date | string) => string;
+
   formatNumber: (value: number) => string;
 
   // Loading state
@@ -101,9 +106,11 @@ export function useI18n(namespace?: string): UseI18nReturn {
  */
 export function useErrorTranslation(): {
   getErrorMessage: (errorCode: string, defaultMessage?: string) => string;
+
   getValidationError: (
     field: string,
     rule: string,
+
     params?: Record<string, unknown>,
   ) => string;
 } {

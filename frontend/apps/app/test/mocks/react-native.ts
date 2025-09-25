@@ -196,6 +196,7 @@ export const TextInput = React.forwardRef<
     {
       placeholder?: string;
       value?: string;
+
       onChangeText?: (text: string) => void;
       secureTextEntry?: boolean;
       placeholderTextColor?: string;

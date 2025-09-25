@@ -24,20 +24,21 @@ const extensions = [
 
 interface RollupPlugin {
   name: string;
-  load(_id: string): string | undefined;
+   
+  load(id: string): string | undefined;
 }
 
 const rollupPlugin = (matchers: RegExp[]): RollupPlugin => ({
   name: 'js-in-jsx',
-  load(_id: string): string | undefined {
+  load(id: string): string | undefined {
     if (
-      matchers.some((matcher: RegExp): boolean => matcher.test(_id)) &&
-      _id.endsWith('.js')
+      matchers.some((matcher: RegExp): boolean => matcher.test(id)) &&
+      id.endsWith('.js')
     ) {
-      // Using literal string for security - this is a build-time transformation
+      // Using controlled parameter for build-time transformation
       // The id parameter is controlled by the build system, not user input
        
-      const file = readFileSync(_id, { encoding: 'utf-8' });
+      const file = readFileSync(id, { encoding: 'utf-8' });
       return esbuild.transformSync(file, { loader: 'jsx', jsx: 'automatic' })
         .code;
     }

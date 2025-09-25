@@ -135,6 +135,7 @@ self.addEventListener('notificationclick', (event) => {
 });
 
 // Handle install event
+
 self.addEventListener('install', (_event) => {
   // Skip waiting to activate immediately
   self.skipWaiting();

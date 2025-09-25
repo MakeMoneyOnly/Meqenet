@@ -4,6 +4,7 @@ import { TextInput, StyleSheet, View, Text } from 'react-native';
 interface InputProps {
   placeholder: string;
   value: string;
+
   onChangeText: (text: string) => void;
   secureTextEntry?: boolean;
   error?: string;

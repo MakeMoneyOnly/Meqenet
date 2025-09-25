@@ -41,10 +41,10 @@ const logger = {
 
 // Conditional imports for React Native SSL pinning (only available on mobile)
 let addSSLPinningHosts:
-  | ((hosts: Record<string, unknown>) => Promise<void>)
+  | ((_hosts: Record<string, unknown>) => Promise<void>)
   | null = null;
 let initializeSSLPinning:
-  | ((config: Record<string, unknown>) => Promise<void>)
+  | ((_config: Record<string, unknown>) => Promise<void>)
   | null = null;
 let ReactNativeSSLPinningAdapter: unknown = null;
 

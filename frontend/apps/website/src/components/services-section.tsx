@@ -628,6 +628,7 @@ export default function ServicesSection() {
 
 type ServiceItemProps = {
   service: ServiceCategory;
+
   toggleService: (id: string) => void;
   isLast: boolean;
 };
