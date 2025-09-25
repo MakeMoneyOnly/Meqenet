@@ -231,7 +231,6 @@
     "@nx/workspace": "^21.4.1",
     "@opentelemetry/api": "1.9.0",
     "@playwright/test": "^1.42.1",
-    "@rushstack/eslint-patch": "^1.12.0",
     "@storybook/nextjs": "9.1.4",
     "@storybook/test-runner": "^0.21.0",
     "@swc-node/register": "^1.10.10",

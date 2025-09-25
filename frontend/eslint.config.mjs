@@ -1,12 +1,16 @@
-import nx from '@nx/eslint-plugin';
+// Temporarily disabled Nx configs due to ESLint 9.x compatibility issues
+// import nx from '@nx/eslint-plugin';
+import js from '@eslint/js';
 import security from 'eslint-plugin-security';
 import jsxA11y from 'eslint-plugin-jsx-a11y';
 import tsparser from '@typescript-eslint/parser';
 
 export default [
-  ...nx.configs['flat/base'],
-  ...nx.configs['flat/typescript'],
-  ...nx.configs['flat/javascript'],
+  // Temporarily disabled Nx configs due to ESLint 9.x compatibility issues
+  // ...nx.configs['flat/base'],
+  // ...nx.configs['flat/typescript'],
+  // ...nx.configs['flat/javascript'],
+  js.configs.recommended,
   security.configs.recommended,
   {
     plugins: {

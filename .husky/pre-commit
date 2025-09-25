@@ -99,7 +99,11 @@ echo "  ✅ Prettier passed."
 
 # 1d. Add back the changes made by the formatters
 echo "  • Staging formatted files..."
-git add $ALL_RELEVANT_FILES || git add --force $ALL_RELEVANT_FILES
+echo "$ALL_RELEVANT_FILES" | while IFS= read -r file; do
+  if [ -n "$file" ]; then
+    git add "$file"
+  fi
+done
 
 # ============================================================================
 # PHASE 2: ENTERPRISE SECURITY VALIDATION (Comprehensive)

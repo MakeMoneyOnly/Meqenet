@@ -1,6 +1,5 @@
-import '@rushstack/eslint-patch/modern-module-resolution';
-
 // Minimal security linting - focus on critical issues only
+// Note: ESLint 9.x has native support for monorepo module resolution, no patch needed
 import security from 'eslint-plugin-security';
 import reactHooks from 'eslint-plugin-react-hooks';
 

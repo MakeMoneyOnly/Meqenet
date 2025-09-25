@@ -1,4 +1,5 @@
 // Minimal ESLint configuration for Next.js app
+// Temporarily disabled eslint-config-next due to ESLint 9.x compatibility issues
 import js from '@eslint/js';
 import tsParser from '@typescript-eslint/parser';
 import tsPlugin from '@typescript-eslint/eslint-plugin';
@@ -6,11 +7,12 @@ import reactPlugin from 'eslint-plugin-react';
 import reactHooksPlugin from 'eslint-plugin-react-hooks';
 import jsxA11yPlugin from 'eslint-plugin-jsx-a11y';
 import securityPlugin from 'eslint-plugin-security';
-import nextConfig from 'eslint-config-next';
+// import nextConfig from 'eslint-config-next';
 
 export default [
   js.configs.recommended,
-  nextConfig,
+  // Temporarily disabled due to ESLint 9.x compatibility
+  // nextConfig,
   {
     ignores: [
       '.next/**/*',
