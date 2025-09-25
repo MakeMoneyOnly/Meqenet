@@ -51,6 +51,7 @@ export default [
         URL: 'readonly',
         File: 'readonly',
         Request: 'readonly',
+        Response: 'readonly',
         alert: 'readonly',
         // React globals (when not imported)
         React: 'readonly',
@@ -64,12 +65,18 @@ export default [
         HTMLSelectElement: 'readonly',
         SVGSVGElement: 'readonly',
         // Event types
+        Event: 'readonly',
+        CustomEvent: 'readonly',
         MouseEvent: 'readonly',
         TouchEvent: 'readonly',
         KeyboardEvent: 'readonly',
         FocusEvent: 'readonly',
         EventListener: 'readonly',
         EventListenerObject: 'readonly',
+        // PWA and Service Worker globals
+        caches: 'readonly',
+        ServiceWorkerGlobalScope: 'readonly',
+        BeforeInstallPromptEvent: 'readonly',
         // DOM APIs
         DOMRect: 'readonly',
         // Node.js types for TypeScript
@@ -149,6 +156,16 @@ export default [
         window: 'readonly',
         document: 'readonly',
         navigator: 'readonly',
+        fetch: 'readonly',
+        localStorage: 'readonly',
+        sessionStorage: 'readonly',
+        // Event types
+        Event: 'readonly',
+        CustomEvent: 'readonly',
+        // PWA and Service Worker globals
+        caches: 'readonly',
+        ServiceWorkerGlobalScope: 'readonly',
+        BeforeInstallPromptEvent: 'readonly',
         // Node.js globals
         process: 'readonly',
         console: 'readonly',
@@ -185,6 +202,31 @@ export default [
           caughtErrors: 'all',
         },
       ],
+    },
+  },
+  // Configuration for service worker files
+  {
+    files: ['**/sw.ts', '**/*.sw.ts'],
+    languageOptions: {
+      globals: {
+        // Service Worker globals
+        ServiceWorkerGlobalScope: 'readonly',
+        caches: 'readonly',
+        Response: 'readonly',
+        Request: 'readonly',
+        // Browser globals
+        window: 'readonly',
+        document: 'readonly',
+        navigator: 'readonly',
+        fetch: 'readonly',
+        // Node.js globals
+        process: 'readonly',
+        console: 'readonly',
+        global: 'readonly',
+        require: 'readonly',
+        module: 'readonly',
+        exports: 'readonly',
+      },
     },
   },
   // Configuration for test files
