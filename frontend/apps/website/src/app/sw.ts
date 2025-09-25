@@ -2,7 +2,7 @@
 /// <reference lib="dom" />
 import { Serwist, type PrecacheEntry } from 'serwist';
 
-/* global ServiceWorkerGlobalScope */
+/* eslint-disable no-undef */
 
 // Declare self for service worker context
 declare const self: ServiceWorkerGlobalScope & {
