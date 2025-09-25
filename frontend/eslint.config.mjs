@@ -4,6 +4,7 @@ import js from '@eslint/js';
 import security from 'eslint-plugin-security';
 import jsxA11y from 'eslint-plugin-jsx-a11y';
 import tsparser from '@typescript-eslint/parser';
+import tsPlugin from '@typescript-eslint/eslint-plugin';
 
 export default [
   // Temporarily disabled Nx configs due to ESLint 9.x compatibility issues
@@ -15,6 +16,7 @@ export default [
   {
     plugins: {
       'jsx-a11y': jsxA11y,
+      '@typescript-eslint': tsPlugin,
     },
   },
   {
