@@ -10,6 +10,7 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import Backend from 'i18next-http-backend';
+import { ApiConfig } from '../config';
 
 // Import locale resources
 import enTranslations from './locales/en.json';
@@ -104,7 +105,11 @@ const initI18n = (isClient = true) => {
     missingKeyHandler: (_lngs, _ns, key, _fallbackValue) => {
       // Silently handle missing keys in production for security
       // In development, missing keys would be logged by i18next debug mode
-      if (typeof window !== 'undefined' && window.console) {
+      if (
+        typeof window !== 'undefined' &&
+        window.console &&
+        ApiConfig.isDevelopment
+      ) {
         console.warn(`Missing translation: ${key}`);
       }
     },
@@ -166,7 +171,9 @@ export const getLanguageDirection = (lng: string): 'ltr' | 'rtl' => {
 export const changeLanguage = async (lng: 'en' | 'am'): Promise<void> => {
   // Validate that the language is supported
   if (!SUPPORTED_LANGUAGE_CODES.includes(lng)) {
-    console.warn(`Unsupported language: ${lng}`);
+    if (ApiConfig.isDevelopment) {
+      console.warn(`Unsupported language: ${lng}`);
+    }
     return;
   }
 
