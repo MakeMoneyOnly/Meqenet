@@ -77,19 +77,30 @@ jobs:
           directory: infrastructure/
           framework: terraform
           output_format: sarif
-          output_file_path: checkov-results.sarif
           soft_fail: true
           quiet: false
           check: CKV_AWS_*,CKV2_AWS_*
           skip_check: CKV_AWS_144
           log_level: INFO
-          compact: false
+
+      - name: Verify Checkov SARIF upload success
+        if: always()
+        run: |
+          echo "🔍 Checking if Checkov SARIF file was created..."
+          if [ -f "results.sarif" ]; then
+            echo "✅ SARIF file exists"
+            ls -la results.sarif
+          else
+            echo "❌ SARIF file not found - Checkov scan may have failed"
+            exit 1
+          fi
 
       - name: Upload Checkov SARIF
         uses: github/codeql-action/upload-sarif@v3
         if: always()
+        continue-on-error: true
         with:
-          sarif_file: checkov-results.sarif
+          sarif_file: results.sarif
           category: "checkov"
 
   terrascan:

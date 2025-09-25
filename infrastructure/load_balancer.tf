@@ -603,8 +603,8 @@ resource "aws_wafv2_web_acl" "main" {
     name     = "AWSManagedRulesKnownBadInputsRuleSet"
     priority = 2
 
-    action {
-      block {}
+    override_action {
+      none {}
     }
 
     statement {
