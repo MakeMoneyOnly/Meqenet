@@ -633,7 +633,11 @@ type ServiceItemProps = {
   isLast: boolean;
 };
 
-function ServiceItem({ service, toggleService }: ServiceItemProps) {
+function ServiceItem({
+  service,
+  toggleService,
+  isLast: _isLast,
+}: ServiceItemProps) {
   return (
     <div className="py-6">
       <ScrollBlurItem>

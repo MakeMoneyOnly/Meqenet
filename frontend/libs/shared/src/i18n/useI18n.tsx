@@ -20,7 +20,6 @@ import {
 
 export interface UseI18nReturn {
   // Core translation function
-
   t: (key: string, options?: Record<string, unknown>) => string;
 
   // Current language
@@ -30,7 +29,6 @@ export interface UseI18nReturn {
   direction: 'ltr' | 'rtl';
 
   // Change language function
-
   changeLanguage: (lng: SupportedLanguageCode) => Promise<void>;
 
   // Available languages
@@ -110,7 +108,6 @@ export function useErrorTranslation(): {
   getValidationError: (
     field: string,
     rule: string,
-
     params?: Record<string, unknown>,
   ) => string;
 } {

@@ -36,15 +36,24 @@ const RN_ONLY_PROPS = new Set<string>([
 ]);
 
 function sanitizeProps<P extends Record<string, unknown>>(
-  props: P,
+  _props: P,
 ): Record<string, unknown> {
   const out: Record<string, unknown> = {};
-  const propKeys = Object.keys(props);
+  const propKeys = Object.keys(_props);
 
   for (const key of propKeys) {
     if (RN_ONLY_PROPS.has(key)) continue;
 
-    out[key] = props[key];
+    // Security: Only allow safe string keys to prevent object injection
+    // Use hasOwnProperty check for additional safety
+    if (
+      typeof key === 'string' &&
+      key.length > 0 &&
+      !key.startsWith('__') &&
+      Object.prototype.hasOwnProperty.call(_props, key)
+    ) {
+      out[key] = _props[key as keyof P];
+    }
   }
   return out;
 }
@@ -197,7 +206,7 @@ export const TextInput = React.forwardRef<
       placeholder?: string;
       value?: string;
 
-      onChangeText?: (text: string) => void;
+      onChangeText?: (_text: string) => void;
       secureTextEntry?: boolean;
       placeholderTextColor?: string;
       multiline?: boolean;

@@ -226,12 +226,19 @@ export default [
       '**/*.spec.ts',
       '**/*.spec.tsx',
       '**/*.e2e-spec.ts',
+      '**/*.e2e.ts',
       '**/backend-e2e/**/*.ts',
     ],
     languageOptions: {
       globals: {
         ...globals.jest,
         ...globals.node,
+        // Detox E2E testing globals
+        device: 'readonly',
+        element: 'readonly',
+        by: 'readonly',
+        expect: 'readonly',
+        waitFor: 'readonly',
       },
     },
     rules: {

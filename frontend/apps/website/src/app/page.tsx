@@ -33,7 +33,7 @@ export default function Home() {
     };
 
     let scroll: {
-      on: (event: string, callback: () => void) => void;
+      on: (_event: string, _callback: () => void) => void;
       destroy: () => void;
     } | null = null;
     let cleanup: (() => void) | undefined;

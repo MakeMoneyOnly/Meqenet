@@ -4,23 +4,20 @@ import { useEffect } from 'react';
 import { ApiConfig } from '@meqenet/shared/config';
 
 // Type definitions for PWA events
-declare global {
-  interface BeforeInstallPromptEvent extends Event {
-    readonly platforms: string[];
-    readonly userChoice: Promise<{
-      outcome: 'accepted' | 'dismissed';
-      platform: string;
-    }>;
-    prompt(): Promise<void>;
-  }
+type BeforeInstallPromptEvent = Event & {
+  readonly platforms: string[];
+  readonly userChoice: Promise<{
+    outcome: 'accepted' | 'dismissed';
+    platform: string;
+  }>;
+  prompt(): Promise<void>;
+};
 
+declare global {
   interface WindowEventMap {
     beforeinstallprompt: BeforeInstallPromptEvent;
-
     appinstalled: Event;
-
     'pwa-install-available': CustomEvent<{ prompt: () => Promise<void> }>;
-
     'pwa-installed': CustomEvent;
   }
 }
@@ -53,7 +50,6 @@ export default function PWAProvider() {
 
     // Handle PWA install prompt
     if (typeof window !== 'undefined') {
-      // eslint-disable-next-line no-undef
       let deferredPrompt: BeforeInstallPromptEvent | null = null;
 
       window.addEventListener('beforeinstallprompt', (e) => {

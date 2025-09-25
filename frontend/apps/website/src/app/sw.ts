@@ -1,13 +1,17 @@
 /// <reference lib="webworker" />
-/* eslint-disable no-undef */
+/// <reference lib="dom" />
 import { precacheAndRoute, createHandlerBoundToURL } from '@serwist/precaching';
 import { registerRoute, NavigationRoute } from '@serwist/routing';
 import { CacheFirst, NetworkFirst } from '@serwist/strategies';
 import { ExpirationPlugin } from '@serwist/expiration';
-declare const self: ServiceWorkerGlobalScope & {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  __SW_MANIFEST: any[];
+
+declare const self: unknown & {
+  __SW_MANIFEST: (string | Request)[] | undefined;
 };
+
+// Global declarations for service worker environment
+declare const caches: unknown;
+declare const Response: unknown;
 
 // This is injected by Serwist during build
 precacheAndRoute(self.__SW_MANIFEST);
@@ -136,7 +140,7 @@ self.addEventListener('notificationclick', (event) => {
 
 // Handle install event
 
-self.addEventListener('install', (_event) => {
+self.addEventListener('install', () => {
   // Skip waiting to activate immediately
   self.skipWaiting();
 });

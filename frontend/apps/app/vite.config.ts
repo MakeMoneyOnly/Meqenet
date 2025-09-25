@@ -24,7 +24,7 @@ const extensions = [
 
 interface RollupPlugin {
   name: string;
-   
+
   load(id: string): string | undefined;
 }
 
