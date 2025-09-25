@@ -1,8 +1,7 @@
 /// <reference lib="webworker" />
 /// <reference lib="dom" />
-import { Serwist } from 'serwist';
+import { Serwist, type PrecacheEntry } from 'serwist';
 
-// ESLint globals for service worker environment
 /* global ServiceWorkerGlobalScope */
 
 // Declare self for service worker context
@@ -12,7 +11,7 @@ declare const self: ServiceWorkerGlobalScope & {
 
 // This is injected by Serwist during build
 const serwist = new Serwist({
-  precacheEntries: self.__SW_MANIFEST,
+  precacheEntries: self.__SW_MANIFEST as (string | PrecacheEntry)[],
 });
 
 serwist.addEventListeners();
