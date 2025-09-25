@@ -1678,6 +1678,20 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
+      - name: 🔧 Ensure React Native Gradle Plugin
+        working-directory: ./frontend/apps/app
+        run: |
+          # Final check and installation of React Native Gradle plugin for Android builds
+          if [ ! -d "../node_modules/@react-native/gradle-plugin" ]; then
+            echo "🔧 Installing React Native Gradle plugin..."
+            cd .. && export PNPM_HOME="$HOME/.local/share/pnpm" && export PATH="$PNPM_HOME:$PATH" && pnpm install @react-native/gradle-plugin --ignore-scripts -w
+          fi
+          if [ -d "../node_modules/@react-native/gradle-plugin" ]; then
+            echo "✅ React Native Gradle plugin ready for Android build"
+          else
+            echo "⚠️  React Native Gradle plugin not available, Gradle build may fail"
+          fi
+
       - name: 🔍 Run Gradle Dependency Vulnerability Check
         working-directory: ./frontend/apps/app/android
         run: |
