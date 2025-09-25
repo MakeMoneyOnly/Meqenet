@@ -76,9 +76,9 @@ pluginManagement {
         id("com.android.application") version "8.2.2"
         id("com.android.library") version "8.2.2"
         id("org.jetbrains.kotlin.android") version "1.9.24"
-        id("com.facebook.react.settings") version "0.76.5"
+        id("com.facebook.react.settings") version "0.74-stable"
         // Add explicit React plugin resolution for CI environments
-        id("com.facebook.react") version "0.76.5"
+        id("com.facebook.react") version "0.74-stable"
         // Versions plugin for dependency management
         id("com.github.ben-manes.versions") version "0.50.0"
     }
