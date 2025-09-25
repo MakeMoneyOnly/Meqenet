@@ -2,7 +2,7 @@
 
 import React, { useRef, useEffect, FC } from 'react';
 import { gsap } from 'gsap';
-import { Logger } from '@/lib/security';
+import { Logger } from '../../../lib/security';
 
 // --- Helper Functions ---
 function lerp(a: number, b: number, n: number): number {

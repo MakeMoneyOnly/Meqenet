@@ -59,7 +59,12 @@ const AnimatedActionText = () => {
           const currentIndex =
             index >= 0 && index < actionWords.length ? index : 0;
 
-          const currentWord = actionWords[currentIndex] || 'Shop Now';
+          // Safe array access with explicit bounds checking
+
+          const currentWord =
+            currentIndex >= 0 && currentIndex < actionWords.length
+              ? actionWords[currentIndex]
+              : 'Shop Now';
 
           return (
             <motion.span

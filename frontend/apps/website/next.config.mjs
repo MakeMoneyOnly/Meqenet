@@ -99,53 +99,27 @@ const nextConfig = {
     CUSTOM_KEY: process.env.CUSTOM_KEY,
   },
 
-  // Webpack configuration for security
+  // Experimental features for better path resolution
+  experimental: {
+    // Enable webpack build worker
+    webpackBuildWorker: true,
+  },
+
+  // Webpack configuration for security and path resolution
   webpack: (config, { dev }) => {
     // Security: Disable source maps in production
     if (!dev) {
       config.devtool = false;
     }
 
+    // Add path alias for @ to src directory
+    config.resolve.alias['@'] = new URL('./src', import.meta.url).pathname;
+
     return config;
   },
 
   // Output tracing configuration
   outputFileTracingRoot: undefined,
-
-  // PWA Configuration for next-pwa v5+
-  pwa: {
-    dest: 'public',
-    register: true,
-    skipWaiting: true,
-    disable: process.env.NODE_ENV === 'development',
-    runtimeCaching: [
-      {
-        urlPattern: /^https:\/\/api\./,
-        handler: 'NetworkFirst',
-        options: {
-          cacheName: 'api-cache',
-          expiration: {
-            maxEntries: 50,
-            maxAgeSeconds: 24 * 60 * 60, // 24 hours
-          },
-          cacheKeyWillBeUsed: async ({ request }) => {
-            return `${request.url}?${Date.now()}`;
-          },
-        },
-      },
-      {
-        urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/,
-        handler: 'CacheFirst',
-        options: {
-          cacheName: 'image-cache',
-          expiration: {
-            maxEntries: 100,
-            maxAgeSeconds: 7 * 24 * 60 * 60, // 7 days
-          },
-        },
-      },
-    ],
-  },
 };
 
 export default nextConfig;

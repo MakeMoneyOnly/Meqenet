@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 
 import { motion } from 'motion/react';
-import { cn } from '@/lib/utils';
+import { cn } from '../../../lib/utils';
 
 type Direction = 'TOP' | 'LEFT' | 'BOTTOM' | 'RIGHT';
 
@@ -54,7 +54,11 @@ export function HoverBorderGradient({
         ? (currentIndex - 1 + directions.length) % directions.length
         : (currentIndex + 1) % directions.length;
 
-      return directions[nextIndex];
+      // Safe array access with bounds checking
+
+      return nextIndex >= 0 && nextIndex < directions.length
+        ? directions[nextIndex]
+        : directions[0];
     },
     [clockwise],
   );
@@ -78,6 +82,8 @@ export function HoverBorderGradient({
       }, duration * 1000);
       return () => clearInterval(interval);
     }
+    // Return empty cleanup function when hovered is true
+    return () => {};
   }, [hovered, duration, rotateDirection]);
   return (
     <Tag

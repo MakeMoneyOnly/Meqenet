@@ -1,13 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
-import { motion } from "framer-motion";
-import { MoveRight, PhoneCall } from "lucide-react";
-import { Button } from "@/components/common/ui/button";
+import { useEffect, useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
+import { MoveRight, PhoneCall } from 'lucide-react';
+import { Button } from './button';
 
 function Hero() {
   const [titleNumber, setTitleNumber] = useState(0);
   const titles = useMemo(
-    () => ["amazing", "new", "wonderful", "beautiful", "smart"],
-    []
+    () => ['amazing', 'new', 'wonderful', 'beautiful', 'smart'],
+    [],
   );
 
   useEffect(() => {
@@ -39,8 +39,8 @@ function Hero() {
                   <motion.span
                     key={index}
                     className="absolute font-semibold"
-                    initial={{ opacity: 0, y: "-100" }}
-                    transition={{ type: "spring", stiffness: 50 }}
+                    initial={{ opacity: 0, y: '-100' }}
+                    transition={{ type: 'spring', stiffness: 50 }}
                     animate={
                       titleNumber === index
                         ? {

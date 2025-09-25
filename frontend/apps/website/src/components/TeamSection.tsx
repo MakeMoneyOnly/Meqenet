@@ -1,6 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
-import ScrollBlurItem from '@/components/common/ui/ScrollBlurItem';
+import ScrollBlurItem from './common/ui/ScrollBlurItem';
 
 const TeamMemberCard: React.FC<{
   imgSrc: string;
@@ -39,25 +39,29 @@ const TeamMemberCard: React.FC<{
 const TeamSection: React.FC = () => {
   const teamMembers = [
     {
-      imgSrc: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&w=800&q=60',
+      imgSrc:
+        'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&w=800&q=60',
       name: 'Abebe Bikila',
       role: 'CEO & Founder',
       company: 'meqenet®',
     },
     {
-      imgSrc: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800&q=60',
+      imgSrc:
+        'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=800&q=60',
       name: 'Tigist Assefa',
       role: 'Head of Product',
       company: 'meqenet®',
     },
     {
-      imgSrc: 'https://images.unsplash.com/photo-1557862921-37829c790f19?auto=format&fit=crop&w=800&q=60',
+      imgSrc:
+        'https://images.unsplash.com/photo-1557862921-37829c790f19?auto=format&fit=crop&w=800&q=60',
       name: 'Dawit Lemma',
       role: 'Lead Engineer',
       company: 'meqenet®',
     },
     {
-      imgSrc: 'https://images.unsplash.com/photo-1600878459145-4603b3a4a639?auto=format&fit=crop&w=800&q=60',
+      imgSrc:
+        'https://images.unsplash.com/photo-1600878459145-4603b3a4a639?auto=format&fit=crop&w=800&q=60',
       name: 'Selamawit Gebru',
       role: 'Merchant Partnerships',
       company: 'meqenet®',
@@ -77,16 +81,17 @@ const TeamSection: React.FC = () => {
                 </ScrollBlurItem>
                 <ScrollBlurItem>
                   <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tighter leading-tight">
-                    <span className="text-black">Meet the team driving</span> <span className="text-gray-400">financial inclusion.</span>
+                    <span className="text-black">Meet the team driving</span>{' '}
+                    <span className="text-gray-400">financial inclusion.</span>
                   </h2>
                 </ScrollBlurItem>
                 <div className="flex space-x-24 mt-12">
-                    <ScrollBlurItem>
-                        <span className="text-gray-300 text-2xl">+</span>
-                    </ScrollBlurItem>
-                    <ScrollBlurItem>
-                        <span className="text-gray-300 text-2xl">+</span>
-                    </ScrollBlurItem>
+                  <ScrollBlurItem>
+                    <span className="text-gray-300 text-2xl">+</span>
+                  </ScrollBlurItem>
+                  <ScrollBlurItem>
+                    <span className="text-gray-300 text-2xl">+</span>
+                  </ScrollBlurItem>
                 </div>
               </div>
 
@@ -95,17 +100,23 @@ const TeamSection: React.FC = () => {
                   <div>
                     <h3 className="text-lg font-bold mb-2">Join Our Mission</h3>
                     <p className="text-gray-600 text-sm mb-4">
-                      We&apos;re building a team dedicated to empowering Ethiopian consumers and merchants.
+                      We&apos;re building a team dedicated to empowering
+                      Ethiopian consumers and merchants.
                     </p>
                     <button className="bg-black text-white text-sm font-bold py-2 px-4 rounded-full flex items-center space-x-2">
                       <span>See Open Roles</span>
-                      <span className="w-2 h-2 bg-white rounded-full"></span>
+                      <span className="w-2 h-2 bg-white rounded-full" />
                     </button>
                   </div>
                 </ScrollBlurItem>
                 <ScrollBlurItem>
                   <p className="text-gray-700 text-sm leading-relaxed">
-                    We believe great work comes <span className="text-black font-bold">from collaboration and a shared vision.</span> Our goal is to build intuitive financial tools that make a real difference.
+                    We believe great work comes{' '}
+                    <span className="text-black font-bold">
+                      from collaboration and a shared vision.
+                    </span>{' '}
+                    Our goal is to build intuitive financial tools that make a
+                    real difference.
                   </p>
                 </ScrollBlurItem>
               </div>
@@ -128,4 +139,4 @@ const TeamSection: React.FC = () => {
   );
 };
 
-export default TeamSection; 
+export default TeamSection;
