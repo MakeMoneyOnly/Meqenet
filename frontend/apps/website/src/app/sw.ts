@@ -5,16 +5,13 @@ import { registerRoute, NavigationRoute } from '@serwist/routing';
 import { CacheFirst, NetworkFirst } from '@serwist/strategies';
 import { ExpirationPlugin } from '@serwist/expiration';
 
-declare const self: unknown & {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+declare const self: any & {
   __SW_MANIFEST: (string | Request)[] | undefined;
 };
 
-// Global declarations for service worker environment
-declare const caches: unknown;
-declare const Response: unknown;
-
 // This is injected by Serwist during build
-precacheAndRoute(self.__SW_MANIFEST);
+precacheAndRoute(self.__SW_MANIFEST!);
 
 // Cache static assets with Cache First strategy
 registerRoute(
