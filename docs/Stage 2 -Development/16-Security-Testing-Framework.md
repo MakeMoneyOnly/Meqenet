@@ -73,27 +73,83 @@ The framework follows a defense-in-depth approach with multiple layers of securi
 
 #### ESLint Security Rules
 
-```json
-// Configuration: .eslintrc.js
-{
-  "plugins": ["security"],
-  "rules": {
-    "security/detect-buffer-noassert": "error",
-    "security/detect-child-process": "warn",
-    "security/detect-disable-mustache-escape": "error",
-    "security/detect-eval-with-expression": "error",
-    "security/detect-new-buffer": "error",
-    "security/detect-no-csrf-before-method-override": "error",
-    "security/detect-non-literal-fs-filename": "warn",
-    "security/detect-non-literal-regexp": "error",
-    "security/detect-non-literal-require": "warn",
-    "security/detect-object-injection": "error",
-    "security/detect-possible-timing-attacks": "warn",
-    "security/detect-pseudoRandomBytes": "error",
-    "security/detect-unsafe-regex": "error"
-  }
-}
+**Configuration Status (2025-01-25)**: Enterprise-grade custom ESLint setup using official plugins only. The project does not use `eslint-config-next` due to ESLint 9.x compatibility issues.
+
+**Configuration Approach**:
+- **Format**: ESLint 9.x flat config (`eslint.config.mjs`)
+- **Plugins**: Official, audited ESLint plugins only
+- **Security Focus**: PCI DSS and NBE compliance for BNPL applications
+- **Auditability**: All rules are traceable and documented
+
+```javascript
+// Configuration: eslint.config.mjs (Frontend)
+import js from '@eslint/js';
+import tsParser from '@typescript-eslint/parser';
+import tsPlugin from '@typescript-eslint/eslint-plugin';
+import reactPlugin from 'eslint-plugin-react';
+import reactHooksPlugin from 'eslint-plugin-react-hooks';
+import jsxA11yPlugin from 'eslint-plugin-jsx-a11y';
+import securityPlugin from 'eslint-plugin-security';
+
+export default [
+  js.configs.recommended,
+  // Temporarily disabled: eslint-config-next (incompatible with ESLint 9.x)
+  {
+    plugins: {
+      '@typescript-eslint': tsPlugin,
+      'react': reactPlugin,
+      'react-hooks': reactHooksPlugin,
+      'jsx-a11y': jsxA11yPlugin,
+      'security': securityPlugin,
+    },
+    rules: {
+      // Critical security rules for BNPL fintech
+      'security/detect-object-injection': 'error',
+      'security/detect-eval-with-expression': 'error',
+      'security/detect-child-process': 'error',
+      'security/detect-unsafe-regex': 'error',
+      'security/detect-possible-timing-attacks': 'error',
+
+      // Additional security rules
+      'security/detect-buffer-noassert': 'error',
+      'security/detect-disable-mustache-escape': 'error',
+      'security/detect-new-buffer': 'error',
+      'security/detect-no-csrf-before-method-override': 'error',
+      'security/detect-non-literal-regexp': 'error',
+      'security/detect-pseudoRandomBytes': 'error',
+
+      // TypeScript and React rules
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          args: 'all',
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          ignoreRestSiblings: true,
+        },
+      ],
+      'react-hooks/rules-of-hooks': 'error',
+      'jsx-a11y/alt-text': 'error',
+      'jsx-a11y/anchor-is-valid': 'error',
+    },
+  },
+];
 ```
+
+**Known Issue: eslint-config-next Compatibility**
+- **Issue**: Official `eslint-config-next` depends on `@rushstack/eslint-patch@^1.10.3`
+- **Problem**: `@rushstack/eslint-patch` is incompatible with ESLint 9.36.0+
+- **Impact**: Cannot use official Next.js ESLint configuration
+- **Workaround**: Custom configuration using official plugins directly
+- **Enterprise Benefits**: Full auditability, no unknown dependencies, enhanced security
+
+**Security Rules Applied**:
+- **Object Injection Detection**: Prevents prototype pollution attacks
+- **Child Process Security**: Blocks unsafe child process usage
+- **Timing Attack Prevention**: Detects potential timing-based attacks
+- **Unsafe Regex Detection**: Prevents ReDoS vulnerabilities
+- **Eval/Function Security**: Blocks unsafe code execution
+- **Buffer Security**: Prevents buffer-related vulnerabilities
 
 #### Android Lint Security Rules
 

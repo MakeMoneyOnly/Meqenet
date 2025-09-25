@@ -76,6 +76,91 @@ The choice of database is specific to the needs of each microservice.
   (tracing), and a centralized logging solution (e.g., **OpenSearch**).
 - **Secrets Management**: **AWS Secrets Manager**.
 
+### 3.5 Development Tools & Code Quality
+
+#### ESLint Configuration (Enterprise-Grade)
+**Status (2025-01-25)**: Custom ESLint setup using official plugins only due to `eslint-config-next` compatibility issues with ESLint 9.x.
+
+**Configuration Approach**:
+- **Format**: ESLint 9.x flat config (`eslint.config.mjs`)
+- **Plugins**: Official, audited ESLint plugins only
+- **Security Focus**: PCI DSS and NBE compliance for BNPL applications
+- **Architecture**: Separate configs for frontend, backend, and pre-commit hooks
+
+**Frontend Configuration (Next.js/React)**:
+```javascript
+// frontend/apps/website/eslint.config.mjs
+import js from '@eslint/js';
+import tsParser from '@typescript-eslint/parser';
+import tsPlugin from '@typescript-eslint/eslint-plugin';
+import reactPlugin from 'eslint-plugin-react';
+import reactHooksPlugin from 'eslint-plugin-react-hooks';
+import jsxA11yPlugin from 'eslint-plugin-jsx-a11y';
+import securityPlugin from 'eslint-plugin-security';
+
+export default [
+  js.configs.recommended,
+  // Temporarily disabled: eslint-config-next (incompatible with ESLint 9.x)
+  {
+    plugins: {
+      '@typescript-eslint': tsPlugin,
+      'react': reactPlugin,
+      'react-hooks': reactHooksPlugin,
+      'jsx-a11y': jsxA11yPlugin,
+      'security': securityPlugin,
+    },
+    rules: {
+      // Enhanced security for financial applications
+      'security/detect-object-injection': 'error',
+      'security/detect-eval-with-expression': 'error',
+      'security/detect-possible-timing-attacks': 'error',
+      // Additional fintech-specific rules...
+    },
+  },
+];
+```
+
+**Backend Configuration (NestJS/Node.js)**:
+```javascript
+// backend/eslint.config.mjs
+import js from '@eslint/js';
+import tsParser from '@typescript-eslint/parser';
+import tsPlugin from '@typescript-eslint/eslint-plugin';
+import securityPlugin from 'eslint-plugin-security';
+
+export default [
+  js.configs.recommended,
+  {
+    plugins: {
+      '@typescript-eslint': tsPlugin,
+      'security': securityPlugin,
+    },
+    rules: {
+      // Financial data integrity rules
+      'security/detect-object-injection': 'error',
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      // Enhanced security for payment processing...
+    },
+  },
+];
+```
+
+#### ESLint Compatibility Issue
+**Known Issue**: `eslint-config-next` depends on `@rushstack/eslint-patch@^1.10.3`, which is incompatible with ESLint 9.36.0+.
+
+**Enterprise Benefits of Current Approach**:
+- ✅ **Full Auditability**: All linting rules are traceable and documented
+- ✅ **Zero Unknown Dependencies**: Only official, vetted packages
+- ✅ **Enhanced Security**: Custom rules for PCI DSS and NBE compliance
+- ✅ **Complete Control**: Full customization for financial application needs
+
+#### Additional Development Tools
+- **TypeScript Compiler**: Strict configuration for financial data integrity
+- **Prettier**: Code formatting with financial code conventions
+- **Husky**: Git hooks for pre-commit validation
+- **Lint-staged**: Performance-optimized file-specific linting
+- **Commitlint**: Conventional commit message enforcement
+
 ## 4. Review & Updates
 
 This technology stack will be reviewed quarterly. Significant changes will be documented via

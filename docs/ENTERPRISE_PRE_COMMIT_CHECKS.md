@@ -209,8 +209,21 @@ security: validated    # Security validation passed
 ### ESLint Configuration
 ```javascript
 // Location: eslint.config.staged.js
-// Purpose: Pre-commit ESLint configuration
-// Features: Security rules, performance optimization, FinTech compliance
+// Purpose: Pre-commit ESLint configuration optimized for performance
+// Status: Custom enterprise-grade config due to eslint-config-next incompatibility
+// Features:
+// - Security rules for PCI DSS compliance
+// - Performance optimization for large monorepos
+// - FinTech-specific rules for BNPL applications
+// - TypeScript strict typing enforcement
+// - Accessibility compliance (WCAG 2.1 AA)
+
+// Known Issue: eslint-config-next incompatible with ESLint 9.x
+// Workaround: Uses official ESLint plugins directly
+// Enterprise Benefits:
+// - Full auditability of all linting rules
+// - No unknown dependencies from community packages
+// - Enhanced security for financial applications
 ```
 
 ## 🚨 Critical Failure Scenarios

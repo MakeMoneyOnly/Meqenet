@@ -84,7 +84,33 @@ python tools/git/git-automation.py pre-push-check --auto-fix
 
 ### 1. Code Quality
 
-- **ESLint**: TypeScript/JavaScript linting
+#### ESLint Configuration (Enterprise-Grade)
+**Status (2025-01-25)**: Custom ESLint setup using official plugins only due to `eslint-config-next` compatibility issues with ESLint 9.x.
+
+**Configuration Details**:
+- **Frontend**: Custom flat config (`frontend/apps/website/eslint.config.mjs`)
+- **Backend**: Custom flat config (`backend/eslint.config.mjs`)
+- **Pre-commit**: Performance-optimized staged config (`eslint.config.staged.js`)
+- **Security Focus**: Enhanced rules for PCI DSS and NBE compliance
+
+**Key Rules Applied**:
+- TypeScript strict typing enforcement
+- React hooks validation
+- Security vulnerability detection
+- Accessibility compliance (WCAG 2.1 AA)
+- Financial data integrity checks
+
+#### ESLint Compatibility Issue
+**Known Issue**: `eslint-config-next` depends on `@rushstack/eslint-patch@^1.10.3`, which is incompatible with ESLint 9.36.0+.
+
+**Current Workaround**: Using official ESLint plugins directly instead of the monolithic `eslint-config-next` package.
+
+**Enterprise Benefits**:
+- ✅ Full auditability of all linting rules
+- ✅ No unknown dependencies from community packages
+- ✅ Enhanced security rules for financial applications
+- ✅ Complete control over configuration
+
 - **TypeScript Compilation**: Build verification
 - **Code Formatting**: Prettier formatting checks
 

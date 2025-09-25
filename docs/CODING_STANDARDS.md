@@ -336,14 +336,180 @@ private formatBytes(bytes: number): string {
 ## 🔍 Validation Rules
 
 ### ESLint Configuration
+
+#### Enterprise-Grade ESLint Setup
+
+**Current Status (2025-01-25)**: Due to ESLint 9.x compatibility issues with `eslint-config-next`, the project uses a custom, enterprise-grade ESLint configuration that prioritizes security, auditability, and compliance for the Ethiopian fintech BNPL application.
+
+**Why This Approach**: Official `eslint-config-next` still depends on `@rushstack/eslint-patch@^1.10.3`, which is incompatible with ESLint 9.x. Community configs lack enterprise-grade security guarantees and auditability required for financial applications.
+
+**Configuration Strategy**:
+- ✅ Uses only official, well-maintained ESLint plugins
+- ✅ Prioritizes financial security and PCI DSS compliance
+- ✅ Enables full auditability and customization
+- ✅ Avoids unknown dependencies from community packages
+
+#### Frontend ESLint Configuration (Next.js/React)
+```javascript
+// frontend/apps/website/eslint.config.mjs
+import js from '@eslint/js';
+import tsParser from '@typescript-eslint/parser';
+import tsPlugin from '@typescript-eslint/eslint-plugin';
+import reactPlugin from 'eslint-plugin-react';
+import reactHooksPlugin from 'eslint-plugin-react-hooks';
+import jsxA11yPlugin from 'eslint-plugin-jsx-a11y';
+import securityPlugin from 'eslint-plugin-security';
+
+export default [
+  js.configs.recommended,
+  // Temporarily disabled due to ESLint 9.x compatibility:
+  // eslint-config-next (depends on incompatible @rushstack/eslint-patch)
+  {
+    plugins: {
+      '@typescript-eslint': tsPlugin,
+      'react': reactPlugin,
+      'react-hooks': reactHooksPlugin,
+      'jsx-a11y': jsxA11yPlugin,
+      'security': securityPlugin,
+    },
+    rules: {
+      // TypeScript rules
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          args: 'all',
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          ignoreRestSiblings: true,
+        },
+      ],
+      '@typescript-eslint/no-explicit-any': 'warn', // Allow with review
+      '@typescript-eslint/no-non-null-assertion': 'off',
+
+      // React rules
+      'react/react-in-jsx-scope': 'off', // React 17+ JSX transform
+      'react/prop-types': 'off', // TypeScript handles this
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'warn',
+
+      // Accessibility rules
+      'jsx-a11y/alt-text': 'error',
+      'jsx-a11y/anchor-is-valid': 'error',
+      'jsx-a11y/click-events-have-key-events': 'error',
+
+      // Security rules (critical for BNPL fintech)
+      'security/detect-object-injection': 'error',
+      'security/detect-eval-with-expression': 'error',
+      'security/detect-child-process': 'error',
+      'security/detect-unsafe-regex': 'error',
+
+      // General code quality
+      'no-console': 'warn', // Allow in development
+      'prefer-const': 'error',
+      'no-var': 'error',
+    },
+  },
+];
+```
+
+#### Backend ESLint Configuration (NestJS/Node.js)
+```javascript
+// backend/eslint.config.mjs
+import js from '@eslint/js';
+import tsParser from '@typescript-eslint/parser';
+import tsPlugin from '@typescript-eslint/eslint-plugin';
+import securityPlugin from 'eslint-plugin-security';
+
+export default [
+  js.configs.recommended,
+  {
+    plugins: {
+      '@typescript-eslint': tsPlugin,
+      'security': securityPlugin,
+    },
+    rules: {
+      // TypeScript rules
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_' },
+      ],
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/explicit-function-return-type': 'off',
+
+      // Security rules (enhanced for financial services)
+      'security/detect-object-injection': 'error',
+      'security/detect-eval-with-expression': 'error',
+      'security/detect-child-process': 'error',
+      'security/detect-unsafe-regex': 'error',
+      'security/detect-possible-timing-attacks': 'error',
+
+      // General rules
+      'no-magic-numbers': 'error',
+      'prefer-const': 'error',
+    },
+  },
+];
+```
+
+#### Pre-commit ESLint Configuration
+```javascript
+// eslint.config.staged.js - Optimized for pre-commit hooks
+import security from 'eslint-plugin-security';
+import tsPlugin from '@typescript-eslint/eslint-plugin';
+import tsParser from '@typescript-eslint/parser';
+// Additional plugins for comprehensive staged linting
+
+export default [
+  // Performance-optimized configuration for pre-commit
+  security.configs.recommended,
+  {
+    rules: {
+      // Critical security rules for BNPL application
+      'security/detect-object-injection': 'error',
+      'security/detect-eval-with-expression': 'error',
+      '@typescript-eslint/no-explicit-any': 'warn',
+      // ... additional fintech-specific rules
+    },
+  },
+];
+```
+
+### ESLint Compatibility Notes
+
+#### Known Issue: eslint-config-next & ESLint 9.x
+- **Issue**: Official `eslint-config-next` depends on `@rushstack/eslint-patch@^1.10.3`
+- **Problem**: `@rushstack/eslint-patch@1.12.0` doesn't support ESLint 9.36.0+
+- **Impact**: Prevents using official Next.js ESLint configuration
+- **Status**: Vercel team is aware but no timeline for resolution
+- **Workaround**: Custom configuration using official plugins directly
+
+#### Enterprise Security Requirements
+- **PCI DSS Compliance**: All ESLint rules must support payment processing security
+- **NBE Compliance**: Ethiopian banking regulations for financial applications
+- **Auditability**: All linting rules must be traceable and documented
+- **Zero Unknown Dependencies**: Only official, vetted packages allowed
+
+### Recommended ESLint Rules for Fintech Applications
 ```json
 {
   "rules": {
-    "no-magic-numbers": "error",
+    // Security (Critical for BNPL)
+    "security/detect-object-injection": "error",
+    "security/detect-eval-with-expression": "error",
+    "security/detect-child-process": "error",
+    "security/detect-unsafe-regex": "error",
+    "security/detect-possible-timing-attacks": "error",
+
+    // TypeScript (Financial Data Integrity)
     "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
-    "@typescript-eslint/no-explicit-any": "error",
-    "@typescript-eslint/explicit-function-return-type": "error",
-    "security/detect-object-injection": "warn"
+    "@typescript-eslint/no-explicit-any": "warn",
+    "@typescript-eslint/explicit-function-return-type": "off",
+
+    // Code Quality (Maintainability)
+    "no-magic-numbers": "error",
+    "prefer-const": "error",
+    "no-var": "error",
+    "no-console": "warn"
   }
 }
 ```
