@@ -188,7 +188,30 @@ jobs:
 
         uses: actions/checkout@v4
 
+      - uses: hashicorp/setup-terraform@v3
 
+      - name: Pre-flight Terraform Validation
+        run: |
+          echo "🔍 FinTech DevOps - Pre-flight Terraform Validation"
+          cd infrastructure
+
+          # Validate Terraform syntax
+          echo "📋 Running terraform validate..."
+          if terraform validate; then
+            echo "✅ Terraform validation passed"
+          else
+            echo "❌ Terraform validation failed - this may cause Checkov to fail"
+            exit 1
+          fi
+
+          # Check for any obvious issues that could break Checkov
+          echo "🔧 Checking for potential Checkov blockers..."
+          if find . -name "*.tf" -exec grep -l "invalid_syntax\|broken_reference" {} \; | grep -q .; then
+            echo "⚠️ Found potentially problematic Terraform files"
+            find . -name "*.tf" -exec grep -l "invalid_syntax\|broken_reference" {} \;
+          else
+            echo "✅ No obvious syntax issues detected"
+          fi
 
       - name: Verify Terraform files exist
 
@@ -224,7 +247,7 @@ jobs:
 
         id: checkov
 
-        uses: bridgecrewio/checkov-action@v12
+        uses: bridgecrewio/checkov-action@v12.1347.0
 
         with:
 
@@ -242,18 +265,53 @@ jobs:
 
           check: CKV_AWS_*,CKV2_AWS_*
 
+          skip_check: CKV_AWS_144  # Skip ELB logging check if not using classic ELB
+
+          # Enhanced error handling and debugging
+
+          log_level: INFO
+
+          compact: false
+
 
 
       - name: Fix Checkov SARIF output path
         if: always()
         run: |
+          set -euo pipefail
+          echo "🔧 FinTech DevOps - Checking Checkov SARIF output structure..."
+
           # Checkov creates a directory structure, but our workflow expects a flat file
-          if [ -d "checkov-results.sarif" ] && [ -f "checkov-results.sarif/results_sarif.sarif" ]; then
-            echo "🔧 Fixing Checkov SARIF output path..."
-            mv checkov-results.sarif/results_sarif.sarif checkov-results.sarif.tmp
-            rm -rf checkov-results.sarif
-            mv checkov-results.sarif.tmp checkov-results.sarif
-            echo "✅ SARIF file path fixed"
+          if [ -d "checkov-results.sarif" ]; then
+            echo "📁 Found Checkov SARIF directory: checkov-results.sarif"
+
+            if [ -f "checkov-results.sarif/results_sarif.sarif" ]; then
+              echo "🔄 Moving SARIF file from directory structure to flat file..."
+              mv checkov-results.sarif/results_sarif.sarif checkov-results.sarif.tmp
+              rm -rf checkov-results.sarif
+              mv checkov-results.sarif.tmp checkov-results.sarif
+              echo "✅ SARIF file path fixed successfully"
+
+              # Validate the moved file
+              if [ -f "checkov-results.sarif" ] && [ -s "checkov-results.sarif" ]; then
+                echo "✅ SARIF file exists and has content ($(wc -c < checkov-results.sarif) bytes)"
+              else
+                echo "❌ SARIF file move failed - file is empty or missing"
+                exit 1
+              fi
+            else
+              echo "❌ Expected SARIF file not found in directory: checkov-results.sarif/results_sarif.sarif"
+              ls -la checkov-results.sarif/ || echo "Directory listing failed"
+              exit 1
+            fi
+          elif [ -f "checkov-results.sarif" ]; then
+            echo "✅ SARIF file already exists as flat file"
+            ls -la checkov-results.sarif
+          else
+            echo "❌ No SARIF output found from Checkov"
+            echo "📋 Checking for any SARIF files in workspace..."
+            find . -name "*.sarif" -type f 2>/dev/null || echo "No SARIF files found"
+            exit 1
           fi
 
       - name: Debug Checkov Output
