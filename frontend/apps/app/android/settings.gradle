@@ -50,8 +50,11 @@ pluginManagement {
         for (path in rnPluginPaths) {
             def pluginPath = new File(settingsDir, path)
             if (pluginPath.exists() && pluginPath.isDirectory()) {
-                // Convert to URI for Windows compatibility
-                url uri(pluginPath.toURI().toURL())
+                // Add local Maven repository for React Native Gradle plugin
+                maven {
+                    url = uri(pluginPath.toURI().toURL())
+                    allowInsecureProtocol = false
+                }
                 println "✅ Found React Native Gradle plugin at: ${pluginPath.absolutePath}"
                 rnPluginFound = true
                 break
@@ -82,42 +85,6 @@ pluginManagement {
 
     // React Native gradle plugin resolution for all environments
     // Enhanced path resolution for CI and local environments
-    def rnPluginPaths = [
-        // CI environment paths (GitHub Actions, Jenkins, etc.)
-        '../../node_modules/@react-native/gradle-plugin',
-        // Local development paths
-        '../../../node_modules/@react-native/gradle-plugin',
-        // Alternative CI paths
-        '../../../../node_modules/@react-native/gradle-plugin',
-        // Root workspace path
-        '../../../../../node_modules/@react-native/gradle-plugin'
-    ]
-
-    def rnPluginDir = null
-    def foundPath = null
-
-    for (path in rnPluginPaths) {
-        def testDir = new File(settingsDir, path)
-        if (testDir.exists() && testDir.isDirectory()) {
-            rnPluginDir = testDir
-            foundPath = path
-            break
-        }
-    }
-
-    if (rnPluginDir != null) {
-        def env = System.getenv('CI') || System.getenv('GITHUB_ACTIONS') ? 'CI' : 'local'
-        println "✅ Found React Native gradle plugin in ${env} environment: ${rnPluginDir.absolutePath}"
-        includeBuild(foundPath)
-    } else {
-        def env = System.getenv('CI') || System.getenv('GITHUB_ACTIONS') ? 'CI' : 'local'
-        println "⚠️  React Native gradle plugin not found in ${env} environment. Searched paths:"
-        rnPluginPaths.each { path ->
-            def testDir = new File(settingsDir, path)
-            println "   - ${testDir.absolutePath} (${testDir.exists() ? 'exists' : 'not found'})"
-        }
-        println "🔄 Will attempt to use repository resolution for React Native plugin"
-    }
 }
 
 // React Native settings extension will be configured automatically by the plugin
