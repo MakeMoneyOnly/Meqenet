@@ -1,113 +1,21 @@
 /// <reference lib="webworker" />
 /// <reference lib="dom" />
-import { precacheAndRoute, createHandlerBoundToURL } from '@serwist/precaching';
-import { registerRoute, NavigationRoute } from '@serwist/routing';
-import { CacheFirst, NetworkFirst } from '@serwist/strategies';
-import { ExpirationPlugin } from '@serwist/expiration';
+import { Serwist } from 'serwist';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-declare const self: any & {
-  __SW_MANIFEST: (string | Request)[] | undefined;
+// ESLint globals for service worker environment
+/* global ServiceWorkerGlobalScope */
+
+// Declare self for service worker context
+declare const self: ServiceWorkerGlobalScope & {
+  __SW_MANIFEST: unknown[];
 };
 
 // This is injected by Serwist during build
-precacheAndRoute(self.__SW_MANIFEST!);
-
-// Cache static assets with Cache First strategy
-registerRoute(
-  ({ request }) =>
-    request.destination === 'style' ||
-    request.destination === 'script' ||
-    request.destination === 'image' ||
-    request.destination === 'font',
-  new CacheFirst({
-    cacheName: 'static-assets',
-    plugins: [
-      new ExpirationPlugin({
-        maxEntries: 100,
-        maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
-      }),
-    ],
-  }),
-);
-
-// Cache API responses with Network First strategy
-registerRoute(
-  ({ url }) => url.pathname.startsWith('/api/'),
-  new NetworkFirst({
-    cacheName: 'api-cache',
-    plugins: [
-      new ExpirationPlugin({
-        maxEntries: 50,
-        maxAgeSeconds: 60 * 5, // 5 minutes
-      }),
-    ],
-  }),
-);
-
-// Cache images with Cache First strategy
-registerRoute(
-  ({ request }) => request.destination === 'image',
-  new CacheFirst({
-    cacheName: 'images',
-    plugins: [
-      new ExpirationPlugin({
-        maxEntries: 200,
-        maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
-      }),
-    ],
-  }),
-);
-
-// Handle navigation requests with Network First strategy
-registerRoute(
-  new NavigationRoute(createHandlerBoundToURL('/'), {
-    allowlist: [/^(?!\/_).*/], // Exclude Next.js internal routes
-  }),
-);
-
-// Handle offline fallback
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-self.addEventListener('fetch', (event: any) => {
-  if (event.request.mode === 'navigate') {
-    event.respondWith(
-      fetch(event.request).catch(async () => {
-        // Return cached offline page
-        const cachedResponse =
-          (await caches.match('/~offline')) ||
-          (await caches.match('/')) ||
-          (await fetch('/'));
-        return cachedResponse || new Response('Offline', { status: 503 });
-      }),
-    );
-  }
+const serwist = new Serwist({
+  precacheEntries: self.__SW_MANIFEST,
 });
 
-// Handle service worker activation
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-self.addEventListener('activate', (event: any) => {
-  event.waitUntil(
-    (async () => {
-      // Clean up old caches
-      const cacheNames = await caches.keys();
-      await Promise.all(
-        cacheNames.map((cacheName) => {
-          if (
-            cacheName !== 'static-assets' &&
-            cacheName !== 'api-cache' &&
-            cacheName !== 'images'
-          ) {
-            return caches.delete(cacheName);
-          }
-          return Promise.resolve(); // Return resolved promise for caches we want to keep
-        }),
-      );
-
-      // Take control of all clients
-      await self.clients.claim();
-    })(),
-  );
-});
+serwist.addEventListeners();
 
 // Handle push notifications (for BNPL payment reminders)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -137,11 +45,4 @@ self.addEventListener('notificationclick', (event: any) => {
   event.notification.close();
 
   event.waitUntil(self.clients.openWindow('/'));
-});
-
-// Handle install event
-
-self.addEventListener('install', () => {
-  // Skip waiting to activate immediately
-  self.skipWaiting();
 });

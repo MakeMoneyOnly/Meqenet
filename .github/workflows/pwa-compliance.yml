@@ -338,7 +338,7 @@ jobs:
 
       - name: 🚀 Start Production Server for PWA Testing
         run: |
-          echo "🔧 Starting production server for PWA testing..."
+          echo "🔧 Starting Next.js production server for PWA testing..."
 
           # Set unique port for Lighthouse testing to prevent conflicts
           export PORT=3001
@@ -366,7 +366,7 @@ jobs:
           cleanup() {
             echo "🧹 Performing enterprise-grade cleanup..."
             # Kill any processes that might be using our port
-            pkill -f "serve.*3001" 2>/dev/null || true
+            pkill -f "next.*start.*3001" 2>/dev/null || true
             pkill -f "node.*3001" 2>/dev/null || true
 
             # Clean up any remaining processes on our port
@@ -375,7 +375,7 @@ jobs:
             fi
 
             # Clean up any zombie processes
-            ps aux | grep -E "(serve|node)" | grep -v grep | awk '{print $2}' | xargs kill -9 2>/dev/null || true
+            ps aux | grep -E "(next|node)" | grep -v grep | awk '{print $2}' | xargs kill -9 2>/dev/null || true
           }
 
           # Set up cleanup trap
@@ -387,54 +387,48 @@ jobs:
 
           cd frontend/apps/website
 
-          echo "🚀 Starting production server on port $PORT..."
+          echo "🚀 Starting Next.js production server on port $PORT..."
 
-          # Install serve globally if not available
-          if ! command -v serve &> /dev/null; then
-            echo "📦 Installing serve for static file hosting..."
-            npm install -g serve
-          fi
-
-          # Start production server with proper error handling and retry logic
+          # Start Next.js production server with proper error handling and retry logic
           MAX_RETRIES=3
           RETRY_COUNT=0
 
           while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-            echo "🔄 Attempt $((RETRY_COUNT + 1))/$MAX_RETRIES to start server..."
+            echo "🔄 Attempt $((RETRY_COUNT + 1))/$MAX_RETRIES to start Next.js server..."
 
-            # Start production server in background with proper logging
-            serve -s . -l $PORT > server.log 2>&1 &
+            # Start Next.js production server in background with proper logging
+            npm run start > server.log 2>&1 &
             SERVER_PID=$!
 
             echo "📝 Server PID: $SERVER_PID"
 
-            # Wait for server to be ready with timeout
-            TIMEOUT=30
+            # Wait for server to be ready with timeout (Next.js takes longer to start)
+            TIMEOUT=60
             COUNTER=0
 
             while [ $COUNTER -lt $TIMEOUT ]; do
               if curl -s http://localhost:$PORT >/dev/null 2>&1; then
-                echo "✅ Server is ready on port $PORT"
+                echo "✅ Next.js server is ready on port $PORT"
                 break
               fi
 
               # Check if server process is still running
               if ! kill -0 $SERVER_PID 2>/dev/null; then
-                echo "❌ Server process died, checking logs..."
+                echo "❌ Next.js server process died, checking logs..."
                 cat server.log
                 break
               fi
 
-              echo "⏳ Waiting for server... ($COUNTER/$TIMEOUT)"
-              sleep 2
-              COUNTER=$((COUNTER + 2))
+              echo "⏳ Waiting for Next.js server... ($COUNTER/$TIMEOUT)"
+              sleep 3
+              COUNTER=$((COUNTER + 3))
             done
 
             if curl -s http://localhost:$PORT >/dev/null 2>&1; then
-              echo "🎉 Server successfully started on port $PORT"
+              echo "🎉 Next.js server successfully started on port $PORT"
               break
             else
-              echo "❌ Server failed to start on attempt $((RETRY_COUNT + 1))"
+              echo "❌ Next.js server failed to start on attempt $((RETRY_COUNT + 1))"
               cat server.log
 
               # Cleanup and retry
@@ -452,13 +446,13 @@ jobs:
 
           # Final verification
           if ! curl -s http://localhost:$PORT >/dev/null 2>&1; then
-            echo "💥 CRITICAL: Server failed to start after $MAX_RETRIES attempts"
+            echo "💥 CRITICAL: Next.js server failed to start after $MAX_RETRIES attempts"
             echo "📋 Server logs:"
             cat server.log 2>/dev/null || echo "No server logs available"
             exit 1
           fi
 
-          echo "✅ Production server startup completed successfully"
+          echo "✅ Next.js production server startup completed successfully"
 
       - name: 🌊 Run Lighthouse PWA Audit with Enterprise-Grade Monitoring
         uses: treosh/lighthouse-ci-action@v10
@@ -483,7 +477,7 @@ jobs:
           echo "🧹 Performing enterprise-grade resource cleanup..."
 
           # Kill any remaining processes from our test
-          pkill -f "serve.*3001" 2>/dev/null || true
+          pkill -f "next.*start.*3001" 2>/dev/null || true
           pkill -f "node.*3001" 2>/dev/null || true
 
           # Clean up any processes on our test port
@@ -493,7 +487,7 @@ jobs:
           fi
 
           # Clean up any zombie processes
-          ps aux | grep -E "(serve|node|lighthouse)" | grep -v grep | awk '{print $2}' | xargs kill -9 2>/dev/null || true
+          ps aux | grep -E "(next|node|lighthouse)" | grep -v grep | awk '{print $2}' | xargs kill -9 2>/dev/null || true
 
           # Clean up temporary files
           rm -f server.log 2>/dev/null || true
