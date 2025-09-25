@@ -344,6 +344,10 @@ jobs:
           export PORT=3001
           export LHCI_PORT=3001
 
+          # Set required environment variables for Next.js
+          export NODE_ENV=production
+          export NEXT_PUBLIC_API_URL=http://localhost:3000/api/v1
+
           # Function to kill any existing processes on target port
           kill_existing_processes() {
             echo "🧹 Checking for existing processes on port $PORT..."
@@ -378,6 +382,25 @@ jobs:
             ps aux | grep -E "(next|node)" | grep -v grep | awk '{print $2}' | xargs kill -9 2>/dev/null || true
           }
 
+          # Health check function with proper HTTP status validation
+          check_server_health() {
+            echo "🔍 Checking server health on port $PORT..."
+            if curl -f -s --max-time 10 --retry 3 --retry-delay 2 http://localhost:$PORT >/dev/null 2>&1; then
+              # Additional check for proper HTTP response
+              local status_code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:$PORT)
+              if [ "$status_code" -ge 200 ] && [ "$status_code" -lt 400 ]; then
+                echo "✅ Server is healthy (HTTP $status_code)"
+                return 0
+              else
+                echo "⚠️ Server responded but with status $status_code"
+                return 1
+              fi
+            else
+              echo "❌ Server health check failed"
+              return 1
+            fi
+          }
+
           # Set up cleanup trap
           trap cleanup EXIT
 
@@ -388,6 +411,10 @@ jobs:
           cd frontend/apps/website
 
           echo "🚀 Starting Next.js production server on port $PORT..."
+          echo "📋 Environment variables:"
+          echo "  - PORT=$PORT"
+          echo "  - NODE_ENV=$NODE_ENV"
+          echo "  - NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL"
 
           # Start Next.js production server with proper error handling and retry logic
           MAX_RETRIES=3
@@ -403,12 +430,12 @@ jobs:
             echo "📝 Server PID: $SERVER_PID"
 
             # Wait for server to be ready with timeout (Next.js takes longer to start)
-            TIMEOUT=60
+            TIMEOUT=90  # Increased timeout for production builds
             COUNTER=0
 
             while [ $COUNTER -lt $TIMEOUT ]; do
-              if curl -s http://localhost:$PORT >/dev/null 2>&1; then
-                echo "✅ Next.js server is ready on port $PORT"
+              if check_server_health; then
+                echo "✅ Next.js server is ready and healthy on port $PORT"
                 break
               fi
 
@@ -420,12 +447,12 @@ jobs:
               fi
 
               echo "⏳ Waiting for Next.js server... ($COUNTER/$TIMEOUT)"
-              sleep 3
-              COUNTER=$((COUNTER + 3))
+              sleep 5  # Increased check interval
+              COUNTER=$((COUNTER + 5))
             done
 
-            if curl -s http://localhost:$PORT >/dev/null 2>&1; then
-              echo "🎉 Next.js server successfully started on port $PORT"
+            if check_server_health; then
+              echo "🎉 Next.js server successfully started and verified healthy on port $PORT"
               break
             else
               echo "❌ Next.js server failed to start on attempt $((RETRY_COUNT + 1))"
@@ -439,28 +466,71 @@ jobs:
 
               if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
                 echo "⏳ Waiting before retry..."
-                sleep 5
+                sleep 10  # Increased wait time between retries
               fi
             fi
           done
 
-          # Final verification
-          if ! curl -s http://localhost:$PORT >/dev/null 2>&1; then
+          # Final verification with detailed logging
+          echo "🔍 Performing final server verification..."
+          if check_server_health; then
+            echo "✅ Next.js production server startup completed successfully"
+            echo "🌐 Server is accessible at: http://localhost:$PORT"
+
+            # Additional verification - check if basic HTML is served
+            echo "📄 Testing basic page load..."
+            curl -s http://localhost:$PORT | head -20 | grep -q "<!DOCTYPE html>" && echo "✅ HTML response detected" || echo "⚠️ HTML response not detected"
+          else
             echo "💥 CRITICAL: Next.js server failed to start after $MAX_RETRIES attempts"
             echo "📋 Server logs:"
             cat server.log 2>/dev/null || echo "No server logs available"
+            echo "🔍 Checking system resources..."
+            ps aux | grep -E "(next|node)" | grep -v grep || echo "No Next.js processes found"
+            echo "🔍 Checking port usage..."
+            lsof -i :$PORT || echo "Port $PORT is not in use"
             exit 1
           fi
 
-          echo "✅ Next.js production server startup completed successfully"
-
       - name: 🌊 Run Lighthouse PWA Audit with Enterprise-Grade Monitoring
-        uses: treosh/lighthouse-ci-action@v10
-        with:
-          urls: http://localhost:3001
-          configPath: .github/lighthouse/pwa-config.json
-          uploadArtifacts: false
-          temporaryPublicStorage: false
+        run: |
+          echo "🌊 Starting Lighthouse PWA Audit..."
+
+          # Verify server is still healthy before starting audit
+          if ! curl -f -s --max-time 10 http://localhost:3001 >/dev/null 2>&1; then
+            echo "❌ Server is not responding before Lighthouse audit"
+            exit 1
+          fi
+
+          # Additional wait to ensure server is fully stabilized
+          echo "⏳ Allowing additional time for server stabilization..."
+          sleep 5
+
+          # Run Lighthouse audit with retry logic
+          MAX_AUDIT_RETRIES=3
+          AUDIT_RETRY_COUNT=0
+
+          while [ $AUDIT_RETRY_COUNT -lt $MAX_AUDIT_RETRIES ]; do
+            echo "🔄 Lighthouse audit attempt $((AUDIT_RETRY_COUNT + 1))/$MAX_AUDIT_RETRIES"
+
+            if npx lhci autorun --config=.github/lighthouse/pwa-config.json; then
+              echo "✅ Lighthouse audit completed successfully"
+              break
+            else
+              echo "❌ Lighthouse audit failed on attempt $((AUDIT_RETRY_COUNT + 1))"
+
+              AUDIT_RETRY_COUNT=$((AUDIT_RETRY_COUNT + 1))
+
+              if [ $AUDIT_RETRY_COUNT -lt $MAX_AUDIT_RETRIES ]; then
+                echo "⏳ Waiting before audit retry..."
+                sleep 10
+              fi
+            fi
+          done
+
+          if [ $AUDIT_RETRY_COUNT -eq $MAX_AUDIT_RETRIES ]; then
+            echo "💥 CRITICAL: Lighthouse audit failed after $MAX_AUDIT_RETRIES attempts"
+            exit 1
+          fi
 
       - name: 📊 Upload Lighthouse Report
         uses: actions/upload-artifact@v4

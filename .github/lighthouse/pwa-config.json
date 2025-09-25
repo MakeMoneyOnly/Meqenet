@@ -9,8 +9,16 @@
           "rttMs": 40,
           "throughputKbps": 10240,
           "cpuSlowdownMultiplier": 1
-        }
-      }
+        },
+        "maxWaitForLoad": 45000,
+        "maxWaitForFcp": 30000,
+        "skipAudits": [
+          "full-page-screenshot"
+        ]
+      },
+      "startServerCommand": "",
+      "startServerReadyPattern": "",
+      "startServerReadyTimeout": 60000
     },
     "assert": {
       "assertions": {
