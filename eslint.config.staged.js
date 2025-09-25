@@ -257,6 +257,15 @@ export default [
     },
   },
 
+  // Logger utilities that need console and process.env access
+  {
+    files: ['frontend/apps/website/src/lib/security/index.ts'],
+    rules: {
+      'internal/no-process-env-outside-config': 'off',
+      'no-console': 'off',
+    },
+  },
+
   // Temporary overrides for problematic files
   {
     files: [

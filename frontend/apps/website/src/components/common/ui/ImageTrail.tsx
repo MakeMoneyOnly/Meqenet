@@ -268,19 +268,6 @@ interface ImageTrailInstance {
   destroy: () => void;
 }
 
-const variantMap: {
-  [key: number]: new (container: HTMLDivElement) => ImageTrailInstance;
-} = {
-  1: ImageTrailVariant1,
-  2: ImageTrailVariant2, // Replace with actual class if different
-  3: ImageTrailVariant3, // Replace
-  4: ImageTrailVariant4, // Replace
-  5: ImageTrailVariant5, // Replace
-  6: ImageTrailVariant6, // Replace
-  7: ImageTrailVariant7, // Replace
-  8: ImageTrailVariant8, // Replace
-};
-
 interface ImageTrailProps {
   items?: string[];
   variant?: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8; // Specific variant numbers
@@ -307,8 +294,40 @@ export const ImageTrail: FC<ImageTrailProps> = ({
   useEffect(() => {
     if (!containerRef.current || items.length === 0) return;
 
-    // Safe dynamic access - variant is typed as 1-8 union type
-    const Cls = variantMap[variant] ?? variantMap[1];
+    // Safe variant selection using explicit type checking
+    let Cls: new (container: HTMLDivElement) => ImageTrailInstance;
+    switch (variant) {
+      case 1:
+        Cls = ImageTrailVariant1;
+        break;
+      case 2:
+        Cls = ImageTrailVariant2;
+        break;
+      case 3:
+        Cls = ImageTrailVariant3;
+        break;
+      case 4:
+        Cls = ImageTrailVariant4;
+        break;
+      case 5:
+        Cls = ImageTrailVariant5;
+        break;
+      case 6:
+        Cls = ImageTrailVariant6;
+        break;
+      case 7:
+        Cls = ImageTrailVariant7;
+        break;
+      case 8:
+        Cls = ImageTrailVariant8;
+        break;
+      default:
+        Cls = ImageTrailVariant1;
+        Logger.error(
+          `ImageTrail: Invalid variant ${variant}, defaulting to 1.`,
+        );
+    }
+
     if (!Cls) {
       Logger.error(`ImageTrail: Variant ${variant} class not found.`);
       return;

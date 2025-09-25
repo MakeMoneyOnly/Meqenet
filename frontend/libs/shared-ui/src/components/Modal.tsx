@@ -33,8 +33,6 @@ export const Modal = ({
         aria-labelledby="modal-title"
         aria-describedby="modal-description"
         className="bg-white rounded-lg shadow-xl w-full max-w-md mx-auto"
-        onClick={(e) => e.stopPropagation()}
-        onKeyDown={(e) => e.stopPropagation()}
         data-testid="modal-content"
       >
         <div className="flex items-start justify-between p-4 border-b rounded-t">

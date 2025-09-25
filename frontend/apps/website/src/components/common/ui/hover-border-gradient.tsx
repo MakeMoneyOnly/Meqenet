@@ -6,6 +6,26 @@ import { cn } from '@/lib/utils';
 
 type Direction = 'TOP' | 'LEFT' | 'BOTTOM' | 'RIGHT';
 
+// Safe accessor for movingMap to avoid ESLint security warnings
+function getMovingMapValue(
+  direction: Direction,
+  movingMap: Record<Direction, string>,
+  fallback: string,
+): string {
+  switch (direction) {
+    case 'TOP':
+      return movingMap.TOP;
+    case 'LEFT':
+      return movingMap.LEFT;
+    case 'BOTTOM':
+      return movingMap.BOTTOM;
+    case 'RIGHT':
+      return movingMap.RIGHT;
+    default:
+      return fallback;
+  }
+}
+
 export function HoverBorderGradient({
   children,
   containerClassName,
@@ -33,6 +53,7 @@ export function HoverBorderGradient({
       const nextIndex = clockwise
         ? (currentIndex - 1 + directions.length) % directions.length
         : (currentIndex + 1) % directions.length;
+
       return directions[nextIndex];
     },
     [clockwise],
@@ -88,11 +109,13 @@ export function HoverBorderGradient({
           width: '100%',
           height: '100%',
         }}
-        initial={{ background: movingMap[direction] ?? highlight }}
+        initial={{
+          background: getMovingMapValue(direction, movingMap, highlight),
+        }}
         animate={{
           background: hovered
-            ? [movingMap[direction] ?? highlight, highlight]
-            : (movingMap[direction] ?? highlight),
+            ? [getMovingMapValue(direction, movingMap, highlight), highlight]
+            : getMovingMapValue(direction, movingMap, highlight),
         }}
         transition={{ ease: 'linear', duration: duration ?? 1 }}
       />

@@ -9,6 +9,22 @@ export const GRADIENT_ANGLES = {
   left: 270,
 };
 
+// Safe accessor for GRADIENT_ANGLES to avoid ESLint security warnings
+function getGradientAngle(direction: keyof typeof GRADIENT_ANGLES): number {
+  switch (direction) {
+    case 'top':
+      return GRADIENT_ANGLES.top;
+    case 'right':
+      return GRADIENT_ANGLES.right;
+    case 'bottom':
+      return GRADIENT_ANGLES.bottom;
+    case 'left':
+      return GRADIENT_ANGLES.left;
+    default:
+      return GRADIENT_ANGLES.bottom; // Default fallback
+  }
+}
+
 export type ProgressiveBlurProps = {
   direction?: keyof typeof GRADIENT_ANGLES;
   blurLayers?: number;
@@ -29,7 +45,7 @@ export function ProgressiveBlur({
   return (
     <div className={cn('relative', className)}>
       {Array.from({ length: layers }).map((_, index) => {
-        const angle = GRADIENT_ANGLES[direction] ?? 0; // Safe access with fallback
+        const angle = getGradientAngle(direction);
         const gradientStops = [
           index * segmentSize,
           (index + 1) * segmentSize,

@@ -54,23 +54,33 @@ const AnimatedActionText = () => {
       style={{ minWidth: maxWidth > 0 ? `${maxWidth}px` : 'auto' }}
     >
       <AnimatePresence mode="wait">
-        <motion.span
-          key={actionWords[index] ?? 'Shop Now'}
-          initial={{ y: '0.1em', opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: '-0.1em', opacity: 0 }}
-          transition={{
-            duration: 0.4,
-            ease: [0.4, 0, 0.2, 1],
-          }}
-          className="inline-block whitespace-nowrap"
-          style={{
-            backfaceVisibility: 'hidden',
-            verticalAlign: 'baseline',
-          }}
-        >
-          {actionWords[index] ?? 'Shop Now'}
-        </motion.span>
+        {(() => {
+          // Safe array access with bounds checking
+          const currentIndex =
+            index >= 0 && index < actionWords.length ? index : 0;
+
+          const currentWord = actionWords[currentIndex] || 'Shop Now';
+
+          return (
+            <motion.span
+              key={currentWord}
+              initial={{ y: '0.1em', opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: '-0.1em', opacity: 0 }}
+              transition={{
+                duration: 0.4,
+                ease: [0.4, 0, 0.2, 1],
+              }}
+              className="inline-block whitespace-nowrap"
+              style={{
+                backfaceVisibility: 'hidden',
+                verticalAlign: 'baseline',
+              }}
+            >
+              {currentWord}
+            </motion.span>
+          );
+        })()}
       </AnimatePresence>
     </div>
   );
