@@ -67,7 +67,8 @@ registerRoute(
 );
 
 // Handle offline fallback
-self.addEventListener('fetch', (event) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+self.addEventListener('fetch', (event: any) => {
   if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request).catch(async () => {
@@ -83,7 +84,8 @@ self.addEventListener('fetch', (event) => {
 });
 
 // Handle service worker activation
-self.addEventListener('activate', (event) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+self.addEventListener('activate', (event: any) => {
   event.waitUntil(
     (async () => {
       // Clean up old caches
@@ -108,7 +110,8 @@ self.addEventListener('activate', (event) => {
 });
 
 // Handle push notifications (for BNPL payment reminders)
-self.addEventListener('push', (event) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+self.addEventListener('push', (event: any) => {
   if (!event.data) return;
 
   const data = event.data.json();
@@ -126,7 +129,8 @@ self.addEventListener('push', (event) => {
 });
 
 // Handle notification clicks
-self.addEventListener('notificationclick', (event) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+self.addEventListener('notificationclick', (event: any) => {
   // eslint-disable-next-line no-console
   console.log('[ServiceWorker] Notification click received.');
 
