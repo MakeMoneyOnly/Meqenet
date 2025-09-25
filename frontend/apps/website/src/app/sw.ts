@@ -1,5 +1,8 @@
 /// <reference lib="webworker" />
-import { precacheAndRoute } from '@serwist/precaching';
+import { precacheAndRoute, createHandlerBoundToURL } from '@serwist/precaching';
+import { registerRoute, NavigationRoute } from '@serwist/routing';
+import { CacheFirst, NetworkFirst } from '@serwist/strategies';
+import { ExpirationPlugin } from '@serwist/expiration';
 
 // eslint-disable-next-line no-undef
 declare const self: ServiceWorkerGlobalScope & {
@@ -10,7 +13,96 @@ declare const self: ServiceWorkerGlobalScope & {
 // This is injected by Serwist during build
 precacheAndRoute(self.__SW_MANIFEST);
 
-// Handle push notifications (for future BNPL payment reminders)
+// Cache static assets with Cache First strategy
+registerRoute(
+  ({ request }) =>
+    request.destination === 'style' ||
+    request.destination === 'script' ||
+    request.destination === 'image' ||
+    request.destination === 'font',
+  new CacheFirst({
+    cacheName: 'static-assets',
+    plugins: [
+      new ExpirationPlugin({
+        maxEntries: 100,
+        maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+      }),
+    ],
+  }),
+);
+
+// Cache API responses with Network First strategy
+registerRoute(
+  ({ url }) => url.pathname.startsWith('/api/'),
+  new NetworkFirst({
+    cacheName: 'api-cache',
+    plugins: [
+      new ExpirationPlugin({
+        maxEntries: 50,
+        maxAgeSeconds: 60 * 5, // 5 minutes
+      }),
+    ],
+  }),
+);
+
+// Cache images with Cache First strategy
+registerRoute(
+  ({ request }) => request.destination === 'image',
+  new CacheFirst({
+    cacheName: 'images',
+    plugins: [
+      new ExpirationPlugin({
+        maxEntries: 200,
+        maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+      }),
+    ],
+  }),
+);
+
+// Handle navigation requests with Network First strategy
+registerRoute(
+  new NavigationRoute(createHandlerBoundToURL('/'), {
+    allowlist: [/^(?!\/_).*/], // Exclude Next.js internal routes
+  }),
+);
+
+// Handle offline fallback
+self.addEventListener('fetch', (event) => {
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request).catch(() => {
+        // Return cached offline page
+        return caches.match('/~offline') || caches.match('/') || fetch('/');
+      }),
+    );
+  }
+});
+
+// Handle service worker activation
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    (async () => {
+      // Clean up old caches
+      const cacheNames = await caches.keys();
+      await Promise.all(
+        cacheNames.map((cacheName) => {
+          if (
+            cacheName !== 'static-assets' &&
+            cacheName !== 'api-cache' &&
+            cacheName !== 'images'
+          ) {
+            return caches.delete(cacheName);
+          }
+        }),
+      );
+
+      // Take control of all clients
+      await self.clients.claim();
+    })(),
+  );
+});
+
+// Handle push notifications (for BNPL payment reminders)
 self.addEventListener('push', (event) => {
   if (!event.data) return;
 
@@ -36,4 +128,10 @@ self.addEventListener('notificationclick', (event) => {
   event.notification.close();
 
   event.waitUntil(self.clients.openWindow('/'));
+});
+
+// Handle install event
+self.addEventListener('install', (_event) => {
+  // Skip waiting to activate immediately
+  self.skipWaiting();
 });

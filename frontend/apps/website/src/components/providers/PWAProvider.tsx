@@ -5,19 +5,27 @@ import { ApiConfig } from '@meqenet/shared/config';
 
 export default function PWAProvider() {
   useEffect(() => {
-    // Register service worker only in production and when supported
+    // Register service worker in production and development (for Lighthouse testing)
     if (
       typeof window !== 'undefined' &&
       'serviceWorker' in navigator &&
-      ApiConfig.isProduction
+      (ApiConfig.isProduction || ApiConfig.isDevelopment)
     ) {
       navigator.serviceWorker
         .register('/sw.js')
-        .then(() => {
+        .then((registration) => {
           // Service Worker registered successfully
+          if (ApiConfig.isDevelopment) {
+            // eslint-disable-next-line no-console
+            console.log('Service Worker registered:', registration.scope);
+          }
         })
-        .catch(() => {
-          // Service Worker registration failed - silently handle in production
+        .catch((error) => {
+          // Service Worker registration failed - log in development, silently handle in production
+          if (ApiConfig.isDevelopment) {
+            // eslint-disable-next-line no-console
+            console.error('Service Worker registration failed:', error);
+          }
         });
     }
   }, []);
