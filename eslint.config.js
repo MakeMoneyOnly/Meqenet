@@ -1,3 +1,5 @@
+import '@rushstack/eslint-patch/modern-module-resolution';
+
 // Minimal security linting - focus on critical issues only
 import security from 'eslint-plugin-security';
 import reactHooks from 'eslint-plugin-react-hooks';

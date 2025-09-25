@@ -1,28 +1,4 @@
-// buildscript block must appear before any plugins blocks
-buildscript {
-    ext {
-        buildToolsVersion = "36.0.0"
-        minSdkVersion = 24
-        compileSdkVersion = 35
-        targetSdkVersion = 35
-        ndkVersion = "29.0.13846066"  // Downgrade for React Native 0.76.5 compatibility
-        kotlinVersion = "2.0.21"
-    }
-    repositories {
-        google()
-        mavenCentral()
-        gradlePluginPortal()
-        maven {
-            url = "https://plugins.gradle.org/m2/"
-        }
-    }
-    dependencies {
-        classpath("com.android.tools.build:gradle:8.6.0")  // Android Gradle plugin
-        // classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.24")  // Kotlin plugin - commented out for offline build
-        // Note: gradle-versions-plugin is now managed via plugins block
-        // React Native gradle plugin is resolved locally via settings.gradle, not as classpath dependency
-    }
-}
+
 
 // Versions plugin dependency resolution is handled in settings.gradle
 
