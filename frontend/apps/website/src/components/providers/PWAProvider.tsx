@@ -1,9 +1,19 @@
 'use client';
 
+// Type definitions for PWA events
+type BeforeInstallPromptEvent = Event & {
+  readonly platforms: string[];
+  readonly userChoice: Promise<{
+    outcome: 'accepted' | 'dismissed';
+    platform: string;
+  }>;
+  prompt(): Promise<void>;
+};
+
 // Extend the global Window interface for PWA events
 declare global {
   interface WindowEventMap {
-    beforeinstallprompt: Event;
+    beforeinstallprompt: BeforeInstallPromptEvent;
 
     appinstalled: Event;
 
@@ -15,17 +25,6 @@ declare global {
 
 import { useEffect } from 'react';
 import { ApiConfig } from '@meqenet/shared/config';
-
-// Type definitions for PWA events
-
-type BeforeInstallPromptEvent = Event & {
-  readonly platforms: string[];
-  readonly userChoice: Promise<{
-    outcome: 'accepted' | 'dismissed';
-    platform: string;
-  }>;
-  prompt(): Promise<void>;
-};
 
 // Global declarations moved to top of file
 
