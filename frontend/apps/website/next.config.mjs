@@ -1,15 +1,13 @@
-import withPWA from 'next-pwa';
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
 
   // Transpile packages for monorepo support
   transpilePackages: ['@meqenet/shared', '@meqenet/shared/config'],
-  
+
   // Security configurations for FinTech applications
   poweredByHeader: false, // Hide X-Powered-By header
-  
+
   // Image optimization with security considerations
   images: {
     remotePatterns: [
@@ -37,7 +35,7 @@ const nextConfig = {
     dangerouslyAllowSVG: false, // Prevent SVG-based attacks
     qualities: [25, 50, 75, 100],
   },
-  
+
   // Security headers for financial applications
   async headers() {
     return [
@@ -72,18 +70,7 @@ const nextConfig = {
           // Content Security Policy for financial applications
           {
             key: 'Content-Security-Policy',
-            value: [
-              "default-src 'self'",
-              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://va.vercel-scripts.com", // Note: Consider removing unsafe-* in production
-              "style-src 'self' 'unsafe-inline'",
-              "img-src 'self' data: https:",
-              "font-src 'self'",
-              "connect-src 'self' https://api.flexpay.et https://staging-api.flexpay.et",
-              "frame-ancestors 'none'",
-              "base-uri 'self'",
-              "form-action 'self'",
-              "upgrade-insecure-requests"
-            ].join('; '),
+            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self' https://api.flexpay.et https://staging-api.flexpay.et; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests",
           },
           // Strict Transport Security for HTTPS enforcement
           {
@@ -94,7 +81,7 @@ const nextConfig = {
       },
     ];
   },
-  
+
   // API rewrites with security considerations
   async rewrites() {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1';
@@ -106,12 +93,12 @@ const nextConfig = {
       },
     ];
   },
-  
+
   // Environment variable validation
   env: {
     CUSTOM_KEY: process.env.CUSTOM_KEY,
   },
-  
+
   // Webpack configuration for security
   webpack: (config, { dev }) => {
     // Security: Disable source maps in production
@@ -121,47 +108,44 @@ const nextConfig = {
 
     return config;
   },
-  
+
   // Output tracing configuration
   outputFileTracingRoot: undefined,
-};
 
-// PWA Configuration
-const pwaConfig = {
-  dest: 'public',
-  register: true,
-  skipWaiting: true,
-  disable: process.env.NODE_ENV === 'development',
-  runtimeCaching: [
-    {
-      urlPattern: /^https:\/\/api\./,
-      handler: 'NetworkFirst',
-      options: {
-        cacheName: 'api-cache',
-        expiration: {
-          maxEntries: 50,
-          maxAgeSeconds: 24 * 60 * 60, // 24 hours
-        },
-        cacheKeyWillBeUsed: async ({ request }) => {
-          return `${request.url}?${Date.now()}`;
+  // PWA Configuration for next-pwa v5+
+  pwa: {
+    dest: 'public',
+    register: true,
+    skipWaiting: true,
+    disable: process.env.NODE_ENV === 'development',
+    runtimeCaching: [
+      {
+        urlPattern: /^https:\/\/api\./,
+        handler: 'NetworkFirst',
+        options: {
+          cacheName: 'api-cache',
+          expiration: {
+            maxEntries: 50,
+            maxAgeSeconds: 24 * 60 * 60, // 24 hours
+          },
+          cacheKeyWillBeUsed: async ({ request }) => {
+            return `${request.url}?${Date.now()}`;
+          },
         },
       },
-    },
-    {
-      urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/,
-      handler: 'CacheFirst',
-      options: {
-        cacheName: 'image-cache',
-        expiration: {
-          maxEntries: 100,
-          maxAgeSeconds: 7 * 24 * 60 * 60, // 7 days
+      {
+        urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/,
+        handler: 'CacheFirst',
+        options: {
+          cacheName: 'image-cache',
+          expiration: {
+            maxEntries: 100,
+            maxAgeSeconds: 7 * 24 * 60 * 60, // 7 days
+          },
         },
       },
-    },
-  ],
+    ],
+  },
 };
 
-export default withPWA({
-  ...nextConfig,
-  ...pwaConfig,
-});
+export default nextConfig;
