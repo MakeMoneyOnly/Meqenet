@@ -12,7 +12,8 @@ const z = require('zod');
  * Handles different log levels and environment-specific behavior
  */
 export class Logger {
-  private static readonly isDevelopment = process.env.NODE_ENV === 'development';
+  private static readonly isDevelopment =
+    process.env.NODE_ENV === 'development';
   private static readonly isProduction = process.env.NODE_ENV === 'production';
 
   /**
@@ -50,7 +51,11 @@ export class Logger {
   /**
    * Log security events (always logged, but sanitized in production)
    */
-  static security(level: 'AUDIT' | 'SECURITY', message: string, data?: Record<string, unknown>): void {
+  static security(
+    level: 'AUDIT' | 'SECURITY',
+    message: string,
+    data?: Record<string, unknown>,
+  ): void {
     const logEntry = {
       level,
       message,
@@ -93,11 +98,14 @@ export const FinancialSchemas = {
   phoneNumber: z.string().regex(/^(\+251|0)[79]\d{8}$/), // Ethiopian phone format
   email: z.string().email().max(254),
   nationalId: z.string().min(10).max(20), // Ethiopian ID formats
-  password: z.string()
+  password: z
+    .string()
     .min(SECURITY_CONSTANTS.PASSWORD_MIN_LENGTH)
     .max(SECURITY_CONSTANTS.PASSWORD_MAX_LENGTH)
-    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/, 
-           'Password must contain uppercase, lowercase, number, and special character'),
+    .regex(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
+      'Password must contain uppercase, lowercase, number, and special character',
+    ),
 };
 
 /**
@@ -145,8 +153,8 @@ export class InputSanitizer {
  * Cryptographic utilities for financial data protection
  */
 export class CryptoUtils {
-  private static readonly ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || 
-    crypto.randomBytes(32).toString('hex');
+  private static readonly ENCRYPTION_KEY =
+    process.env.ENCRYPTION_KEY || crypto.randomBytes(32).toString('hex');
 
   /**
    * Encrypt sensitive financial data
@@ -154,39 +162,47 @@ export class CryptoUtils {
   static encrypt(text: string): { encrypted: string; iv: string; tag: string } {
     const iv = crypto.randomBytes(16);
     const key = Buffer.from(this.ENCRYPTION_KEY, 'hex');
-    const cipher = crypto.createCipheriv(SECURITY_CONSTANTS.ENCRYPTION_ALGORITHM, key, iv);
+    const cipher = crypto.createCipheriv(
+      SECURITY_CONSTANTS.ENCRYPTION_ALGORITHM,
+      key,
+      iv,
+    );
     cipher.setAAD(Buffer.from('financial-data', 'utf8'));
-    
+
     let encrypted = cipher.update(text, 'utf8', 'hex');
     encrypted += cipher.final('hex');
-    
+
     const tag = cipher.getAuthTag();
-    
+
     return {
       encrypted,
       iv: iv.toString('hex'),
-      tag: tag.toString('hex')
+      tag: tag.toString('hex'),
     };
   }
 
   /**
    * Decrypt sensitive financial data
    */
-  static decrypt(encryptedData: { encrypted: string; iv: string; tag: string }): string {
+  static decrypt(encryptedData: {
+    encrypted: string;
+    iv: string;
+    tag: string;
+  }): string {
     const key = Buffer.from(this.ENCRYPTION_KEY, 'hex');
     const iv = Buffer.from(encryptedData.iv, 'hex');
     const decipher = crypto.createDecipheriv(
-      SECURITY_CONSTANTS.ENCRYPTION_ALGORITHM, 
+      SECURITY_CONSTANTS.ENCRYPTION_ALGORITHM,
       key,
-      iv
+      iv,
     );
-    
+
     decipher.setAuthTag(Buffer.from(encryptedData.tag, 'hex'));
     decipher.setAAD(Buffer.from('financial-data', 'utf8'));
-    
+
     let decrypted = decipher.update(encryptedData.encrypted, 'hex', 'utf8');
     decrypted += decipher.final('utf8');
-    
+
     return decrypted;
   }
 
@@ -208,7 +224,10 @@ export class CryptoUtils {
   /**
    * Verify password hash
    */
-  static async verifyPassword(password: string, hash: string): Promise<boolean> {
+  static async verifyPassword(
+    password: string,
+    hash: string,
+  ): Promise<boolean> {
     const bcrypt = await import('bcryptjs');
     return bcrypt.compare(password, hash);
   }
@@ -218,7 +237,10 @@ export class CryptoUtils {
  * Rate limiting and fraud detection utilities
  */
 export class SecurityMonitor {
-  private static attempts = new Map<string, { count: number; lastAttempt: number }>();
+  private static attempts = new Map<
+    string,
+    { count: number; lastAttempt: number }
+  >();
 
   /**
    * Check if IP/user is rate limited
@@ -259,14 +281,16 @@ export class SecurityMonitor {
   /**
    * Detect suspicious transaction patterns
    */
-  static detectSuspiciousActivity(transactions: Array<{
-    amount: number;
-    timestamp: number;
-    userId: string;
-  }>): boolean {
+  static detectSuspiciousActivity(
+    transactions: Array<{
+      amount: number;
+      timestamp: number;
+      userId: string;
+    }>,
+  ): boolean {
     // Check for rapid successive transactions
     const recentTransactions = transactions.filter(
-      t => Date.now() - t.timestamp < 5 * 60 * 1000 // Last 5 minutes
+      (t) => Date.now() - t.timestamp < 5 * 60 * 1000, // Last 5 minutes
     );
 
     if (recentTransactions.length > 5) {
@@ -274,8 +298,12 @@ export class SecurityMonitor {
     }
 
     // Check for unusually large amounts
-    const totalAmount = recentTransactions.reduce((sum, t) => sum + t.amount, 0);
-    if (totalAmount > 50000) { // 50,000 ETB threshold
+    const totalAmount = recentTransactions.reduce(
+      (sum, t) => sum + t.amount,
+      0,
+    );
+    if (totalAmount > 50000) {
+      // 50,000 ETB threshold
       return true;
     }
 
@@ -341,7 +369,11 @@ export class AuditLogger {
    * Log security event
    */
   static logSecurityEvent(event: {
-    type: 'LOGIN_ATTEMPT' | 'FAILED_LOGIN' | 'SUSPICIOUS_ACTIVITY' | 'DATA_ACCESS';
+    type:
+      | 'LOGIN_ATTEMPT'
+      | 'FAILED_LOGIN'
+      | 'SUSPICIOUS_ACTIVITY'
+      | 'DATA_ACCESS';
     userId?: string;
     ipAddress: string;
     userAgent: string;
@@ -369,4 +401,4 @@ const SecurityUtils = {
   Logger,
 };
 
-export default SecurityUtils; 
+export default SecurityUtils;

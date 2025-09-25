@@ -6,6 +6,7 @@ import * as esbuild from 'esbuild';
 import { defineConfig, UserConfig } from 'vite';
 
 /* eslint-env node */
+ 
 
 const extensions = [
   '.mjs',
@@ -23,20 +24,20 @@ const extensions = [
 
 interface RollupPlugin {
   name: string;
-  load(id: string): string | undefined;
+  load(_id: string): string | undefined;
 }
 
 const rollupPlugin = (matchers: RegExp[]): RollupPlugin => ({
   name: 'js-in-jsx',
-  load(id: string): string | undefined {
+  load(_id: string): string | undefined {
     if (
-      matchers.some((matcher: RegExp): boolean => matcher.test(id)) &&
-      id.endsWith('.js')
+      matchers.some((matcher: RegExp): boolean => matcher.test(_id)) &&
+      _id.endsWith('.js')
     ) {
       // Using literal string for security - this is a build-time transformation
       // The id parameter is controlled by the build system, not user input
-      // eslint-disable-next-line security/detect-non-literal-fs-filename
-      const file = readFileSync(id, { encoding: 'utf-8' });
+       
+      const file = readFileSync(_id, { encoding: 'utf-8' });
       return esbuild.transformSync(file, { loader: 'jsx', jsx: 'automatic' })
         .code;
     }

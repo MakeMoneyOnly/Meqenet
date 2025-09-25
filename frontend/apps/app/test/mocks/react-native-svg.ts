@@ -4,9 +4,9 @@ function make(
   tag: string,
 ): (props: PropsWithChildren<Record<string, unknown>>) => React.JSX.Element {
   return function Component(
-    props: PropsWithChildren<Record<string, unknown>>,
+    _props: PropsWithChildren<Record<string, unknown>>,
   ): React.JSX.Element {
-    return React.createElement(tag, props, props.children);
+    return React.createElement(tag, _props, _props.children);
   };
 }
 

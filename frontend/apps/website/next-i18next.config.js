@@ -1,4 +1,6 @@
 /** @type {import('next-i18next').UserConfig} */
+/* eslint-disable no-unused-vars */
+
 module.exports = {
   // debug: process.env.NODE_ENV === 'development',
   i18n: {

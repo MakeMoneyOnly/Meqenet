@@ -105,7 +105,6 @@ const initI18n = (isClient = true) => {
       // Silently handle missing keys in production for security
       // In development, missing keys would be logged by i18next debug mode
       if (typeof window !== 'undefined' && window.console) {
-        // eslint-disable-next-line no-console
         console.warn(`Missing translation: ${key}`);
       }
     },
@@ -167,7 +166,6 @@ export const getLanguageDirection = (lng: string): 'ltr' | 'rtl' => {
 export const changeLanguage = async (lng: 'en' | 'am'): Promise<void> => {
   // Validate that the language is supported
   if (!SUPPORTED_LANGUAGE_CODES.includes(lng)) {
-    // eslint-disable-next-line no-console
     console.warn(`Unsupported language: ${lng}`);
     return;
   }

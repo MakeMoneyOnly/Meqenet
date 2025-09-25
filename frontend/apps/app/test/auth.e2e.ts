@@ -1,7 +1,5 @@
 import { device, element, by, expect, waitFor } from 'detox';
 
-/* global describe, beforeAll, beforeEach, it */
-
 // Test data
 const testUser = {
   email: 'test@example.com',

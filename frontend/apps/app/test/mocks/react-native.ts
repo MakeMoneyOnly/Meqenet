@@ -43,7 +43,7 @@ function sanitizeProps<P extends Record<string, unknown>>(
 
   for (const key of propKeys) {
     if (RN_ONLY_PROPS.has(key)) continue;
-    // eslint-disable-next-line security/detect-object-injection
+
     out[key] = props[key];
   }
   return out;

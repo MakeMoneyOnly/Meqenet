@@ -31,6 +31,116 @@ export default [
       },
     },
   },
+  // Environment configurations
+  {
+    files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
+    languageOptions: {
+      globals: {
+        // Browser globals
+        window: 'readonly',
+        document: 'readonly',
+        navigator: 'readonly',
+        fetch: 'readonly',
+        localStorage: 'readonly',
+        sessionStorage: 'readonly',
+        requestAnimationFrame: 'readonly',
+        cancelAnimationFrame: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        setInterval: 'readonly',
+        clearInterval: 'readonly',
+        atob: 'readonly',
+        btoa: 'readonly',
+        URL: 'readonly',
+        File: 'readonly',
+        Request: 'readonly',
+        alert: 'readonly',
+        // React globals (when not imported)
+        React: 'readonly',
+        // DOM element types
+        HTMLElement: 'readonly',
+        HTMLButtonElement: 'readonly',
+        HTMLInputElement: 'readonly',
+        HTMLFormElement: 'readonly',
+        HTMLDivElement: 'readonly',
+        HTMLAnchorElement: 'readonly',
+        HTMLSelectElement: 'readonly',
+        HTMLTextAreaElement: 'readonly',
+        SVGSVGElement: 'readonly',
+        // Event types
+        MouseEvent: 'readonly',
+        TouchEvent: 'readonly',
+        KeyboardEvent: 'readonly',
+        FocusEvent: 'readonly',
+        EventListener: 'readonly',
+        EventListenerObject: 'readonly',
+        // DOM APIs
+        DOMRect: 'readonly',
+        Node: 'readonly',
+        // Node.js types for TypeScript
+        NodeJS: 'readonly',
+        // Node.js globals
+        process: 'readonly',
+        console: 'readonly',
+        Buffer: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+        global: 'readonly',
+        require: 'readonly',
+        module: 'readonly',
+        exports: 'readonly',
+      },
+    },
+  },
+  // Test environment globals
+  {
+    files: [
+      '**/*.spec.ts',
+      '**/*.spec.tsx',
+      '**/*.spec.js',
+      '**/*.spec.tsx',
+      '**/*.test.ts',
+      '**/*.test.tsx',
+      '**/*.test.js',
+      '**/*.test.tsx',
+      '**/test/**/*.ts',
+      '**/test/**/*.tsx',
+      '**/test/**/*.js',
+      '**/test/**/*.jsx',
+      '**/test-setup/**/*.{ts,tsx,js,jsx}',
+      '**/vitest.setup.{ts,tsx,js,jsx}',
+      '**/jest.setup.{ts,tsx,js,jsx}',
+    ],
+    languageOptions: {
+      globals: {
+        // Testing framework globals
+        describe: 'readonly',
+        it: 'readonly',
+        test: 'readonly',
+        expect: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly',
+        beforeAll: 'readonly',
+        afterAll: 'readonly',
+        vi: 'readonly',
+        vitest: 'readonly',
+        jest: 'readonly',
+        // Extend browser globals for tests
+        window: 'readonly',
+        document: 'readonly',
+        navigator: 'readonly',
+        global: 'readonly',
+        process: 'readonly',
+        console: 'readonly',
+        Buffer: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+        require: 'readonly',
+        module: 'readonly',
+        exports: 'readonly',
+      },
+    },
+  },
   {
     ignores: [
       '**/dist',
@@ -150,6 +260,26 @@ export default [
       'jsx-a11y/role-supports-aria-props': 'error',
       'jsx-a11y/scope': 'error',
       'jsx-a11y/tabindex-no-positive': 'error',
+    },
+  },
+  // Configuration for .mjs files and config files
+  {
+    files: ['*.mjs', '**/*.mjs', '*.config.js', '**/*.config.js', 'next-i18next.config.js'],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'module',
+      globals: {
+        // Node.js globals for ESM modules and config files
+        process: 'readonly',
+        console: 'readonly',
+        Buffer: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+        require: 'readonly',
+        module: 'readonly',
+        exports: 'readonly',
+        global: 'readonly',
+      },
     },
   },
 ];
