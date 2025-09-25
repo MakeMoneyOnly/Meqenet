@@ -36,7 +36,7 @@ describe('RiskAssessmentService', () => {
       'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
     location: 'New York, USA',
     deviceFingerprint: 'fingerprint-123',
-    loginTime: new Date(),
+    loginTime: new Date(2024, 0, 1, 12, 0, 0, 0), // Fixed time: 12:00 PM, not suspicious
     previousLoginTime: new Date(Date.now() - 86400000), // 1 day ago
     previousLoginLocation: 'New York, USA',
     failedAttemptsCount: 0,
