@@ -1,18 +1,78 @@
 {
-  "actions": [],
-  "advisories": {},
+  "actions": [
+    {
+      "action": "review",
+      "module": "fast-redact",
+      "resolves": [
+        {
+          "id": 1108265,
+          "path": "backend__services__api-gateway>nestjs-pino>pino-http>pino>fast-redact",
+          "dev": false,
+          "bundled": false,
+          "optional": false
+        }
+      ]
+    }
+  ],
+  "advisories": {
+    "1108265": {
+      "findings": [
+        {
+          "version": "3.5.0",
+          "paths": [
+            "backend\\services\\api-gateway > nestjs-pino@4.4.0 > pino@9.10.0 > fast-redact@3.5.0",
+            "backend\\services\\api-gateway > nestjs-pino@4.4.0 > pino-http@10.5.0 > pino@9.11.0 > fast-redact@3.5.0",
+            "backend\\services\\api-gateway > pino@9.10.0 > fast-redact@3.5.0",
+            "backend\\services\\auth-service > nestjs-pino@4.4.0 > pino@9.10.0 > fast-redact@3.5.0",
+            "backend\\services\\auth-service > nestjs-pino@4.4.0 > pino-http@10.5.0 > pino@9.11.0 > fast-redact@3.5.0",
+            "backend\\services\\auth-service > pino@9.10.0 > fast-redact@3.5.0",
+            "backend\\services\\auth-service > @pact-foundation/pact@13.2.0 > @pact-foundation/pact-core@15.2.1 > pino@8.21.0 > fast-redact@3.5.0"
+          ]
+        }
+      ],
+      "found_by": null,
+      "deleted": null,
+      "references": "- https://nvd.nist.gov/vuln/detail/CVE-2025-57319\n- https://github.com/VulnSageAgent/PoCs/blob/main/JavaScript/prototype-pollution/fast-redact%403.5.0/index.js\n- https://github.com/VulnSageAgent/PoCs/tree/main/JavaScript/prototype-pollution/CVE-2025-57319\n- https://github.com/davidmarkclements/fast-redact/issues/75\n- https://github.com/advisories/GHSA-ffrw-9mx8-89p8",
+      "created": "2025-09-24T21:30:37.000Z",
+      "id": 1108265,
+      "npm_advisory_id": null,
+      "overview": "fast-redact is a package that provides do very fast object redaction. A Prototype Pollution vulnerability in the nestedRestore function of fast-redact version 3.5.0 and before allows attackers to inject properties on Object.prototype via supplying a crafted payload, causing denial of service (DoS) as the minimum consequence.",
+      "reported_by": null,
+      "title": "fast-redact vulnerable to prototype pollution",
+      "metadata": null,
+      "cves": [
+        "CVE-2025-57319"
+      ],
+      "access": "public",
+      "severity": "low",
+      "module_name": "fast-redact",
+      "vulnerable_versions": "<=3.5.0",
+      "github_advisory_id": "GHSA-ffrw-9mx8-89p8",
+      "recommendation": "None",
+      "patched_versions": "<0.0.0",
+      "updated": "2025-09-29T13:10:31.000Z",
+      "cvss": {
+        "score": 0,
+        "vectorString": null
+      },
+      "cwe": [
+        "CWE-1321"
+      ],
+      "url": "https://github.com/advisories/GHSA-ffrw-9mx8-89p8"
+    }
+  },
   "muted": [],
   "metadata": {
     "vulnerabilities": {
       "info": 0,
-      "low": 0,
+      "low": 1,
       "moderate": 0,
       "high": 0,
       "critical": 0
     },
-    "dependencies": 3887,
+    "dependencies": 3914,
     "devDependencies": 0,
     "optionalDependencies": 0,
-    "totalDependencies": 3887
+    "totalDependencies": 3914
   }
 }

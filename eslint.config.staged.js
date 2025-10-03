@@ -119,6 +119,9 @@ export default [
         // Additional DOM types
         EventListener: 'readonly',
         EventListenerObject: 'readonly',
+        Event: 'readonly',
+        CustomEvent: 'readonly',
+        ServiceWorkerGlobalScope: 'readonly',
       },
       parserOptions: {
         // IMPORTANT: No project reference for performance

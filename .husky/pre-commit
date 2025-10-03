@@ -94,7 +94,12 @@ fi
 
 # 1c. Run Prettier on all relevant files
 echo "  • Running Prettier on staged files..."
-pnpm lint:staged:prettier $ALL_RELEVANT_FILES
+# Handle file paths with spaces by processing each file individually
+echo "$ALL_RELEVANT_FILES" | while IFS= read -r file; do
+  if [ -n "$file" ]; then
+    pnpm lint:staged:prettier "$file"
+  fi
+done
 echo "  ✅ Prettier passed."
 
 # 1d. Add back the changes made by the formatters
