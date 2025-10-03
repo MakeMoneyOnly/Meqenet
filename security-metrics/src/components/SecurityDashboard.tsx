@@ -3,7 +3,7 @@
  * React component for visualizing security metrics and alerts
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 import {
   SecurityMetrics,
@@ -59,7 +59,7 @@ export const SecurityDashboard: React.FC<SecurityDashboardProps> = ({
 
   const metricsService = SecurityMetricsService.getInstance();
 
-  const loadData = async (): Promise<void> => {
+  const loadData = useCallback(async (): Promise<void> => {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }));
 
@@ -84,7 +84,7 @@ export const SecurityDashboard: React.FC<SecurityDashboardProps> = ({
           error instanceof Error ? error.message : 'Unknown error occurred',
       }));
     }
-  };
+  }, [environment, metricsService]);
 
   useEffect((): (() => void) => {
     loadData();
@@ -96,7 +96,7 @@ export const SecurityDashboard: React.FC<SecurityDashboardProps> = ({
     );
 
     return () => clearInterval(interval);
-  }, [environment, refreshInterval]);
+  }, [environment, refreshInterval, loadData]);
 
   const generateReport = async (
     type: 'daily' | 'weekly' | 'monthly'

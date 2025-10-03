@@ -46,7 +46,7 @@ function runAudit() {
     );
     results.deprecated = (deprecatedOutput.match(/deprecated/g) || []).length;
     console.log(`   Found ${results.deprecated} deprecated packages`);
-  } catch (_error) {
+  } catch {
     console.log('   ✅ No deprecated packages found');
     results.deprecated = 0;
   }
@@ -60,7 +60,7 @@ function runAudit() {
     console.log(
       `   Vulnerabilities: ${JSON.stringify(results.vulnerabilities)}`
     );
-  } catch (_error) {
+  } catch {
     console.log('   ⚠️  Could not parse audit results');
   }
 

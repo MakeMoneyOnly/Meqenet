@@ -10,7 +10,7 @@ function isDockerAvailable() {
   try {
     execSync('docker --version', { stdio: 'pipe' });
     return true;
-  } catch (_error) {
+  } catch {
     return false;
   }
 }
@@ -123,7 +123,7 @@ function simpleSecretScan() {
           }
         }
       }
-    } catch (_error) {
+    } catch {
       // Skip files/directories that can't be read
     }
   }

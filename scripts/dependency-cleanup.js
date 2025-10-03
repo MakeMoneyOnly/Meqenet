@@ -231,7 +231,7 @@ async function runSecurityAudit() {
       console.log('   Run: pnpm audit fix');
       process.exit(1);
     }
-  } catch (_error) {
+  } catch {
     console.log('   ⚠️  Audit parsing failed, but continuing...');
   }
 }
@@ -245,7 +245,7 @@ async function validateDependencies() {
       'pnpm ls --depth=3 | grep -i deprecated | wc -l',
       'Count deprecated packages'
     );
-  } catch (_error) {
+  } catch {
     console.log('   ⚠️  Could not check deprecated packages');
   }
 
@@ -255,7 +255,7 @@ async function validateDependencies() {
       'pnpm ls --depth=3 | grep -i unmet | wc -l',
       'Count peer dependency issues'
     );
-  } catch (_error) {
+  } catch {
     console.log('   ⚠️  Could not check peer dependency issues');
   }
 

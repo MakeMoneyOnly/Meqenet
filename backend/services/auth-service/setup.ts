@@ -28,6 +28,6 @@ try {
   if (!existsSync(prismaClientPath)) {
     execSync('npx prisma generate', { stdio: 'inherit' });
   }
-} catch (_error) {
+} catch {
   // Silently handle Prisma client generation errors in test setup
 }

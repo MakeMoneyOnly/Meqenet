@@ -14,8 +14,6 @@
 
 const { execSync: _execSync, spawn: _spawn } = require('child_process'); // Reserved for future command execution
 const fs = require('fs');
-const path = require('path');
-const crypto = require('crypto');
 const { fileURLToPath } = require('url');
 const { dirname } = require('path');
 

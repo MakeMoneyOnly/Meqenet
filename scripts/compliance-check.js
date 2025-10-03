@@ -46,7 +46,7 @@ function checkJsonStructure(filePath, requiredFields, description) {
         `❌ ${description}: FAILED (missing: ${missingFields.join(', ')})`
       );
     }
-  } catch (_err) {
+  } catch {
     issues.push(`${description}: Invalid JSON format`);
     console.log(`❌ ${description}: FAILED (invalid JSON)`);
   }

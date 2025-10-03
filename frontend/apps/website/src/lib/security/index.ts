@@ -66,6 +66,7 @@ export class Logger {
     if (this.isProduction) {
       // In production, send to logging service instead of console
       // TODO: Integrate with proper logging service (e.g., DataDog, CloudWatch)
+
       console.log(`[${level}]`, message);
     } else {
       console.log(`[${level}]`, logEntry);

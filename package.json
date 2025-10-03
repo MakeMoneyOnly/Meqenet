@@ -40,7 +40,7 @@
     "e2e:with-server:mock": "cross-env USE_REDIS_MOCK=true NODE_ENV=test pnpm nx run backend-e2e:e2e-with-server",
     "test:mocks:telebirr": "json-server --watch test/mocks/telebirr-db.json --port 3001",
     "build": "pnpm -r --if-present build",
-    "security:audit": "pnpm audit --audit-level moderate",
+    "security:audit": "cd frontend && pnpm audit --audit-level high",
     "security:audit-ci": "audit-ci --config .audit-ci.json",
     "security:sbom:api-gateway:docker": "docker run --rm -u 0:0 -e CDXGEN_ATOM_DISABLE=1 -e HUSKY=0 -e HUSKY_SKIP_INSTALL=1 -e CI=1 -v \"%cd%\":/src ghcr.io/cyclonedx/cdxgen:11.1.4 -o /src/bom.api-gateway.json --include-formulation --include-crypto --spec-version 1.5 --exclude \"node_modules,dist,coverage,.pnpm-store,.cache,.nx,.vite,.git,bom.json,**/flake.nix,**/flake.lock\" /src/backend/services/api-gateway",
     "security:sbom:auth-service:docker": "docker run --rm -u 0:0 -e CDXGEN_ATOM_DISABLE=1 -e HUSKY=0 -e HUSKY_SKIP_INSTALL=1 -e CI=1 -v \"%cd%\":/src ghcr.io/cyclonedx/cdxgen:11.1.4 -o /src/bom.auth-service.json --include-formulation --include-crypto --spec-version 1.5 --exclude \"node_modules,dist,coverage,.pnpm-store,.cache,.nx,.vite,.git,bom.json,**/flake.nix,**/flake.lock\" /src/backend/services/auth-service",

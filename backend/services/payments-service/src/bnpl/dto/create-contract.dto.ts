@@ -1,5 +1,13 @@
-import { IsString, IsEnum, IsNumber, IsOptional, Min, Max, IsUUID, IsUrl } from 'class-validator';
-import { BNPLProduct, PaymentMethod } from '@prisma/client';
+import {
+  IsString,
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  Min,
+  Max,
+  IsUUID,
+} from 'class-validator';
+import { BNPLProduct } from '@prisma/client';
 
 export class CreateContractDto {
   @IsUUID()
