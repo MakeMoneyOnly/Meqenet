@@ -74,6 +74,10 @@ export default [
         FocusEvent: 'readonly',
         EventListener: 'readonly',
         EventListenerObject: 'readonly',
+        Event: 'readonly',
+        CustomEvent: 'readonly',
+        // Service Worker types
+        ServiceWorkerGlobalScope: 'readonly',
         // DOM APIs
         DOMRect: 'readonly',
         Node: 'readonly',

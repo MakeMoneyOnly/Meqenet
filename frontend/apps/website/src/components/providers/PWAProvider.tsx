@@ -1,7 +1,7 @@
 'use client';
 
 // Type definitions for PWA events
-type BeforeInstallPromptEvent = globalThis.Event & {
+type BeforeInstallPromptEvent = Event & {
   readonly platforms: string[];
   readonly userChoice: Promise<{
     outcome: 'accepted' | 'dismissed';
@@ -15,13 +15,13 @@ declare global {
   interface WindowEventMap {
     beforeinstallprompt: BeforeInstallPromptEvent;
 
-    appinstalled: globalThis.Event;
+    appinstalled: Event;
 
-    'pwa-install-available': globalThis.CustomEvent<{
+    'pwa-install-available': CustomEvent<{
       prompt: () => Promise<void>;
     }>;
 
-    'pwa-installed': globalThis.CustomEvent;
+    'pwa-installed': CustomEvent;
   }
 }
 
@@ -69,7 +69,7 @@ export default function PWAProvider() {
         // Show custom install button or dispatch event for UI to handle
 
         window.dispatchEvent(
-          new globalThis.CustomEvent('pwa-install-available', {
+          new CustomEvent('pwa-install-available', {
             detail: {
               prompt: async () => {
                 if (deferredPrompt) {
@@ -87,7 +87,7 @@ export default function PWAProvider() {
         // App was installed
         deferredPrompt = null;
 
-        window.dispatchEvent(new globalThis.CustomEvent('pwa-installed'));
+        window.dispatchEvent(new CustomEvent('pwa-installed'));
       });
     }
   }, []);

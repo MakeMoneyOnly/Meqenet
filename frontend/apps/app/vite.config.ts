@@ -37,6 +37,7 @@ const rollupPlugin = (matchers: RegExp[]): RollupPlugin => ({
     ) {
       // Using controlled parameter for build-time transformation
       // The id parameter is controlled by the build system, not user input
+       
       const file = readFileSync(id, { encoding: 'utf-8' });
       return esbuild.transformSync(file, { loader: 'jsx', jsx: 'automatic' })
         .code;

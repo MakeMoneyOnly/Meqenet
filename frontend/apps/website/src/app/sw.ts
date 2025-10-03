@@ -3,7 +3,6 @@
 import { Serwist, type PrecacheEntry } from 'serwist';
 
 // Declare self for service worker context
-// eslint-disable-next-line no-undef
 declare const self: ServiceWorkerGlobalScope & {
   __SW_MANIFEST: unknown[];
 };
