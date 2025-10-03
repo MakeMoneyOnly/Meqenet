@@ -337,6 +337,7 @@ jobs:
           npm run build
 
       - name: 🚀 Start Production Server for PWA Testing
+        id: start-server
         run: |
           echo "🔧 Starting Next.js production server for PWA testing..."
 
@@ -453,6 +454,7 @@ jobs:
             SERVER_PID=$!
 
             echo "📝 Server PID: $SERVER_PID"
+            echo "server_pid=$SERVER_PID" >> $GITHUB_OUTPUT
 
             # Enterprise-grade server readiness with exponential backoff
             MAX_WAIT_TIME=120  # Maximum total wait time
@@ -623,12 +625,54 @@ jobs:
           echo "🔍 Performing enterprise-grade Lighthouse pre-flight checks..."
 
           # Check 1: Verify server process is still running
-          if ! ps -p $SERVER_PID > /dev/null 2>&1; then
-            echo "❌ CRITICAL: Server process (PID: $SERVER_PID) is no longer running"
-            echo "📋 Checking for any remaining server processes..."
-            ps aux | grep -E "(next|node.*3001)" | grep -v grep || echo "No server processes found"
+          SERVER_PID=${{ steps.start-server.outputs.server_pid }}
+          SERVER_STILL_RUNNING=false
+
+          # Primary check: Verify specific PID is still running
+          if ps -p $SERVER_PID > /dev/null 2>&1; then
+            echo "✅ Server process (PID: $SERVER_PID) is still running"
+            SERVER_STILL_RUNNING=true
+          else
+            echo "⚠️  Server process (PID: $SERVER_PID) is no longer running"
+            echo "🔄 Attempting fallback validation methods..."
+
+            # Fallback Check 1: Check for any Next.js processes on port 3001
+            if ps aux | grep -E "(next|node.*3001)" | grep -v grep >/dev/null 2>&1; then
+              echo "✅ Found alternative Next.js server process on port 3001"
+              SERVER_STILL_RUNNING=true
+            else
+              echo "❌ No Next.js processes found on port 3001"
+            fi
+
+            # Fallback Check 2: Check if port 3001 is still bound
+            if lsof -i :3001 >/dev/null 2>&1; then
+              echo "✅ Port 3001 is still bound (server likely running)"
+              SERVER_STILL_RUNNING=true
+            else
+              echo "❌ Port 3001 is not bound"
+            fi
+
+            # Fallback Check 3: Quick HTTP connectivity test
+            if curl -f -s --max-time 3 --retry 1 http://localhost:3001 >/dev/null 2>&1; then
+              echo "✅ Server is responding to HTTP requests on port 3001"
+              SERVER_STILL_RUNNING=true
+            else
+              echo "❌ Server is not responding to HTTP requests on port 3001"
+            fi
+          fi
+
+          # Final decision based on all checks
+          if [ "$SERVER_STILL_RUNNING" = false ]; then
+            echo "❌ CRITICAL: All server validation checks failed"
+            echo "📋 Detailed diagnostic information:"
+            echo "  - Expected PID: $SERVER_PID"
+            echo "  - Process list: $(ps aux | grep -E "(next|node)" | grep -v grep | wc -l) relevant processes"
+            echo "  - Port 3001 status: $(lsof -i :3001 >/dev/null 2>&1 && echo "bound" || echo "free")"
+            echo "  - HTTP response: $(curl -s -o /dev/null -w "%{http_code}" --max-time 3 http://localhost:3001 2>/dev/null || echo "no response")"
             exit 1
           fi
+
+          echo "✅ Server validation passed - proceeding with Lighthouse audit"
 
           # Check 2: Verify server is responding with comprehensive health check
           echo "🔍 Running comprehensive server health check before Lighthouse audit..."
