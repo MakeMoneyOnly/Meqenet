@@ -37,38 +37,8 @@ pluginManagement {
             allowInsecureProtocol = false
         }
 
-        // React Native Gradle plugin resolution - try multiple paths
-        // Path from frontend/apps/app/android/ to frontend/node_modules/@react-native/gradle-plugin
-        def rnPluginPaths = [
-            "../../node_modules/@react-native/gradle-plugin",     // CI path
-            "../../../node_modules/@react-native/gradle-plugin", // Local development
-            "../../../../node_modules/@react-native/gradle-plugin", // Alternative CI
-            "../../../../../node_modules/@react-native/gradle-plugin" // Root workspace
-        ]
-
-        def rnPluginFound = false
-        for (path in rnPluginPaths) {
-            def pluginPath = new File(settingsDir, path)
-            if (pluginPath.exists() && pluginPath.isDirectory()) {
-                // Add local Maven repository for React Native Gradle plugin
-                maven {
-                    url = uri(pluginPath.toURI().toURL())
-                    allowInsecureProtocol = false
-                }
-                println "✅ Found React Native Gradle plugin at: ${pluginPath.absolutePath}"
-                rnPluginFound = true
-                break
-            }
-        }
-
-        if (!rnPluginFound) {
-            println "⚠️  React Native Gradle plugin not found in any expected location. Searched paths:"
-            rnPluginPaths.each { path ->
-                def pluginPath = new File(settingsDir, path)
-                println "   - ${pluginPath.absolutePath} (${pluginPath.exists() ? 'exists' : 'not found'})"
-            }
-            println "🔄 Will attempt to resolve from Maven repositories instead"
-        }
+        // React Native Gradle plugin resolution
+        // Plugin will be resolved from Maven Central - no local repository needed
     }
 
     // Specify stable plugin versions to avoid dependency resolution issues
