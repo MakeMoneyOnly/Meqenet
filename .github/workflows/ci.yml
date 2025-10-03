@@ -258,10 +258,10 @@ jobs:
               COMMIT_MSG=$(echo "$commit" | cut -d' ' -f2-)
 
               # Check for JIRA ticket reference
-              if ! echo "$COMMIT_MSG" | grep -q -E '\((JIRA|TICKET|ISSUE|MEQ|BNPL|PAY|AUTH|SEC)-[0-9]+\)'; then
+              if ! echo "$COMMIT_MSG" | grep -q -E '\((JIRA|TICKET|ISSUE|MEQ|BNPL|PAY|AUTH|SEC|CI)-[0-9]+\)'; then
                 echo "❌ INVALID COMMIT: $COMMIT_MSG"
                 echo "📋 Required format: type(scope): description (TICKET-123)"
-                echo "🔗 Supported tickets: JIRA, TICKET, ISSUE, MEQ, BNPL, PAY, AUTH, SEC"
+                echo "🔗 Supported tickets: JIRA, TICKET, ISSUE, MEQ, BNPL, PAY, AUTH, SEC, CI"
                 exit 1
               fi
 

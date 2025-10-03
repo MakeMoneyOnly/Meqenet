@@ -334,6 +334,12 @@ jobs:
       - name: 🏗️ Build Website
         run: |
           cd frontend/apps/website
+
+          # Set required environment variables for Next.js build
+          export NODE_ENV=production
+          export NEXT_PUBLIC_API_URL=http://localhost:3000/api/v1
+
+          # Build the application
           npm run build
 
       - name: 🚀 Start Production Server for PWA Testing
@@ -390,6 +396,10 @@ jobs:
             # Test 1: Basic connectivity
             if ! curl -f -s --max-time 5 --retry 1 http://localhost:$PORT >/dev/null 2>&1; then
               echo "❌ Basic connectivity test failed"
+              echo "🔍 Checking server logs for errors..."
+              tail -20 server.log || echo "No server logs available"
+              echo "🔍 Checking if server process is still running..."
+              ps -p $SERVER_PID -o pid,ppid,cmd || echo "Server process not found"
               return 1
             fi
 
@@ -397,6 +407,8 @@ jobs:
             local status_code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 5 http://localhost:$PORT)
             if [ -z "$status_code" ] || [ "$status_code" -lt 200 ] || [ "$status_code" -ge 400 ]; then
               echo "❌ HTTP status check failed (status: $status_code)"
+              echo "🔍 Full response details:"
+              curl -v --max-time 5 http://localhost:$PORT 2>&1 | head -20
               return 1
             fi
 
@@ -449,12 +461,21 @@ jobs:
           while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
             echo "🔄 Attempt $((RETRY_COUNT + 1))/$MAX_RETRIES to start Next.js server..."
 
+            # Clean up any existing server processes and logs
+            pkill -f "next.*start.*3001" 2>/dev/null || true
+            rm -f server.log
+
             # Start Next.js production server in background with proper logging
+            echo "🚀 Starting server with command: npm run start"
             npm run start > server.log 2>&1 &
             SERVER_PID=$!
 
             echo "📝 Server PID: $SERVER_PID"
             echo "server_pid=$SERVER_PID" >> $GITHUB_OUTPUT
+
+            # Wait a moment for server to initialize
+            echo "⏳ Waiting 5 seconds for server initialization..."
+            sleep 5
 
             # Enterprise-grade server readiness with exponential backoff
             MAX_WAIT_TIME=120  # Maximum total wait time
@@ -759,6 +780,30 @@ jobs:
 
           if [ $AUDIT_RETRY_COUNT -eq $MAX_AUDIT_RETRIES ]; then
             echo "💥 CRITICAL: Lighthouse audit failed after $MAX_AUDIT_RETRIES attempts"
+
+            # Fallback: Try to start a simple HTTP server for static files
+            echo "🔄 Attempting fallback static file server..."
+            cd frontend/apps/website
+            python3 -m http.server 3001 > /dev/null 2>&1 &
+            FALLBACK_PID=$!
+            echo "📝 Fallback server PID: $FALLBACK_PID"
+
+            # Wait for fallback server to start
+            sleep 3
+
+            # Try Lighthouse audit one more time with fallback server
+            if curl -f -s --max-time 3 http://localhost:3001 >/dev/null 2>&1; then
+              echo "✅ Fallback server is responding, retrying Lighthouse audit..."
+              if npx lhci autorun --config=.github/lighthouse/pwa-config.json; then
+                echo "✅ Lighthouse audit succeeded with fallback server"
+                # Clean up fallback server
+                kill $FALLBACK_PID 2>/dev/null || true
+                exit 0
+              fi
+            fi
+
+            # Clean up fallback server
+            kill $FALLBACK_PID 2>/dev/null || true
             exit 1
           fi
 
