@@ -147,6 +147,97 @@ const fs = require('fs');
 const _path = require('path'); // Reserved for future path operations
 ```
 
+### Array Access Security
+```typescript
+// ❌ Avoid: Direct dynamic array access without validation
+const word = ACTION_WORDS[currentIndex];
+
+// ✅ Use: Safe accessor with explicit bounds checking (PCI DSS Level 1)
+const safeGetActionWord = (idx: number): string => {
+  if (!Number.isInteger(idx) || idx < 0 || idx >= TOTAL_WORDS) {
+    return ACTION_WORDS[0]; // Safe fallback
+  }
+  // eslint-disable-next-line security/detect-object-injection -- Safe: validated integer index on frozen const array
+  return ACTION_WORDS[idx];
+};
+const word = safeGetActionWord(currentIndex);
+```
+
+---
+
+## ⚡ Async/Await & Concurrency Patterns
+
+### Atomic State Updates (FinTech Industry Standard)
+**Critical for PCI DSS compliance and preventing race conditions in concurrent authentication requests**
+
+```typescript
+// ❌ Avoid: Multiple async mutations to shared state
+async canActivate(context: ExecutionContext): Promise<boolean> {
+  const request = context.switchToHttp().getRequest();
+  const riskAssessment = await this.performRiskAssessment(request, userId);
+  
+  // Race condition: request object mutated across async boundaries
+  request.riskAssessment = riskAssessment;
+  request.userId = userId;
+  
+  await this.handleRiskLevel(request, riskAssessment, response);
+  request.adaptiveAuth = { requiresMfa: true, ... }; // Another mutation
+  
+  return true;
+}
+
+// ✅ Use: Atomic assignment pattern - build state, then assign once
+async canActivate(context: ExecutionContext): Promise<boolean> {
+  const request = context.switchToHttp().getRequest();
+  const riskAssessment = await this.performRiskAssessment(request, userId);
+  
+  // Build immutable state object
+  const adaptiveAuthState = await this.buildAuthState(
+    request,
+    riskAssessment,
+    response
+  );
+  
+  // Single atomic assignment prevents race conditions (PCI DSS compliant)
+  Object.assign(request, {
+    riskAssessment,
+    userId,
+    adaptiveAuth: adaptiveAuthState,
+  });
+  
+  return true;
+}
+```
+
+**Key Benefits:**
+- Prevents race conditions in concurrent requests
+- PCI DSS compliant state management
+- Easier to reason about state changes
+- Better testability and debugging
+
+### Promise Handling
+```typescript
+// ✅ Await all promises before using results
+async function processPayment(transaction: Transaction): Promise<Result> {
+  const validation = await this.validateTransaction(transaction);
+  const riskScore = await this.assessRisk(transaction);
+  const approval = await this.getApproval(validation, riskScore);
+  
+  return this.finalizePayment(approval);
+}
+
+// ✅ Use Promise.all for parallel operations
+async function processPayment(transaction: Transaction): Promise<Result> {
+  const [validation, riskScore] = await Promise.all([
+    this.validateTransaction(transaction),
+    this.assessRisk(transaction),
+  ]);
+  
+  const approval = await this.getApproval(validation, riskScore);
+  return this.finalizePayment(approval);
+}
+```
+
 ---
 
 ## 📝 Error Handling Patterns
@@ -190,6 +281,58 @@ async function createContract(request: CreateContractRequest) {
 
 ## 🧪 Testing Standards
 
+### Type-Safe Mock Helpers (FinTech Industry Standard)
+**Use typed mock utilities instead of `any` types - required for SOC 2 and PCI DSS compliance**
+
+```typescript
+// ❌ Avoid: Using 'any' types in production code
+const mockPrisma = {} as any;
+
+// ✅ Use: Typed mock helper utilities from @meqenet/testing
+import { createMockPrismaClient, createMockService, MockBuilder } from '@meqenet/testing';
+
+// Type-safe Prisma client mock
+const mockPrisma = createMockPrismaClient();
+mockPrisma.$connect.mockResolvedValue(undefined);
+
+// Type-safe service mock with full type preservation
+interface PaymentService {
+  processPayment(amount: number): Promise<boolean>;
+  validateTransaction(id: string): Promise<Transaction>;
+}
+
+const mockPaymentService = createMockService<PaymentService>({
+  processPayment: jest.fn().mockResolvedValue(true),
+  validateTransaction: jest.fn().mockResolvedValue(mockTransaction),
+});
+
+// Fluent builder for complex objects
+const mockUser = new MockBuilder<User>()
+  .with('id', 'user-123')
+  .with('email', 'test@meqenet.et')
+  .with('role', 'customer')
+  .with('faydaId', 'ETH-123456789')
+  .build();
+
+// Type-safe request/response mocks
+const mockReq = createMockRequest({
+  headers: { authorization: 'Bearer token' },
+  body: { email: 'test@example.com' },
+});
+
+const mockRes = createMockResponse();
+```
+
+**Available Mock Helpers:**
+- `createMockPrismaClient()` - Fully typed Prisma client
+- `createMockService<T>()` - Generic service with type preservation
+- `MockBuilder<T>` - Fluent API for building complex objects
+- `createMockJwtService()` - JWT service mock
+- `createMockConfigService()` - Config service mock
+- `createMockRequest()` - Express request mock
+- `createMockResponse()` - Express response mock
+- `DateMockHelper` - Date/time mocking for financial timestamps
+
 ### Test File Patterns
 ```typescript
 // ✅ Use proper typing in production code
@@ -199,19 +342,23 @@ interface User {
   role: 'admin' | 'user' | 'merchant';
 }
 
-// ✅ Use 'any' only in test mocks (acceptable)
-const mockUser: any = {
-  id: '123',
-  email: 'test@example.com',
-  role: 'user',
-};
+// ✅ Use typed mock helpers instead of 'any'
+import { MockBuilder } from '@meqenet/testing';
+
+const mockUser = new MockBuilder<User>()
+  .with('id', '123')
+  .with('email', 'test@example.com')
+  .with('role', 'user')
+  .build();
 ```
 
 ### Mock Conventions
 ```typescript
-// ✅ Prefix mock variables clearly
+// ✅ Prefix mock variables clearly and use typed mocks
+import { createMockPrismaClient } from '@meqenet/testing';
+
+const mockPrisma = createMockPrismaClient();
 const argon2HashMock = vi.mocked(argon2.hash);
-const prismaMock = vi.mocked(prisma.user);
 ```
 
 ---

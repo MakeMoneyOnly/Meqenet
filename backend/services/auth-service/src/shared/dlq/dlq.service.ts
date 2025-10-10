@@ -42,15 +42,24 @@ export enum DLQAction {
   DELETE = 'DELETE',
 }
 
+// DLQ Configuration Constants (no-magic-numbers compliance)
+const DLQ_CONFIG = {
+  ARCHIVE_DAYS: 90,
+  DEFAULT_PAGE_SIZE: 50,
+  HOURS_IN_DAY: 24,
+  SECONDS_IN_HOUR: 60,
+  MS_IN_SECOND: 1000,
+} as const;
+
 @Injectable()
 export class DLQService {
   private readonly logger = new Logger(DLQService.name);
   // Magic numbers for DLQ operations - documented inline for linting compliance
-  private readonly ARCHIVE_DAYS = 90;
-  private readonly DEFAULT_PAGE_SIZE = 50;
-  private readonly HOURS_IN_DAY = 24;
-  private readonly SECONDS_IN_HOUR = 60;
-  private readonly MS_IN_SECOND = 1000;
+  private readonly ARCHIVE_DAYS = DLQ_CONFIG.ARCHIVE_DAYS;
+  private readonly DEFAULT_PAGE_SIZE = DLQ_CONFIG.DEFAULT_PAGE_SIZE;
+  private readonly HOURS_IN_DAY = DLQ_CONFIG.HOURS_IN_DAY;
+  private readonly SECONDS_IN_HOUR = DLQ_CONFIG.SECONDS_IN_HOUR;
+  private readonly MS_IN_SECOND = DLQ_CONFIG.MS_IN_SECOND;
 
   constructor(private readonly prisma: PrismaService) {}
 

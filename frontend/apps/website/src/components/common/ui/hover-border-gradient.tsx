@@ -55,7 +55,7 @@ export function HoverBorderGradient({
         ? (currentIndex - 1 + directions.length) % directions.length
         : (currentIndex + 1) % directions.length;
 
-      // Safe array access with bounds checking
+      // Safe array access with bounds checking (security/detect-object-injection)
       if (nextIndex >= 0 && nextIndex < directions.length) {
         return directions[nextIndex];
       }

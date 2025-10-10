@@ -1,6 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SecurityEvent } from './security-monitoring.service';
 
+// Enhanced Security Monitoring Configuration Constants (no-magic-numbers compliance)
+const SECURITY_MONITORING_CONFIG = {
+  JSON_INDENTATION: 2,
+  BLOCK_DURATION_CRITICAL_SECONDS: 3600,
+  BLOCK_DURATION_HIGH_SECONDS: 1800,
+} as const;
+
 /**
  * Enhanced Security Monitoring Service
  * Implements audit recommendations for comprehensive security alerting
@@ -10,9 +17,12 @@ export class EnhancedSecurityMonitoringService {
   private readonly logger = new Logger(EnhancedSecurityMonitoringService.name);
 
   // Constants for magic numbers
-  private readonly JSON_INDENTATION = 2;
-  private readonly BLOCK_DURATION_CRITICAL = 3600;
-  private readonly BLOCK_DURATION_HIGH = 1800;
+  private readonly JSON_INDENTATION =
+    SECURITY_MONITORING_CONFIG.JSON_INDENTATION;
+  private readonly BLOCK_DURATION_CRITICAL =
+    SECURITY_MONITORING_CONFIG.BLOCK_DURATION_CRITICAL_SECONDS;
+  private readonly BLOCK_DURATION_HIGH =
+    SECURITY_MONITORING_CONFIG.BLOCK_DURATION_HIGH_SECONDS;
 
   /**
    * Trigger comprehensive security alert for high/critical events

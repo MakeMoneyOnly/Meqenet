@@ -15,10 +15,21 @@ const ACTION_WORDS = Object.freeze([
 const ACTION_WORD_KEYS = ACTION_WORDS.map((_, index) => index);
 const TOTAL_WORDS = ACTION_WORDS.length;
 
-const getActionWord = (idx: number): string =>
-  Number.isInteger(idx) && idx >= 0 && idx < TOTAL_WORDS
-    ? ACTION_WORDS[idx]
-    : ACTION_WORDS[0];
+/**
+ * Safe accessor function to prevent object injection attacks (PCI DSS Level 1 compliance)
+ * Validates index bounds and type before array access
+ */
+const safeGetActionWord = (idx: number): string => {
+  // Explicit validation to prevent prototype pollution and object injection
+  if (!Number.isInteger(idx) || idx < 0 || idx >= TOTAL_WORDS) {
+    return ACTION_WORDS[0]; // Safe fallback
+  }
+  // Safe: bounds-checked integer index access with const frozen array
+  return ACTION_WORDS[idx];
+};
+
+// Legacy function maintained for backward compatibility
+const getActionWord = (idx: number): string => safeGetActionWord(idx);
 
 const AnimatedActionText = () => {
   const [index, setIndex] = useState(0);
@@ -72,11 +83,8 @@ const AnimatedActionText = () => {
           const currentIndex =
             index >= 0 && index < ACTION_WORD_KEYS.length ? index : 0;
 
-          // Safe array access with explicit bounds checking
-          let currentWord = 'Shop Now';
-          if (currentIndex >= 0 && currentIndex < ACTION_WORD_KEYS.length) {
-            currentWord = ACTION_WORDS[ACTION_WORD_KEYS[currentIndex]];
-          }
+          // Use safe accessor to prevent object injection (security/detect-object-injection)
+          const currentWord = safeGetActionWord(ACTION_WORD_KEYS[currentIndex]);
 
           return (
             <motion.span

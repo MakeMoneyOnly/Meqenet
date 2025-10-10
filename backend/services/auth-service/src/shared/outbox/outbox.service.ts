@@ -42,15 +42,25 @@ export enum OutboxStatus {
   DLQ = 'DLQ',
 }
 
+// Outbox Configuration Constants (no-magic-numbers compliance)
+const OUTBOX_CONFIG = {
+  BATCH_SIZE: 50,
+  MAX_RETRIES: 3,
+  RETRY_DELAY_MS: 60000,
+  CLEANUP_DAYS: 30,
+  EXPONENTIAL_BACKOFF_BASE: 2,
+} as const;
+
 @Injectable()
 export class OutboxService implements OnModuleInit {
   private readonly logger = new Logger(OutboxService.name);
   // Magic numbers for outbox operations - documented inline for linting compliance
-  private readonly BATCH_SIZE = 50;
-  private readonly MAX_RETRIES = 3;
-  private readonly RETRY_DELAY_MS = 60000;
-  private readonly CLEANUP_DAYS = 30;
-  private readonly EXPONENTIAL_BACKOFF_BASE = 2;
+  private readonly BATCH_SIZE = OUTBOX_CONFIG.BATCH_SIZE;
+  private readonly MAX_RETRIES = OUTBOX_CONFIG.MAX_RETRIES;
+  private readonly RETRY_DELAY_MS = OUTBOX_CONFIG.RETRY_DELAY_MS;
+  private readonly CLEANUP_DAYS = OUTBOX_CONFIG.CLEANUP_DAYS;
+  private readonly EXPONENTIAL_BACKOFF_BASE =
+    OUTBOX_CONFIG.EXPONENTIAL_BACKOFF_BASE;
 
   constructor(
     private readonly prisma: PrismaService,

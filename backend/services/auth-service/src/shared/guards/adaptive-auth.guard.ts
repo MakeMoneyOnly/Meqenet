@@ -79,26 +79,51 @@ export class AdaptiveAuthGuard implements CanActivate {
       // Perform risk assessment
       const riskAssessment = await this.performRiskAssessment(request, userId);
 
-      // Store risk assessment in request for later use
-      request.riskAssessment = riskAssessment;
-      request.userId = userId;
+      // Handle different risk levels and build auth state atomically
+      let adaptiveAuthState: {
+        requiresMfa: boolean;
+        mfaSuggested: boolean;
+        mfaToken: string | null;
+      };
 
-      // Handle different risk levels
       switch (riskAssessment.level) {
         case 'CRITICAL':
           await this.handleCriticalRisk(request, riskAssessment);
+          adaptiveAuthState = {
+            requiresMfa: false,
+            mfaSuggested: false,
+            mfaToken: null,
+          };
           break;
         case 'HIGH':
-          await this.handleHighRisk(request, riskAssessment, response);
+          adaptiveAuthState = await this.buildHighRiskAuthState(
+            request,
+            riskAssessment,
+            response
+          );
           break;
         case 'MEDIUM':
-          await this.handleMediumRisk(request, riskAssessment, response);
+          adaptiveAuthState = await this.buildMediumRiskAuthState(
+            request,
+            riskAssessment,
+            response
+          );
           break;
         case 'LOW':
         default:
-          await this.handleLowRisk(request, riskAssessment);
+          adaptiveAuthState = await this.buildLowRiskAuthState(
+            request,
+            riskAssessment
+          );
           break;
       }
+
+      // Atomic assignment: prevents race conditions in concurrent auth requests (PCI DSS compliance)
+      Object.assign(request, {
+        riskAssessment,
+        userId,
+        adaptiveAuth: adaptiveAuthState,
+      });
 
       return true;
     } catch (error) {
@@ -269,9 +294,22 @@ export class AdaptiveAuthGuard implements CanActivate {
       'X-Risk-Factors',
       JSON.stringify(riskAssessment.factors)
     );
+  }
 
-    // Store MFA requirement in session/request
-    request.adaptiveAuth = {
+  /**
+   * Build auth state for high risk level - returns state instead of mutating request
+   */
+  private async buildHighRiskAuthState(
+    request: RequestWithAuth,
+    riskAssessment: RiskAssessment,
+    response: Response
+  ): Promise<{
+    requiresMfa: boolean;
+    mfaSuggested: boolean;
+    mfaToken: string | null;
+  }> {
+    await this.handleHighRisk(request, riskAssessment, response);
+    return {
       requiresMfa: true,
       mfaSuggested: false,
       mfaToken: this.generateMfaToken(),
@@ -307,8 +345,22 @@ export class AdaptiveAuthGuard implements CanActivate {
       'X-Risk-Factors',
       JSON.stringify(riskAssessment.factors)
     );
+  }
 
-    request.adaptiveAuth = {
+  /**
+   * Build auth state for medium risk level - returns state instead of mutating request
+   */
+  private async buildMediumRiskAuthState(
+    request: RequestWithAuth,
+    riskAssessment: RiskAssessment,
+    response: Response
+  ): Promise<{
+    requiresMfa: boolean;
+    mfaSuggested: boolean;
+    mfaToken: string | null;
+  }> {
+    await this.handleMediumRisk(request, riskAssessment, response);
+    return {
       requiresMfa: false,
       mfaSuggested: true,
       mfaToken: null,
@@ -326,9 +378,21 @@ export class AdaptiveAuthGuard implements CanActivate {
     this.logger.debug(
       `Low risk login for user ${request.user?.id || 'unknown'}`
     );
+  }
 
-    // No additional actions required for low risk
-    request.adaptiveAuth = {
+  /**
+   * Build auth state for low risk level - returns state instead of mutating request
+   */
+  private async buildLowRiskAuthState(
+    request: RequestWithAuth,
+    riskAssessment: RiskAssessment
+  ): Promise<{
+    requiresMfa: boolean;
+    mfaSuggested: boolean;
+    mfaToken: string | null;
+  }> {
+    await this.handleLowRisk(request, riskAssessment);
+    return {
       requiresMfa: false,
       mfaSuggested: false,
       mfaToken: null,

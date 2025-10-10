@@ -622,7 +622,7 @@ describe('AuthService', () => {
       // Mock argon2.hash
       const argon2HashMock = vi.mocked(argon2.hash);
       argon2HashMock.mockImplementation(async (password, _options) => {
-        // eslint-disable-next-line security/detect-possible-timing-attacks
+        // eslint-disable-next-line security/detect-possible-timing-attacks -- Test mock, not production code
         if (password === mockPasswordResetConfirmDto.newPassword) {
           return 'new-hashed-password';
         }

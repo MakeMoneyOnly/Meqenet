@@ -39,15 +39,16 @@ export class PrismaService
 
   constructor(
     private readonly databaseEncryptionMiddleware: DatabaseEncryptionMiddleware,
-    private readonly configService: ConfigService,
+    configService: ConfigService,
   ) {
-    const databaseConfig = this.configService.get('database');
+    // Extract config before calling super (required for TypeScript strict mode)
+    const databaseConfig = configService.get('database');
     if (!databaseConfig || !databaseConfig.url) {
       throw new Error('Database configuration is missing or invalid');
     }
 
     const databaseUrl = new URL(databaseConfig.url);
-    const nodeEnv = this.configService.get<string>('node.env');
+    const nodeEnv = configService.get<string>('node.env');
     const isProduction = nodeEnv === 'production';
 
     // Using controlled access pattern for fintech compliance
@@ -55,6 +56,7 @@ export class PrismaService
       ? ['error', 'warn']
       : ['error', 'warn', 'info', 'query'];
 
+    // Call super first before accessing 'this' (TypeScript strict mode requirement)
     super({
       datasources: {
         db: {
@@ -220,21 +222,35 @@ export class PrismaService
     complianceFlags?: string[];
   }): Promise<void> {
     try {
+      // Type-safe Prisma create with explicit type casting for JSON fields
+      // Handle optional fields as null for Prisma strict mode compliance
+      const auditLogData: Prisma.AuditLogCreateInput = {
+        eventType: data.eventType,
+        entityType: data.entityType,
+        entityId: data.entityId ?? null,
+        userId: data.userId ?? null,
+        userEmail: data.userEmail ?? null,
+        userRole: data.userRole ?? null,
+        ipAddress: data.ipAddress,
+        userAgent: data.userAgent ?? null,
+        sessionId: data.sessionId ?? null,
+        location: data.location ?? null,
+        deviceFingerprint: data.deviceFingerprint ?? null,
+        eventData: data.eventData
+          ? (JSON.stringify(data.eventData) as unknown as Prisma.InputJsonValue)
+          : Prisma.JsonNull,
+        previousValues: data.previousValues
+          ? (JSON.stringify(data.previousValues) as unknown as Prisma.InputJsonValue)
+          : Prisma.JsonNull,
+        newValues: data.newValues
+          ? (JSON.stringify(data.newValues) as unknown as Prisma.InputJsonValue)
+          : Prisma.JsonNull,
+        riskScore: data.riskScore ?? null,
+        complianceFlags: data.complianceFlags ?? [],
+      };
+
       await this.auditLog.create({
-        data: {
-          ...data,
-          eventData: data.eventData
-            ? JSON.stringify(data.eventData)
-            : undefined,
-          previousValues: data.previousValues
-            ? JSON.stringify(data.previousValues)
-            : undefined,
-          newValues: data.newValues
-            ? JSON.stringify(data.newValues)
-            : undefined,
-          complianceFlags: data.complianceFlags ?? [],
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any,
+        data: auditLogData,
       });
     } catch (error) {
       // Audit logging failures should not break the main operation

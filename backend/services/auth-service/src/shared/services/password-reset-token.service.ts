@@ -9,11 +9,21 @@ export interface PasswordResetTokenData {
   expiresAt: Date;
 }
 
+// Password Reset Token Configuration Constants (no-magic-numbers compliance)
+const PASSWORD_RESET_CONFIG = {
+  TOKEN_EXPIRY_MINUTES: 15,
+  TOKEN_LENGTH_BITS: 256,
+  BITS_PER_BYTE: 8,
+} as const;
+
 @Injectable()
 export class PasswordResetTokenService {
   private readonly logger = new Logger(PasswordResetTokenService.name);
-  private readonly TOKEN_EXPIRY_MINUTES = 15;
-  private readonly TOKEN_LENGTH = 256 / 8;
+  private readonly TOKEN_EXPIRY_MINUTES =
+    PASSWORD_RESET_CONFIG.TOKEN_EXPIRY_MINUTES;
+  private readonly TOKEN_LENGTH =
+    PASSWORD_RESET_CONFIG.TOKEN_LENGTH_BITS /
+    PASSWORD_RESET_CONFIG.BITS_PER_BYTE;
 
   constructor(private readonly prisma: PrismaService) {}
 

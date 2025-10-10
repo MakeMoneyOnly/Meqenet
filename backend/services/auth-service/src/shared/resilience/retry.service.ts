@@ -39,10 +39,18 @@ export class RetryService {
     ],
   };
 
+  // Retry Jitter Configuration Constants (no-magic-numbers compliance)
+  private readonly JITTER_CONFIG = {
+    PERCENTAGE: 0.1,
+    RANDOM_CENTER: 0.5,
+    RANGE_MULTIPLIER: 2,
+  } as const;
+
   // Magic numbers for retry jitter - documented inline for linting compliance
-  private readonly JITTER_PERCENTAGE = 0.1;
-  private readonly JITTER_RANDOM_CENTER = 0.5;
-  private readonly JITTER_RANGE_MULTIPLIER = 2;
+  private readonly JITTER_PERCENTAGE = this.JITTER_CONFIG.PERCENTAGE;
+  private readonly JITTER_RANDOM_CENTER = this.JITTER_CONFIG.RANDOM_CENTER;
+  private readonly JITTER_RANGE_MULTIPLIER =
+    this.JITTER_CONFIG.RANGE_MULTIPLIER;
 
   /**
    * Execute function with retry logic

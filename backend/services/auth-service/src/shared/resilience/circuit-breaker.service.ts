@@ -41,10 +41,15 @@ export interface CircuitBreakerStats {
   totalSuccesses: number;
 }
 
+// Circuit Breaker Configuration Constants (no-magic-numbers compliance)
+const CIRCUIT_BREAKER_CONFIG = {
+  CLEANUP_DAYS: 30,
+} as const;
+
 @Injectable()
 export class CircuitBreakerService {
   private readonly logger = new Logger(CircuitBreakerService.name);
-  private readonly CLEANUP_DAYS = 30;
+  private readonly CLEANUP_DAYS = CIRCUIT_BREAKER_CONFIG.CLEANUP_DAYS;
   private circuits: Map<
     string,
     {

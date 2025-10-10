@@ -34,21 +34,39 @@ export interface GeoLocation {
   timezone: string;
 }
 
+// Risk Assessment Configuration Constants (no-magic-numbers compliance)
+const RISK_ASSESSMENT_CONFIG = {
+  LOW_RISK_THRESHOLD: 25,
+  MEDIUM_RISK_THRESHOLD: 50,
+  HIGH_RISK_THRESHOLD: 75,
+  MILLISECONDS_PER_SECOND: 1000,
+  SECONDS_PER_MINUTE: 60,
+  MINUTES_PER_HOUR: 60,
+  HOURS_PER_DAY: 24,
+  FAILED_ATTEMPTS_DIVISOR: 5,
+} as const;
+
 @Injectable()
 export class RiskAssessmentService {
   private readonly logger = new Logger(RiskAssessmentService.name);
 
   // Risk thresholds
-  private readonly LOW_RISK_THRESHOLD = 25;
-  private readonly MEDIUM_RISK_THRESHOLD = 50;
-  private readonly HIGH_RISK_THRESHOLD = 75;
+  private readonly LOW_RISK_THRESHOLD =
+    RISK_ASSESSMENT_CONFIG.LOW_RISK_THRESHOLD;
+  private readonly MEDIUM_RISK_THRESHOLD =
+    RISK_ASSESSMENT_CONFIG.MEDIUM_RISK_THRESHOLD;
+  private readonly HIGH_RISK_THRESHOLD =
+    RISK_ASSESSMENT_CONFIG.HIGH_RISK_THRESHOLD;
 
   // Time constants
-  private readonly MILLISECONDS_PER_SECOND = 1000;
-  private readonly SECONDS_PER_MINUTE = 60;
-  private readonly MINUTES_PER_HOUR = 60;
-  private readonly HOURS_PER_DAY = 24;
-  private readonly FAILED_ATTEMPTS_DIVISOR = 5;
+  private readonly MILLISECONDS_PER_SECOND =
+    RISK_ASSESSMENT_CONFIG.MILLISECONDS_PER_SECOND;
+  private readonly SECONDS_PER_MINUTE =
+    RISK_ASSESSMENT_CONFIG.SECONDS_PER_MINUTE;
+  private readonly MINUTES_PER_HOUR = RISK_ASSESSMENT_CONFIG.MINUTES_PER_HOUR;
+  private readonly HOURS_PER_DAY = RISK_ASSESSMENT_CONFIG.HOURS_PER_DAY;
+  private readonly FAILED_ATTEMPTS_DIVISOR =
+    RISK_ASSESSMENT_CONFIG.FAILED_ATTEMPTS_DIVISOR;
 
   // Risk weights
   private readonly RISK_WEIGHTS = {
