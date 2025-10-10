@@ -1,5 +1,4 @@
-// Minimal ESLint configuration for Next.js app
-// Temporarily disabled eslint-config-next due to ESLint 9.x compatibility issues
+// ESLint configuration for Next.js app with ESLint 9.x flat config
 import js from '@eslint/js';
 import tsParser from '@typescript-eslint/parser';
 import tsPlugin from '@typescript-eslint/eslint-plugin';
@@ -7,12 +6,21 @@ import reactPlugin from 'eslint-plugin-react';
 import reactHooksPlugin from 'eslint-plugin-react-hooks';
 import jsxA11yPlugin from 'eslint-plugin-jsx-a11y';
 import securityPlugin from 'eslint-plugin-security';
-// import nextConfig from 'eslint-config-next';
+import { FlatCompat } from '@eslint/eslintrc';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Initialize FlatCompat for backwards compatibility with eslint-config-next
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const compat = new FlatCompat({
+  baseDirectory: __dirname,
+});
 
 export default [
   js.configs.recommended,
-  // Temporarily disabled due to ESLint 9.x compatibility
-  // nextConfig,
+  // Next.js ESLint configuration (converted to flat config)
+  ...compat.extends('next'),
   {
     ignores: [
       '.next/**/*',
@@ -101,6 +109,9 @@ export default [
       security: securityPlugin,
     },
     rules: {
+      // Disable problematic Next.js rules that don't work with ESLint 9
+      '@next/next/no-duplicate-head': 'off',
+      
       // TypeScript rules
       '@typescript-eslint/no-unused-vars': [
         'error',

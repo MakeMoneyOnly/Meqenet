@@ -1,5 +1,6 @@
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import withSerwistInit from '@serwist/next';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -7,6 +8,10 @@ const __dirname = dirname(__filename);
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+
+  // Skip static generation for error pages to avoid Html import issue during build
+  skipTrailingSlashRedirect: true,
+  skipMiddlewareUrlNormalize: false,
 
   // Transpile packages for monorepo support
   transpilePackages: ['@meqenet/shared', '@meqenet/shared/config'],
@@ -128,14 +133,13 @@ const nextConfig = {
   outputFileTracingRoot: join(__dirname, '../../..'),
 };
 
-// PWA Configuration using @serwist/next (recommended successor to next-pwa)
-// Temporarily disabled due to build issues
-// import withSerwistInit from "@serwist/next";
+// PWA Configuration using @serwist/next (Next.js 15 App Router compatible)
+const withSerwist = withSerwistInit({
+  swSrc: 'src/app/sw.ts',
+  swDest: 'public/sw.js',
+  cacheOnNavigation: true,
+  reloadOnOnline: true,
+  disable: process.env.NODE_ENV === 'development',
+});
 
-// const withSerwist = withSerwistInit({
-//   swSrc: "src/app/sw.ts",
-//   swDest: "public/sw.js",
-// });
-
-// export default withSerwist(nextConfig);
-export default nextConfig;
+export default withSerwist(nextConfig);

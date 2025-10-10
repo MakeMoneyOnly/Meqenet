@@ -1,17 +1,15 @@
 import React from 'react';
 import './globals.css';
 import { Inter } from 'next/font/google';
+import type { Metadata, Viewport } from 'next';
 
 const inter = Inter({ subsets: ['latin'] });
 
-export const metadata = {
+export const metadata: Metadata = {
   title: 'Meqenet | BNPL in Ethiopia',
   description:
     'Meqenet is a "Buy Now, Pay Later" service in Ethiopia that allows customers to make purchases and pay for them in installments.',
   manifest: '/manifest.json',
-  themeColor: '#1f2937',
-  viewport:
-    'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
@@ -39,6 +37,14 @@ export const metadata = {
   alternates: {
     canonical: '/',
   },
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: '#1f2937',
 };
 
 export default function RootLayout({

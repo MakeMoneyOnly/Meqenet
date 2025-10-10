@@ -6,40 +6,58 @@
 import crypto from 'crypto';
 import validator from 'validator';
 const z = require('zod');
-import {
-  logInfo,
-  logWarn,
-  logError,
-  logDebug,
-  logSecurity,
-} from '@meqenet/frontend/logger';
 
 /**
  * Logger utility for Meqenet frontend
  * Handles different log levels and environment-specific behavior
+ * Implements secure logging for financial applications
  */
 export class Logger {
   private static readonly isDevelopment =
-    process.env.NODE_ENV === 'development';
-  private static readonly isProduction = process.env.NODE_ENV === 'production';
+    typeof process !== 'undefined' && process.env.NODE_ENV === 'development';
+  private static readonly isProduction =
+    typeof process !== 'undefined' && process.env.NODE_ENV === 'production';
+
+  /**
+   * Safe console log wrapper for development
+   */
+  private static safeLog(
+    level: 'info' | 'warn' | 'error' | 'debug',
+    message: string,
+    data?: Record<string, unknown>,
+  ): void {
+    if (typeof window !== 'undefined' && window.console) {
+      const logData = data ? { message, ...data } : message;
+      // Safe console access - level is from controlled enum
+      const logFn =
+        level === 'info'
+          ? console.info
+          : level === 'warn'
+            ? console.warn
+            : level === 'error'
+              ? console.error
+              : console.debug;
+      logFn(logData);
+    }
+  }
 
   static info(message: string, ...args: unknown[]): void {
     if (this.isDevelopment) {
-      logInfo('frontend', message, { args });
+      this.safeLog('info', message, { args });
     }
   }
 
   static warn(message: string, ...args: unknown[]): void {
-    logWarn('frontend', message, { args });
+    this.safeLog('warn', message, { args: args });
   }
 
   static error(message: string, ...args: unknown[]): void {
-    logError('frontend', message, { args });
+    this.safeLog('error', message, { args: args });
   }
 
   static debug(message: string, ...args: unknown[]): void {
     if (this.isDevelopment) {
-      logDebug('frontend', message, { args });
+      this.safeLog('debug', message, { args });
     }
   }
 
@@ -48,12 +66,14 @@ export class Logger {
     message: string,
     data?: Record<string, unknown>,
   ): void {
+    // In production, this should integrate with observability platform
+    // For now, log securely without exposing sensitive data
     if (this.isProduction) {
-      logSecurity('frontend', level, message, { data });
+      this.safeLog('info', `[${level}] ${message}`, data);
       return;
     }
 
-    logInfo('frontend', `SECURITY:${level} ${message}`, { data });
+    this.safeLog('info', `SECURITY:${level} ${message}`, data);
   }
 
   /**

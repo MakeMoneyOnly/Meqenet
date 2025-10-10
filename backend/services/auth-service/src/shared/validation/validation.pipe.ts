@@ -6,15 +6,8 @@ import {
 } from '@nestjs/common';
 import { ZodSchema, ZodError, ZodIssue } from 'zod';
 
-interface ZodIssueExtended extends ZodIssue {
-  expected?: string | number | symbol;
-  received?: string | number | symbol;
-  keys?: string[];
-  minimum?: number;
-  maximum?: number;
-  type?: string;
-  message?: string;
-}
+// Type guard helpers for runtime type checking of Zod issue data
+type ZodIssueData = Record<string, unknown>;
 
 /**
  * Custom Zod validation pipe for NestJS
@@ -67,42 +60,54 @@ export class ZodValidationPipe implements PipeTransform {
   }
 
   private getCustomErrorMessage(error: ZodIssue): string {
-    const errorData = error as ZodIssueExtended;
+    const errorData = error as unknown as ZodIssueData;
 
     switch (error.code) {
       case 'invalid_type':
-        return `Expected ${errorData.expected}, received ${errorData.received}`;
+        // Safe conversion of expected/received which could be symbols
+        return `Expected ${String(errorData.expected)}, received ${String(errorData.received)}`;
 
       case 'unrecognized_keys':
-        return `Unrecognized keys: ${errorData.keys?.join(', ') ?? 'unknown'}`;
+        // Safe array access with type guard
+        const keys =
+          'keys' in errorData && Array.isArray(errorData.keys)
+            ? errorData.keys.join(', ')
+            : 'unknown';
+        return `Unrecognized keys: ${keys}`;
 
       case 'invalid_union':
         return 'Invalid input format';
 
       case 'too_small': {
-        if (errorData.type === 'string') {
-          return `Must be at least ${errorData.minimum} characters long`;
+        const type = 'type' in errorData ? errorData.type : undefined;
+        const minimum = 'minimum' in errorData ? errorData.minimum : undefined;
+
+        if (type === 'string') {
+          return `Must be at least ${minimum} characters long`;
         }
-        if (errorData.type === 'number') {
-          return `Must be at least ${errorData.minimum}`;
+        if (type === 'number') {
+          return `Must be at least ${minimum}`;
         }
-        if (errorData.type === 'array') {
-          return `Must contain at least ${errorData.minimum} items`;
+        if (type === 'array') {
+          return `Must contain at least ${minimum} items`;
         }
-        return errorData.message ?? 'Value too small';
+        return error.message ?? 'Value too small';
       }
 
       case 'too_big': {
-        if (errorData.type === 'string') {
-          return `Must be at most ${errorData.maximum} characters long`;
+        const type = 'type' in errorData ? errorData.type : undefined;
+        const maximum = 'maximum' in errorData ? errorData.maximum : undefined;
+
+        if (type === 'string') {
+          return `Must be at most ${maximum} characters long`;
         }
-        if (errorData.type === 'number') {
-          return `Must be at most ${errorData.maximum}`;
+        if (type === 'number') {
+          return `Must be at most ${maximum}`;
         }
-        if (errorData.type === 'array') {
-          return `Must contain at most ${errorData.maximum} items`;
+        if (type === 'array') {
+          return `Must contain at most ${maximum} items`;
         }
-        return errorData.message ?? 'Value too large';
+        return error.message ?? 'Value too large';
       }
 
       case 'custom':
@@ -110,11 +115,19 @@ export class ZodValidationPipe implements PipeTransform {
 
       default: {
         // Handle other Zod error types that may not be in the strict type
-        if (errorData.code === 'invalid_enum_value') {
-          return `Invalid value. Expected: ${errorData.options?.join(', ') ?? 'valid option'}`;
+        // Use runtime type guards for safe property access
+        if ('code' in errorData && errorData.code === 'invalid_enum_value') {
+          const options =
+            'options' in errorData && Array.isArray(errorData.options)
+              ? errorData.options.join(', ')
+              : 'valid option';
+          return `Invalid value. Expected: ${options}`;
         }
-        if (errorData.code === 'invalid_string') {
-          switch (errorData.validation) {
+
+        if ('code' in errorData && errorData.code === 'invalid_string') {
+          const validation =
+            'validation' in errorData ? errorData.validation : undefined;
+          switch (validation) {
             case 'email':
               return 'Invalid email address format';
             case 'uuid':
@@ -122,11 +135,12 @@ export class ZodValidationPipe implements PipeTransform {
             case 'url':
               return 'Invalid URL format';
             case 'regex':
-              return errorData.message ?? 'Invalid format';
+              return error.message ?? 'Invalid format';
             default:
-              return errorData.message ?? 'Invalid string format';
+              return error.message ?? 'Invalid string format';
           }
         }
+
         return error.message ?? 'Validation failed';
       }
     }

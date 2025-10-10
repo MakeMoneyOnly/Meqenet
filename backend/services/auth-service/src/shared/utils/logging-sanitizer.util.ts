@@ -35,7 +35,7 @@ export function sanitizeObject<T>(
 
   // Circular reference detection
   if (seen.has(obj)) {
-    return '[Circular Reference]';
+    return '[Circular Reference]' as T;
   }
   seen.add(obj);
 

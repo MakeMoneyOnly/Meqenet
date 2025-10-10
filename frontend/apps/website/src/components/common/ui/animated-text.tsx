@@ -25,6 +25,7 @@ const safeGetActionWord = (idx: number): string => {
     return ACTION_WORDS[0]; // Safe fallback
   }
   // Safe: bounds-checked integer index access with const frozen array
+
   return ACTION_WORDS[idx];
 };
 
@@ -84,6 +85,7 @@ const AnimatedActionText = () => {
             index >= 0 && index < ACTION_WORD_KEYS.length ? index : 0;
 
           // Use safe accessor to prevent object injection (security/detect-object-injection)
+
           const currentWord = safeGetActionWord(ACTION_WORD_KEYS[currentIndex]);
 
           return (
