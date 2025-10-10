@@ -465,17 +465,32 @@ jobs:
             pkill -f "next.*start.*3001" 2>/dev/null || true
             rm -f server.log
 
-            # Start Next.js production server in background with proper logging
+            # Start Next.js production server in background with proper logging and process persistence
             echo "🚀 Starting server with command: npm run start"
-            npm run start > server.log 2>&1 &
+            # Use nohup to ensure process persists across GitHub Actions steps
+            # Redirect stdout/stderr to log file and run in background
+            nohup npm run start > server.log 2>&1 &
             SERVER_PID=$!
 
             echo "📝 Server PID: $SERVER_PID"
             echo "server_pid=$SERVER_PID" >> $GITHUB_OUTPUT
+            
+            # Disown the process to prevent it from being killed when the step completes
+            disown $SERVER_PID 2>/dev/null || true
 
             # Wait a moment for server to initialize
-            echo "⏳ Waiting 5 seconds for server initialization..."
-            sleep 5
+            echo "⏳ Waiting 8 seconds for server initialization..."
+            sleep 8
+            
+            # Verify the process is still running after initial wait
+            if kill -0 $SERVER_PID 2>/dev/null; then
+              echo "✅ Server process (PID: $SERVER_PID) confirmed running after initialization"
+            else
+              echo "❌ Server process died during initialization"
+              echo "📋 Server logs:"
+              cat server.log
+              exit 1
+            fi
 
             # Enterprise-grade server readiness with exponential backoff
             MAX_WAIT_TIME=120  # Maximum total wait time
@@ -648,35 +663,51 @@ jobs:
           # Check 1: Verify server process is still running
           SERVER_PID=${{ steps.start-server.outputs.server_pid }}
           SERVER_STILL_RUNNING=false
+          ACTUAL_SERVER_PID=""
+
+          echo "🔍 Starting comprehensive server validation..."
+          echo "📝 Original server PID from startup: $SERVER_PID"
 
           # Primary check: Verify specific PID is still running
-          if ps -p $SERVER_PID > /dev/null 2>&1; then
+          if [ -n "$SERVER_PID" ] && ps -p $SERVER_PID > /dev/null 2>&1; then
             echo "✅ Server process (PID: $SERVER_PID) is still running"
             SERVER_STILL_RUNNING=true
+            ACTUAL_SERVER_PID=$SERVER_PID
           else
             echo "⚠️  Server process (PID: $SERVER_PID) is no longer running"
             echo "🔄 Attempting fallback validation methods..."
 
-            # Fallback Check 1: Check for any Next.js processes on port 3001
-            if ps aux | grep -E "(next|node.*3001)" | grep -v grep >/dev/null 2>&1; then
-              echo "✅ Found alternative Next.js server process on port 3001"
+            # Fallback Check 1: Find process by port binding
+            PORT_PID=$(lsof -t -i:3001 2>/dev/null | head -1)
+            if [ -n "$PORT_PID" ] && ps -p $PORT_PID > /dev/null 2>&1; then
+              echo "✅ Found server process by port binding (PID: $PORT_PID)"
               SERVER_STILL_RUNNING=true
+              ACTUAL_SERVER_PID=$PORT_PID
             else
-              echo "❌ No Next.js processes found on port 3001"
+              echo "⚠️  No process found on port 3001 via lsof"
             fi
 
-            # Fallback Check 2: Check if port 3001 is still bound
-            if lsof -i :3001 >/dev/null 2>&1; then
-              echo "✅ Port 3001 is still bound (server likely running)"
-              SERVER_STILL_RUNNING=true
-            else
-              echo "❌ Port 3001 is not bound"
+            # Fallback Check 2: Check for any Next.js processes
+            if [ "$SERVER_STILL_RUNNING" = false ]; then
+              NEXT_PID=$(ps aux | grep -E "next.*start.*3001" | grep -v grep | awk '{print $2}' | head -1)
+              if [ -n "$NEXT_PID" ] && ps -p $NEXT_PID > /dev/null 2>&1; then
+                echo "✅ Found Next.js server process (PID: $NEXT_PID)"
+                SERVER_STILL_RUNNING=true
+                ACTUAL_SERVER_PID=$NEXT_PID
+              else
+                echo "⚠️  No Next.js process found via ps"
+              fi
             fi
 
-            # Fallback Check 3: Quick HTTP connectivity test
-            if curl -f -s --max-time 3 --retry 1 http://localhost:3001 >/dev/null 2>&1; then
+            # Fallback Check 3: Quick HTTP connectivity test (most reliable)
+            if curl -f -s --max-time 5 --retry 2 --retry-delay 1 http://localhost:3001 >/dev/null 2>&1; then
               echo "✅ Server is responding to HTTP requests on port 3001"
               SERVER_STILL_RUNNING=true
+              # Try to find the actual PID if we haven't already
+              if [ -z "$ACTUAL_SERVER_PID" ]; then
+                ACTUAL_SERVER_PID=$(lsof -t -i:3001 2>/dev/null | head -1)
+                echo "📝 Server PID via HTTP test: ${ACTUAL_SERVER_PID:-unknown}"
+              fi
             else
               echo "❌ Server is not responding to HTTP requests on port 3001"
             fi
@@ -687,13 +718,19 @@ jobs:
             echo "❌ CRITICAL: All server validation checks failed"
             echo "📋 Detailed diagnostic information:"
             echo "  - Expected PID: $SERVER_PID"
+            echo "  - Actual PID found: ${ACTUAL_SERVER_PID:-none}"
             echo "  - Process list: $(ps aux | grep -E "(next|node)" | grep -v grep | wc -l) relevant processes"
             echo "  - Port 3001 status: $(lsof -i :3001 >/dev/null 2>&1 && echo "bound" || echo "free")"
             echo "  - HTTP response: $(curl -s -o /dev/null -w "%{http_code}" --max-time 3 http://localhost:3001 2>/dev/null || echo "no response")"
+            echo "📋 Active Next.js/Node processes:"
+            ps aux | grep -E "(next|node)" | grep -v grep || echo "No processes found"
+            echo "📋 Server logs (last 30 lines):"
+            tail -30 frontend/apps/website/server.log 2>/dev/null || echo "No server logs available"
             exit 1
           fi
 
           echo "✅ Server validation passed - proceeding with Lighthouse audit"
+          echo "📝 Using server PID: ${ACTUAL_SERVER_PID:-$SERVER_PID}"
 
           # Check 2: Verify server is responding with comprehensive health check
           echo "🔍 Running comprehensive server health check before Lighthouse audit..."
@@ -920,19 +957,36 @@ jobs:
           PUBLIC_DIR="frontend/apps/website/public"
           NEXT_CONFIG="frontend/apps/website/next.config.mjs"
 
-          # Check if next-pwa is configured
-          if grep -q "next-pwa\|withPWA" "$NEXT_CONFIG"; then
-            echo "✅ Next.js PWA plugin is configured"
+          # Check if Serwist (modern PWA solution) or legacy next-pwa is configured
+          if grep -q "@serwist/next\|withSerwist\|next-pwa\|withPWA" "$NEXT_CONFIG"; then
+            echo "✅ Next.js PWA plugin is configured (Serwist or next-pwa)"
+            
+            # Identify which PWA solution is being used
+            if grep -q "@serwist/next\|withSerwist" "$NEXT_CONFIG"; then
+              echo "📦 Using modern Serwist PWA solution"
+            elif grep -q "next-pwa\|withPWA" "$NEXT_CONFIG"; then
+              echo "📦 Using legacy next-pwa solution"
+            fi
           else
             echo "❌ Next.js PWA plugin not found in configuration"
+            echo "💡 Expected to find @serwist/next or next-pwa in $NEXT_CONFIG"
             exit 1
           fi
 
-          # Check if service worker destination is configured
-          if grep -q "dest.*public" "$NEXT_CONFIG"; then
-            echo "✅ Service worker destination is configured correctly"
+          # Check if service worker source is configured (Serwist uses swSrc)
+          if grep -q "swSrc\|dest.*public" "$NEXT_CONFIG"; then
+            echo "✅ Service worker configuration is present"
+            
+            # Show specific configuration details
+            if grep -q "swSrc" "$NEXT_CONFIG"; then
+              echo "📍 Found swSrc (Serwist configuration)"
+            fi
+            if grep -q "swDest" "$NEXT_CONFIG"; then
+              echo "📍 Found swDest (Service worker destination)"
+            fi
           else
-            echo "⚠️  Service worker destination may not be configured correctly"
+            echo "⚠️  Service worker source/destination configuration not found"
+            echo "💡 This may be acceptable for some PWA configurations"
           fi
 
           # Check for existing service worker files (if any)

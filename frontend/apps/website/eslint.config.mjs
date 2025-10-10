@@ -7,6 +7,7 @@ import reactHooksPlugin from 'eslint-plugin-react-hooks';
 import jsxA11yPlugin from 'eslint-plugin-jsx-a11y';
 import securityPlugin from 'eslint-plugin-security';
 import { FlatCompat } from '@eslint/eslintrc';
+import { fixupConfigRules } from '@eslint/compat';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -19,8 +20,8 @@ const compat = new FlatCompat({
 
 export default [
   js.configs.recommended,
-  // Next.js ESLint configuration (converted to flat config)
-  ...compat.extends('next'),
+  // Next.js ESLint configuration (converted to flat config with fixup for ESLint 9.x compatibility)
+  ...fixupConfigRules(compat.extends('next')),
   {
     ignores: [
       '.next/**/*',
