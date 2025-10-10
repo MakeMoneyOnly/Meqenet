@@ -226,7 +226,7 @@
     "@nx/js": "21.4.1",
     "@nx/storybook": "21.4.1",
     "@nx/vite": "21.4.1",
-    "@nx/web": "21.4.1",
+    "@nx/web": "21.6.3",
     "@nx/webpack": "21.4.1",
     "@nx/workspace": "^21.4.1",
     "@opentelemetry/api": "1.9.0",
