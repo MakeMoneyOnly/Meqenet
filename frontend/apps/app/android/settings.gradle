@@ -46,9 +46,6 @@ pluginManagement {
         id("com.android.application") version "8.2.2"
         id("com.android.library") version "8.2.2"
         id("org.jetbrains.kotlin.android") version "1.9.24"
-        id("com.facebook.react.settings") version "0.74-stable"
-        // Add explicit React plugin resolution for CI environments
-        id("com.facebook.react") version "0.74-stable"
         // Versions plugin for dependency management
         id("com.github.ben-manes.versions") version "0.50.0"
     }
@@ -57,8 +54,25 @@ pluginManagement {
     // Enhanced path resolution for CI and local environments
 }
 
-// React Native settings extension will be configured automatically by the plugin
-// Removed manual configuration to avoid extension availability issues
+// Include React Native Gradle plugin from node_modules
+// React Native 0.74+ uses composite builds with @react-native/gradle-plugin
+// Enhanced for monorepo structure with multiple path resolutions
+def gradlePluginPath = new File([
+    "../../node_modules/@react-native/gradle-plugin",           // Local app installation
+    "../../../node_modules/@react-native/gradle-plugin",        // Workspace root  
+    "../../../../node_modules/@react-native/gradle-plugin"      // CI environment
+].find { new File(rootDir, it).exists() } ?: "../../node_modules/@react-native/gradle-plugin")
+
+if (gradlePluginPath.exists()) {
+    includeBuild(gradlePluginPath)
+} else {
+    // Fallback: Apply native modules configuration
+    apply from: new File(["../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle",
+                          "../../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle",
+                          "../../../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"
+    ].find { new File(rootDir, it).exists() } ?: "../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle")
+    applyNativeModulesSettingsGradle(settings)
+}
 
 rootProject.name = 'App'
 include ':app'

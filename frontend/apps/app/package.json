@@ -4,6 +4,8 @@
   "private": true,
   "dependencies": {
     "@react-native-async-storage/async-storage": "^2.2.0",
+    "@react-native-community/cli-platform-android": "13.6.9",
+    "@react-native/gradle-plugin": "0.74.87",
     "@react-native/metro-config": "0.74-stable",
     "@sentry/react-native": "^5.20.0",
     "@testing-library/react-native": "~13.2.2",
