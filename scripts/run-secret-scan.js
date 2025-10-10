@@ -201,14 +201,13 @@ if (isDockerAvailable()) {
             try {
               const data = JSON.parse(line);
               verifiedSecrets = data.verified_secrets || 0;
-              _unverifiedSecrets = data.unverified_secrets || 0;
               break;
-            } catch (_e) {
+            } catch {
               // Not a valid JSON line, continue
             }
           }
         }
-      } catch (_e) {
+      } catch {
         console.log('⚠️ Could not parse Trufflehog JSON output');
       }
 

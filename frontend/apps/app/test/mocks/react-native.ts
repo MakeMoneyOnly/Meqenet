@@ -158,14 +158,19 @@ export const StyleSheet = {
   },
 };
 
-export const Linking = {
+export const Linking: {
+  openURL: (url: string) => Promise<string>;
+} = {
   async openURL(url: string): Promise<string> {
     // no-op mock
     return Promise.resolve(url);
   },
 };
 
-export const Platform = {
+export const Platform: {
+  OS: 'test';
+  select: <T>(obj: { ios?: T; android?: T; default?: T }) => T | undefined;
+} = {
   OS: 'test',
   select<T>(obj: { ios?: T; android?: T; default?: T }): T | undefined {
     return obj.default ?? obj.ios ?? obj.android;

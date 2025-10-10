@@ -4,14 +4,27 @@ import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 // import { cn } from '@/lib/utils';
 
-const actionWords = ['Shop Now', 'Buy Now', 'Try Now', 'Fly Now', 'Buy Now'];
+const ACTION_WORDS = Object.freeze([
+  'Shop Now',
+  'Buy Now',
+  'Try Now',
+  'Fly Now',
+  'Buy Now',
+] as const);
+
+const ACTION_WORD_KEYS = ACTION_WORDS.map((_, index) => index);
+const TOTAL_WORDS = ACTION_WORDS.length;
+
+const getActionWord = (idx: number): string =>
+  Number.isInteger(idx) && idx >= 0 && idx < TOTAL_WORDS
+    ? ACTION_WORDS[idx]
+    : ACTION_WORDS[0];
 
 const AnimatedActionText = () => {
   const [index, setIndex] = useState(0);
   const [maxWidth, setMaxWidth] = useState(0);
   const textRef = useRef<HTMLDivElement>(null);
 
-  // Calculate the width of the widest text
   useEffect(() => {
     if (typeof window !== 'undefined' && textRef.current) {
       const tempSpan = document.createElement('span');
@@ -27,9 +40,9 @@ const AnimatedActionText = () => {
       ).fontFamily;
       document.body.appendChild(tempSpan);
 
-      // Find the widest text
       let max = 0;
-      actionWords.forEach((word) => {
+      ACTION_WORD_KEYS.forEach((key) => {
+        const word = getActionWord(key);
         tempSpan.textContent = word;
         max = Math.max(max, tempSpan.offsetWidth);
       });
@@ -41,8 +54,8 @@ const AnimatedActionText = () => {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setIndex((prevIndex) => (prevIndex + 1) % (actionWords.length - 1));
-    }, 1800); // Slightly faster for better continuous feel
+      setIndex((prevIndex) => (prevIndex + 1) % TOTAL_WORDS);
+    }, 1800);
 
     return () => clearInterval(interval);
   }, []);
@@ -57,12 +70,12 @@ const AnimatedActionText = () => {
         {(() => {
           // Safe array access with bounds checking
           const currentIndex =
-            index >= 0 && index < actionWords.length ? index : 0;
+            index >= 0 && index < ACTION_WORD_KEYS.length ? index : 0;
 
           // Safe array access with explicit bounds checking
           let currentWord = 'Shop Now';
-          if (currentIndex >= 0 && currentIndex < actionWords.length) {
-            currentWord = actionWords[currentIndex];
+          if (currentIndex >= 0 && currentIndex < ACTION_WORD_KEYS.length) {
+            currentWord = ACTION_WORDS[ACTION_WORD_KEYS[currentIndex]];
           }
 
           return (

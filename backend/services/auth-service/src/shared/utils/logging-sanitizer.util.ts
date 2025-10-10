@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 const SENSITIVE_KEYS = [
   'password',
   'token',
@@ -21,7 +20,10 @@ const REDACTION_TEXT = '[REDACTED]';
  * @param seen WeakSet to track visited objects for circular reference detection.
  * @returns A new, sanitized object.
  */
-export function sanitizeObject(obj: any, seen = new WeakSet()): any {
+export function sanitizeObject<T>(
+  obj: T,
+  seen: WeakSet<object> = new WeakSet()
+): T {
   if (obj === null || obj === undefined || typeof obj !== 'object') {
     return obj;
   }
@@ -38,28 +40,30 @@ export function sanitizeObject(obj: any, seen = new WeakSet()): any {
   seen.add(obj);
 
   if (Array.isArray(obj)) {
-    return obj.map(item => sanitizeObject(item, seen));
+    return obj.map(item => sanitizeObject(item, seen)) as unknown as T;
   }
 
   // Handle objects safely using Object.fromEntries
-  const entries = Object.entries(obj).map(([key, value]) => {
-    const safeKey = String(key);
+  const entries = Object.entries(obj as Record<string, unknown>).map(
+    ([key, value]) => {
+      const safeKey = String(key);
 
-    if (
-      SENSITIVE_KEYS.some(sensitiveKey =>
-        safeKey.toLowerCase().includes(sensitiveKey.toLowerCase())
-      )
-    ) {
-      return [safeKey, REDACTION_TEXT];
-    } else {
-      return [safeKey, sanitizeObject(value, seen)];
+      if (
+        SENSITIVE_KEYS.some(sensitiveKey =>
+          safeKey.toLowerCase().includes(sensitiveKey.toLowerCase())
+        )
+      ) {
+        return [safeKey, REDACTION_TEXT];
+      } else {
+        return [safeKey, sanitizeObject(value, seen)];
+      }
     }
-  });
+  );
 
   const result = Object.fromEntries(entries);
 
   // Remove from seen set to allow the same object in different branches
   seen.delete(obj);
 
-  return result;
+  return result as T;
 }

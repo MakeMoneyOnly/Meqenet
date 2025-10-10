@@ -39,23 +39,15 @@ export class RiskAssessmentService {
   private readonly logger = new Logger(RiskAssessmentService.name);
 
   // Risk thresholds
-  // eslint-disable-next-line no-magic-numbers
   private readonly LOW_RISK_THRESHOLD = 25;
-  // eslint-disable-next-line no-magic-numbers
   private readonly MEDIUM_RISK_THRESHOLD = 50;
-  // eslint-disable-next-line no-magic-numbers
   private readonly HIGH_RISK_THRESHOLD = 75;
 
   // Time constants
-  // eslint-disable-next-line no-magic-numbers
   private readonly MILLISECONDS_PER_SECOND = 1000;
-  // eslint-disable-next-line no-magic-numbers
   private readonly SECONDS_PER_MINUTE = 60;
-  // eslint-disable-next-line no-magic-numbers
   private readonly MINUTES_PER_HOUR = 60;
-  // eslint-disable-next-line no-magic-numbers
   private readonly HOURS_PER_DAY = 24;
-  // eslint-disable-next-line no-magic-numbers
   private readonly FAILED_ATTEMPTS_DIVISOR = 5;
 
   // Risk weights

@@ -4,7 +4,17 @@ import {
   ArgumentMetadata,
   BadRequestException,
 } from '@nestjs/common';
-import { ZodSchema, ZodError } from 'zod';
+import { ZodSchema, ZodError, ZodIssue } from 'zod';
+
+interface ZodIssueExtended extends ZodIssue {
+  expected?: string | number | symbol;
+  received?: string | number | symbol;
+  keys?: string[];
+  minimum?: number;
+  maximum?: number;
+  type?: string;
+  message?: string;
+}
 
 /**
  * Custom Zod validation pipe for NestJS
@@ -39,7 +49,7 @@ export class ZodValidationPipe implements PipeTransform {
   private formatZodErrors(error: ZodError): Record<string, string[]> {
     const formattedErrors: Record<string, string[]> = {};
 
-    error.issues.forEach((err: ZodError['issues'][0]) => {
+    error.issues.forEach((err: ZodIssue) => {
       const path = err.path.join('.');
       const message = this.getCustomErrorMessage(err);
 
@@ -56,10 +66,8 @@ export class ZodValidationPipe implements PipeTransform {
     return formattedErrors;
   }
 
-  private getCustomErrorMessage(error: ZodError['issues'][0]): string {
-    // Type assertion to access Zod error properties safely
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const errorData = error as any;
+  private getCustomErrorMessage(error: ZodIssue): string {
+    const errorData = error as ZodIssueExtended;
 
     switch (error.code) {
       case 'invalid_type':

@@ -1,9 +1,5 @@
-import {
-  Injectable,
-  OnModuleInit,
-  OnModuleDestroy,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { PrismaClient, Prisma } from '@prisma/client';
 import { DatabaseEncryptionMiddleware } from '../../shared/services/database-encryption.middleware';
 
@@ -43,16 +39,16 @@ export class PrismaService
 
   constructor(
     private readonly databaseEncryptionMiddleware: DatabaseEncryptionMiddleware,
+    private readonly configService: ConfigService,
   ) {
-    // Note: Direct process.env access allowed in database service for critical configuration
-    /* eslint-disable-next-line */
-    const databaseUrlValue = process.env.DATABASE_URL;
-    if (!databaseUrlValue) {
-      throw new Error('DATABASE_URL is not set in the environment variables.');
+    const databaseConfig = this.configService.get('database');
+    if (!databaseConfig || !databaseConfig.url) {
+      throw new Error('Database configuration is missing or invalid');
     }
-    const databaseUrl = new URL(databaseUrlValue);
-    /* eslint-disable-next-line */
-    const isProduction = process.env.NODE_ENV === 'production';
+
+    const databaseUrl = new URL(databaseConfig.url);
+    const nodeEnv = this.configService.get<string>('node.env');
+    const isProduction = nodeEnv === 'production';
 
     // Using controlled access pattern for fintech compliance
     const logLevels: ('error' | 'warn' | 'info' | 'query')[] = isProduction
@@ -237,7 +233,7 @@ export class PrismaService
             ? JSON.stringify(data.newValues)
             : undefined,
           complianceFlags: data.complianceFlags ?? [],
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any,
       });
     } catch (error) {

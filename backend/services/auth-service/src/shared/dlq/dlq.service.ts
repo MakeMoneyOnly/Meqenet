@@ -46,16 +46,11 @@ export enum DLQAction {
 export class DLQService {
   private readonly logger = new Logger(DLQService.name);
   // Magic numbers for DLQ operations - documented inline for linting compliance
-  // eslint-disable-next-line no-magic-numbers
-  private readonly ARCHIVE_DAYS = 90; // 90 days retention
-  // eslint-disable-next-line no-magic-numbers
-  private readonly DEFAULT_PAGE_SIZE = 50; // Default pagination size
-  // eslint-disable-next-line no-magic-numbers
-  private readonly HOURS_IN_DAY = 24; // Hours in a day
-  // eslint-disable-next-line no-magic-numbers
-  private readonly SECONDS_IN_HOUR = 60; // Seconds in an hour
-  // eslint-disable-next-line no-magic-numbers
-  private readonly MS_IN_SECOND = 1000; // Milliseconds in a second
+  private readonly ARCHIVE_DAYS = 90;
+  private readonly DEFAULT_PAGE_SIZE = 50;
+  private readonly HOURS_IN_DAY = 24;
+  private readonly SECONDS_IN_HOUR = 60;
+  private readonly MS_IN_SECOND = 1000;
 
   constructor(private readonly prisma: PrismaService) {}
 

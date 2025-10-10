@@ -21,19 +21,19 @@ const isDevelopment = ApiConfig.isDevelopment;
 const logger = {
   warn: (message: string, ...args: unknown[]) => {
     if (isDevelopment && typeof console !== 'undefined') {
-      // eslint-disable-next-line no-console
+      // eslint-disable-next-line no-console -- controlled debug logging in development only
       console.warn(message, ...args);
     }
   },
   log: (message: string, ...args: unknown[]) => {
     if (isDevelopment && typeof console !== 'undefined') {
-      // eslint-disable-next-line no-console
+      // eslint-disable-next-line no-console -- controlled debug logging in development only
       console.log(message, ...args);
     }
   },
   error: (message: string, ...args: unknown[]) => {
     if (typeof console !== 'undefined') {
-      // eslint-disable-next-line no-console
+      // eslint-disable-next-line no-console -- centralized error logging
       console.error(message, ...args);
     }
   },

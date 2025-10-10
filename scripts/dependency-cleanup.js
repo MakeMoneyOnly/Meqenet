@@ -81,7 +81,6 @@ function runCommand(command, description) {
 
     // Execute command with proper argument separation to prevent injection
     // semgrep-disable-next-line javascript.lang.security.detect-child-process.detect-child-process
-    // eslint-disable-next-line security/detect-child-process
     const childProcess = spawn(cmd, args, {
       stdio: ['pipe', 'pipe', 'pipe'],
       encoding: 'utf8',

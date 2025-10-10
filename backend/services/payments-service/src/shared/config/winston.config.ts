@@ -119,14 +119,12 @@ function sanitizeLogData(
         if (
           sensitiveKeys.some(sensitive => key.toLowerCase().includes(sensitive))
         ) {
-          // eslint-disable-next-line security/detect-object-injection
           obj[key] = '[REDACTED]';
         } else if (
           typeof value === 'object' &&
           value !== null &&
           !Array.isArray(value)
         ) {
-          // eslint-disable-next-line security/detect-object-injection
           obj[key] = sanitizeObject(value as Record<string, unknown>);
         }
       }

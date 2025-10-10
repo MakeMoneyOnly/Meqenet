@@ -40,12 +40,9 @@ export class RetryService {
   };
 
   // Magic numbers for retry jitter - documented inline for linting compliance
-  // eslint-disable-next-line no-magic-numbers
-  private readonly JITTER_PERCENTAGE = 0.1; // 10% jitter
-  // eslint-disable-next-line no-magic-numbers
-  private readonly JITTER_RANDOM_CENTER = 0.5; // Center point for random jitter
-  // eslint-disable-next-line no-magic-numbers
-  private readonly JITTER_RANGE_MULTIPLIER = 2; // Multiplier for jitter range
+  private readonly JITTER_PERCENTAGE = 0.1;
+  private readonly JITTER_RANDOM_CENTER = 0.5;
+  private readonly JITTER_RANGE_MULTIPLIER = 2;
 
   /**
    * Execute function with retry logic

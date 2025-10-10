@@ -6,6 +6,13 @@
 import crypto from 'crypto';
 import validator from 'validator';
 const z = require('zod');
+import {
+  logInfo,
+  logWarn,
+  logError,
+  logDebug,
+  logSecurity,
+} from '@meqenet/frontend/logger';
 
 /**
  * Logger utility for Meqenet frontend
@@ -16,61 +23,37 @@ export class Logger {
     process.env.NODE_ENV === 'development';
   private static readonly isProduction = process.env.NODE_ENV === 'production';
 
-  /**
-   * Log informational messages
-   */
   static info(message: string, ...args: unknown[]): void {
     if (this.isDevelopment) {
-      console.info(`[INFO] ${message}`, ...args);
+      logInfo('frontend', message, { args });
     }
   }
 
-  /**
-   * Log warning messages
-   */
   static warn(message: string, ...args: unknown[]): void {
-    console.warn(`[WARN] ${message}`, ...args);
+    logWarn('frontend', message, { args });
   }
 
-  /**
-   * Log error messages
-   */
   static error(message: string, ...args: unknown[]): void {
-    console.error(`[ERROR] ${message}`, ...args);
+    logError('frontend', message, { args });
   }
 
-  /**
-   * Log debug messages (development only)
-   */
   static debug(message: string, ...args: unknown[]): void {
     if (this.isDevelopment) {
-      console.debug(`[DEBUG] ${message}`, ...args);
+      logDebug('frontend', message, { args });
     }
   }
 
-  /**
-   * Log security events (always logged, but sanitized in production)
-   */
   static security(
     level: 'AUDIT' | 'SECURITY',
     message: string,
     data?: Record<string, unknown>,
   ): void {
-    const logEntry = {
-      level,
-      message,
-      timestamp: new Date().toISOString(),
-      ...(this.isDevelopment && data && { data }),
-    };
-
     if (this.isProduction) {
-      // In production, send to logging service instead of console
-      // TODO: Integrate with proper logging service (e.g., DataDog, CloudWatch)
-
-      console.log(`[${level}]`, message);
-    } else {
-      console.log(`[${level}]`, logEntry);
+      logSecurity('frontend', level, message, { data });
+      return;
     }
+
+    logInfo('frontend', `SECURITY:${level} ${message}`, { data });
   }
 
   /**

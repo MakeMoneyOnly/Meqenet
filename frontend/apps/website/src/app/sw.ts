@@ -36,7 +36,7 @@ self.addEventListener('push', (event: any) => {
 // Handle notification clicks
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 self.addEventListener('notificationclick', (event: any) => {
-  // eslint-disable-next-line no-console
+  // eslint-disable-next-line no-console -- lifecycle diagnostic
   console.log('[ServiceWorker] Notification click received.');
 
   event.notification.close();

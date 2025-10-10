@@ -59,7 +59,7 @@ export default function Home() {
           // No cleanup needed when scroll container not found
         };
       } catch (error) {
-        // eslint-disable-next-line no-console
+        // eslint-disable-next-line no-console -- visible during UX diagnostics
         console.error('Failed to initialize smooth scrolling:', error);
         return () => {
           // No cleanup needed on initialization failure

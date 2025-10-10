@@ -175,7 +175,6 @@ async function bootstrap(): Promise<void> {
 
 bootstrap().catch((error: unknown) => {
   // Fallback logging since app may not have started - using console for critical startup errors
-  // eslint-disable-next-line no-console
-  console.error('Failed to start application:', error);
+  console.error('Failed to start application:', error); // eslint-disable-line no-console
   process.exit(1);
 });

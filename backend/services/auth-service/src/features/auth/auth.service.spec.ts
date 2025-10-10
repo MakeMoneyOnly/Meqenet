@@ -1097,6 +1097,7 @@ describe('AuthService', () => {
 
       // Mock the private method directly on the service
       const checkSimSwapCoolingPeriodSpy = vi
+
         .spyOn(service as any, 'checkSimSwapCoolingPeriod')
         .mockResolvedValue({
           canProceed: false,

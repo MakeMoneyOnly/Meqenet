@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
+import { action } from '@storybook/addon-actions';
 import { Button } from './Button';
 
 const meta: Meta<typeof Button> = {
@@ -192,9 +193,7 @@ export const AccessibilityExamples: Story = {
         variant="secondary"
         aria-describedby="download-description"
         onClick={() => {
-          // Intentional alert for Storybook demonstration
-          // eslint-disable-next-line no-alert
-          alert('Download started');
+          action('download-report')('Download started - generating PDF report');
         }}
       >
         📥 Download Report

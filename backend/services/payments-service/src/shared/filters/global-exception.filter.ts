@@ -49,7 +49,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         const sanitizedValue =
           sanitizedHeaders[headerKey as keyof typeof sanitizedHeaders];
         if (sanitizedValue !== headerValue) {
-          // eslint-disable-next-line security/detect-object-injection
           (request.headers as Record<string, string>)[headerKey] =
             sanitizedValue;
         }
@@ -179,7 +178,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       503: 'SERVICE_UNAVAILABLE',
     };
 
-    // eslint-disable-next-line security/detect-object-injection
     return statusMap[status] || 'UNKNOWN_ERROR';
   }
 
@@ -237,7 +235,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     for (const key of sensitiveHeaderKeys) {
       const headerValue = sanitized[key as keyof typeof sanitized];
       if (headerValue && typeof headerValue === 'string') {
-        // eslint-disable-next-line security/detect-object-injection
         (sanitized as Record<string, string>)[key] = '[REDACTED]';
       }
     }

@@ -182,7 +182,6 @@ export function getErrorMessage(
       : 'An unknown error occurred.';
   }
 
-  // eslint-disable-next-line security/detect-object-injection
   const error = ErrorMessages[errorCode];
   if (!error) {
     // Fallback error message
@@ -190,7 +189,6 @@ export function getErrorMessage(
       ? 'ያልታወቀ ስህተት ተፈጥሯል።'
       : 'An unknown error occurred.';
   }
-  // eslint-disable-next-line security/detect-object-injection
   return error[language];
 }
 
@@ -206,7 +204,6 @@ export function getBilingualError(
   if (!isValidErrorCodeInput(errorCode)) {
     return null;
   }
-  // eslint-disable-next-line security/detect-object-injection
   return ErrorMessages[errorCode] || null;
 }
 
@@ -236,7 +233,7 @@ export function createBilingualErrorResponse(
 } {
   // Security: Validate input to prevent object injection
   const error = isValidErrorCodeInput(errorCode)
-    ? ErrorMessages[errorCode] // eslint-disable-line security/detect-object-injection
+    ? ErrorMessages[errorCode]
     : null;
   const fallbackError: BilingualErrorMessage = {
     en: 'An unknown error occurred.',

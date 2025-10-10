@@ -46,16 +46,11 @@ export enum OutboxStatus {
 export class OutboxService implements OnModuleInit {
   private readonly logger = new Logger(OutboxService.name);
   // Magic numbers for outbox operations - documented inline for linting compliance
-  // eslint-disable-next-line no-magic-numbers
-  private readonly BATCH_SIZE = 50; // Messages per batch
-  // eslint-disable-next-line no-magic-numbers
-  private readonly MAX_RETRIES = 3; // Maximum retry attempts
-  // eslint-disable-next-line no-magic-numbers
-  private readonly RETRY_DELAY_MS = 60000; // 1 minute delay
-  // eslint-disable-next-line no-magic-numbers
-  private readonly CLEANUP_DAYS = 30; // Days to keep processed messages
-  // eslint-disable-next-line no-magic-numbers
-  private readonly EXPONENTIAL_BACKOFF_BASE = 2; // Base for exponential backoff
+  private readonly BATCH_SIZE = 50;
+  private readonly MAX_RETRIES = 3;
+  private readonly RETRY_DELAY_MS = 60000;
+  private readonly CLEANUP_DAYS = 30;
+  private readonly EXPONENTIAL_BACKOFF_BASE = 2;
 
   constructor(
     private readonly prisma: PrismaService,

@@ -1,11 +1,6 @@
 import React from 'react';
 import './globals.css';
 import { Inter } from 'next/font/google';
-import InnerLayout from '@/components/common/InnerLayout';
-import CursorFollower from '@/components/common/ui/CursorFollower';
-import { Analytics } from '@vercel/analytics/react';
-import { SpeedInsights } from '@vercel/speed-insights/next';
-import { PWAProvider } from '@/components/providers';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -30,6 +25,19 @@ export const metadata = {
     'application-name': 'Meqenet',
     'msapplication-TileColor': '#1f2937',
     'msapplication-config': '/browserconfig.xml',
+    'format-detection': 'telephone=no',
+    'mobile-web-app-capable': 'yes',
+    'msapplication-tap-highlight': 'no',
+  },
+  icons: {
+    apple: [
+      { url: '/icon-192x192.png' },
+      { url: '/icon-192x192.png', sizes: '192x192' },
+      { url: '/icon-512x512.png', sizes: '512x512' },
+    ],
+  },
+  alternates: {
+    canonical: '/',
   },
 };
 
@@ -40,35 +48,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <head>
-        {/* PWA meta tags for better detection */}
-        <meta name="application-name" content="Meqenet" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Meqenet" />
-        <meta name="format-detection" content="telephone=no" />
-        <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="msapplication-config" content="/browserconfig.xml" />
-        <meta name="msapplication-TileColor" content="#1f2937" />
-        <meta name="msapplication-tap-highlight" content="no" />
-        <link rel="apple-touch-icon" href="/icon-192x192.png" />
-        <link rel="apple-touch-icon" sizes="192x192" href="/icon-192x192.png" />
-        <link rel="apple-touch-icon" sizes="512x512" href="/icon-512x512.png" />
-        {/* Preconnect to external domains for performance */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
-      </head>
-      <body className={inter.className + ' bg-[#f7fdfc]'}>
-        <PWAProvider />
-        <CursorFollower />
-        <InnerLayout>{children}</InnerLayout>
-        <Analytics />
-        <SpeedInsights />
-      </body>
+      <body className={inter.className + ' bg-[#f7fdfc]'}>{children}</body>
     </html>
   );
 }

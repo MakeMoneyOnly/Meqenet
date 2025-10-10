@@ -98,7 +98,7 @@ export function LocomotiveScrollProvider({
           scrollInstanceRef.current = null;
         };
       } catch (error) {
-        // eslint-disable-next-line no-console
+        // eslint-disable-next-line no-console -- runtime instrumentation during scroll setup
         console.error('Failed to initialize Locomotive Scroll:', error);
         return () => {
           // No-op: failed to initialize scroll

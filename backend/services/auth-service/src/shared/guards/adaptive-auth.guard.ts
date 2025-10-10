@@ -34,9 +34,11 @@ interface RequestWithAuth extends Request {
   riskAssessment?: RiskAssessment;
   userId?: string;
   user?: { id: string; email?: string; role?: string };
-  requiresMfa?: boolean;
-  mfaSuggested?: boolean;
-  mfaToken?: string;
+  adaptiveAuth?: {
+    requiresMfa: boolean;
+    mfaSuggested: boolean;
+    mfaToken: string | null;
+  };
 }
 
 export interface AdaptiveAuthResult {
@@ -269,10 +271,11 @@ export class AdaptiveAuthGuard implements CanActivate {
     );
 
     // Store MFA requirement in session/request
-    // eslint-disable-next-line
-    request.requiresMfa = true;
-    // eslint-disable-next-line
-    request.mfaToken = this.generateMfaToken();
+    request.adaptiveAuth = {
+      requiresMfa: true,
+      mfaSuggested: false,
+      mfaToken: this.generateMfaToken(),
+    };
   }
 
   /**
@@ -305,10 +308,11 @@ export class AdaptiveAuthGuard implements CanActivate {
       JSON.stringify(riskAssessment.factors)
     );
 
-    // eslint-disable-next-line
-    request.requiresMfa = false;
-    // eslint-disable-next-line
-    request.mfaSuggested = true;
+    request.adaptiveAuth = {
+      requiresMfa: false,
+      mfaSuggested: true,
+      mfaToken: null,
+    };
   }
 
   /**
@@ -324,7 +328,11 @@ export class AdaptiveAuthGuard implements CanActivate {
     );
 
     // No additional actions required for low risk
-    request.requiresMfa = false;
+    request.adaptiveAuth = {
+      requiresMfa: false,
+      mfaSuggested: false,
+      mfaToken: null,
+    };
   }
 
   /**
@@ -343,14 +351,15 @@ export class AdaptiveAuthGuard implements CanActivate {
   ): AdaptiveAuthResult | null {
     const riskAssessment = request.riskAssessment;
     const userId = request.userId;
+    const adaptiveAuthState = request.adaptiveAuth;
 
-    if (!riskAssessment || !userId) {
+    if (!riskAssessment || !userId || !adaptiveAuthState) {
       return null;
     }
 
     return {
       allowed: true,
-      requiresMfa: request.requiresMfa || false,
+      requiresMfa: adaptiveAuthState.requiresMfa,
       requiresStepUp: riskAssessment.requiresStepUp,
       riskAssessment,
       userId,

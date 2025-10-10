@@ -10,7 +10,7 @@ describe('API Gateway Health Check', () => {
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('status', 'ok');
       expect(response.body).toHaveProperty('timestamp');
-    } catch (_error) {
+    } catch {
       console.log(
         'Health check failed, but auth tests are passing, so API Gateway is working'
       );
@@ -26,7 +26,7 @@ describe('API Gateway Health Check', () => {
       expect(response.body).toHaveProperty('message');
       expect(response.body.message).toContain('Meqenet API Gateway');
       expect(response.body).toHaveProperty('version');
-    } catch (_error) {
+    } catch {
       console.log(
         'Root endpoint failed, but auth tests are passing, so API Gateway is working'
       );

@@ -76,7 +76,7 @@ function runAudit() {
     );
     results.peerIssues = (peerOutput.match(/unmet peer/g) || []).length;
     console.log(`   Found ${results.peerIssues} peer dependency issues`);
-  } catch (_error) {
+  } catch {
     console.log('   ✅ No peer dependency issues found');
     results.peerIssues = 0;
   }
@@ -90,7 +90,7 @@ function runAudit() {
     const outdatedData = JSON.parse(outdatedOutput);
     results.outdated = Object.keys(outdatedData).length;
     console.log(`   Found ${results.outdated} outdated packages`);
-  } catch (_error) {
+  } catch {
     console.log('   No outdated packages found');
     results.outdated = 0;
   }

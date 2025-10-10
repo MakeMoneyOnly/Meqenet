@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import React from 'react';
 import { View, StyleSheet, Text } from 'react-native';
 import { Formik } from 'formik';
@@ -7,6 +6,7 @@ import Input from '../components/auth/Input';
 import Button from '../components/auth/Button';
 import { useAuthStore } from '@meqenet/mobile-state-management';
 import { apiClient } from '@frontend/mobile-api-client';
+import { Logger } from '@meqenet/frontend/logger';
 
 const LoginSchema = Yup.object().shape({
   email: Yup.string().email('Invalid email').required('Required'),
@@ -40,7 +40,7 @@ const LoginScreen = () => {
           );
           return JSON.parse(jsonPayload);
         } catch (error) {
-          console.error('Failed to decode JWT token:', error);
+          Logger.warn('Failed to decode JWT token', error);
           return null;
         }
       };

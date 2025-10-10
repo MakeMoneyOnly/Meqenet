@@ -10,12 +10,9 @@ export class EnhancedSecurityMonitoringService {
   private readonly logger = new Logger(EnhancedSecurityMonitoringService.name);
 
   // Constants for magic numbers
-  // eslint-disable-next-line no-magic-numbers
   private readonly JSON_INDENTATION = 2;
-  // eslint-disable-next-line no-magic-numbers
-  private readonly BLOCK_DURATION_CRITICAL = 3600; // 1 hour in seconds
-  // eslint-disable-next-line no-magic-numbers
-  private readonly BLOCK_DURATION_HIGH = 1800; // 30 minutes in seconds
+  private readonly BLOCK_DURATION_CRITICAL = 3600;
+  private readonly BLOCK_DURATION_HIGH = 1800;
 
   /**
    * Trigger comprehensive security alert for high/critical events

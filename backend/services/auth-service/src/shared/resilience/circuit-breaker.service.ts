@@ -44,8 +44,7 @@ export interface CircuitBreakerStats {
 @Injectable()
 export class CircuitBreakerService {
   private readonly logger = new Logger(CircuitBreakerService.name);
-  // eslint-disable-next-line no-magic-numbers
-  private readonly CLEANUP_DAYS = 30; // Days to keep old circuit data
+  private readonly CLEANUP_DAYS = 30;
   private circuits: Map<
     string,
     {

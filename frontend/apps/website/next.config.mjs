@@ -129,11 +129,13 @@ const nextConfig = {
 };
 
 // PWA Configuration using @serwist/next (recommended successor to next-pwa)
-import withSerwistInit from "@serwist/next";
+// Temporarily disabled due to build issues
+// import withSerwistInit from "@serwist/next";
 
-const withSerwist = withSerwistInit({
-  swSrc: "src/app/sw.ts",
-  swDest: "public/sw.js",
-});
+// const withSerwist = withSerwistInit({
+//   swSrc: "src/app/sw.ts",
+//   swDest: "public/sw.js",
+// });
 
-export default withSerwist(nextConfig);
+// export default withSerwist(nextConfig);
+export default nextConfig;

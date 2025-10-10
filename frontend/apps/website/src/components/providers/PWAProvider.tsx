@@ -43,14 +43,14 @@ export default function PWAProvider() {
         .then((registration) => {
           // Service Worker registered successfully
           if (ApiConfig.isDevelopment) {
-            // eslint-disable-next-line no-console
+            // eslint-disable-next-line no-console -- development diagnostics
             console.log('Service Worker registered:', registration.scope);
           }
         })
         .catch((error) => {
           // Service Worker registration failed - log in development, silently handle in production
           if (ApiConfig.isDevelopment) {
-            // eslint-disable-next-line no-console
+            // eslint-disable-next-line no-console -- development diagnostics
             console.error('Service Worker registration failed:', error);
           }
         });

@@ -95,7 +95,6 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     user: Record<string, unknown> | null,
     info: Record<string, unknown> | null,
     context: ExecutionContext,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _status?: number
   ): Record<string, unknown> | null {
     if (err || !user) {
