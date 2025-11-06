@@ -46,7 +46,7 @@
     "@nx/web": "21.4.1",
     "@nx/webpack": "21.4.1",
     "@nx/workspace": "^21.4.1",
-    "@react-native-community/cli": "15.0.0",
+    "@react-native-community/cli": "20.0.0",
     "@react-native-community/cli-platform-android": "15.0.0",
     "@react-native-community/cli-platform-ios": "15.0.0",
     "@react-native/babel-preset": "0.74-stable",
